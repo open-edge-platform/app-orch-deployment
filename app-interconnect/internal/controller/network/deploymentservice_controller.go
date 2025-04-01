@@ -183,8 +183,7 @@ func (c *DeploymentServiceController) bindServices(ctx context.Context, deployme
 		return nil
 	}
 
-	// TODO: Get the project ID from resource labels.
-	var projectID clusterclient.ProjectID
+	projectID := clusterclient.ProjectID(deploymentCluster.Labels[utils.AppOrchProjectIDLabel])
 	clusterID := clusterclient.ClusterID(deploymentCluster.Spec.ClusterID)
 
 	clusterConfig, err := c.Clusters.GetClusterConfig(ctx, clusterID, projectID)
