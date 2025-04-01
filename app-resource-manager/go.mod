@@ -55,11 +55,11 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
 	github.com/lib/pq v1.10.7
-	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 v2.3.19
+	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 v2.3.21
 	github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 v2.0.0-00010101000000-000000000000
-	github.com/open-edge-platform/orch-library/go v0.5.28
-	github.com/open-edge-platform/orch-library/go/dazl v0.5.1
-	github.com/open-edge-platform/orch-library/go/dazl/zap v0.5.1
+	github.com/open-edge-platform/orch-library/go v0.5.29
+	github.com/open-edge-platform/orch-library/go/dazl v0.5.2
+	github.com/open-edge-platform/orch-library/go/dazl/zap v0.5.2
 	github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/mock v0.5.0
