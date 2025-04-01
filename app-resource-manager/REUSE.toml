@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["venv_app-resource-manager/**", "out/*", "go.sum", "VERSION", ".tool-versions", "**.json", "VERSION", "api/buf.lock", "pkg/api/**.pb**.go", "api/spec/**", "api/nbi/v2/pkg/restClient/**", "artifacts/**", "internal/southbound/mocks/**", "artifacts/**", "BDBA/**", "internal/kubernetes/mocks/**", "internal/kubevirt/mocks/**", "internal/wsproxy/mocks/**", "internal/adm/mocks/**", "api/nbi/v2/spec/**", "api/nbi/v2/go.sum", "api/nbi/v2/resource/v2/**","vnc-proxy-web-ui/rfb.js","vnc-proxy-web-ui/keycloak.min.js", ".htmllintrc"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2022 Intel Corporation"
+SPDX-License-Identifier = "Apache-2.0"

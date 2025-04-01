@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# jetbrains
+/vendor/
+/build/_output/*
+kind.config.yaml
+/cover.out
+/coverage.xml
+/coverage.html
+bin
+internal/northbound/testdata/*
+venv-env
+vendor
+*.log
+workspace
+
+*.lock
+*.tgz
+
+testdata
+node_modules
+package-lock.json
+package.json

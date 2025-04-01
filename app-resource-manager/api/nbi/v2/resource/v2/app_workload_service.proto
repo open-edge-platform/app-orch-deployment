@@ -1,0 +1,47 @@
+// SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package resource.v2;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "resource/v2/app_workload_resource.proto";
+import "validate/validate.proto";
+
+// Provides API endpoints for listing and lifecycle management of workloads, including virtual machines and container-based workloads.
+service AppWorkloadService {
+  // Gets a list of all workloads for an application of a deployment in a cluster.
+  rpc ListAppWorkloads(ListAppWorkloadsRequest) returns (ListAppWorkloadsResponse) {
+    option (google.api.http) = {get: "/resource.orchestrator.apis/v2/workloads/{app_id}/{cluster_id}"};
+  }
+}
+
+// Request message for ListAppWorkloadsRequest method
+message ListAppWorkloadsRequest {
+  // Application ID
+  string app_id = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (validate.rules).string = {
+      min_len: 1
+      max_len: 80
+      pattern: "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+    }
+  ];
+  // Cluster ID
+  string cluster_id = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (validate.rules).string = {
+      min_len: 1
+      max_len: 40
+      pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+    }
+  ];
+}
+
+// Response message for the ListAppWorkloadsResponse method.
+message ListAppWorkloadsResponse {
+  // A list of virtual machines.
+  repeated resource.v2.AppWorkload app_workloads = 1;
+}

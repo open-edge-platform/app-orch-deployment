@@ -1,0 +1,6 @@
+# SPDX-FileCopyrightText: (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+edgeClusterManager:
+  # missing endpoint is an invalid config
+#  endpoint: "http://localhost:8080" # for test

@@ -1,0 +1,253 @@
+# yamllint disable-file
+# SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+{{- $registry := .Values.global.registry -}}
+{{- if .Values.image.registry -}}
+{{- $registry = .Values.image.registry -}}
+{{- end -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "app-service-proxy.fullname" . }}
+  {{- with .Values.deploymentAnnotations }}
+  annotations:
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "app-service-proxy.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "app-service-proxy.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ template "app-service-proxy.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with $registry.imagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: app-service-proxy
+        {{- with .Values.image }}
+        image: "{{- if hasKey $registry "name" }}{{ $registry.name }}/{{- end -}}{{ .repository }}:{{ default $.Chart.AppVersion .tag }}"
+        {{- end }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: [ "/app-service-proxy" ]
+        env:
+          - name: MAX_BODY_SIZE_BYTES_LIMIT
+            value: {{ .Values.conf.maxBodySizeBytesLimit | quote }}
+          - name: API_POSITION_IN_URL
+            value: {{ .Values.conf.apiPositionInUrl | quote }}
+          - name: OIDC_SERVER_URL
+            value: {{ .Values.openidc.issuer }}
+          - name: OIDC_TLS_INSECURE_SKIP_VERIFY
+            value: {{ .Values.openidc.insecureSkipVerify | quote }}
+          - name: OPA_PORT
+            value: {{ .Values.openpolicyagent.port | quote }}
+          - name: AGENT_TARGET_NAMESPACE
+            value: {{ .Values.agent.targetNamespace }}
+          - name: AUTH_TOKEN_SERVICE_ACCOUNT
+            value: {{ .Values.agent.authToken.serviceAccount | quote }}
+          - name: PROXY_SERVER_URL
+            value: {{ .Values.agent.config.proxyServerURL }}
+          - name: AUTH_TOKEN_EXPIRATION
+            value: {{ .Values.agent.authToken.expirationSeconds | quote }}
+          - name: USE_M2M_TOKEN
+            value: {{  .Values.useM2MToken | quote }}
+          {{- if .Values.openpolicyagent.enabled }}
+          - name: OPA_ENABLED
+            value: "true"
+          {{- end}}
+          - name: CATTLE_TUNNEL_DATA_DEBUG
+            value: {{ .Values.remotedialer.debug | quote }}
+          - name: ASP_LOG_LEVEL
+            value: {{ .Values.logLevel }}
+          - name: ADM_ADDRESS
+            value: {{ .Values.admAddress }}
+          - name: CCG_ADDRESS
+            value: {{ .Values.ccgAddress }}
+          - name: RATE_LIMITER_QPS
+            value: {{ .Values.admRateLimiter.qps | quote }}
+          - name: RATE_LIMITER_BURST
+            value: {{ .Values.admRateLimiter.burst | quote }}
+          - name: GIT_REPO_NAME
+            value: {{ .Values.git.repoName }}
+          - name: GIT_PROVIDER
+            value: {{ .Values.git.provider }}
+          - name: SECRET_SERVICE_ENABLED
+            value: {{ .Values.git.secretService.enabled | quote }}
+          - name: TOKEN_TTL_HOURS
+            value: {{ .Values.agent.tokenTTLHours | quote }}
+          {{- with .Values.agent.config.proxyServerCA }}
+          - name: PROXY_SERVER_CA
+            value: {{ . }}
+          {{- end }}
+          {{- with .Values.agent.config.insecureSkipVerify }}
+          - name: INSECURE_SKIP_VERIFY
+            value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.agent.chartRepoSecret }}
+          - name: AGENT_CHART_REPO_SECRET
+            value: {{ . }}
+          {{- end }}
+          {{- with .Values.git.user }}
+          - name: GIT_USER
+            value: {{ . }}
+          {{- end }}
+          {{- with .Values.git.password }}
+          - name: GIT_PASSWORD
+            value: {{ . }}
+          {{- end }}
+          {{- with .Values.git.server }}
+          - name: GIT_SERVER
+            value: {{ . }}
+          {{- end }}
+          {{- with .Values.git.proxy }}
+          - name: GIT_PROXY
+            value: {{ . | quote }}
+          {{- end }}
+          {{- if .Values.git.gitUseCaCert }}
+          - name: GIT_CA_CERT
+            valueFrom:
+              secretKeyRef:
+                key: {{ .Values.git.gitCaCertSecretKey }}
+                name: {{ .Values.git.gitCaCertSecret }}
+          {{- end }}
+          {{- with .Values.git.clientSecret }}
+          - name: GIT_CLIENT_SECRET
+            value: "{{ . }}"
+          {{- end }}
+          {{- with .Values.git.codeCommit.awsRegion }}
+          - name: GIT_REGION
+            value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.git.codeCommit.awsAccessKeyId }}
+          - name: GIT_ACCESSKEY
+            value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.git.codeCommit.awsSecretAccessKey }}
+          - name: GIT_SECRET_ACCESSKEY
+            value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.git.codeCommit.awsSshKeyId }}
+          - name: GIT_AWSSSHKEY
+            value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.git.secretService.endpoint }}
+          - name: SECRET_SERVICE_ENDPOINT
+            value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.git.secretService.secrets.gitService.path }}
+          - name: SECRET_GIT_SERVICE_PATH
+            value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.git.secretService.secrets.gitService.keys.username }}
+          - name: SECRET_GIT_SERVICE_USERNAME_KVKEY
+            value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.git.secretService.secrets.gitService.keys.password }}
+          - name: SECRET_GIT_SERVICE_PASSWORD_KVKEY
+            value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.git.secretService.secrets.awsService.path }}
+          - name: SECRET_AWS_SERVICE_PATH
+            value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.git.secretService.secrets.awsService.keys.region }}
+          - name: SECRET_AWS_SERVICE_REGION_KVKEY
+            value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.git.secretService.secrets.awsService.keys.accessKeyID }}
+          - name: SECRET_AWS_SERVICE_ACCESSKEY_KVKEY
+            value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.git.secretService.secrets.awsService.keys.secretAccessKey }}
+          - name: SECRET_AWS_SERVICE_SECRET_ACCESSKEY_KVKEY
+            value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.git.secretService.secrets.awsService.keys.sshKeyID }}
+          - name: SECRET_AWS_SERVICE_SECRET_SSHKEY_KVKEY
+            value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.git.remoteType }}
+          - name: FLEET_GIT_REMOTE_TYPE
+            value: "{{ . }}"
+          {{- end }}
+        securityContext:
+          {{- toYaml .Values.containerSecurityContext | nindent 10 }}
+        {{- if .Values.resources }}
+        resources: {{- toYaml .Values.resources | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+          - name: asptmp
+            mountPath: /tmp
+        {{- if .Values.git.gitUseCaCert }}
+          - name: {{ .Values.git.gitCaCertVolume }}
+            mountPath: {{ .Values.git.gitCaCertFolder }}
+        {{- end }}
+      {{- if .Values.openpolicyagent.enabled }}
+      - name: openpolicyagent
+        {{- with .Values.openpolicyagent }}
+        image: "{{- if .registry -}}{{ .registry }}/{{- end -}}{{ .image }}:{{ .tag }}"
+        {{- end }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+          - name: opa
+            containerPort: {{ .Values.openpolicyagent.port }}
+            protocol: TCP
+        args:
+          - "run"
+          - "--server"
+          - "/opt/app-service-proxy/rego"
+          - "--log-level"
+          - {{ .Values.openpolicyagent.loglevel }}
+        securityContext:
+          {{- toYaml .Values.containerSecurityContext | nindent 10 }}
+        {{- if .Values.resources }}
+        resources: {{- toYaml .Values.resources | nindent 10 }}
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /health?bundle=true  # Include bundle activation in readiness
+            scheme: HTTP
+            port: {{ .Values.openpolicyagent.port }}
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health?bundle=true  # Include bundle activation in readiness
+            scheme: HTTP
+            port: {{ .Values.openpolicyagent.port }}
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        volumeMounts:
+          - name: openpolicyagent
+            mountPath: /opt/app-service-proxy/rego
+            readOnly: true
+       {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: asptmp
+          emptyDir: {}
+        {{- if .Values.openpolicyagent.enabled }}
+        - name: openpolicyagent
+          configMap:
+            name: {{ include "app-service-proxy.fullname" . }}-opa-rego
+        {{- end }}
+      {{- if .Values.git.gitUseCaCert }}
+        - name: {{ .Values.git.gitCaCertVolume }}
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.git.gitCaCertSecret }}
+      {{- end }}

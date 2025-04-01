@@ -1,0 +1,14 @@
+App Deployment Manager
+---
+
+The App Deployment Manager service provides a friendly,
+high-level interface to the Rancher Fleet GitOps-based deployment tool.
+
+See https://fleet.rancher.io/ for details on Rancher Fleet.
+
+---
+revision: {{ .Chart.Annotations.revision }}
+created: {{ .Chart.Annotations.created }}
+SPDX-License-Identifier: Apache-2.0
+
+Copyright (C) 2023 Intel Corporation

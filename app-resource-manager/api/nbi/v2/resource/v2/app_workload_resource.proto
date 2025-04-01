@@ -1,0 +1,56 @@
+// SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package resource.v2;
+
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "resource/v2/pod_resource.proto";
+import "resource/v2/vm_resource.proto";
+import "validate/validate.proto";
+
+// AppWorkload a high-level abstraction for representing different types of application workloads.
+// The application workloads can be virtual machine-based or container-based.
+message AppWorkload {
+  // Application workload type, e.g. virtual machine and pod.
+  Type type = 1;
+  enum Type {
+    TYPE_UNSPECIFIED = 0;
+    TYPE_VIRTUAL_MACHINE = 1;
+    TYPE_POD = 2;
+  }
+
+  // Workload UUID
+  string id = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (validate.rules).string.uuid = true
+  ];
+
+  // Workload name
+  string name = 3 [
+    (google.api.field_behavior) = REQUIRED,
+    (validate.rules).string = {
+      min_len: 1
+      max_len: 253
+      pattern: "^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$"
+    }
+  ];
+
+  // Namespace where the workload is created.
+  string namespace = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // The time when the workload is created.
+  google.protobuf.Timestamp create_time = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Ready status to determines if a workload is fully functional or not.
+  bool workload_ready = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // workload for each type of workload there will be one
+  // specific object that includes workload specific attributes
+  oneof workload {
+    resource.v2.VirtualMachine virtual_machine = 8;
+    resource.v2.Pod pod = 9;
+  }
+}

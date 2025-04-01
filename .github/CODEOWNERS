@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# These owners will be the default owners for everything in the repo. Unless a
+# later match takes precedence, these owners will be requested for review when
+# someone opens a pull request.
+
+# Everything requires team review by default
+* @malruben @badhrinathpa @pudelkoM @cgoea @ajaythakurintel @ray-milkey @adibrastegarnia @SeanCondon @kuujo @scottmbaker @sys-devops-approve

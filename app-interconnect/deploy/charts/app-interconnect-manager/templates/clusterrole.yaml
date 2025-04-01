@@ -1,0 +1,69 @@
+# yamllint disable-file
+# SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "interconnect-manager.fullname" . }}
+  labels:
+    {{ include "interconnect-manager.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    verbs:
+      [ "get", "list", "watch" ]
+  - apiGroups:
+      - app.edge-orchestrator.intel.com
+    resources:
+      - clusters
+      - deploymentclusters
+      - deployments
+    verbs:
+      [ "get", "list", "watch", "create", "update", "delete" ]
+  - apiGroups:
+      - interconnect.app.edge-orchestrator.intel.com
+    resources:
+      - links
+      - links/status
+      - clusters
+      - clusters/status
+      - services
+      - services/status
+    verbs:
+      [ "get", "list", "watch", "create", "update", "delete" ]
+  - apiGroups:
+      - network.app.edge-orchestrator.intel.com
+    resources:
+      - networks
+      - networks/status
+      - networkclusters
+      - networkclusters/status
+      - networklinks
+      - networklinks/status
+      - networkservices
+      - networkservices/status
+    verbs:
+      [ "get", "list", "watch", "create", "update", "delete" ]
+
+  # FIXME: This is a temporary workaround to allow the interconnect-manager to create ConfigMaps when testing locally.
+  {{- if eq "dev" .Values.interconnect_manager.mode }}
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - services
+      - secrets
+    verbs:
+      [ "get", "list", "watch", "create", "update", "delete" ]
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs:
+      [ "get", "list", "watch", "create", "update", "delete" ]
+  {{- end }}

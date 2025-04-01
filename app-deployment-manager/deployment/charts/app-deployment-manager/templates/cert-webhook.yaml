@@ -1,0 +1,26 @@
+# yamllint disable-file
+# SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+  namespace: {{ .Release.Namespace }}
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: webhook-server-cert
+  namespace: {{ .Release.Namespace }}
+spec:
+  dnsNames:
+    - "webhook-service.{{ .Release.Namespace }}.svc"
+    - "webhook-service.{{ .Release.Namespace }}.svc.cluster.local"
+  issuerRef:
+    kind: Issuer
+    name: selfsigned-issuer
+  secretName: webhook-server-cert

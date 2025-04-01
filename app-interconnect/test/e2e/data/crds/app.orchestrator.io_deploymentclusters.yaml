@@ -1,0 +1,258 @@
+# SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+  name: deploymentclusters.app.edge-orchestrator.intel.com
+spec:
+  group: app.edge-orchestrator.intel.com
+  names:
+    kind: DeploymentCluster
+    listKind: DeploymentClusterList
+    plural: deploymentclusters
+    singular: deploymentcluster
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.status.state
+      name: State
+      type: string
+    - jsonPath: .status.display
+      name: Apps-Ready
+      type: string
+    - jsonPath: .status.status.message
+      name: Message
+      type: string
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: DeploymentCluster is the Schema for the deploymentclusters API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: |-
+              DeploymentClusterSpec defines the desired state of DeploymentCluster
+              DeploymentClusters just exist to report status, so it is blank
+            properties:
+              clusterId:
+                description: ClusterID is the ID of the corresponding cluster
+                type: string
+              deploymentId:
+                description: DeploymentID is the ID of the corresponding Deployment
+                type: string
+              namespace:
+                description: Namespace is the Deployment / Cluster namespace
+                type: string
+            required:
+            - clusterId
+            - deploymentId
+            - namespace
+            type: object
+          status:
+            description: DeploymentClusterStatus defines the observed state of DeploymentCluster
+            properties:
+              apps:
+                description: Per-app status on the cluster
+                items:
+                  properties:
+                    deploymentGeneration:
+                      description: Last Deployment Generation applied by the Fleet
+                        agent
+                      format: int64
+                      type: integer
+                    id:
+                      description: Id of the app (equivalent to Fleet bundle name)
+                      type: string
+                    name:
+                      description: Name of the app
+                      type: string
+                    status:
+                      description: Status of the app
+                      properties:
+                        message:
+                          description: An informative error message if object is Down
+                          type: string
+                        state:
+                          description: The state of the object (Running, Down)
+                          type: string
+                        summary:
+                          description: Summary counts for objects below this one in
+                            the hiearchy
+                          properties:
+                            down:
+                              description: AppsTotal - AppsReady
+                              type: integer
+                            running:
+                              description: Sum over Status.Summary.Running from owned
+                                GitRepo objects
+                              type: integer
+                            total:
+                              description: Sum over Status.Summary.DesiredReady from
+                                owned GitRepo objects
+                              type: integer
+                            type:
+                              description: Type of thing that we're counting
+                              type: string
+                            unknown:
+                              description: Unknown status to indicate cluster not
+                                reachable
+                              type: integer
+                          required:
+                          - type
+                          type: object
+                      required:
+                      - state
+                      type: object
+                  required:
+                  - deploymentGeneration
+                  - id
+                  - name
+                  type: object
+                type: array
+              conditions:
+                description: Conditions is a list conditions that describe the state
+                  of the deployment
+                items:
+                  description: "Condition contains details for one aspect of the current
+                    state of this API Resource.\n---\nThis struct is intended for
+                    direct use as an array at the field path .status.conditions.  For
+                    example,\n\n\n\ttype FooStatus struct{\n\t    // Represents the
+                    observations of a foo's current state.\n\t    // Known .status.conditions.type
+                    are: \"Available\", \"Progressing\", and \"Degraded\"\n\t    //
+                    +patchMergeKey=type\n\t    // +patchStrategy=merge\n\t    // +listType=map\n\t
+                    \   // +listMapKey=type\n\t    Conditions []metav1.Condition `json:\"conditions,omitempty\"
+                    patchStrategy:\"merge\" patchMergeKey:\"type\" protobuf:\"bytes,1,rep,name=conditions\"`\n\n\n\t
+                    \   // other fields\n\t}"
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: |-
+                        type of condition in CamelCase or in foo.example.com/CamelCase.
+                        ---
+                        Many .condition.type values are consistent across resources like Available, but because arbitrary conditions can be
+                        useful (see .node.status.conditions), the ability to deconflict is important.
+                        The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+              display:
+                description: A message summarizing the cluster status
+                type: string
+              lastStatusUpdate:
+                description: Last time status was updated
+                format: date-time
+                type: string
+              name:
+                description: Name is the display name which user provides and ECM
+                  creates and assigns clustername label to Fleet cluster object
+                type: string
+              status:
+                description: Status of the cluster
+                properties:
+                  message:
+                    description: An informative error message if object is Down
+                    type: string
+                  state:
+                    description: The state of the object (Running, Down)
+                    type: string
+                  summary:
+                    description: Summary counts for objects below this one in the
+                      hiearchy
+                    properties:
+                      down:
+                        description: AppsTotal - AppsReady
+                        type: integer
+                      running:
+                        description: Sum over Status.Summary.Running from owned GitRepo
+                          objects
+                        type: integer
+                      total:
+                        description: Sum over Status.Summary.DesiredReady from owned
+                          GitRepo objects
+                        type: integer
+                      type:
+                        description: Type of thing that we're counting
+                        type: string
+                      unknown:
+                        description: Unknown status to indicate cluster not reachable
+                        type: integer
+                    required:
+                    - type
+                    type: object
+                required:
+                - state
+                type: object
+            required:
+            - lastStatusUpdate
+            - name
+            - status
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

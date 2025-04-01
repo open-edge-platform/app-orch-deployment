@@ -1,0 +1,78 @@
+// SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package resource.v2;
+
+import "google/api/field_behavior.proto";
+
+// Represents a virtual machine.
+message VirtualMachine {
+  // The virtual machine current status
+  VirtualMachineStatus status = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // The admin status whether the associated VirtualMachineInstance is created or not
+  AdminStatus admin_status = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// Represents the associated VirtualMachineInstance's state, either created (up state) or not (down state).
+message AdminStatus {
+  // State information
+  State state = 1;
+
+  enum State {
+    STATE_UNSPECIFIED = 0;
+    STATE_UP = 1;
+    STATE_DOWN = 2;
+  }
+}
+
+// Status of a virtual machine.
+message VirtualMachineStatus {
+  // Virtual machine state
+  State state = 1;
+
+  enum State {
+    // indicates that the state of the virtual machine could not be obtained,
+    // typically due to an error in communicating with the host on which it's running.
+    STATE_UNSPECIFIED = 0;
+    // indicates that the virtual machine is currently stopped and isn't expected to start.
+    STATE_STOPPED = 1;
+    // indicates that cluster resources associated with the virtual machine (e.g., DataVolumes)
+    // are being provisioned and prepared.
+    STATE_PROVISIONING = 2;
+    // indicates that the virtual machine is being prepared for running.
+    STATE_STARTING = 3;
+    // indicates that the virtual machine is running.
+    STATE_RUNNING = 4;
+    // indicates that the virtual machine is paused.
+    STATE_PAUSED = 5;
+    // indicates that the virtual machine is in the process of being stopped.
+    STATE_STOPPING = 6;
+    // indicates that the virtual machine is in the process of deletion,
+    // as well as its associated resources (VirtualMachineInstance, DataVolumes, …).
+    STATE_TERMINATING = 7;
+    // indicates that the virtual machine is currently in a crash loop waiting to be retried.
+    STATE_CRASH_LOOP_BACKOFF = 8;
+    // indicates that the virtual machine is in the process of being migrated to another host.
+    STATE_MIGRATING = 9;
+    // indicates that an error has occurred while scheduling the virtual machine,
+    //  e.g. due to unsatisfiable resource requests or unsatisfiable scheduling constraints.
+    STATE_ERROR_UNSCHEDULABLE = 10;
+    // indicates that an error has occurred while pulling an image for
+    // a containerDisk VM volume.
+    STATE_ERROR_IMAGE_PULL = 11;
+    // indicates that an error has occurred while pulling an image for
+    // a containerDisk VM volume, and that kubelet is backing off before retrying.
+    STATE_ERROR_IMAGE_PULL_BACKOFF = 12;
+    // indicates that the virtual machine references a PVC volume which doesn't exist.
+    STATE_ERROR_PVC_NOT_FOUND = 13;
+    // indicates that an error has been reported by one of the DataVolumes
+    //	referenced by the virtual machines.
+    STATE_ERROR_DATA_VOLUME = 14;
+    // indicates that some PersistentVolumeClaims backing
+    // the virtual machine volume are still not bound.
+    STATE_WAITING_FOR_VOLUME_BINDING = 15;
+  }
+}

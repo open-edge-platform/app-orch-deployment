@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "app-resource-manager.fullname" . }}-test-connection"
+  labels:
+    {{- include "app-resource-manager.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox:1.36.0
+      command: ['wget']
+      args: ['{{ include "app-resource-manager.fullname" . }}:{{ .Values.service.port }}']
+  restartPolicy: Never

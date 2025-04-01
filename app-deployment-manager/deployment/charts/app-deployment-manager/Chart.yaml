@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: (C) 2024 - 2025 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+apiVersion: v2
+description: App Deployment Manager
+name: app-deployment-manager
+# Correct version will be added by "make helm-package" from VERSION
+version: 2.3.38-dev
+annotations:
+  revision: "305be0c"
+  created: "2025-03-25T16:26:33Z"
+appVersion: 2.3.38-dev-305be0c

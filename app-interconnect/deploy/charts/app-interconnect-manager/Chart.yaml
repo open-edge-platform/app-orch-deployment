@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+apiVersion: v2
+name: app-interconnect-manager
+description: A Helm chart for Kubernetes
+type: application
+version: 0.1.14-dev
+appVersion: "0.1.14-dev-305be0c"
+annotations:
+  revision: "305be0c"
+  created: "2025-03-25T16:29:07Z"

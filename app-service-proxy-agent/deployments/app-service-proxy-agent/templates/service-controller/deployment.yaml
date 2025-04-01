@@ -1,0 +1,71 @@
+# yamllint disable-file
+# SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+{{- $registry := .Values.global.registry -}}
+{{- if .Values.image.registry -}}
+{{- $registry = .Values.image.registry -}}
+{{- end -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-service-controller
+  {{- with .Values.podLabels }}
+  labels:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.podAnnotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "app-service-proxy-agent.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "app-service-proxy-agent.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}-service-controller
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with $registry.imagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: service-controller
+          {{- with .Values.image }}
+          image: "{{- if hasKey $registry "name" }}{{ $registry.name }}/{{- end -}}{{ .repository }}:{{ default $.Chart.AppVersion .tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: [ "/service-controller" ]
+          env:
+            - name: SERVICE_ACCOUNT_NAME
+              value: {{ .Release.Name }}-proxy-agent
+            - name: SERVICE_ACCOUNT_NAMESPACE
+              value: {{ .Release.Namespace }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          {{- if .Values.resources }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          {{- end }}      

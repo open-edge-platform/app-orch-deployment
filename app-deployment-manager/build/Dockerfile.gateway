@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+FROM golang:1.23 AS build
+
+ENV APP_ROOT=$GOPATH/src/github.com/open-edge-platform/app-orch-deployment/app-deployment-manager
+ENV CGO_ENABLED=0
+ENV GO111MODULE=on
+
+RUN mkdir -p $APP_ROOT/
+
+COPY ./cmd $APP_ROOT/cmd
+COPY ./pkg $APP_ROOT/pkg
+COPY ./vendor $APP_ROOT/vendor
+COPY ./internal $APP_ROOT/internal
+COPY ./api $APP_ROOT/api
+COPY ./go.mod $APP_ROOT/go.mod
+COPY ./go.sum $APP_ROOT/go.sum
+
+RUN mkdir -p /go/etc
+COPY  ./api/nbi/v2/spec/openapi.yaml /go/etc
+
+WORKDIR $APP_ROOT
+RUN go version && GOARCH=amd64 go build \
+      -trimpath -mod=vendor -gcflags="all=-spectre=all -N -l" -asmflags="all=-spectre=all" -ldflags="all=-s -w" \
+      -o /go/bin/app-deployment-manager ./cmd/app-deployment-manager
+RUN  go version && GOARCH=amd64 go build \
+      -trimpath -mod=vendor -gcflags="all=-spectre=all -N -l" -asmflags="all=-spectre=all" -ldflags="all=-s -w" \
+      -o /go/bin/rest-proxy ./cmd/rest-proxy
+
+FROM gcr.io/distroless/static:nonroot
+USER nonroot
+
+ARG org_oci_version=unknown
+ARG org_oci_source=unknown
+ARG org_oci_revision=unknown
+ARG org_oci_created=unknown
+
+LABEL org.opencontainers.image.version=$org_oci_version \
+      org.opencontainers.image.source=$org_oci_source \
+      org.opencontainers.image.revision=$org_oci_revision \
+      org.opencontainers.image.created=$org_oci_created
+
+COPY --from=build /go/bin/app-deployment-manager /usr/local/bin/app-deployment-manager
+COPY --from=build /go/bin/rest-proxy /usr/local/bin/rest-proxy
+COPY --from=build --chown=65532:65532 /go/etc/openapi.yaml /usr/local/etc/openapi.yaml

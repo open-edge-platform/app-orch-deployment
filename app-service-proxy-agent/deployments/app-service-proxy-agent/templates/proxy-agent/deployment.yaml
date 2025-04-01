@@ -1,0 +1,122 @@
+# yamllint disable-file
+# SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+{{- $registry := .Values.global.registry -}}
+{{- if .Values.image.registry -}}
+{{- $registry = .Values.image.registry -}}
+{{- end -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-proxy-agent
+  {{- with .Values.podLabels }}
+  labels:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.podAnnotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "app-service-proxy-agent.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "app-service-proxy-agent.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}-proxy-agent
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with $registry.imagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      hostAliases:
+      - ip: {{ ((lookup "v1" "Service" "default" "kubernetes").spec).clusterIP | default ""}}
+        hostnames:
+          - "{{ .Values.conf.proxyDomain }}"
+      containers:
+      - name: app-service-proxy-agent
+        {{- with .Values.image }}
+        image: "{{- if hasKey $registry "name" }}{{ $registry.name }}/{{- end -}}{{ .repository }}:{{ default $.Chart.AppVersion .tag }}"
+        {{- end }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+          - name: AGENT_ID
+            value: {{ .Values.conf.agentId }}
+          - name: PROXY_SERVER_URL
+            value: {{ .Values.conf.proxyServerURL }}
+          - name: INSECURE_SKIP_VERIFY
+            value: "{{ .Values.conf.insecureSkipVerify }}"
+          - name: CATTLE_TUNNEL_DATA_DEBUG
+            value: "{{ .Values.remotedialer.debug }}"
+          - name: ASP_LOG_LEVEL
+            value: {{ .Values.logLevel }}
+        command: [ "/proxy-agent" ]
+        securityContext:
+          {{- toYaml .Values.containerSecurityContext | nindent 10 }}
+        {{- if .Values.resources }}
+        resources: {{- toYaml .Values.resources | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+        - name: agent-token
+          mountPath: "/etc/secrets/token"
+          readOnly: true
+        {{- if hasKey .Values.conf "proxyServerCA" }}
+        - name: server-ca
+          mountPath: "/etc/secrets/ca"
+          readOnly: true
+        {{- end }}
+      - name: token-refresher
+        {{- with .Values.image }}
+        image: "{{- if hasKey $registry "name" }}{{ $registry.name }}/{{- end -}}{{ .repository }}:{{ default $.Chart.AppVersion .tag }}"
+        {{- end }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+          - name: AGENT_ID
+            value: {{ .Values.conf.agentId }}
+          - name: PROXY_SERVER_URL
+            value: {{ .Values.conf.proxyServerURL }}
+          - name: INSECURE_SKIP_VERIFY
+            value: "{{ .Values.conf.insecureSkipVerify }}"
+          - name: CATTLE_TUNNEL_DATA_DEBUG
+            value: "{{ .Values.remotedialer.debug }}"
+          - name: ASP_LOG_LEVEL
+            value: {{ .Values.logLevel }}
+        command: [ "/token-refresher" ]
+        securityContext:
+          {{- toYaml .Values.containerSecurityContext | nindent 10 }}
+        {{- if .Values.resources }}
+        resources: {{- toYaml .Values.resources | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+        - name: agent-token
+          mountPath: "/etc/secrets/token"
+          readOnly: true
+        {{- if hasKey .Values.conf "proxyServerCA" }}
+        - name: server-ca
+          mountPath: "/etc/secrets/ca"
+          readOnly: true
+        {{- end }}
+      volumes:
+        - name: agent-token
+          secret:
+            {{- if hasKey .Values.conf "agentTokenSecretName" }}
+            secretName: {{ .Values.conf.agentTokenSecretName }}
+            {{- else }}
+            secretName: {{ .Release.Name }}-proxy-agent-bootstrap
+            {{- end }}
+        {{- if hasKey .Values.conf "proxyServerCA" }}
+        - name: server-ca
+          secret:
+            secretName: {{ .Release.Name }}-proxy-agent-bootstrap
+        {{- end }}

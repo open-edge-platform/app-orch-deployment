@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+---
+apiVersion: app.edge-orchestrator.intel.com/v1beta1
+kind: Cluster
+metadata:
+  name: cluster-001
+  namespace: fleet-default
+  labels:
+    app.edge-orchestrator.intel.com/project-id: test-project
+spec:
+  name: cluster-001
+  displayName: "Cluster 001"
+  kubeConfigSecretName: "cluster-001-kubeconfig"

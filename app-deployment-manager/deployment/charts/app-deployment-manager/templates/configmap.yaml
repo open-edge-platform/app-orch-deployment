@@ -1,0 +1,83 @@
+# yamllint disable-file
+# SPDX-FileCopyrightText: (C) 2023 - 2025 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "app-deployment-manager.fullname" . }}-mock-ca
+  {{- with .Values.deploymentAnnotations }}
+  annotations:
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+data:
+  {{- range .Values.mockDeploymentPackages }}
+  {{ .publisher }}_{{ .caName }}_{{ .caVersion }}: |
+  {{- toYaml .apps | nindent 4 }}
+  {{- end }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "app-deployment-manager.fullname" . }}-logging
+  labels:
+    {{- include "app-deployment-manager.labels" . | nindent 4 }}
+data:
+  logging.yaml: |-
+{{ toYaml .Values.logging | indent 4 }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.gateway.deployment.name }}-logging
+  labels:
+    app: "{{ .Values.gateway.deployment.name }}"
+data:
+  logging.yaml: |-
+{{ toYaml .Values.logging | indent 4 }}
+---
+{{ if .Values.openpolicyagent.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.gateway.deployment.name }}-opa-rego
+  labels:
+    app: "{{ .Values.gateway.deployment.name }}"
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+data:
+{{ (.Files.Glob "files/openpolicyagent/*.rego").AsConfig | indent 2 }}
+{{- end}}
+
+{{ if .Values.adm.metrics.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "app-deployment-manager.fullname" . }}-dashboards-orchestrator
+  labels:
+    grafana_dashboard: "orchestrator"
+    {{- include "app-deployment-manager.labels" . | nindent 4 }}
+  {{- with .Values.adm.metrics.dashboardAdminFolder }}
+  annotations:
+    grafana_folder: {{ . }}
+  {{- end }}
+data:
+{{ (.Files.Glob "files/grafana/admin/*.json").AsConfig | indent 2 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "app-deployment-manager.fullname" . }}-dashboards-customer
+  labels:
+    grafana_dashboard: "edgenode"
+    {{- include "app-deployment-manager.labels" . | nindent 4 }}
+  annotations:
+    grafana_folder: {{ .Values.adm.metrics.dashboardCustomerFolder }}
+data:
+{{ (.Files.Glob "files/grafana/customer/*.json").AsConfig | indent 2 }}
+{{- end}}

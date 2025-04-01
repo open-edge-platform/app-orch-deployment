@@ -1,0 +1,1005 @@
+# SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+  name: deployments.app.edge-orchestrator.intel.com
+spec:
+  group: app.edge-orchestrator.intel.com
+  names:
+    kind: Deployment
+    listKind: DeploymentList
+    plural: deployments
+    shortNames:
+    - dep
+    singular: deployment
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.displayName
+      name: Display Name
+      type: string
+    - jsonPath: .spec.appName
+      name: Pkg Name
+      type: string
+    - jsonPath: .spec.appVersion
+      name: Version
+      type: string
+    - jsonPath: .spec.profileName
+      name: Profile
+      type: string
+    - jsonPath: .status.state
+      name: State
+      type: string
+    - jsonPath: .status.display
+      name: Status (T/R/NR/U)  (T/R/NR/NT/E)
+      type: string
+    - jsonPath: .status.message
+      name: Message
+      type: string
+    name: v1alpha2
+    schema:
+      openAPIV3Schema:
+        description: Deployment is the Schema for the deployments API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DeploymentSpec defines the desired state of Deployment
+            properties:
+              appName:
+                description: The Deployment Package to deploy from the catalog
+                type: string
+              appVersion:
+                description: The version of the Deployment Package
+                type: string
+              deploymentType:
+                description: The deployment type for the target cluster deployment
+                  can be either auto-scaling or targeted.
+                type: string
+              displayName:
+                description: The display name for this deployment
+                type: string
+              overrideValues:
+                description: User-supplied Helm override values
+                items:
+                  properties:
+                    appName:
+                      description: Apply Helm override values for this app
+                      type: string
+                    targetNamespace:
+                      description: Target namespace to deploy app in
+                      type: string
+                    values:
+                      description: Values contains YAML representing Helm overrides
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                  required:
+                  - appName
+                  type: object
+                type: array
+              profileName:
+                description: Which profile to use for the base Helm values
+                type: string
+              publisherName:
+                description: Publisher of the Deployment Package
+                type: string
+              targetClusters:
+                description: User-supplied cluster label targets for deploying the
+                  apps
+                items:
+                  properties:
+                    appName:
+                      description: Use cluster labels to deploy this app
+                      type: string
+                    clusterId:
+                      description: Cluster id to match on
+                      type: string
+                    labels:
+                      additionalProperties:
+                        type: string
+                      description: Set of labels to match on
+                      type: object
+                  required:
+                  - appName
+                  type: object
+                type: array
+            required:
+            - appName
+            - appVersion
+            - deploymentType
+            - displayName
+            - publisherName
+            type: object
+          status:
+            description: DeploymentStatus defines the observed state of Deployment
+            properties:
+              apps:
+                description: Per-app state
+                items:
+                  properties:
+                    id:
+                      description: Id of the app (equivalent to Fleet bundle name)
+                      type: string
+                    name:
+                      description: Name of the app
+                      type: string
+                    status:
+                      description: Status of the app
+                      properties:
+                        message:
+                          description: An informative error message if object is NotReady
+                          type: string
+                        state:
+                          description: The state of the object (Ready, NotReady)
+                          type: string
+                        summary:
+                          description: Summary counts for objects below this one in
+                            the hiearchy
+                          properties:
+                            notReady:
+                              description: AppsTotal - AppsReady
+                              type: integer
+                            ready:
+                              description: Sum over Status.Summary.Ready from owned
+                                GitRepo objects
+                              type: integer
+                            total:
+                              description: Sum over Status.Summary.DesiredReady from
+                                owned GitRepo objects
+                              type: integer
+                            type:
+                              description: Type of thing that we're counting
+                              type: string
+                            unknown:
+                              description: Unknown status to indicate cluster not
+                                reachable
+                              type: integer
+                          required:
+                          - notReady
+                          - ready
+                          - total
+                          - type
+                          - unknown
+                          type: object
+                      required:
+                      - state
+                      - summary
+                      type: object
+                  required:
+                  - id
+                  - name
+                  type: object
+                type: array
+              clusters:
+                description: Per-cluster state
+                items:
+                  properties:
+                    apps:
+                      description: Per-app status on the cluster
+                      items:
+                        properties:
+                          id:
+                            description: Id of the app (equivalent to Fleet bundle
+                              name)
+                            type: string
+                          name:
+                            description: Name of the app
+                            type: string
+                          status:
+                            description: Status of the app
+                            properties:
+                              message:
+                                description: An informative error message if object
+                                  is NotReady
+                                type: string
+                              state:
+                                description: The state of the object (Ready, NotReady)
+                                type: string
+                              summary:
+                                description: Summary counts for objects below this
+                                  one in the hiearchy
+                                properties:
+                                  notReady:
+                                    description: AppsTotal - AppsReady
+                                    type: integer
+                                  ready:
+                                    description: Sum over Status.Summary.Ready from
+                                      owned GitRepo objects
+                                    type: integer
+                                  total:
+                                    description: Sum over Status.Summary.DesiredReady
+                                      from owned GitRepo objects
+                                    type: integer
+                                  type:
+                                    description: Type of thing that we're counting
+                                    type: string
+                                  unknown:
+                                    description: Unknown status to indicate cluster
+                                      not reachable
+                                    type: integer
+                                required:
+                                - notReady
+                                - ready
+                                - total
+                                - type
+                                - unknown
+                                type: object
+                            required:
+                            - state
+                            - summary
+                            type: object
+                        required:
+                        - id
+                        - name
+                        type: object
+                      type: array
+                    id:
+                      description: ID is the cluster id which ECM generates and assigns
+                        to the Rancher cluster name
+                      type: string
+                    lastSeen:
+                      description: Last time Fleet agent checked cluster heartbeat
+                      format: date-time
+                      type: string
+                    name:
+                      description: Name is the display name which user provides and
+                        ECM creates and assigns clustername label to Fleet cluster
+                        object
+                      type: string
+                    status:
+                      description: Status of the cluster
+                      properties:
+                        message:
+                          description: An informative error message if object is NotReady
+                          type: string
+                        state:
+                          description: The state of the object (Ready, NotReady)
+                          type: string
+                        summary:
+                          description: Summary counts for objects below this one in
+                            the hiearchy
+                          properties:
+                            notReady:
+                              description: AppsTotal - AppsReady
+                              type: integer
+                            ready:
+                              description: Sum over Status.Summary.Ready from owned
+                                GitRepo objects
+                              type: integer
+                            total:
+                              description: Sum over Status.Summary.DesiredReady from
+                                owned GitRepo objects
+                              type: integer
+                            type:
+                              description: Type of thing that we're counting
+                              type: string
+                            unknown:
+                              description: Unknown status to indicate cluster not
+                                reachable
+                              type: integer
+                          required:
+                          - notReady
+                          - ready
+                          - total
+                          - type
+                          - unknown
+                          type: object
+                      required:
+                      - state
+                      - summary
+                      type: object
+                  required:
+                  - id
+                  - lastSeen
+                  - name
+                  - status
+                  type: object
+                type: array
+              conditions:
+                items:
+                  description: "Condition contains details for one aspect of the current
+                    state of this API Resource.\n---\nThis struct is intended for
+                    direct use as an array at the field path .status.conditions.  For
+                    example,\n\n\n\ttype FooStatus struct{\n\t    // Represents the
+                    observations of a foo's current state.\n\t    // Known .status.conditions.type
+                    are: \"Available\", \"Progressing\", and \"Degraded\"\n\t    //
+                    +patchMergeKey=type\n\t    // +patchStrategy=merge\n\t    // +listType=map\n\t
+                    \   // +listMapKey=type\n\t    Conditions []metav1.Condition `json:\"conditions,omitempty\"
+                    patchStrategy:\"merge\" patchMergeKey:\"type\" protobuf:\"bytes,1,rep,name=conditions\"`\n\n\n\t
+                    \   // other fields\n\t}"
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: |-
+                        type of condition in CamelCase or in foo.example.com/CamelCase.
+                        ---
+                        Many .condition.type values are consistent across resources like Available, but because arbitrary conditions can be
+                        useful (see .node.status.conditions), the ability to deconflict is important.
+                        The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+              defaultProfileName:
+                description: |-
+                  Name of the default DeploymentProfile to use when deploying this DeploymentPackage
+                  If no profileName is provided, use defaultProfileName from deployment package
+                type: string
+              deployInProgress:
+                description: Is the Deployment currently being changed by Fleet
+                type: boolean
+              display:
+                description: A string to display in the CLI
+                type: string
+              lastForceResync:
+                description: Time of last force resync of an app
+                type: string
+              lastStatusUpdate:
+                description: Time of last status update for the Deployment
+                type: string
+              message:
+                description: An informative error message if State is NotReady
+                type: string
+              reconciledGeneration:
+                description: The last generation that has been successfully reconciled
+                format: int64
+                type: integer
+              state:
+                description: The state of the Deployment (Ready / NotReady)
+                type: string
+              summary:
+                description: Summary of all cluster counts
+                properties:
+                  notReady:
+                    description: AppsTotal - AppsReady
+                    type: integer
+                  ready:
+                    description: Sum over Status.Summary.Ready from owned GitRepo
+                      objects
+                    type: integer
+                  total:
+                    description: Sum over Status.Summary.DesiredReady from owned GitRepo
+                      objects
+                    type: integer
+                  type:
+                    description: Type of thing that we're counting
+                    type: string
+                  unknown:
+                    description: Unknown status to indicate cluster not reachable
+                    type: integer
+                required:
+                - notReady
+                - ready
+                - total
+                - type
+                - unknown
+                type: object
+            required:
+            - deployInProgress
+            - state
+            - summary
+            type: object
+        type: object
+    served: true
+    storage: false
+    subresources:
+      status: {}
+  - additionalPrinterColumns:
+    - jsonPath: .spec.displayName
+      name: Display Name
+      type: string
+    - jsonPath: .spec.deploymentPackageRef.name
+      name: Pkg Name
+      type: string
+    - jsonPath: .spec.deploymentPackageRef.version
+      name: Version
+      type: string
+    - jsonPath: .spec.deploymentPackageRef.profileName
+      name: Profile
+      type: string
+    - jsonPath: .status.state
+      name: State
+      type: string
+    - jsonPath: .status.display
+      name: Status (T/R/D/U)
+      type: string
+    - jsonPath: .status.message
+      name: Message
+      type: string
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: Deployment is the Schema for the deployments API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DeploymentSpec defines the desired state of Deployment
+            properties:
+              networkRef:
+                description: NetworkRef a reference to Network Object for supporting
+                  interconnect between clusters
+                properties:
+                  apiVersion:
+                    description: API version of the referent.
+                    type: string
+                  fieldPath:
+                    description: |-
+                      If referring to a piece of an object instead of an entire object, this string
+                      should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].
+                      For example, if the object reference is to a container within a pod, this would take on a value like:
+                      "spec.containers{name}" (where "name" refers to the name of the container that triggered
+                      the event) or if no container name is specified "spec.containers[2]" (container with
+                      index 2 in this pod). This syntax is chosen only to have some well-defined way of
+                      referencing a part of an object.
+                      TODO: this design is not final and this field is subject to change in the future.
+                    type: string
+                  kind:
+                    description: |-
+                      Kind of the referent.
+                      More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+                    type: string
+                  name:
+                    description: |-
+                      Name of the referent.
+                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                    type: string
+                  namespace:
+                    description: |-
+                      Namespace of the referent.
+                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
+                    type: string
+                  resourceVersion:
+                    description: |-
+                      Specific resourceVersion to which this reference is made, if any.
+                      More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency
+                    type: string
+                  uid:
+                    description: |-
+                      UID of the referent.
+                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids
+                    type: string
+                type: object
+                x-kubernetes-map-type: atomic
+              applications:
+                description: Applications is a list of applications included in this
+                  deployment
+                items:
+                  properties:
+                    dependentDeploymentPackages:
+                      additionalProperties:
+                        properties:
+                          forbidsMultipleDeployments:
+                            description: ForbidsMultipleDeployments is the flag to
+                              indicate if this package allows duplicated deployment
+                              or not
+                            type: boolean
+                          name:
+                            description: Name of the deployment package
+                            type: string
+                          namespaces:
+                            description: |-
+                              Namespace resource to be created before any other resource. This allows
+                              complex namespaces to be defined with predefined labels and annotations.
+                            items:
+                              properties:
+                                annotations:
+                                  additionalProperties:
+                                    type: string
+                                  description: Namespace annotations
+                                  type: object
+                                labels:
+                                  additionalProperties:
+                                    type: string
+                                  description: Namespace labels
+                                  type: object
+                                name:
+                                  description: Namespace name
+                                  type: string
+                              required:
+                              - name
+                              type: object
+                            type: array
+                          profileName:
+                            description: Profile to use for the base Helm values
+                            type: string
+                          publisher:
+                            description: Publisher of the deployment package
+                            type: string
+                          version:
+                            description: Version of the deployment package
+                            type: string
+                        required:
+                        - name
+                        - version
+                        type: object
+                      description: DependentDeploymentPackages has dependent deployment
+                        packages, which indicates application-level dependency
+                      type: object
+                    dependsOn:
+                      description: |-
+                        DependsOn refers to the of applications which must be ready before this
+                        application can be deployed
+                      items:
+                        type: string
+                      type: array
+                    enableServiceExport:
+                      description: If this flag is set, the services part of the application
+                        that are annotated should be exposed to other clusters
+                      type: boolean
+                    helmApp:
+                      description: HelmApp refer to the helm chart type application
+                        specification
+                      properties:
+                        chart:
+                          description: |-
+                            Chart can refer to any go-getter URL or OCI registry based helm chart
+                            URL. If Repo is set below this field is the name of the chart to lookup.
+                          type: string
+                        imageRegistry:
+                          description: |-
+                            ImageRegistry is a http/https url to a image registry to download
+                            application container images
+                          type: string
+                        imageRegistrySecretName:
+                          description: |-
+                            ImageRegistrySecretName contains the auth secret for the private image
+                            registry. Valid only when ImageRegistry is provided.
+                          type: string
+                        repo:
+                          description: Repo is a http/https url to a helm repo to
+                            download the chart from
+                          type: string
+                        repoSecretName:
+                          description: |-
+                            RepoSecretName contains the auth secret for a private helm repository.
+                            Valid only when Repo is provided.
+                          type: string
+                        version:
+                          description: Version of the chart or semver constraint of
+                            the chart to find
+                          type: string
+                      required:
+                      - chart
+                      - version
+                      type: object
+                    ignoreResources:
+                      description: |-
+                        IgnoreResources is a list of k8s resource type to ignore. Any manual
+                        changes to the ignored resources will not be detected or corrected
+                        automatically.
+                      items:
+                        properties:
+                          kind:
+                            description: K8S resource kind to ignore
+                            type: string
+                          name:
+                            description: Name of the resource to ignore
+                            type: string
+                          namespace:
+                            description: K8S resource namespace
+                            type: string
+                        required:
+                        - kind
+                        - name
+                        type: object
+                      type: array
+                    name:
+                      description: Name of this application
+                      type: string
+                    namespace:
+                      description: |-
+                        Namespace refer to the default namespace to be applied to any namespace
+                        scoped application resources
+                      type: string
+                    namespaceLabels:
+                      additionalProperties:
+                        type: string
+                      description: |-
+                        NamespaceLabels are labels that will be appended to the namespace. It
+                        only adds the labels when the application is deployed and does not remove
+                        them when the application is deleted.
+                      type: object
+                    profileSecretName:
+                      description: ProfileSecretName contains the profile contents
+                      type: string
+                    redeployAfterUpdate:
+                      description: |-
+                        RedeployAfterUpdate, when true, causes removal of the existing deployment
+                        before any upgrades
+                      type: boolean
+                    targets:
+                      description: |-
+                        Targets refer to the clusters which will be deployed to
+                        If it's manual deployment, cluster id is set
+                      items:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      type: array
+                    valueSecretName:
+                      description: ValueSecretName contains the deployment time overriding
+                        values
+                      type: string
+                    version:
+                      description: Verseion of the application
+                      type: string
+                  required:
+                  - name
+                  - version
+                  type: object
+                type: array
+              childDeploymentList:
+                additionalProperties:
+                  properties:
+                    deploymentName:
+                      type: string
+                    deploymentPackageRef:
+                      properties:
+                        forbidsMultipleDeployments:
+                          description: ForbidsMultipleDeployments is the flag to indicate
+                            if this package allows duplicated deployment or not
+                          type: boolean
+                        name:
+                          description: Name of the deployment package
+                          type: string
+                        namespaces:
+                          description: |-
+                            Namespace resource to be created before any other resource. This allows
+                            complex namespaces to be defined with predefined labels and annotations.
+                          items:
+                            properties:
+                              annotations:
+                                additionalProperties:
+                                  type: string
+                                description: Namespace annotations
+                                type: object
+                              labels:
+                                additionalProperties:
+                                  type: string
+                                description: Namespace labels
+                                type: object
+                              name:
+                                description: Namespace name
+                                type: string
+                            required:
+                            - name
+                            type: object
+                          type: array
+                        profileName:
+                          description: Profile to use for the base Helm values
+                          type: string
+                        publisher:
+                          description: Publisher of the deployment package
+                          type: string
+                        version:
+                          description: Version of the deployment package
+                          type: string
+                      required:
+                      - name
+                      - version
+                      type: object
+                  required:
+                  - deploymentPackageRef
+                  type: object
+                description: ChildDeploymentList is the list of child deployment,
+                  which indicates deployment-level dependency
+                type: object
+              deploymentPackageRef:
+                description: DeploymentPackage information
+                properties:
+                  forbidsMultipleDeployments:
+                    description: ForbidsMultipleDeployments is the flag to indicate
+                      if this package allows duplicated deployment or not
+                    type: boolean
+                  name:
+                    description: Name of the deployment package
+                    type: string
+                  namespaces:
+                    description: |-
+                      Namespace resource to be created before any other resource. This allows
+                      complex namespaces to be defined with predefined labels and annotations.
+                    items:
+                      properties:
+                        annotations:
+                          additionalProperties:
+                            type: string
+                          description: Namespace annotations
+                          type: object
+                        labels:
+                          additionalProperties:
+                            type: string
+                          description: Namespace labels
+                          type: object
+                        name:
+                          description: Namespace name
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
+                  profileName:
+                    description: Profile to use for the base Helm values
+                    type: string
+                  publisher:
+                    description: Publisher of the deployment package
+                    type: string
+                  version:
+                    description: Version of the deployment package
+                    type: string
+                required:
+                - name
+                - version
+                type: object
+              deploymentType:
+                description: |-
+                  DeploymentType for this deployment, can be either auto-scaling or
+                  targeted.
+                type: string
+              displayName:
+                description: DisplayName of this deployment
+                type: string
+              project:
+                description: Project refers to the owner project of this deployment
+                type: string
+            required:
+            - applications
+            - deploymentPackageRef
+            - deploymentType
+            - displayName
+            - project
+            type: object
+          status:
+            description: DeploymentStatus defines the observed state of Deployment
+            properties:
+              conditions:
+                description: Conditions is a list conditions that describe the state
+                  of the deployment
+                items:
+                  description: "Condition contains details for one aspect of the current
+                    state of this API Resource.\n---\nThis struct is intended for
+                    direct use as an array at the field path .status.conditions.  For
+                    example,\n\n\n\ttype FooStatus struct{\n\t    // Represents the
+                    observations of a foo's current state.\n\t    // Known .status.conditions.type
+                    are: \"Available\", \"Progressing\", and \"Degraded\"\n\t    //
+                    +patchMergeKey=type\n\t    // +patchStrategy=merge\n\t    // +listType=map\n\t
+                    \   // +listMapKey=type\n\t    Conditions []metav1.Condition `json:\"conditions,omitempty\"
+                    patchStrategy:\"merge\" patchMergeKey:\"type\" protobuf:\"bytes,1,rep,name=conditions\"`\n\n\n\t
+                    \   // other fields\n\t}"
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: |-
+                        type of condition in CamelCase or in foo.example.com/CamelCase.
+                        ---
+                        Many .condition.type values are consistent across resources like Available, but because arbitrary conditions can be
+                        useful (see .node.status.conditions), the ability to deconflict is important.
+                        The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+              deployInProgress:
+                description: Is the Deployment currently being changed by Fleet
+                type: boolean
+              display:
+                description: A string to display in the CLI
+                type: string
+              lastForceResync:
+                description: Time of last force resync of an app
+                type: string
+              lastStatusUpdate:
+                description: Time of last status update for the Deployment
+                type: string
+              message:
+                description: An informative error message if State is Down
+                type: string
+              parentDeploymentList:
+                additionalProperties:
+                  properties:
+                    deploymentName:
+                      type: string
+                    deploymentPackageRef:
+                      properties:
+                        forbidsMultipleDeployments:
+                          description: ForbidsMultipleDeployments is the flag to indicate
+                            if this package allows duplicated deployment or not
+                          type: boolean
+                        name:
+                          description: Name of the deployment package
+                          type: string
+                        namespaces:
+                          description: |-
+                            Namespace resource to be created before any other resource. This allows
+                            complex namespaces to be defined with predefined labels and annotations.
+                          items:
+                            properties:
+                              annotations:
+                                additionalProperties:
+                                  type: string
+                                description: Namespace annotations
+                                type: object
+                              labels:
+                                additionalProperties:
+                                  type: string
+                                description: Namespace labels
+                                type: object
+                              name:
+                                description: Namespace name
+                                type: string
+                            required:
+                            - name
+                            type: object
+                          type: array
+                        profileName:
+                          description: Profile to use for the base Helm values
+                          type: string
+                        publisher:
+                          description: Publisher of the deployment package
+                          type: string
+                        version:
+                          description: Version of the deployment package
+                          type: string
+                      required:
+                      - name
+                      - version
+                      type: object
+                  required:
+                  - deploymentPackageRef
+                  type: object
+                description: ParentDeploymentList is the list of parent deployment,
+                  which indicates deployment-level dependency
+                type: object
+              reconciledGeneration:
+                description: The last generation that has been successfully reconciled
+                format: int64
+                type: integer
+              state:
+                description: The state of the Deployment (Running / Down)
+                type: string
+              summary:
+                description: Summary of all cluster counts
+                properties:
+                  down:
+                    description: Number of down clusters
+                    type: integer
+                  running:
+                    description: Number of running clusters
+                    type: integer
+                  total:
+                    description: Number of total target clusters for the deployment
+                    type: integer
+                  unknown:
+                    description: Number of unkonwn clusters
+                    type: integer
+                type: object
+            required:
+            - state
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

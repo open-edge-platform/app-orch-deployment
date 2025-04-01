@@ -1,0 +1,9 @@
+App Resource Manager Service
+---
+
+App Resource Manager microservice enables users to control and access
+different kind of resources including VMs, containers, etc using API.
+
+---
+revision: {{ .Chart.Annotations.revision }}
+created: {{ .Chart.Annotations.created }}

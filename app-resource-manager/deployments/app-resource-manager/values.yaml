@@ -1,0 +1,268 @@
+# SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+global:
+  registry:
+    name: registry-rs.edgeorchestration.intel.com/edge-orch
+    imagePullSecrets: []
+  image: {}
+
+# -- replicaCount specifies how many replicas of services to instantiate.
+replicaCount: 1
+vncProxyReplicaCount: 1
+
+# -- serviceArgs contains arguments that are passed to the running PODs
+serviceArgs:
+  restProxy: {}
+  msgSizeLimit: 1 # message size in megabytes
+#    allowedCorsOrigins: "http://localhost:8081"
+#    # basePath is required as in production the UI uses `app-orch` to prefix all requests going to the catalog, ADM, app-resource-manager and redirect them accordingly
+#    basePath: "app-orch/"
+
+# -- service contains details for creating k8s services.
+service:
+  # -- restProxy is a k8s service exposing REST API endpoints for the vm manager .
+  restProxy:
+    # -- type is k8s service type.
+    type: ClusterIP
+    # -- port is the port of the k8s service.
+    port: 8081
+  # -- grpcServer is a k8s service exposing gRPC endpoints for the vm manager.
+  grpcServer:
+    # -- type is k8s service type.
+    type: ClusterIP
+    # -- port is the port of the k8s service.
+    port: 8080
+  webSocketServer:
+    # -- type is k8s service type.
+    type: ClusterIP
+    # -- port is the port of the k8s service.
+    port: 5900
+  opa:
+    # -- enabled to expose the OPA REST API to the public
+    enabled: true
+    # -- type is k8s service type.
+    type: ClusterIP
+    # -- port is the port of the k8s service.
+    port: 8111
+
+# -- image specifies docker image parameters.
+image:
+  registry:
+    name: registry-rs.edgeorchestration.intel.com/edge-orch
+    imagePullSecrets: []
+  # -- repository is the name of the private registry and docker image used during deployment.
+  repository: app/app-resource-manager
+  # -- pullPolicy is used during deployment to decide if local image can be utilized.
+  pullPolicy: IfNotPresent
+
+# -- image specifies docker image parameters.
+vncProxy:
+  image:
+    registry:
+      name: registry-rs.edgeorchestration.intel.com/edge-orch
+      imagePullSecrets: []
+    # -- repository is the name of the private registry and docker image used during deployment.
+    repository: app/app-resource-vnc-proxy
+    # -- pullPolicy is used during deployment to decide if local image can be utilized.
+    pullPolicy: IfNotPresent
+
+# -- image specifies docker image parameters.
+restProxy:
+  image:
+    registry:
+      name: registry-rs.edgeorchestration.intel.com/edge-orch
+      imagePullSecrets: []
+    # -- repository is the name of the private registry and docker image used during deployment.
+    repository: app/app-resource-rest-proxy
+    # -- pullPolicy is used during deployment to decide if local image can be utilized.
+    pullPolicy: IfNotPresent
+
+# -- imagePullSecrets are used when pulling images from private repos.
+imagePullSecrets: []
+# -- nameOverride can be used to change the name of the helm chart.
+nameOverride: ""
+# -- fullnameOverride can be used to change the name of the helm chart and release.
+fullnameOverride: ""
+
+# -- podAnnotations are optional and can be specified to add consistent annotations to all pods.
+podAnnotations: {}
+
+# -- podSecurityContext is the runtime context of the pod.
+podSecurityContext:
+  runAsUser: 65532
+  runAsNonRoot: true
+# fsGroup: 2000
+
+# -- resources sets the resource limits for all containers in the ARM pod.
+resources:
+  limits:
+    cpu: 1
+    memory: 512Mi
+  requests:
+    cpu: 10m
+    memory: 128Mi
+
+# -- vncProxyResources sets the resource limits for all containers in the VNC proxy pod.
+vncProxyResources:
+  limits:
+    cpu: 1
+    memory: 512Mi
+  requests:
+    cpu: 10m
+    memory: 128Mi
+
+restProxySecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - "ALL"
+
+# -- securityContext defines pod's capabilities and permissions in the host.
+armSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - "ALL"
+
+opaSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - "ALL"
+
+# enable authentication via the M2M token
+useM2MToken: true
+vaultServer: "http://vault.orch-platform.svc.cluster.local:8200"
+keycloakServer: "https://localhost:9090"
+defaultNamespace: "orch-apps"
+
+serviceAccount:
+  create: true
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  # name: ""
+  # NOTE: if we want to use Vault secret service, this will be `orch-svc`
+
+# -- ingress defines params for external access to services in a cluster.
+ingress:
+  # -- enabled is a switch to turn on/off the ingress resource.
+  enabled: false
+  # -- className specifies reference to ingress class with additional configuration and the name of the controller.
+  className: ""
+  # -- annotations configure options specific to an ingress controller.
+  annotations: {}
+  # kubernetes.io/ingress.class: nginx
+  # kubernetes.io/tls-acme: "true"
+  # -- hosts defines routing rules and supports wildcards.
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  # -- tls contains cert and key for securing the ingress.
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+# the contents of config.yaml file
+config:
+  rateLimiter:
+    qps: 30
+    burst: 2000
+  serviceProxy:
+    domainName: "https://app-service-proxy.kind.internal"
+  appDeploymentManager:
+    endpoint: "app-deployment-api-grpc-server:8080"
+  webSocketServer:
+    # -- websocket protocol: either ws or wss
+    protocol: "wss"
+    # -- host name of websocket server
+    # -- examples: vnc.kind.internal, vnc.demo.intel.com
+    hostName: "vnc.kind.internal"
+    # -- the number of maximum sessions - per IP and per account
+    # -- example: 10 (10 sessions allowed per IP and per account) or 0 (unlimited)
+    sessionLimitPerIP: 0
+    sessionLimitPerAccount: 0
+    # -- websocket message limit to read in Bytes
+    # -- example: 512 or 0 (unlimited)
+    readLimitByte: 0
+    # -- idle timeout for downlink (server -> user)
+    # -- example: 1 min or 0 (unlimited)
+    dlIdleTimeoutMin: 0
+    # -- idle timeout for uplink (user -> server)
+    # -- example: 1 min or 0 (unlimited)
+    ulIdleTimeoutMin: 0
+    # -- list of allowed origins - normally GUI's web URL
+    # -- VNC WSS is coming originally from GUI; it is coming through Traefik or Nginx proxy
+    # -- HTTP/HTTPS Origin is normally set to GUI's URL and forwarded HOST is set to ARM's VNC host name
+    allowedOrigins:
+      - https://vnc.kind.internal
+
+# -- traefikReverseProxy defines params for external access to services in a cluster using Traefik reverse proxy.
+traefikReverseProxy:
+  websocketServer:
+    # -- enabled is a switch to turn on/off the Traefik reverse proxy resource; Traefik MUST be deployed to gateway-system ns before enabling it here.
+    enabled: true
+  restProxy:
+    # -- enabled is a switch to turn on/off the Traefik reverse proxy resource; Traefik MUST be deployed to gateway-system ns before enabling it here.
+    enabled: true
+    # -- matchRoute defines routing rules (e.g. Host(`http.sample.com`))
+    matchRoute: Host(`app-orch.kind.internal`)
+  # -- gatewayNamespace specifies namespace of Traefik and related resources (e.g. k8s secret or tls option).
+  gatewayNamespace: gateway-system
+  # -- secretName is name of k8s secret containing TLS server cert.
+  secretName: tls-demo
+  # -- tlsOption is the name of the Traefik option for handling TLS or mTLS connections.
+  tlsOption: gateway-tls
+  # -- validate-jwt middleware
+  validateJwtMiddleware: validate-jwt
+
+openidc:
+  # -- the endpoint of a Keycloak Realm e.g. http://keycloak/realms/master
+  issuer: "http://platform-keycloak.orch-platform.svc/realms/master"
+  # an external URL for the endpoint of a Keycloak Realm e.g. https://keycloak.<some-cluster>.kind.internal/realms/master
+  external: ""
+  insecureSkipVerify: false
+
+logging:
+  encoders:
+    json:
+      fields:
+        - message
+        - level:
+            format: uppercase
+        - caller:
+            format: short
+        - timestamp:
+            format: iso8601
+
+  writers:
+    stdout:
+      encoder: json
+
+  rootLogger:
+    level: info
+    outputs:
+      - stdout
+
+gin:
+  # mode (debug, release)
+  mode: "release"
+
+openpolicyagent:
+  enabled: true
+  port: 8181
+  image: openpolicyagent/opa
+  tag: 0.67.1-static
+  loglevel: info

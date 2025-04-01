@@ -1,0 +1,154 @@
+// SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package resource.v2;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "validate/validate.proto";
+
+// Provides API to manage a virtual machine workload such as starting, stopping, or restarting a virtual machine; and virtual machine console access.
+service VirtualMachineService {
+  // Starts a virtual machine for an application of a deployment in a cluster.
+  rpc StartVirtualMachine(StartVirtualMachineRequest) returns (StartVirtualMachineResponse) {
+    option (google.api.http) = {put: "/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/start"};
+  }
+  // Stops a virtual machine for an application of a deployment in a cluster.
+  rpc StopVirtualMachine(StopVirtualMachineRequest) returns (StopVirtualMachineResponse) {
+    option (google.api.http) = {put: "/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/stop"};
+  }
+
+  // Restarts a virtual machine for an application of a deployment in a cluster.
+  rpc RestartVirtualMachine(RestartVirtualMachineRequest) returns (RestartVirtualMachineResponse) {
+    option (google.api.http) = {put: "/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/restart"};
+  }
+
+  // Accesses the VNC console to access a virtual machine.
+  rpc GetVNC(GetVNCRequest) returns (GetVNCResponse) {
+    option (google.api.http) = {get: "/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/vnc"};
+  }
+}
+
+// Request message for StartVirtualMachine method
+message StartVirtualMachineRequest {
+  // Application ID
+  string app_id = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (validate.rules).string = {
+      min_len: 1
+      max_len: 80
+      pattern: "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+    }
+  ];
+  // Cluster ID
+  string cluster_id = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (validate.rules).string = {
+      min_len: 1
+      max_len: 40
+      pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+    }
+  ];
+  // Virtual machine ID
+  string virtual_machine_id = 3 [
+    (google.api.field_behavior) = REQUIRED,
+    (validate.rules).string.uuid = true
+  ];
+}
+
+// Response message for the StartVirtualMachine method.
+message StartVirtualMachineResponse {}
+
+// Request message for StopVirtualMachine method
+message StopVirtualMachineRequest {
+  // Application ID
+  string app_id = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (validate.rules).string = {
+      min_len: 1
+      max_len: 80
+      pattern: "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+    }
+  ];
+  // Cluster ID
+  string cluster_id = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (validate.rules).string = {
+      min_len: 1
+      max_len: 40
+      pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+    }
+  ];
+  // Virtual machine ID
+  string virtual_machine_id = 3 [
+    (google.api.field_behavior) = REQUIRED,
+    (validate.rules).string.uuid = true
+  ];
+}
+
+// Response message for the StopVirtualMachine method.
+message StopVirtualMachineResponse {}
+
+// Request message for RestartVirtualMachine method
+message RestartVirtualMachineRequest {
+  // Application ID
+  string app_id = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (validate.rules).string = {
+      min_len: 1
+      max_len: 80
+      pattern: "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+    }
+  ];
+  // Cluster ID
+  string cluster_id = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (validate.rules).string = {
+      min_len: 1
+      max_len: 40
+      pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+    }
+  ];
+  // Virtual machine ID
+  string virtual_machine_id = 3 [
+    (google.api.field_behavior) = REQUIRED,
+    (validate.rules).string.uuid = true
+  ];
+}
+
+// Response message for the RestartVirtualMachine method.
+message RestartVirtualMachineResponse {}
+
+// Request message for GetVNC method
+message GetVNCRequest {
+  // Application ID
+  string app_id = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (validate.rules).string = {
+      min_len: 1
+      max_len: 80
+      pattern: "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+    }
+  ];
+  // Cluster ID
+  string cluster_id = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (validate.rules).string = {
+      min_len: 1
+      max_len: 40
+      pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+    }
+  ];
+  // Virtual machine ID
+  string virtual_machine_id = 3 [
+    (google.api.field_behavior) = REQUIRED,
+    (validate.rules).string.uuid = true
+  ];
+}
+
+// Response message for the GetVNC method.
+message GetVNCResponse {
+  string address = 1 [(google.api.field_behavior) = REQUIRED];
+}

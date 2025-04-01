@@ -1,0 +1,84 @@
+// SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package resource.v2;
+
+import "google/api/field_behavior.proto";
+import "validate/validate.proto";
+
+// Represents a pod resource.
+message Pod {
+  // containers list of containers per pod
+  repeated Container containers = 1;
+
+  // status pod status
+  PodStatus status = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// The status of the pod during its lifecycle.
+message PodStatus {
+  // State information
+  State state = 1;
+
+  enum State {
+    STATE_UNSPECIFIED = 0;
+    STATE_PENDING = 1;
+    STATE_RUNNING = 2;
+    STATE_SUCCEEDED = 3;
+    STATE_FAILED = 4;
+  }
+}
+
+// Represents a container resource.
+message Container {
+  // Container name
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (validate.rules).string = {
+      min_len: 1
+      max_len: 63
+      pattern: "^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$"
+    }
+  ];
+
+  // image_name container image name
+  string image_name = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Number of times that a container is restarted.
+  int32 restart_count = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // status status of a container
+  ContainerStatus status = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// ContainerStatus status of a container
+message ContainerStatus {
+  oneof state {
+    ContainerStateWaiting container_state_waiting = 1;
+    ContainerStateRunning container_state_running = 2;
+    ContainerStateTerminated container_state_terminated = 3;
+  }
+}
+
+// Waiting status of a container including the reason and message.
+message ContainerStateWaiting {
+  // Reason of the waiting status.
+  string reason = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Message of the waiting status.
+  string message = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// Running status of a container.
+message ContainerStateRunning {}
+
+// Termination status of a container.
+message ContainerStateTerminated {
+  // Reason of the termination.
+  string reason = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Message of the termination status.
+  string message = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Exit code of the termination status.
+  int32 exit_code = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+}

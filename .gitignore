@@ -1,0 +1,27 @@
+# SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# jetbrains
+.idea
+.vscode
+.DS_Store
+vendor
+venv*
+*.log
+workspace
+
+*.lock
+*.tgz
+
+*/out/**
+*/bin/**
+*/build/_output/**
+
+# output from make test
+*/cover.out
+*/coverage.html
+*/coverage.xml
+app-deployment-manager/pkg/utils/tmpdir/
+app-deployment-manager/internal/northbound/fuzztests/testdata/
+app-resource-manager/internal/northbound/services/v2/resource/testdata/

@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+webSocketServer:
+  protocol: "wss"
+  hostName: "vnc.kind.internal"
+  sessionLimitPerIP: 0
+  sessionLimitPerAccount: 0
+  readLimitByte: 0
+  dlIdleTimeoutMin: 0
+  ulIdleTimeoutMin: 0
+  allowedOrigins:
+    - https://vnc.kind.internal

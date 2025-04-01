@@ -1,0 +1,529 @@
+# Generated with protoc-gen-openapi
+# https://github.com/kollalabs/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: App Resource Manager API
+    description: App Resource Manager service providing operations for resource management
+    version: 1.0.0
+paths:
+    /resource.orchestrator.apis/v2/endpoints/{appId}/{clusterId}:
+        get:
+            tags:
+                - EndpointsService
+            summary: ListAppEndpoints
+            description: Gets a list of all endpoints for an application of a deployment in a cluster.
+            operationId: EndpointsService_ListAppEndpoints
+            parameters:
+                - name: appId
+                  in: path
+                  description: Application ID
+                  required: true
+                  schema:
+                    type: string
+                - name: clusterId
+                  in: path
+                  description: Cluster ID
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListAppEndpointsResponse'
+    /resource.orchestrator.apis/v2/workloads/pods/{clusterId}/{namespace}/{podName}/delete:
+        put:
+            tags:
+                - PodService
+            summary: DeletePod
+            description: Deletes the pod for an application in a cluster.
+            operationId: PodService_DeletePod
+            parameters:
+                - name: clusterId
+                  in: path
+                  description: Cluster ID
+                  required: true
+                  schema:
+                    type: string
+                - name: namespace
+                  in: path
+                  description: Namespace that the pod is running on.
+                  required: true
+                  schema:
+                    type: string
+                - name: podName
+                  in: path
+                  description: Name of the pod.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DeletePodResponse'
+    /resource.orchestrator.apis/v2/workloads/virtual-machines/{appId}/{clusterId}/{virtualMachineId}/restart:
+        put:
+            tags:
+                - VirtualMachineService
+            summary: RestartVirtualMachine
+            description: Restarts a virtual machine for an application of a deployment in a cluster.
+            operationId: VirtualMachineService_RestartVirtualMachine
+            parameters:
+                - name: appId
+                  in: path
+                  description: Application ID
+                  required: true
+                  schema:
+                    type: string
+                - name: clusterId
+                  in: path
+                  description: Cluster ID
+                  required: true
+                  schema:
+                    type: string
+                - name: virtualMachineId
+                  in: path
+                  description: Virtual machine ID
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RestartVirtualMachineResponse'
+    /resource.orchestrator.apis/v2/workloads/virtual-machines/{appId}/{clusterId}/{virtualMachineId}/start:
+        put:
+            tags:
+                - VirtualMachineService
+            summary: StartVirtualMachine
+            description: Starts a virtual machine for an application of a deployment in a cluster.
+            operationId: VirtualMachineService_StartVirtualMachine
+            parameters:
+                - name: appId
+                  in: path
+                  description: Application ID
+                  required: true
+                  schema:
+                    type: string
+                - name: clusterId
+                  in: path
+                  description: Cluster ID
+                  required: true
+                  schema:
+                    type: string
+                - name: virtualMachineId
+                  in: path
+                  description: Virtual machine ID
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StartVirtualMachineResponse'
+    /resource.orchestrator.apis/v2/workloads/virtual-machines/{appId}/{clusterId}/{virtualMachineId}/stop:
+        put:
+            tags:
+                - VirtualMachineService
+            summary: StopVirtualMachine
+            description: Stops a virtual machine for an application of a deployment in a cluster.
+            operationId: VirtualMachineService_StopVirtualMachine
+            parameters:
+                - name: appId
+                  in: path
+                  description: Application ID
+                  required: true
+                  schema:
+                    type: string
+                - name: clusterId
+                  in: path
+                  description: Cluster ID
+                  required: true
+                  schema:
+                    type: string
+                - name: virtualMachineId
+                  in: path
+                  description: Virtual machine ID
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StopVirtualMachineResponse'
+    /resource.orchestrator.apis/v2/workloads/virtual-machines/{appId}/{clusterId}/{virtualMachineId}/vnc:
+        get:
+            tags:
+                - VirtualMachineService
+            summary: GetVNC
+            description: Accesses the VNC console to access a virtual machine.
+            operationId: VirtualMachineService_GetVNC
+            parameters:
+                - name: appId
+                  in: path
+                  description: Application ID
+                  required: true
+                  schema:
+                    type: string
+                - name: clusterId
+                  in: path
+                  description: Cluster ID
+                  required: true
+                  schema:
+                    type: string
+                - name: virtualMachineId
+                  in: path
+                  description: Virtual machine ID
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetVNCResponse'
+    /resource.orchestrator.apis/v2/workloads/{appId}/{clusterId}:
+        get:
+            tags:
+                - AppWorkloadService
+            summary: ListAppWorkloads
+            description: Gets a list of all workloads for an application of a deployment in a cluster.
+            operationId: AppWorkloadService_ListAppWorkloads
+            parameters:
+                - name: appId
+                  in: path
+                  description: Application ID
+                  required: true
+                  schema:
+                    type: string
+                - name: clusterId
+                  in: path
+                  description: Cluster ID
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListAppWorkloadsResponse'
+components:
+    schemas:
+        AdminStatus:
+            type: object
+            properties:
+                state:
+                    enum:
+                        - STATE_UP
+                        - STATE_DOWN
+                    type: string
+                    description: State information
+                    format: enum
+            description: Represents the associated VirtualMachineInstance's state, either created (up state) or not (down state).
+        AppEndpoint:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: string
+                    description: Endpoint object UID (e.g. service or ingress UID)
+                    format: uuid
+                name:
+                    readOnly: true
+                    maxLength: 40
+                    minLength: 1
+                    pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+                    type: string
+                    description: Endpoint name
+                fqdns:
+                    readOnly: true
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Fqdn'
+                    description: Fully qualified domain name (FQDN) for external access.
+                ports:
+                    readOnly: true
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Port'
+                    description: List of ports exposed by a service for external access
+                endpointStatus:
+                    $ref: '#/components/schemas/EndpointStatus'
+            description: Represents an endpoint for accessing the application outside of a cluster.
+        AppWorkload:
+            required:
+                - id
+                - name
+            type: object
+            properties:
+                type:
+                    enum:
+                        - TYPE_VIRTUAL_MACHINE
+                        - TYPE_POD
+                    type: string
+                    description: Application workload type, e.g. virtual machine and pod.
+                    format: enum
+                id:
+                    type: string
+                    description: Workload UUID
+                    format: uuid
+                name:
+                    maxLength: 253
+                    minLength: 1
+                    pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
+                    type: string
+                    description: Workload name
+                namespace:
+                    readOnly: true
+                    type: string
+                    description: Namespace where the workload is created.
+                createTime:
+                    readOnly: true
+                    type: string
+                    description: The time when the workload is created.
+                    format: date-time
+                workloadReady:
+                    readOnly: true
+                    type: boolean
+                    description: Ready status to determines if a workload is fully functional or not.
+                virtualMachine:
+                    $ref: '#/components/schemas/VirtualMachine'
+                pod:
+                    $ref: '#/components/schemas/Pod'
+            description: AppWorkload a high-level abstraction for representing different types of application workloads. The application workloads can be virtual machine-based or container-based.
+        Container:
+            required:
+                - name
+            type: object
+            properties:
+                name:
+                    maxLength: 63
+                    minLength: 1
+                    pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
+                    type: string
+                    description: Container name
+                imageName:
+                    readOnly: true
+                    type: string
+                    description: image_name container image name
+                restartCount:
+                    readOnly: true
+                    type: integer
+                    description: Number of times that a container is restarted.
+                    format: int32
+                status:
+                    $ref: '#/components/schemas/ContainerStatus'
+            description: Represents a container resource.
+        ContainerStateRunning:
+            type: object
+            properties: {}
+            description: Running status of a container.
+        ContainerStateTerminated:
+            type: object
+            properties:
+                reason:
+                    readOnly: true
+                    type: string
+                    description: Reason of the termination.
+                message:
+                    readOnly: true
+                    type: string
+                    description: Message of the termination status.
+                exitCode:
+                    readOnly: true
+                    type: integer
+                    description: Exit code of the termination status.
+                    format: int32
+            description: Termination status of a container.
+        ContainerStateWaiting:
+            type: object
+            properties:
+                reason:
+                    readOnly: true
+                    type: string
+                    description: Reason of the waiting status.
+                message:
+                    readOnly: true
+                    type: string
+                    description: Message of the waiting status.
+            description: Waiting status of a container including the reason and message.
+        ContainerStatus:
+            type: object
+            properties:
+                containerStateWaiting:
+                    $ref: '#/components/schemas/ContainerStateWaiting'
+                containerStateRunning:
+                    $ref: '#/components/schemas/ContainerStateRunning'
+                containerStateTerminated:
+                    $ref: '#/components/schemas/ContainerStateTerminated'
+            description: ContainerStatus status of a container
+        DeletePodResponse:
+            type: object
+            properties: {}
+            description: Response message for the DeletePod method.
+        EndpointStatus:
+            type: object
+            properties:
+                state:
+                    readOnly: true
+                    enum:
+                        - STATE_READY
+                        - STATE_NOT_READY
+                    type: string
+                    description: Endpoint state, either Ready or NotReady.
+                    format: enum
+            description: Status of the endpoint.
+        Fqdn:
+            type: object
+            properties:
+                fqdn:
+                    type: string
+                    format: hostname
+            description: Fully qualified domain name.
+        GetVNCResponse:
+            required:
+                - address
+            type: object
+            properties:
+                address:
+                    type: string
+            description: Response message for the GetVNC method.
+        ListAppEndpointsResponse:
+            type: object
+            properties:
+                appEndpoints:
+                    readOnly: true
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AppEndpoint'
+                    description: List of services.
+            description: Response message for the ListAppEndpoints method.
+        ListAppWorkloadsResponse:
+            type: object
+            properties:
+                appWorkloads:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AppWorkload'
+                    description: A list of virtual machines.
+            description: Response message for the ListAppWorkloadsResponse method.
+        Pod:
+            type: object
+            properties:
+                containers:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Container'
+                    description: containers list of containers per pod
+                status:
+                    $ref: '#/components/schemas/PodStatus'
+            description: Represents a pod resource.
+        PodStatus:
+            type: object
+            properties:
+                state:
+                    enum:
+                        - STATE_PENDING
+                        - STATE_RUNNING
+                        - STATE_SUCCEEDED
+                        - STATE_FAILED
+                    type: string
+                    description: State information
+                    format: enum
+            description: The status of the pod during its lifecycle.
+        Port:
+            type: object
+            properties:
+                name:
+                    readOnly: true
+                    maxLength: 40
+                    minLength: 1
+                    pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+                    type: string
+                    description: Port name
+                value:
+                    readOnly: true
+                    type: integer
+                    description: Port value
+                    format: int32
+                protocol:
+                    readOnly: true
+                    type: string
+                    description: Protocol for a port.
+                serviceProxyUrl:
+                    readOnly: true
+                    type: string
+                    description: Service proxy URL for a port.
+            description: Port information
+        RestartVirtualMachineResponse:
+            type: object
+            properties: {}
+            description: Response message for the RestartVirtualMachine method.
+        StartVirtualMachineResponse:
+            type: object
+            properties: {}
+            description: Response message for the StartVirtualMachine method.
+        StopVirtualMachineResponse:
+            type: object
+            properties: {}
+            description: Response message for the StopVirtualMachine method.
+        VirtualMachine:
+            type: object
+            properties:
+                status:
+                    $ref: '#/components/schemas/VirtualMachineStatus'
+                adminStatus:
+                    $ref: '#/components/schemas/AdminStatus'
+            description: Represents a virtual machine.
+        VirtualMachineStatus:
+            type: object
+            properties:
+                state:
+                    enum:
+                        - STATE_STOPPED
+                        - STATE_PROVISIONING
+                        - STATE_STARTING
+                        - STATE_RUNNING
+                        - STATE_PAUSED
+                        - STATE_STOPPING
+                        - STATE_TERMINATING
+                        - STATE_CRASH_LOOP_BACKOFF
+                        - STATE_MIGRATING
+                        - STATE_ERROR_UNSCHEDULABLE
+                        - STATE_ERROR_IMAGE_PULL
+                        - STATE_ERROR_IMAGE_PULL_BACKOFF
+                        - STATE_ERROR_PVC_NOT_FOUND
+                        - STATE_ERROR_DATA_VOLUME
+                        - STATE_WAITING_FOR_VOLUME_BINDING
+                    type: string
+                    description: Virtual machine state
+                    format: enum
+            description: Status of a virtual machine.
+tags:
+    - name: AppWorkloadService
+      description: Provides API endpoints for listing and lifecycle management of workloads, including virtual machines and container-based workloads.
+    - name: EndpointsService
+      description: Provides API to list endpoints.
+    - name: PodService
+      description: Provides API to manage a pod workload such as deleting a pod.
+    - name: VirtualMachineService
+      description: Provides API to manage a virtual machine workload such as starting, stopping, or restarting a virtual machine; and virtual machine console access.

@@ -1,0 +1,80 @@
+# yamllint disable-file
+# SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Name }}-cluster-controller
+rules:
+- apiGroups:
+  - app.orchestrator.io
+  resources:
+  - clusters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.orchestrator.io
+  resources:
+  - clusters/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - app.orchestrator.io
+  resources:
+  - clusters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - fleet.cattle.io
+  resources:
+  - bundledeployments
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - fleet.cattle.io
+  resources:
+  - bundles
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - fleet.cattle.io
+  resources:
+  - gitrepos
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list

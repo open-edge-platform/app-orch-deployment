@@ -1,0 +1,104 @@
+# yamllint disable-file
+# SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+{{- $registry := .Values.global.registry -}}
+{{- if .Values.image.registry -}}
+{{- $registry = .Values.image.registry -}}
+{{- end -}}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "interconnect-manager.fullname" . }}
+  labels:
+    {{- include "interconnect-manager.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "interconnect-manager.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "interconnect-manager.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "interconnect-manager.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- with .Values.image }}
+          image: "{{- if hasKey $registry "name" }}{{ $registry.name }}/{{- end -}}{{ .repository }}:{{ default $.Chart.AppVersion .tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - --mode={{ default "prod" .Values.interconnect_manager.mode }}
+          env:
+          {{- with .Values.interconnect_manager.admService }}
+            - name: ADM_SERVICE_ADDRESS
+              value: {{ . }}
+          {{- end}}
+            - name: USE_M2M_TOKEN
+              value: {{ .Values.interconnect_manager.useM2MToken | quote }}
+            - name: VAULT_SERVER
+              value: {{ .Values.interconnect_manager.vaultServer | quote }}
+            - name: KEYCLOAK_SERVER
+              value: {{ .Values.interconnect_manager.keycloakServer | quote }}
+            - name: SERVICE_ACCOUNT
+              value: {{ .Values.interconnect_manager.serviceAccount.name | quote }}
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8083
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8083
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir: { }
+        - name: logging
+          configMap:
+            name: {{ template "interconnect-manager.fullname" . }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

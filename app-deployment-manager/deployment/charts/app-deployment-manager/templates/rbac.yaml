@@ -1,0 +1,342 @@
+# yamllint disable-file
+# SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+{{- if .Values.adm.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "app-deployment-manager.fullname" . }}-controller
+  labels:
+    {{ include "app-deployment-manager.labels" . | nindent 4 }}
+rules:
+{{- if .Values.adm.apiExtension.enabled }}
+- apiGroups:
+    - app.edge-orchestrator.intel.com
+  resources:
+    - apiextensions
+  verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+- apiGroups:
+    - app.edge-orchestrator.intel.com
+  resources:
+    - apiextensions/finalizers
+  verbs:
+    - update
+- apiGroups:
+    - app.edge-orchestrator.intel.com
+  resources:
+    - apiextensions/status
+  verbs:
+    - get
+    - patch
+    - update
+- apiGroups:
+    - networking.k8s.io
+  resources:
+    - ingresses
+  verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+- apiGroups:
+    - networking.k8s.io
+  resources:
+    - ingresses/finalizers
+  verbs:
+    - get
+    - list
+    - watch
+- apiGroups:
+    - networking.k8s.io
+  resources:
+    - ingresses/status
+  verbs:
+    - get
+- apiGroups:
+    - traefik.containo.us
+  resources:
+    - ingressroutes
+  verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+- apiGroups:
+    - traefik.containo.us
+  resources:
+    - ingressroutes/status
+  verbs:
+    - get
+- apiGroups:
+    - traefik.containo.us
+  resources:
+    - middlewares
+  verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+- apiGroups:
+    - traefik.containo.us
+  resources:
+    - middlewares/status
+  verbs:
+    - get
+{{- end }}
+- apiGroups:
+    - app.edge-orchestrator.intel.com
+  resources:
+    - clusters
+  verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+- apiGroups:
+    - app.edge-orchestrator.intel.com
+  resources:
+    - clusters/finalizers
+  verbs:
+    - update
+- apiGroups:
+    - app.edge-orchestrator.intel.com
+  resources:
+    - clusters/status
+  verbs:
+    - create
+    - get
+    - patch
+    - update
+- apiGroups:
+    - app.edge-orchestrator.intel.com
+  resources:
+    - deploymentclusters
+  verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+- apiGroups:
+    - app.edge-orchestrator.intel.com
+  resources:
+    - deploymentclusters/finalizers
+  verbs:
+    - update
+- apiGroups:
+    - app.edge-orchestrator.intel.com
+  resources:
+    - deploymentclusters/status
+  verbs:
+    - get
+    - patch
+    - update
+- apiGroups:
+    - app.edge-orchestrator.intel.com
+  resources:
+    - deployments
+  verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+- apiGroups:
+    - app.edge-orchestrator.intel.com
+  resources:
+    - deployments/finalizers
+  verbs:
+    - update
+- apiGroups:
+    - app.edge-orchestrator.intel.com
+  resources:
+    - deployments/status
+  verbs:
+    - get
+    - patch
+    - update
+{{- if .Values.adm.grafanaExtension.enabled }}
+- apiGroups:
+    - app.edge-orchestrator.intel.com
+  resources:
+    - grafanaextensions
+  verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+- apiGroups:
+    - app.edge-orchestrator.intel.com
+  resources:
+    - grafanaextensions/finalizers
+  verbs:
+    - update
+- apiGroups:
+    - app.edge-orchestrator.intel.com
+  resources:
+    - grafanaextensions/status
+  verbs:
+    - get
+    - patch
+    - update
+- apiGroups:
+    - ""
+  resources:
+    - configmaps
+  verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+{{- end }}
+- apiGroups:
+    - ""
+  resources:
+    - events
+  verbs:
+    - create
+    - patch
+- apiGroups:
+    - "rbac.authorization.k8s.io"
+  resources:
+    - rolebindings
+  verbs:
+    - create
+    - delete
+    - get
+    - list
+- apiGroups:
+    - ""
+  resources:
+    - secrets
+  verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+- apiGroups:
+    - ""
+  resources:
+    - secrets/status
+  verbs:
+    - get
+- apiGroups:
+    - ""
+  resources:
+    - namespaces
+  verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+- apiGroups:
+    - ""
+  resources:
+    - pods
+  verbs:
+    - get
+    - list
+    - watch
+- apiGroups:
+    - "batch"
+  resources:
+    - jobs
+  verbs:
+    - get
+    - list
+    - watch
+- apiGroups:
+    - fleet.cattle.io
+  resources:
+    - bundledeployments
+  verbs:
+    - get
+    - list
+    - watch
+- apiGroups:
+    - fleet.cattle.io
+  resources:
+    - bundles
+  verbs:
+    - get
+    - update
+    - list
+    - watch
+- apiGroups:
+    - fleet.cattle.io
+  resources:
+    - gitrepos
+  verbs:
+    - create
+    - delete
+    - deletecollection
+    - get
+    - list
+    - patch
+    - update
+    - watch
+- apiGroups:
+    - cluster.x-k8s.io
+  resources:
+    - clusters
+  verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ template "app-deployment-manager.fullname" . }}-controller
+  labels:
+    {{ include "app-deployment-manager.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ template "app-deployment-manager.fullname" . }}-controller
+subjects:
+  - name: {{ template "app-deployment-manager.serviceAccountName" . }}
+    kind: ServiceAccount
+    namespace: {{ .Release.Namespace }}
+{{- end }}

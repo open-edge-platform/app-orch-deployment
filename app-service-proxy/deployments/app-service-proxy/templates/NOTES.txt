@@ -1,0 +1,12 @@
+API Proxy Service
+---
+
+API Proxy is a reverse HTTP proxy service that forwards API calls from 
+an upstream cluster to applications running in downstream clusters.
+
+---
+revision: {{ .Chart.Annotations.revision }}
+created: {{ .Chart.Annotations.created }}
+SPDX-License-Identifier: Apache-2.0
+
+Copyright (C) 2023 Intel Corporation

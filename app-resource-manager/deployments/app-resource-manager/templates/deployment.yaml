@@ -1,0 +1,198 @@
+{{- $registry := .Values.global.registry -}}
+{{- if .Values.image.registry -}}
+{{- $registry = .Values.image.registry -}}
+{{- end -}}
+
+# SPDX-FileCopyrightText: (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "app-resource-manager.fullname" . }}
+  labels:
+    {{- include "app-resource-manager.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "app-resource-manager.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "app-resource-manager.selectorLabels" . | nindent 8 }}
+        version: {{ .Chart.AppVersion | quote }}
+    spec:
+      {{- with $registry.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ template "app-resource-manager.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        {{- if .Values.openpolicyagent.enabled }}
+        - name: openpolicyagent
+          securityContext:
+              {{- toYaml .Values.opaSecurityContext | nindent 12 }}
+          resources:
+              {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.openpolicyagent }}
+          image: "{{- if .registry -}}{{ .registry }}/{{- end -}}{{ .image }}:{{ .tag }}"
+          {{- end}}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: opa
+              containerPort: {{ .Values.openpolicyagent.port }}
+          args:
+            - "run"
+            - "--server"
+            - /opt/app-resource-manager/rego/v2
+            - "--log-level"
+            - {{ .Values.openpolicyagent.loglevel }}
+          livenessProbe:
+            httpGet:
+              path: /health?bundle=true  # Include bundle activation in readiness
+              scheme: HTTP
+              port: {{ .Values.openpolicyagent.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health?bundle=true  # Include bundle activation in readiness
+              scheme: HTTP
+              port: {{ .Values.openpolicyagent.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: openpolicyagent-v2
+              mountPath: /opt/app-resource-manager/rego/v2
+              readOnly: true
+        {{- end }}
+        - name: {{ .Chart.Name }}-rest-proxy
+          securityContext:
+            {{- toYaml .Values.restProxySecurityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          image: {{ include "rest-proxy.imagename" . | quote }}
+          imagePullPolicy: {{ .Values.restProxy.image.pullPolicy }}
+          env:
+            - name: MSG_SIZE_LIMIT
+              value: {{ .Values.serviceArgs.msgSizeLimit | quote }}
+            - name: LOGGING_CONFIG
+              value: /opt/app-resource-manager-rest-proxy/logging.yaml
+            - name: GIN_MODE
+              value: {{ .Values.gin.mode }}
+            - name: USE_M2M_TOKEN
+              value: {{  .Values.useM2MToken | quote }}
+            - name: VAULT_SERVER
+              value: {{ .Values.vaultServer | quote }}
+            - name: KEYCLOAK_SERVER
+              value: {{ .Values.keycloakServer | quote }}
+            - name: SERVICE_ACCOUNT
+              value: {{  .Values.serviceAccount.name | quote }}
+          volumeMounts:
+            - name: config
+              mountPath: /opt/app-resource-manager-rest-proxy
+          ports:
+            - name: http
+              containerPort: 8081
+              protocol: TCP
+          command: ["/usr/local/bin/rest-proxy"]
+          args:
+          {{- range $key, $value := .Values.serviceArgs.restProxy }}
+            - {{ print "-" $key | toYaml -}}={{- $value }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.service.restProxy.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.service.restProxy.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.armSecurityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          image: {{ include "app-resource-manager.imagename" . | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: MSG_SIZE_LIMIT
+              value: {{ .Values.serviceArgs.msgSizeLimit | quote }}
+            - name: LOGGING_CONFIG
+              value: /opt/app-resource-manager/logging.yaml
+            - name: OIDC_SERVER_URL
+              value: {{ .Values.openidc.issuer }}
+            - name: OPA_PORT
+              value: "{{ .Values.openpolicyagent.port }}"
+            - name: OIDC_TLS_INSECURE_SKIP_VERIFY
+              value: {{ .Values.openidc.insecureSkipVerify | quote }}
+            - name: SERVICE_PROXY_DOMAIN_NAME
+              value: {{ .Values.config.serviceProxy.domainName  }}
+            - name: RATE_LIMITER_QPS
+              value: {{ .Values.config.rateLimiter.qps | quote }}
+            - name: RATE_LIMITER_BURST
+              value: {{ .Values.config.rateLimiter.burst | quote }}
+            - name: USE_M2M_TOKEN
+              value: {{  .Values.useM2MToken | quote }}
+            - name: VAULT_SERVER
+              value: {{ .Values.vaultServer | quote }}
+            - name: KEYCLOAK_SERVER
+              value: {{ .Values.keycloakServer | quote }}
+            - name: SERVICE_ACCOUNT
+              value: {{  .Values.serviceAccount.name | quote }}
+            {{- if .Values.openpolicyagent.enabled }}
+            - name: OPA_ENABLED
+              value: "true"
+            {{- end}}
+          command: ["/usr/local/bin/app-resource-manager"]
+          ports:
+            - name: grpc
+              containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: {{.Values.service.grpcServer.port}}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: {{.Values.service.grpcServer.port}}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - name: config
+            mountPath: /opt/app-resource-manager
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "app-resource-manager.fullname" . }}
+        {{- if .Values.openpolicyagent.enabled }}
+        - name: openpolicyagent-v2
+          configMap:
+              name: {{ include "app-resource-manager.fullname" . }}-opa-rego-v2
+        {{- end }}

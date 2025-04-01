@@ -1,0 +1,7 @@
+version = 1
+
+[[annotations]]
+path = ["VERSION", "go.sum", "**/*.png", "build/_output/**", "internal/skupper/**", "config/crds/*.yaml", "deploy/charts/app-interconnect-manager/crds/*", "artifacts/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2024 Intel Corporation"
+SPDX-License-Identifier = "Apache-2.0"

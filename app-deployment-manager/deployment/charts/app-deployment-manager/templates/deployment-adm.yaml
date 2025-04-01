@@ -1,0 +1,331 @@
+# yamllint disable-file
+# SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+{{- $registry := .Values.global.registry -}}
+{{- if .Values.image.registry -}}
+{{- $registry = .Values.image.registry -}}
+{{- end -}}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "app-deployment-manager.fullname" . }}
+  {{- with .Values.adm.deploymentAnnotations }}
+  annotations:
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.adm.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "app-deployment-manager.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "app-deployment-manager.labels" . | nindent 8 }}
+        version: {{ .Chart.AppVersion | quote }}
+    spec:
+      serviceAccountName: {{ template "app-deployment-manager.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.adm.podSecurityContext | nindent 8 }}
+      {{- with .Values.adm.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with $registry.imagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: controller
+        {{- with .Values.adm.image }}
+        image: "{{- if hasKey $registry "name" }}{{ $registry.name }}/{{- end -}}{{ .repository }}:{{ default $.Chart.AppVersion .tag }}"
+        {{- end }}
+        imagePullPolicy: {{ .Values.adm.image.pullPolicy }}
+        command:
+        - /manager
+        args:
+        - --health-probe-bind-address=:8081
+        {{- if .Values.adm.metrics.enabled }}
+        - --metrics-bind-address=:8080
+        {{- end }}
+        {{- if .Values.adm.logLevel }}
+        - --zap-log-level={{ .Values.adm.logLevel }}
+        {{- end }}
+        {{- with .Values.adm.apiExtension.apiGroupDomain }}
+        - --api-group-domain={{ . }}
+        {{- end }}
+        {{- with .Values.adm.apiExtension.ingress.kind }}
+        - --ingress-kind={{ . }}
+        {{- end }}
+        {{- with .Values.adm.apiExtension.apiProxy.url }}
+        - --api-proxy-url={{ . }}
+        {{- end }}
+        {{- with .Values.adm.apiExtension.apiProxy.namespace }}
+        - --api-proxy-namespace={{ . }}
+        {{- end }}
+        {{- with .Values.adm.apiExtension.apiProxy.service }}
+        - --api-proxy-service={{ . }}
+        {{- end }}
+        {{- with .Values.adm.apiExtension.apiProxy.port }}
+        - --api-proxy-port={{ . }}
+        {{- end }}
+        {{- with .Values.adm.apiExtension.apiAgent.chartRepo }}
+        - --api-agent-chart-repo={{ . }}
+        {{- end }}
+        {{- with .Values.adm.apiExtension.apiAgent.chart }}
+        - --api-agent-chart={{ . }}
+        {{- end }}
+        {{- with .Values.adm.apiExtension.apiAgent.version }}
+        - --api-agent-chart-version={{ . }}
+        {{- end }}
+        {{- with .Values.adm.apiExtension.apiAgent.namespace }}
+        - --api-agent-namespace={{ . }}
+        {{- end }}
+        {{- with .Values.adm.extraArgs }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.adm.gitCaCertFolder }}
+        - --git-ca-cert-folder={{ . }}
+        {{- end }}
+        {{- with .Values.adm.gitCaCertFile }}
+        - --git-ca-cert-file={{ . }}
+        {{- end }}
+        securityContext:
+          {{- toYaml .Values.adm.securityContext | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        env:
+        - name: DEFAULT_NAMESPACE
+          value: {{  .Values.adm.defaultNamespace | quote }}
+        {{- with .Values.adm.config.sealedSecretTls }}
+        - name: SEALED_SECRET_TLS_CRT
+          valueFrom:
+            secretKeyRef:
+              name: {{ . }}
+              key: tls.crt
+        {{- end }}
+        {{- with .Values.adm.config.sealedSecretTls }}
+        - name: SEALED_SECRET_TLS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ . }}
+              key: tls.key
+        {{- end }}
+        {{- with .Values.adm.http_proxy }}
+        - name: HTTP_PROXY
+          value: {{ . }}
+        {{- end }}
+        {{- with .Values.adm.https_proxy }}
+        - name: HTTPS_PROXY
+          value: {{ . }}
+        {{- end }}
+        {{- with .Values.adm.no_proxy }}
+        - name: NO_PROXY
+          value: {{ . }}
+        {{- end }}
+        # If .Values.adm.secretService.enabled=false then a "with" clause is not executed
+        - name: SECRET_SERVICE_ENABLED
+          value: {{ .Values.adm.secretService.enabled | quote }}
+        {{- with .Values.adm.secretService.endpoint }}
+        - name: SECRET_SERVICE_ENDPOINT
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.keycloakServerEndpoint }}
+        - name: KEYCLOAK_SERVICE_ENDPOINT
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.gitUser }}
+        - name: GIT_USER
+          value: {{ . }}
+        {{- end }}
+        {{- with .Values.adm.gitPassword }}
+        - name: GIT_PASSWORD
+          value: {{ . }}
+        {{- end }}
+        {{- with .Values.adm.gitServer }}
+        - name: GIT_SERVER
+          value: {{ . }}
+        {{- end }}
+        {{- with .Values.adm.gitProvider }}
+        - name: GIT_PROVIDER
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.gitProxy }}
+        - name: GIT_PROXY
+          value: {{ . | quote }}
+        {{- end }}
+        {{- if .Values.adm.gitUseCaCert }}
+        - name: GIT_CA_CERT
+          valueFrom:
+            secretKeyRef:
+              key: {{ .Values.adm.gitCaCertSecretKey }}
+              name: {{ .Values.adm.gitCaCertSecret }}
+        {{- end }}
+        {{- with .Values.adm.codeCommit.awsRegion }}
+        - name: GIT_REGION
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.codeCommit.awsAccessKeyId }}
+        - name: GIT_ACCESSKEY
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.codeCommit.awsSecretAccessKey }}
+        - name: GIT_SECRET_ACCESSKEY
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.codeCommit.awsSshKeyId }}
+        - name: GIT_AWSSSHKEY
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.serviceAccount.name }}
+        - name: SERVICE_ACCOUNT
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.secretService.secrets.mount }}
+        - name: SECRET_SERVICE_MOUNT
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.secretService.secrets.gitService.path }}
+        - name: SECRET_GIT_SERVICE_PATH
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.secretService.secrets.gitService.keys.username }}
+        - name: SECRET_GIT_SERVICE_USERNAME_KVKEY
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.secretService.secrets.gitService.keys.password }}
+        - name: SECRET_GIT_SERVICE_PASSWORD_KVKEY
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.secretService.secrets.awsService.path }}
+        - name: SECRET_AWS_SERVICE_PATH
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.secretService.secrets.awsService.keys.region }}
+        - name: SECRET_AWS_SERVICE_REGION_KVKEY
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.secretService.secrets.awsService.keys.accessKeyID }}
+        - name: SECRET_AWS_SERVICE_ACCESSKEY_KVKEY
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.secretService.secrets.awsService.keys.secretAccessKey }}
+        - name: SECRET_AWS_SERVICE_SECRET_ACCESSKEY_KVKEY
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.secretService.secrets.awsService.keys.sshKeyID }}
+        - name: SECRET_AWS_SERVICE_SECRET_SSHKEY_KVKEY
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.secretService.secrets.harborService.path }}
+        - name: SECRET_HARBOR_SERVICE_PATH
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.secretService.secrets.harborService.keys.cert }}
+        - name: SECRET_HARBOR_SERVICE_CERT_KVKEY
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.adm.catalogService }}
+        - name: CATALOG_SERVICE_ADDRESS
+          value: {{ . }}
+        {{- end }}
+        {{- with .Values.adm.apiExtension.apiAgent.helmSecretName }}
+        - name: API_AGENT_HELM_SECRET_NAME
+          value: {{ . }}
+        {{- end }}
+        {{- with .Values.adm.giteaDeleteRepoOnTerminate }}
+        - name: GITEA_DELETE_REPO_ON_TERMINATE
+          value: "{{ . }}"
+        {{- end }}
+        {{- with .Values.adm.fleetAddGlobalVars }}
+        - name: FLEET_ADD_GLOBAL_VARS
+          value: "{{ . }}"
+        {{- end }}
+        {{- with .Values.adm.fleetGitRemoteType }}
+        - name: FLEET_GIT_REMOTE_TYPE
+          value: "{{ . }}"
+        {{- end }}
+        {{- with .Values.adm.fleet.agentCheckIn }}
+        - name: FLEET_AGENT_CHECKIN
+          value: "{{ . }}"
+        {{- end }}
+        {{- with .Values.adm.statusRefreshInterval }}
+        - name: STATUS_REFRESH_INTERVAL
+          value: "{{ . }}"
+        {{- end }}
+        # If .Values.adm.redeployAfterUpdate=false then a "with" clause is not executed
+        - name: REDEPLOY_AFTER_UPDATE
+          value: {{ .Values.adm.redeployAfterUpdate | quote }}
+        - name: USE_M2M_TOKEN
+          value: {{  .Values.adm.useM2MToken | quote }}
+        - name: API_EXT_ENABLED
+          value: {{ .Values.adm.apiExtension.enabled | quote }}
+        - name: CAPI_ENABLED
+          value: {{ .Values.adm.capi.enabled | quote }}
+        - name: GRAFANA_EXT_ENABLED
+          value: {{ .Values.adm.grafanaExtension.enabled | quote }}
+        {{- with .Values.adm.fleet.pollingInterval }}
+        - name: FLEET_GIT_POLLING_INTERVAL
+          value: "{{ . }}"
+        {{- end }}
+        {{- with .Values.adm.extraEnv }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.adm.resources }}
+        resources:
+        {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- if .Values.adm.metrics.enabled }}
+        ports:
+          - containerPort: 8080
+            name: http-metrics
+            protocol: TCP
+        {{- end }}
+        volumeMounts:
+          - name: mock-ca
+            mountPath: /tmp/mocks
+          - name: logging
+            mountPath: /etc/dazl
+          - name: tmp
+            mountPath: /tmp
+          - mountPath: /tmp/k8s-webhook-server/serving-certs
+            name: cert
+            readOnly: true
+        {{- if .Values.adm.gitUseCaCert }}
+          - name: {{ .Values.adm.gitCaCertVolume }}
+            mountPath: {{ .Values.adm.gitCaCertFolder }}
+        {{- end }}
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: mock-ca
+          configMap:
+            name: {{ template "app-deployment-manager.fullname" . }}-mock-ca
+        - name: logging
+          configMap:
+            name: {{ template "app-deployment-manager.fullname" . }}-logging
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: webhook-server-cert
+      {{- if .Values.adm.gitUseCaCert }}
+        - name: {{ .Values.adm.gitCaCertVolume }}
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.adm.gitCaCertSecret }}
+      {{- end }}

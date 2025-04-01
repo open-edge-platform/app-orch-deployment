@@ -1,0 +1,76 @@
+// SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package resource.v2;
+
+import "google/api/field_behavior.proto";
+import "validate/validate.proto";
+
+// Represents an endpoint for accessing the application outside of a cluster.
+message AppEndpoint {
+  // Endpoint object UID (e.g. service or ingress UID)
+  string id = 1 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (validate.rules).string.uuid = true
+  ];
+
+  // Endpoint name
+  string name = 2 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (validate.rules).string = {
+      min_len: 1
+      max_len: 40
+      pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+    }
+  ];
+
+  // Fully qualified domain name (FQDN) for external access.
+  repeated Fqdn fqdns = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // List of ports exposed by a service for external access
+  repeated Port ports = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // EndpointStatus status of an endpoint
+  EndpointStatus endpoint_status = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// Fully qualified domain name.
+message Fqdn {
+  string fqdn = 5 [(validate.rules).string.hostname = true];
+}
+
+// Port information
+message Port {
+  // Port name
+  string name = 1 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (validate.rules).string = {
+      min_len: 1
+      max_len: 40
+      pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+    }
+  ];
+
+  // Port value
+  int32 value = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Protocol for a port.
+  string protocol = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Service proxy URL for a port.
+  string service_proxy_url = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// Status of the endpoint.
+message EndpointStatus {
+  // Endpoint state, either Ready or NotReady.
+  State state = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  enum State {
+    STATE_UNSPECIFIED = 0;
+    STATE_READY = 1;
+    STATE_NOT_READY = 2;
+  }
+}

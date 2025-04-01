@@ -1,0 +1,151 @@
+# SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Default values for interconnect-manager.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+global:
+  registry:
+    name: registry-rs.edgeorchestration.intel.com/edge-orch
+
+
+image:
+  registry:
+    name: registry-rs.edgeorchestration.intel.com/edge-orch
+  repository: app/app-interconnect-manager
+  pullPolicy: IfNotPresent
+
+# -- imagePullSecrets are used when pulling images from private repos.
+imagePullSecrets: []
+
+# -- podSecurityContext is the runtime context of the pod.
+podSecurityContext:
+  runAsUser: 65532
+  runAsNonRoot: true
+
+# -- securityContext defines pod's capabilities and permissions in the host.
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - "ALL"
+
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+podLabels: {}
+
+
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# Additional volumes on the output Deployment definition.
+volumes: []
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts:
+  - name: logging
+    mountPath: /etc/dazl
+  - name: tmp
+    mountPath: /tmp
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+logLevel: 2
+
+logging:
+  encoders:
+    json:
+      fields:
+        - message
+        - level:
+            format: uppercase
+        - caller:
+            format: short
+        - timestamp:
+            format: iso8601
+
+  writers:
+    stdout:
+      encoder: json
+
+  rootLogger:
+    level: info
+    outputs:
+      - stdout
+
+interconnect_manager:
+  # The interconnect manager can be run in one of two modes:
+  # - dev: the manager will run in development mode, using a local client to manage a single cluster
+  # - prod: the manager will run in production mode, using orchestrator's APIs to manage multiple clusters
+  mode: prod
+  admService: "app-deployment-api-grpc-server:8080"
+  useM2MToken: false
+  vaultServer: "http://vault.orch-platform.svc.cluster.local:8200"
+  keycloakServer: "https://localhost:9090"
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Automatically mount a ServiceAccount's API credentials?
+    automount: true
+    # Annotations to add to the service account
+    annotations: { }
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+

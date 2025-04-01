@@ -1,0 +1,224 @@
+# yamllint disable-file
+# SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+{{- $registry := .Values.global.registry -}}
+{{- if .Values.image.registry -}}
+{{- $registry = .Values.image.registry -}}
+{{- end -}}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Values.gateway.deployment.name }}"
+  labels:
+    app: "{{ .Values.gateway.deployment.name }}"
+spec:
+  replicas: {{ .Values.gateway.replicaCount }}
+  selector:
+    matchLabels:
+      app: "{{ .Values.gateway.deployment.name }}"
+  template:
+    metadata:
+      labels:
+        app: "{{ .Values.gateway.deployment.name }}"
+        version: {{ .Chart.AppVersion | quote }}
+    spec:
+      {{- with $registry.imagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ template "app-deployment-manager.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.gateway.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.gateway.deployment.name }}-rest-proxy
+          {{- with .Values.gateway.image }}
+          image: "{{- if hasKey $registry "name" }}{{ $registry.name }}/{{- end -}}{{ .repository }}:{{ default $.Chart.AppVersion .tag }}"
+          {{- end }}
+          imagePullPolicy: "{{ .Values.gateway.image.pullPolicy }}"
+          securityContext:
+              {{- toYaml .Values.gateway.deployment.securityContext | nindent 12 }}
+          resources:
+              {{- toYaml .Values.gateway.resources | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.gateway.deployment.httpPort }}
+              protocol: TCP
+          volumeMounts:
+            - name: logging
+              mountPath: /etc/dazl
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.gateway.service.restProxy.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.gateway.service.restProxy.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          env:
+          - name: MSG_SIZE_LIMIT
+            value: {{ .Values.gateway.deployment.msgSizeLimit | quote }}
+          - name: OIDC_TLS_INSECURE_SKIP_VERIFY
+            value: {{ .Values.openidc.insecureSkipVerify | quote }}
+          - name: GIN_MODE
+            value: {{ .Values.gin.mode }}
+          command: [ "/usr/local/bin/rest-proxy" ]
+          args:
+          {{- range $key, $value := .Values.gateway.serviceArgs }}
+            - {{ print "-" $key | toYaml -}}={{- $value }}
+          {{- end }}
+        - name: {{ .Values.gateway.deployment.name }}
+          {{- with .Values.gateway.image }}
+          image: "{{- if hasKey $registry "name" }}{{ $registry.name }}/{{- end -}}{{ .repository }}:{{ default $.Chart.AppVersion .tag }}"
+          {{- end }}
+          imagePullPolicy: "{{ .Values.gateway.image.pullPolicy }}"
+          securityContext:
+              {{- toYaml .Values.gateway.deployment.securityContext | nindent 12 }}
+          resources:
+              {{- toYaml .Values.adm.resources | nindent 12 }}
+          ports:
+            - name: grpc
+              containerPort: {{ .Values.gateway.service.grpcServer.port }}
+              protocol: TCP
+          volumeMounts:
+            - name: logging
+              mountPath: /etc/dazl
+          env:
+          - name: USE_M2M_TOKEN
+            value: {{  .Values.adm.useM2MToken | quote }}
+          - name: SECRET_SERVICE_ENABLED
+            value: {{ .Values.adm.secretService.enabled | quote }}
+          - name: MSG_SIZE_LIMIT
+            value: {{ .Values.gateway.deployment.msgSizeLimit | quote }}
+          - name: CATALOG_SERVICE_ADDRESS
+            value: {{ .Values.adm.catalogService | quote }}
+          - name: SECRET_SERVICE_ENDPOINT
+            value: {{ .Values.adm.secretService.endpoint | quote }}
+          - name: KEYCLOAK_SERVICE_ENDPOINT
+            value: {{ .Values.adm.keycloakServerEndpoint | quote }}
+          - name: SERVICE_ACCOUNT
+            value: {{ .Values.adm.serviceAccount.name | quote }}
+          - name: RATE_LIMITER_QPS
+            value: {{ .Values.adm.rateLimiter.qps | quote }}
+          - name: RATE_LIMITER_BURST
+            value: {{ .Values.adm.rateLimiter.burst | quote }}
+          - name: OIDC_SERVER_URL
+            value: {{ .Values.openidc.issuer | quote }}
+          - name: OPA_PORT
+            value: {{ .Values.openpolicyagent.port | quote }}
+          {{- if .Values.openpolicyagent.enabled }}
+          - name: OPA_ENABLED
+            value: "true"
+          {{- end}}
+          - name: API_EXT_ENABLED
+            value: {{ .Values.adm.apiExtension.enabled | quote }}
+          - name: GRAFANA_EXT_ENABLED
+            value: {{ .Values.adm.grafanaExtension.enabled | quote }}
+          {{- with .Values.adm.releaseServiceProxy.repo }}
+          - name: RS_PROXY_REPO
+            value: "{{ . }}"
+          {{- end }}
+          {{- with .Values.adm.releaseServiceProxy.repoSecret }}
+          - name: RS_PROXY_REPO_SECRET
+            value: "{{ . }}"
+          {{- end }}
+          {{- with .Values.adm.releaseServiceProxy.remoteNamespace }}
+          - name: RS_PROXY_REMOTE_NS
+            value: "{{ . }}"
+          {{- end }}
+          command: [ "/usr/local/bin/app-deployment-manager" ]
+          args:
+          {{- range $key, $value := .Values.gateway.serviceArgs }}
+            - {{ print "-" $key | toYaml -}}={{- $value }}
+          {{- end }}
+        {{- if .Values.openpolicyagent.enabled }}
+        - name: openpolicyagent
+          {{- with .Values.openpolicyagent }}
+          image: "{{- if .registry -}}{{ .registry }}/{{- end -}}{{ .image }}:{{ .tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.gateway.image.pullPolicy }}
+          securityContext:
+              {{- toYaml .Values.openpolicyagent.securityContext | nindent 12 }}
+          resources:
+              {{- toYaml .Values.openpolicyagent.resources | nindent 12 }}
+          ports:
+            - name: opa
+              containerPort: {{ .Values.openpolicyagent.port }}
+              protocol: TCP
+          args:
+            - "run"
+            - "--server"
+            - "/opt/app-deployment-manager-api/rego"
+            - "--log-level"
+            - {{ .Values.openpolicyagent.loglevel }}
+          livenessProbe:
+            httpGet:
+              path: /health?bundle=true  # Include bundle activation in readiness
+              scheme: HTTP
+              port: {{ .Values.openpolicyagent.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health?bundle=true  # Include bundle activation in readiness
+              scheme: HTTP
+              port: {{ .Values.openpolicyagent.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: openpolicyagent
+              mountPath: /opt/app-deployment-manager-api/rego
+              readOnly: true
+        {{- end }}
+      volumes:
+        - name: logging
+          configMap:
+            name: {{ .Values.gateway.deployment.name }}-logging
+        {{- if .Values.openpolicyagent.enabled }}
+        - name: openpolicyagent
+          configMap:
+            name: {{ .Values.gateway.deployment.name }}-opa-rego
+        {{- end }}
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: {{ .Release.Namespace | quote }}
+  name: "{{ .Values.gateway.deployment.clusterRoleName }}"
+rules:
+- apiGroups: ["app.edge-orchestrator.intel.com"] # "" indicates the core API group
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["fleet.cattle.io"]
+  resources:
+    - clusters
+  verbs: ["get", "list", "watch", "create", "update"]
+- apiGroups: ["projectwatcher.edge-orchestrator.intel.com"]
+  resources: ["projectwatchers"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["projectactivewatcher.edge-orchestrator.intel.com"]
+  resources: ["projectactivewatchers"]
+  verbs: ["get", "list", "watch", "delete", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  namespace: {{ .Release.Namespace | quote }}
+  name: "{{ .Values.gateway.deployment.clusterRoleBindingName }}"
+subjects:
+- kind: ServiceAccount
+  name: {{ template "app-deployment-manager.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace | quote }}
+roleRef:
+  # "roleRef" specifies the binding to a Role / ClusterRole
+  kind: ClusterRole #this must be Role or ClusterRole
+  name: "{{ .Values.gateway.deployment.clusterRoleName }}" # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io

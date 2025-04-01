@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+version: v2
+modules:
+  - path: api/nbi/v2
+deps:
+  - buf.build/bufbuild/protovalidate
+  - buf.build/googleapis/googleapis
+  - buf.build/grpc-ecosystem/grpc-gateway
+lint:
+  use:
+    - DEFAULT
+    - ENUM_FIRST_VALUE_ZERO
+  except:
+    - FIELD_NOT_REQUIRED
+    - PACKAGE_NO_IMPORT_CYCLE
+  rpc_allow_google_protobuf_empty_responses: true
+  disallow_comment_ignores: true
+breaking:
+  use:
+    - FILE
+  except:
+    - EXTENSION_NO_DELETE
+    - FIELD_SAME_DEFAULT

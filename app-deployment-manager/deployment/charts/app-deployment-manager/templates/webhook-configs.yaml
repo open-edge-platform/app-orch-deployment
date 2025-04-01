@@ -1,0 +1,60 @@
+# yamllint disable-file
+# SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: mutating-webhook-configuration-adm
+  annotations:
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/webhook-server-cert
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: {{ .Release.Namespace }}
+      path: /mutate-app-edge-orchestrator-intel-com-v1beta1-deployment
+  failurePolicy: Fail
+  name: mdeployment.kb.io
+  rules:
+  - apiGroups:
+    - app.edge-orchestrator.intel.com
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - deployments
+  sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: validating-webhook-configuration-adm
+  annotations:
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/webhook-server-cert
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: {{ .Release.Namespace }}
+      path: /validate-app-edge-orchestrator-intel-com-v1beta1-deployment
+  failurePolicy: Fail
+  name: vdeployment.kb.io
+  rules:
+  - apiGroups:
+    - app.edge-orchestrator.intel.com
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - deployments
+  sideEffects: None

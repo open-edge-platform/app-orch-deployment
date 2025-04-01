@@ -1,0 +1,146 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - app.edge-orchestrator.intel.com
+  resources:
+  - apiextensions
+  - clusters
+  - deploymentclusters
+  - deployments
+  - grafanaextensions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.edge-orchestrator.intel.com
+  resources:
+  - apiextensions/finalizers
+  - clusters/finalizers
+  - deploymentclusters/finalizers
+  - deployments/finalizers
+  - grafanaextensions/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - app.edge-orchestrator.intel.com
+  resources:
+  - apiextensions/status
+  - deploymentclusters/status
+  - deployments/status
+  - grafanaextensions/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - app.edge-orchestrator.intel.com
+  resources:
+  - clusters/status
+  verbs:
+  - create
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - secrets/status
+  verbs:
+  - get
+- apiGroups:
+  - fleet.cattle.io
+  resources:
+  - bundledeployments
+  - bundles
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - fleet.cattle.io
+  resources:
+  - gitrepos
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses/finalizers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses/status
+  verbs:
+  - get
+- apiGroups:
+  - traefik.containo.us
+  resources:
+  - ingressroutes
+  - middlewares
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - traefik.containo.us
+  resources:
+  - ingressroutes/status
+  - middlewares/status
+  verbs:
+  - get

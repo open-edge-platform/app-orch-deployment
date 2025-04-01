@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+---
+apiVersion: app.edge-orchestrator.intel.com/v1beta1
+kind: DeploymentCluster
+metadata:
+  name: test-deployment-cluster-3
+  namespace: cluster-fleet-default-cluster-003
+  labels:
+    app.edge-orchestrator.intel.com/deployment-id: 32e8a8e9-9f0a-4984-9ad7-98a39da9d246
+    app.edge-orchestrator.intel.com/deployment-namespace: fleet-default
+    app.edge-orchestrator.intel.com/deployment-name: test-deployment
+    app.edge-orchestrator.intel.com/network-name: test-network
+    cluster.orchestration.io/cluster-id: cluster-003
+spec:
+  deploymentId: 32e8a8e9-9f0a-4984-9ad7-98a39da9d246
+  clusterId: cluster-003
+  namespace: fleet-default
+status:
+  apps:
+    - name: test-app-1
+      id: c-b321a235-48fb-5223-8fa2-d196caf5a420

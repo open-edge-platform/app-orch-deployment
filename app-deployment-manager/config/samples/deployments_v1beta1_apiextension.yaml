@@ -1,0 +1,87 @@
+# SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+apiVersion: v1
+data:
+  values: IyBTUERYLUZpbGVDb3B5cmlnaHRUZXh0OiAoQykgMjAyMyBJbnRlbCBDb3Jwb3JhdGlvbgojIFNQRFgtTGljZW5zZS1JZGVudGlmaWVyOiBMaWNlbnNlUmVmLUludGVsCi0tLQptYXJpYWRiOgogIHByaW1hcnk6CiAgICBwZXJzaXN0ZW5jZToKICAgICAgZW5hYmxlZDogZmFsc2UKICBhdXRoOgogICAgcGFzc3dvcmQ6IHBhc3N3b3JkCiAgICByb290UGFzc3dvcmQ6IHNlY3JldHBhc3N3b3JkCndvcmRwcmVzc1VzZXJuYW1lOiBhZG1pbgp3b3JkcHJlc3NQYXNzd29yZDogcGFzc3dvcmQKcGVyc2lzdGVuY2U6CiAgZW5hYmxlZDogZmFsc2UK
+kind: Secret
+metadata:
+  name: wordpress-0.1.2-profile
+  namespace: clusters
+type: Opaque
+---
+apiVersion: v1
+data:
+  token: NDd2aHJtenJ0MnFwd2w2Z3Bta216cnE0NGI4bTloY2JoYzJ6ZjhnY2RnbGt2d2J0ejYyZzI0
+kind: Secret
+metadata:
+  name: wordpress-apiextension-sample-token
+  namespace: clusters
+type: Opaque
+---
+apiVersion: app.edge-orchestrator.intel.com/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: deployment
+    app.kubernetes.io/instance: wordpress-apiextension-example
+    app.kubernetes.io/part-of: app-deployment-manager
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: app-deployment-manager
+  name: wordpress-apiextension-example
+  namespace: clusters
+spec:
+  displayName: "My Wordpress Blog"
+  project: test-project
+  deploymentType: auto-scaling
+  applications:
+    - name: wordpress
+      version: 0.1.2
+      namespace: apps0
+      targets:
+        color: blue
+      helmApp:
+        chart: wordpress
+        version: 15.2.42
+        repo: https://charts.bitnami.com/bitnami
+      profileSecretName: wordpress-0.1.2-profile
+  deploymentPackageRef:
+    publisher: intel
+    name: wordpress
+    version: 0.1.2
+    profileName: default
+---
+apiVersion: app.edge-orchestrator.intel.com/v1beta1
+kind: APIExtension
+metadata:
+  labels:
+    app.kubernetes.io/name: apiextension
+    app.kubernetes.io/instance: apiextension-sample
+    app.kubernetes.io/part-of: app-deployment-manager
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: app-deployment-manager
+  name: apiextension-sample
+  namespace: clusters
+spec:
+  displayName: "Sample wordpress API"
+  project: test-project
+  apiGroup:
+    name: "wordpress"
+    version: "v1"
+  proxyEndpoints:
+    - serviceName: "wordpress"
+      path: "index"
+      backend: "wordpress.apps0:80"
+      scheme: "http"
+      authType: "insecure"
+      appName: "wordpress"
+  uiExtensions:
+    - label: "wordpress-label"
+      serviceName: "wordpress"
+      description: "This is the ui extension of wordpress application"
+      fileName: "wordpress.js"
+      appName: "wordpress-app-name"
+      moduleName: "word-press-module-name"
+  agentClusterLabels:
+    color: blue

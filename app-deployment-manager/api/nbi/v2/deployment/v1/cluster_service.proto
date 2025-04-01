@@ -1,0 +1,124 @@
+// SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package deployment.v1;
+
+import "buf/validate/validate.proto";
+import "deployment/v1/resources.proto";
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+// ClusterService provides RPC methods to get clusters information.
+service ClusterService {
+  // GetKubeConfig gets kubeConfig based on a given cluster id
+  rpc GetKubeConfig(GetKubeConfigRequest) returns (GetKubeConfigResponse) {}
+
+  // Gets a list of all cluster objects.
+  rpc ListClusters(ListClustersRequest) returns (ListClustersResponse) {
+    option (google.api.http) = {get: "/deployment.orchestrator.apis/v1/clusters"};
+  }
+
+  // Gets a cluster object.
+  rpc GetCluster(GetClusterRequest) returns (GetClusterResponse) {
+    option (google.api.http) = {get: "/deployment.orchestrator.apis/v1/clusters/{cluster_id}"};
+  }
+}
+
+// Request message for Get KubeConfig method
+message GetKubeConfigRequest {
+  // Required. The cluster id for the kubeconfig.
+  string cluster_id = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (buf.validate.field).string = {
+      min_len: 1
+      max_len: 40
+      pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+    }
+  ];
+}
+
+// Response message for Get KubeConfig method
+message GetKubeConfigResponse {
+  KubeConfigInfo kube_config_info = 1;
+}
+
+message KubeConfigInfo {
+  bytes kube_config = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// Request message for the ListClusters method.
+message ListClustersRequest {
+  // Optional. A string array that filters cluster labels to be
+  // displayed ie color=blue,customer=intel. Labels separated by a comma.
+  repeated string labels = 1 [
+    (google.api.field_behavior) = OPTIONAL,
+    (buf.validate.field).repeated = {min_items: 0}
+  ];
+
+  // Optional. Select field and order based on which cluster list will be sorted.
+  string order_by = 2 [(google.api.field_behavior) = OPTIONAL];
+
+  // Optional. Selection criteria to list clusters.
+  string filter = 3 [(google.api.field_behavior) = OPTIONAL];
+
+  // Optional. Select count of clusters to be listed per page.
+  int32 page_size = 4 [
+    (google.api.field_behavior) = OPTIONAL,
+    (buf.validate.field).int32 = {
+      gte: 0
+      lte: 100
+    }
+  ];
+
+  // Optional. Offset is used to select the correct page from which clusters list will be displayed.
+  // (E.g If there are 10 clusters, page size is 2 and offset is set as 4, then the response will display clusters 5 and 6).
+  int32 offset = 5 [
+    (google.api.field_behavior) = OPTIONAL,
+    (buf.validate.field).int32 = {gte: 0}
+  ];
+}
+
+// Response message for the ListClusters method.
+message ListClustersResponse {
+  // A list of Cluster Objects.
+  repeated ClusterInfo clusters = 1 [(google.api.field_behavior) = REQUIRED];
+
+  int32 total_elements = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// Request message for GetCluster method.
+message GetClusterRequest {
+  // Required. The id of the cluster.
+  string cluster_id = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (buf.validate.field).string = {
+      min_len: 1
+      max_len: 40
+      pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+    }
+  ];
+}
+
+// Response message for GetCluster method.
+message GetClusterResponse {
+  deployment.v1.Cluster cluster = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// Cluster defines the message for the Cluster object.
+message ClusterInfo {
+  // ID is the cluster id which ECM generates and assigns to the Rancher cluster name.
+  string id = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // List of cluster labels retrieved from Fleet cluster object.
+  map<string, string> labels = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // The creation time of the cluster retrieved from Fleet cluster object.
+  google.protobuf.Timestamp create_time = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Name is the display name which user provides and ECM creates and assigns clustername label to Fleet cluster object.
+  string name = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+}

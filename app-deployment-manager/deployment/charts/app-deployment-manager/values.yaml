@@ -1,0 +1,341 @@
+# SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+global:
+  registry:
+    name: registry-rs.edgeorchestration.intel.com/edge-orch
+    imagePullSecrets: []
+
+image:
+  registry:
+    name: registry-rs.edgeorchestration.intel.com/edge-orch
+    imagePullSecrets: []
+
+adm:
+  rateLimiter:
+    qps: 30
+    burst: 2000
+  image:
+    repository: app/adm-controller
+    pullPolicy: IfNotPresent
+
+  # -- podSecurityContext is the runtime context of the pod.
+  podSecurityContext:
+    runAsUser: 65532
+    runAsNonRoot: true
+
+  # -- securityContext defines pod's capabilities and permissions in the host.
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - "ALL"
+    seccompProfile:
+      type: RuntimeDefault
+
+  #nameOverride:
+  #fullnameOverride:
+  commonAnnotations: {}
+  commonLabels: {}
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    # name: ""
+    # NOTE: if we want to use Vault secret service, this will be set to the system service account
+
+  rbac:
+    create: true
+
+  replicaCount: 1
+
+  resources:
+    limits:
+      cpu: 1
+      memory: 1Gi
+    requests:
+      cpu: 10m
+      memory: 128Mi
+
+  # Set the verbosity of app-deployment-manager. Range of 0 - 6 with 6 being the most verbose.
+  logLevel: 2
+
+  # Optional additional annotations to add to the controller Deployment
+  # deploymentAnnotations: {}
+
+  # Use these variables to configure the HTTP_PROXY environment variables
+  # http_proxy: "http://proxy:8080"
+  # https_proxy: "https://proxy:8080"
+  # no_proxy: 127.0.0.1,localhost
+
+  # Additional command line flags to pass to app deployment manager controller binary.
+  # To see all available flags run docker run registry-rs.edgeorchestration.intel.com/edge-orch/app/adm-controller:<version> --help
+  extraArgs: []
+
+  extraEnv: []
+
+  # Catalog Service
+  catalogService: ""
+
+  # Keycloak Service
+  keycloakServerEndpoint: "https://localhost:9090"
+
+  # Configuration for Git provider to which repos will be pushed
+  # gitProvider options < gitea | codecommit >
+  gitProvider: gitea
+  gitUser:
+  gitPassword:
+  gitServer: https://gitea.kind.internal
+  gitProxy: ""
+  gitUseCaCert: true
+  gitCaCertSecret: gitea-ca-cert
+  gitCaCertSecretKey: ca.crt
+  # Name of the volume that has the git ca cert mounted
+  gitCaCertVolume: git-ca-cert-volume
+  # Folder in the volume where git ca cert is mounted
+  gitCaCertFolder: /tmp/ssl/certs/
+  # Name of the file in the folder containing the git ca certificate
+  gitCaCertFile: ca.crt
+
+  # If gitProvider is not codecommit these values will be ignored
+  # Keys are used for AWS SDK git client
+  codeCommit:
+    awsRegion: us-west-2
+    awsAccessKeyId:
+    awsSecretAccessKey:
+    awsSshKeyId:
+
+  # If secretService is enabled, all credentials such as gitUser, gitPassword, awsAccessKeyID,
+  # awsSecretAccessKey, awsSshKeyId, and awsRegion values above will be all ignored
+  secretService:
+    enabled: false
+    # it will be ignored if enabled is false
+    endpoint: "http://vault.orch-platform-system.svc.cluster.local:8200"
+    secrets:
+      mount: "secret"
+      gitService:
+        path: "ma_git_service"
+        keys:
+          username: "username"
+          password: "password"
+      awsService:
+        path: "ma_aws_service"
+        keys:
+          region: "region"
+          accessKeyID: "accessKeyID"
+          secretAccessKey: "secretAccessKey"
+          sshKeyID: "sshKeyID"
+      harborService:
+        path: "ma_harbor_service"
+        keys:
+          cert: "cacerts"
+
+  releaseServiceProxy:
+    repo: "oci://rs-proxy.rs-proxy.svc.cluster.local:8443"
+    repoSecret: "fleet-rs-secret"
+    remoteNamespace: "orch-platform"
+
+  # Delete Git repo after Deployment terminates.
+  # Currently relies on Gitea client; set to false if not using Gitea server.
+  giteaDeleteRepoOnTerminate: true
+
+  # Add required global.fleet.clusterLabels to all BundleDeployments.  Fleet v0.5
+  # did this automatically but Fleet v0.6 does not, so set to true if using v0.6.
+  fleetAddGlobalVars: true
+
+  # Git remote URL type used in Fleet GitRepo configuration.
+  # Available options are http, https, ssh
+  fleetGitRemoteType: http
+
+  fleet:
+    # The time (mins) to wait for Fleet agent heartbeat before declaring cluster in Unknown state.
+    agentCheckIn: 32
+    # How often Fleet checks git for new updates (secs).
+    pollingInterval: 15
+
+  # Refresh Deployment status every N seconds (default: 0, on every reconcile)
+  statusRefreshInterval: 0
+
+  # Redeploy apps after each update
+  redeployAfterUpdate: false
+
+  config: {}
+  defaultNamespace: "orch-apps"
+
+  grafanaExtension:
+    enabled: false
+
+  capi:
+    enabled: false
+  # API extension configurations.
+  apiExtension:
+    enabled: false
+    apiGroupDomain: orchestrator-extension.apis
+    ingress:
+      kind: traefik
+    apiProxy:
+      url: wss://service-proxy.orchestrator.intel.com
+      # API proxy namespace is valid only when using traefik as ingress kind
+      # To use nginx, api-proxy needs to be deployed in the same namespace where Deployment CR is created.
+      namespace: orch-app-system
+      service: api-proxy
+      port: 8123
+    apiAgent:
+      chart: oci://registry-rs.edgeorchestration.intel.com/edge-orch/app/charts/api-agent
+      version: 0.1.46
+      namespace: orch-app-system
+      helmSecretName: "intel-reg-secret"
+
+  metrics:
+    enabled: true
+    port: 8080
+    dashboardAdminFolder: orchestrator
+    dashboardCustomerFolder: Deployments
+
+  # enable authentication via the M2M token
+  useM2MToken: true
+
+gateway:
+  commonAnnotations: {}
+  commonLabels: {}
+
+  serviceArgs: {}
+  # allowedCorsOrigins: "http://localhost:8081"
+  # # basePath is required as in production the UI uses `app-orch` to prefix all requests going to the catalog and ADM and redirect them accordingly
+  # basePath: "app-orch/"
+
+  # -- podSecurityContext is the runtime context of the pod.
+  podSecurityContext:
+    runAsUser: 65532
+    runAsNonRoot: true
+
+  resources:
+    limits:
+      cpu: 1
+      memory: 512Mi
+    requests:
+      cpu: 10m
+      memory: 128Mi
+
+  image:
+    repository: app/adm-gateway
+    pullPolicy: IfNotPresent
+
+  replicaCount: 1
+
+  deployment:
+    name: app-deployment-api
+    httpPort: 8081
+    # message size in megabytes
+    msgSizeLimit: 1
+    clusterRoleName: adm-api-role
+    clusterRoleBindingName: adm-api-binding
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      seccompProfile:
+        type: RuntimeDefault
+      capabilities:
+        drop:
+          - "ALL"
+
+  service:
+    name: app-deployment-api
+    restProxy:
+      type: ClusterIP
+      targetPort: http
+      port: 8081
+    grpcServer:
+      type: ClusterIP
+      targetPort: grpc
+      port: 8080
+      # nodePort: 32002
+
+    # -- opa exposes the OpenPolicy Agent service for Authorization
+    opa:
+      # -- enabled to expose the OPA REST API to the public
+      enabled: true
+      # -- type is k8s service type.
+      type: ClusterIP
+      # -- port is the port of the k8s service.
+      port: 8111
+
+  service_account: adm-gateway-sa
+
+  configmap:
+    name: configmap-adm-gateway
+    registration: adm-gateway-cm
+
+# -- traefikReverseProxy defines params for external access to services in a cluster using Traefik reverse proxy.
+traefikReverseProxy:
+  # -- enabled is a switch to turn on/off the Traefik reverse proxy resource; Traefik MUST be deployed to gateway-system ns before enabling it here.
+  enabled: false
+  # -- gatewayNamespace specifies namespace of Traefik and related resources (e.g. k8s secret or tls option).
+  gatewayNamespace: gateway-system
+  # -- secretName is name of k8s secret containing TLS server cert.
+  secretName: tls-demo
+  # -- matchRoute defines routing rules (e.g. Host(`http.sample.com`))
+  matchRoute: Host(`app-orch.kind.internal`)
+  # -- tlsOption is the name of the Traefik option for handling TLS or mTLS connections.
+  tlsOption: gateway-tls
+  # -- validate-jwt middleware
+  validateJwtMiddleware: validate-jwt
+
+openidc:
+  # -- the endpoint of a Keycloak Realm e.g. http://keycloak/realms/master
+  issuer: "http://platform-keycloak.orch-platform.svc/realms/master"
+  insecureSkipVerify: false
+
+logging:
+  encoders:
+    json:
+      fields:
+        - message
+        - level:
+            format: uppercase
+        - caller:
+            format: short
+        - timestamp:
+            format: iso8601
+
+  writers:
+    stdout:
+      encoder: json
+
+  rootLogger:
+    level: info
+    outputs:
+      - stdout
+
+gin:
+  # mode (debug, release)
+  mode: "release"
+
+openpolicyagent:
+  image: openpolicyagent/opa
+  # -- tag is the name of the postgres image tag.
+  tag: 0.67.1-static
+  # --
+  enabled: true
+  port: 8181
+  loglevel: info
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop:
+        - "ALL"
+
+  resources:
+    limits:
+      cpu: 1
+      memory: 512Mi
+    requests:
+      cpu: 10m
+      memory: 128Mi

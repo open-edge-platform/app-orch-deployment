@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+## Append samples you want in your CSV to this file as resources ##
+resources:
+- deployments_v1alpha2_deployment.yaml
+- deployments_v1alpha2_apiextension.yaml
+- app_v1beta1_cluster.yaml
+- app_v1beta1_grafanaextension.yaml
+- deployments_v1beta1_apiextension.yaml
+- deployments_v1beta1_deployment.yaml
+- deployments_v1beta1_grafanaextension.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples
