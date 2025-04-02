@@ -24,7 +24,7 @@ jobs:
   component-test-adm:
     if: |
       ${{ inputs.run-adm || github.event_name == 'schedule' || github.event.label.name == 'run-adm-component-tests' }}
-    name: Deploy Kind Orchestrator and Run Component Tests
+    name: Deploy Kind Orchestrator and Run ADM Component Tests
     runs-on: ubuntu-24.04-16core-64GB # ubuntu-24.04-4core-16GB ubuntu-22.04-32core-128GB & ubuntu-24.04-16core-64GB
     timeout-minutes: 60
     env:
@@ -33,11 +33,11 @@ jobs:
       DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
       DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v1
     - name: Component tests
       uses: ./.github/actions/component-test
       with:
-        test_data_dir: app-deployment-manager/internal/northbound/fuzztests/testdata/fuzz
         gh_token: ${{ secrets.SYS_ORCH_GITHUB }}
         component: app-deployment-manager
         use-enic: true
-        
