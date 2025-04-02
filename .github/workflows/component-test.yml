@@ -1,0 +1,43 @@
+---
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+name: Component Tests
+on:
+  pull_request:
+    types: [labeled]
+  schedule:
+    - cron: "0 0 * * *" # Run every day at midnight
+  workflow_dispatch:  # Run on manual trigger
+    inputs:
+      run-adm:
+        description: 'Run App Deployment Manager component tests'
+        required: true
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  component-test-adm:
+    if: |
+      ${{ inputs.run-adm || github.event_name == 'schedule' || github.event.label.name == 'run-adm-component-tests' }}
+    name: Deploy Kind Orchestrator and Run Component Tests
+    runs-on: ubuntu-24.04-16core-64GB # ubuntu-24.04-4core-16GB ubuntu-22.04-32core-128GB & ubuntu-24.04-16core-64GB
+    timeout-minutes: 60
+    env:
+      ORCH_DEFAULT_PASSWORD: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
+      CODER_DIR: ${{ github.workspace }}
+      DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
+      DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
+    steps:
+    - name: Component tests
+      uses: ./.github/actions/component-test
+      with:
+        test_data_dir: app-deployment-manager/internal/northbound/fuzztests/testdata/fuzz
+        gh_token: ${{ secrets.SYS_ORCH_GITHUB }}
+        component: app-deployment-manager
+        use-enic: true
+        
