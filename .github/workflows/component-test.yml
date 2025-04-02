@@ -32,12 +32,13 @@ jobs:
       CODER_DIR: ${{ github.workspace }}
       DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
       DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
+      GH_TOKEN: ${{ secrets.SYS_ORCH_GITHUB }}
+      EMF_BRANCH: feature/component-updates
     steps:
     - name: Checkout code
       uses: actions/checkout@v1
     - name: Component tests
       uses: ./.github/actions/component-test
       with:
-        gh_token: ${{ secrets.SYS_ORCH_GITHUB }}
         component: app-deployment-manager
         use-enic: true

@@ -5,12 +5,9 @@
 name: Component Test
 description: "Sets up the environment with necessary tools and dependencies to run component tests"
 inputs:
-  gh_token:
-    required: true
-    description: "PAT token for private repositories"
   component:
     required: true
-    description: ""
+    description: "The Component to test (e.g., app-deployment-manager, app-resource-manager)"
   use-enic:
     required: true
     description: "Deploy Edge Cluster using EniC"
@@ -23,8 +20,8 @@ runs:
       uses: actions/checkout@v4.2.1
       with:
         repository: open-edge-platform/edge-manageability-framework
-        token: ${{ inputs.gh_token }}
-        ref: main
+        token: ${{ env.GH_TOKEN }}
+        ref: ${{ env.EMF_BRANCH }}
 
     - name: Fetch all branches
       shell: bash
@@ -34,7 +31,7 @@ runs:
       shell: bash
       run: |
         echo "GOPRIVATE=github.com/open-edge-platform" >> $GITHUB_ENV
-        git config --global url."https://${{ inputs.gh_token }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+        git config --global url."https://${{ env.GH_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
     - name: Setup asdf and install dependencies
       uses: open-edge-platform/orch-utils/.github/actions/setup-asdf@main
@@ -44,7 +41,7 @@ runs:
       with:
         repository: open-edge-platform/app-orch-deployment
         path: app-orch-deployment
-        token: ${{ inputs.gh_token }}
+        token: ${{ env.GH_TOKEN }}
 
     - name: Get current git hash of the app-orch-deployment PR
       shell: bash
@@ -61,7 +58,7 @@ runs:
       shell: bash
       env:
         GIT_USER: "git"
-        GIT_TOKEN: ${{ inputs.gh_token }}
+        GIT_TOKEN: ${{ env.GH_TOKEN }}
         ORCH_DEPLOY_REV: ${{ env.GIT_HASH_DEPLOY }}
         DOCKERHUB_TOKEN: ${{ env.DOCKERHUB_TOKEN }}
         DOCKERHUB_USERNAME: ${{ env.DOCKERHUB_USERNAME }}
