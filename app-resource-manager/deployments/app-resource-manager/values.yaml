@@ -214,19 +214,12 @@ traefikReverseProxy:
   websocketServer:
     # -- enabled is a switch to turn on/off the Traefik reverse proxy resource; Traefik MUST be deployed to gateway-system ns before enabling it here.
     enabled: true
-  restProxy:
-    # -- enabled is a switch to turn on/off the Traefik reverse proxy resource; Traefik MUST be deployed to gateway-system ns before enabling it here.
-    enabled: true
-    # -- matchRoute defines routing rules (e.g. Host(`http.sample.com`))
-    matchRoute: Host(`app-orch.kind.internal`)
   # -- gatewayNamespace specifies namespace of Traefik and related resources (e.g. k8s secret or tls option).
   gatewayNamespace: gateway-system
   # -- secretName is name of k8s secret containing TLS server cert.
   secretName: tls-demo
   # -- tlsOption is the name of the Traefik option for handling TLS or mTLS connections.
   tlsOption: gateway-tls
-  # -- validate-jwt middleware
-  validateJwtMiddleware: validate-jwt
 
 openidc:
   # -- the endpoint of a Keycloak Realm e.g. http://keycloak/realms/master
