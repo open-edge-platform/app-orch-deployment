@@ -27,6 +27,7 @@ runs:
         ref: main
 
     - name: Fetch all branches
+      shell: bash
       run: git fetch --all
 
     - name: Set up git credentials
@@ -46,15 +47,18 @@ runs:
         token: ${{ inputs.gh_token }}
 
     - name: Get current git hash of the app-orch-deployment PR
+      shell: bash
       id: get-git-hash-app-orch-deployment
       working-directory: app-orch-deployment
       run: echo "GIT_HASH_CHARTS=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_ENV"
 
     - name: Get current git hash of the edge-manageability-framework PR
+      shell: bash
       id: get-git-hash-deploy
       run: echo "GIT_HASH_DEPLOY=$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
 
     - name: Deploy External Orchestrator
+      shell: bash
       env:
         GIT_USER: "git"
         GIT_TOKEN: ${{ inputs.gh_token }}
@@ -70,6 +74,7 @@ runs:
         kubectl -n dev get applications root-app -o yaml
 
     - name: Verify Kind Deployment
+      shell: bash
       timeout-minutes: 50
       run: |
         echo "Starting to verify Orchestrator deployment..."
@@ -86,6 +91,7 @@ runs:
         echo "Router restarted"
 
     - name: Describe ${{ inputs.component }}
+      shell: bash
       run: kubectl describe application -n orch-app ${{ inputs.component }}
 
     - name: Setup Test environment
@@ -112,12 +118,14 @@ runs:
         echo "ENIC deployment done!"
 
     - name: Redeploy and Rebuild ${{ inputs.component }}
+      shell: bash
       working-directory: app-orch-deployment/${{ inputs.component }}
       run: |
         make coder-redeploy
         make coder-rebuild 
 
     - name: Run ${{ inputs.component }} Component Tests
+      shell: bash
       working-directory: app-orch-deployment/${{ inputs.component }}/test
       run: | 
         echo "${{ inputs.component }} component tests done!"  
