@@ -28,9 +28,9 @@ require (
 	github.com/labstack/gommon v0.4.2
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager v0.0.0-20250131223611-ea55350d19f5
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 v2.3.21
-	github.com/open-edge-platform/orch-library/go v0.5.29
-	github.com/open-edge-platform/orch-library/go/dazl v0.5.2
-	github.com/open-edge-platform/orch-library/go/dazl/zap v0.5.2
+	github.com/open-edge-platform/orch-library/go v0.5.30
+	github.com/open-edge-platform/orch-library/go/dazl v0.5.4
+	github.com/open-edge-platform/orch-library/go/dazl/zap v0.5.4
 	github.com/openshift/api v0.0.0-20210428205234-a8389931bee7
 	github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47
 	github.com/prometheus/client_golang v1.20.4
