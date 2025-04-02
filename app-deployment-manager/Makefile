@@ -262,7 +262,6 @@ coder-clean-adm-crd:
 	kubectl delete crd clusters.app.edge-orchestrator.intel.com --ignore-not-found=true
 	kubectl delete crd deploymentclusters.app.edge-orchestrator.intel.com --ignore-not-found=true
 	kubectl delete crd deployments.app.edge-orchestrator.intel.com --ignore-not-found=true
-	kubectl delete crd grafanaextensions.app.edge-orchestrator.intel.com --ignore-not-found=true
 
 coder-upgrade-adm-crd:
 	helm upgrade --install -n ${ADM_NS} ma-adm-crd -f $(CODER_DIR)/argocd/applications/configs/app-deployment-manager.yaml  build/_output/$(ADM_CRD_HELM_CHART)

@@ -152,7 +152,7 @@ type APIExtensionSpec struct {
 
 // APIExtensionStatus defines the observed state of APIExtension
 type APIExtensionStatus struct {
-	// Conditions is a list conditions that describe the state of the Grafana extension CR
+	// Conditions is a list conditions that describe the state of the extension CR
 	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
 
 	// A string to display in the CLI

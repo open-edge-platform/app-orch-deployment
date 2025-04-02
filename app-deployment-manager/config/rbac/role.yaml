@@ -11,7 +11,6 @@ rules:
   - clusters
   - deploymentclusters
   - deployments
-  - grafanaextensions
   verbs:
   - create
   - delete
@@ -27,7 +26,6 @@ rules:
   - clusters/finalizers
   - deploymentclusters/finalizers
   - deployments/finalizers
-  - grafanaextensions/finalizers
   verbs:
   - update
 - apiGroups:
@@ -36,7 +34,6 @@ rules:
   - apiextensions/status
   - deploymentclusters/status
   - deployments/status
-  - grafanaextensions/status
   verbs:
   - get
   - patch
@@ -53,7 +50,13 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - configmaps
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - ""
+  resources:
   - secrets
   verbs:
   - create
@@ -63,13 +66,6 @@ rules:
   - patch
   - update
   - watch
-- apiGroups:
-  - ""
-  resources:
-  - events
-  verbs:
-  - create
-  - patch
 - apiGroups:
   - ""
   resources:

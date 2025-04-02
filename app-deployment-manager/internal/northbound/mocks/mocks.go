@@ -41,10 +41,6 @@ func (c *FakeDeploymentV1) APIExtensions(namespace string) v1beta1.APIExtensionI
 	return &FakeAPIExtensions{c, namespace}
 }
 
-func (c *FakeDeploymentV1) GrafanaExtensions(namespace string) v1beta1.GrafanaExtensionInterface {
-	return &FakeGrafanaExtensions{c, namespace}
-}
-
 type FakeDeployments struct {
 	Fake *FakeDeploymentV1
 	ns   string
@@ -61,11 +57,6 @@ type FakeClusters struct {
 }
 
 type FakeAPIExtensions struct {
-	Fake *FakeDeploymentV1
-	ns   string
-}
-
-type FakeGrafanaExtensions struct {
 	Fake *FakeDeploymentV1
 	ns   string
 }
@@ -172,30 +163,6 @@ func (c *FakeAPIExtensions) Create(ctx context.Context, apiExtension *deployment
 func (c *FakeAPIExtensions) Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error {
 	args := c.Fake.Called(ctx, name, opts)
 	return args.Error(0)
-}
-
-func (c *FakeGrafanaExtensions) Create(ctx context.Context, grafanaExtension *deploymentv1beta1.GrafanaExtension, opts metav1.CreateOptions) (*deploymentv1beta1.GrafanaExtension, error) {
-	grafanaExtension.Name = "test-deployment"
-	grafanaExtension.Spec.Project = "test-project"
-	grafanaExtension.Spec.ArtifactRef.Artifact = "test-artifact"
-
-	args := c.Fake.Called(ctx, grafanaExtension, opts)
-	return args.Get(0).(*deploymentv1beta1.GrafanaExtension), args.Error(1)
-}
-
-func (c *FakeGrafanaExtensions) Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error {
-	args := c.Fake.Called(ctx, name, opts)
-	return args.Error(0)
-}
-
-func (c *FakeGrafanaExtensions) Get(ctx context.Context, name string, opts metav1.GetOptions) (*deploymentv1beta1.GrafanaExtension, error) {
-	args := c.Fake.Called(ctx, name, opts)
-	return args.Get(0).(*deploymentv1beta1.GrafanaExtension), args.Error(1)
-}
-
-func (c *FakeGrafanaExtensions) List(ctx context.Context, opts metav1.ListOptions) (*deploymentv1beta1.GrafanaExtensionList, error) {
-	args := c.Fake.Called(ctx, opts)
-	return args.Get(0).(*deploymentv1beta1.GrafanaExtensionList), args.Error(1)
 }
 
 type MockAuthService struct {
@@ -390,69 +357,6 @@ var DpNoAPIRespGood = catalog.GetDeploymentPackageResponse{
 		DefaultNamespaces: map[string]string{
 			appname: "test-deployment",
 		},
-	},
-}
-
-var DpGrafanaRespGood = catalog.GetDeploymentPackageResponse{
-	DeploymentPackage: &catalog.DeploymentPackage{
-		Name:    dpname,
-		Version: dpver,
-		ApplicationReferences: []*catalog.ApplicationReference{
-			&appRef,
-		},
-		Profiles: []*catalog.DeploymentProfile{
-			{
-				Name: dpprof,
-				ApplicationProfiles: map[string]string{
-					appname: appprof,
-				},
-			},
-		},
-		DefaultProfileName: dpprof,
-		ApplicationDependencies: []*catalog.ApplicationDependency{
-			{
-				Name:     appname,
-				Requires: "dependency",
-			},
-		},
-		Extensions: []*catalog.APIExtension{},
-		Artifacts: []*catalog.ArtifactReference{
-			{
-				Name:    "sample-dashboard",
-				Purpose: "grafana",
-			},
-		},
-		DefaultNamespaces: map[string]string{},
-	},
-}
-
-var DpNoGrafanaRespGood = catalog.GetDeploymentPackageResponse{
-	DeploymentPackage: &catalog.DeploymentPackage{
-		Name:    dpname,
-		Version: dpver,
-		ApplicationReferences: []*catalog.ApplicationReference{
-			&appRef,
-		},
-		Profiles: []*catalog.DeploymentProfile{
-			{
-				Name: dpprof,
-				ApplicationProfiles: map[string]string{
-					appname: appprof,
-				},
-			},
-		},
-		DefaultProfileName: dpprof,
-		ApplicationDependencies: []*catalog.ApplicationDependency{
-			{
-				Name:     appname,
-				Requires: "dependency",
-			},
-		},
-		Extensions: []*catalog.APIExtension{},
-		Artifacts: []*catalog.ArtifactReference{
-			{},
-		},
-		DefaultNamespaces: map[string]string{},
 	},
 }
 

@@ -189,7 +189,7 @@ spec:
                 type: array
               conditions:
                 description: Conditions is a list conditions that describe the state
-                  of the Grafana extension CR
+                  of the extension CR
                 items:
                   description: Condition contains details for one aspect of the current
                     state of this API Resource.

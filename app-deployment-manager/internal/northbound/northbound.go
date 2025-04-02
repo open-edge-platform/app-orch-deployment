@@ -788,12 +788,6 @@ func (s *DeploymentSvc) CreateDeployment(ctx context.Context, in *deploymentpb.C
 		return nil, errors.Status(err).Err()
 	}
 
-	err = createGrafanaExtCrs(ctx, s, d)
-	if err != nil {
-		log.Warnf("cannot create grafana extension: %v", err)
-		return nil, errors.Status(err).Err()
-	}
-
 	utils.LogActivity(ctx, "create", "ADM", "deployment-name "+d.Name, "deploy-id "+d.DeployID, "deployment-app-version "+d.AppVersion)
 	return &deploymentpb.CreateDeploymentResponse{DeploymentId: d.DeployID}, nil
 }
@@ -1195,12 +1189,6 @@ func (s *DeploymentSvc) DeleteDeployment(ctx context.Context, in *deploymentpb.D
 			return nil, errors.Status(err).Err()
 		}
 
-		err = deleteGrafanaExtCrs(ctx, s.crClient, s.k8sClient, d)
-		if err != nil {
-			log.Warnf("cannot delete grafana extension: %v", err)
-			return nil, errors.Status(err).Err()
-		}
-
 		utils.LogActivity(ctx, "delete", "ADM", "deployment-name "+d.Name, "deploy-id "+d.DeployID, "delete-type "+in.DeleteType.String())
 	} else {
 		// case 3
@@ -1379,12 +1367,6 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 		return nil, errors.Status(err).Err()
 	}
 
-	err = deleteGrafanaExtCrs(ctx, s.crClient, s.k8sClient, d)
-	if err != nil {
-		log.Warnf("cannot update deployment: %v", err)
-		return nil, errors.Status(err).Err()
-	}
-
 	err = deleteSecrets(ctx, s.k8sClient, deployment)
 	if err != nil {
 		log.Warnf("cannot update deployment: %v", err)
@@ -1414,12 +1396,6 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 	}
 
 	err = createAPIExtCrs(ctx, s, d)
-	if err != nil {
-		log.Warnf("cannot update deployment: %v", err)
-		return nil, errors.Status(err).Err()
-	}
-
-	err = createGrafanaExtCrs(ctx, s, d)
 	if err != nil {
 		log.Warnf("cannot update deployment: %v", err)
 		return nil, errors.Status(err).Err()

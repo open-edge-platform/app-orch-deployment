@@ -375,15 +375,6 @@ func GetAPIExtEnabled() (string, error) {
 	return ext, nil
 }
 
-func GetGrafanaExtEnabled() (string, error) {
-	ext, ok := os.LookupEnv("GRAFANA_EXT_ENABLED")
-	if !ok {
-		return "", errors.NewNotFound("GRAFANA_EXT_ENABLED env var not set")
-	}
-
-	return ext, nil
-}
-
 func GetIntegerFromEnv(envvar string, defaultvalue int) (int, string) {
 	var value int
 	var message string

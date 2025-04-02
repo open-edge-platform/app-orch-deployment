@@ -10,5 +10,4 @@ resources:
 - app_v1beta1_grafanaextension.yaml
 - deployments_v1beta1_apiextension.yaml
 - deployments_v1beta1_deployment.yaml
-- deployments_v1beta1_grafanaextension.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

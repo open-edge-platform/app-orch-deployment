@@ -25,6 +25,5 @@ var (
 	DeploymentsResource        = "deployments"
 	DeploymentClustersResource = "deploymentclusters"
 	APIExtensionResource       = "apiextensions"
-	GrafanaExtensionResource   = "grafanaextensions"
 	ClustersResource           = "clusters"
 )

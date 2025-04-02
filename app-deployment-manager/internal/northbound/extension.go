@@ -10,15 +10,11 @@ import (
 	clientv1beta1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/appdeploymentclient/v1beta1"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils/k8serrors"
 
-	"github.com/google/uuid"
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/grafana"
-
 	"github.com/open-edge-platform/orch-library/go/pkg/errors"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/kubernetes"
 
 	catalog "github.com/open-edge-platform/app-orch-catalog/pkg/api/catalog/v3"
 	deploymentpb "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
@@ -140,78 +136,6 @@ func createAPIExtCrs(ctx context.Context, s *DeploymentSvc, d *Deployment) error
 	return nil
 }
 
-// Create grafana extensions.
-func createGrafanaExtCrs(ctx context.Context, s *DeploymentSvc, d *Deployment) error {
-	grafanaExtEnabled, err := utils.GetGrafanaExtEnabled()
-	if err != nil {
-		return err
-	}
-
-	// Don't create CR if grafana extension disabled.
-	if grafanaExtEnabled == "false" {
-		return nil
-	}
-
-	grafanaExtensions, err := catalogclient.CatalogLookupGrafanaArtifacts(ctx, s.catalogClient, d.AppName, d.AppVersion)
-	if err != nil {
-		return err
-	}
-
-	// Don't create CR if no extension required.
-	if len(grafanaExtensions) == 0 {
-		return nil
-	}
-
-	var g *deploymentv1beta1.GrafanaExtension
-
-	for _, ext := range grafanaExtensions {
-		crName := fmt.Sprintf("%s-%s-ge", d.Name, ext.Name)
-
-		_, err := s.crClient.GrafanaExtensions(d.Namespace).Get(ctx, crName, metav1.GetOptions{})
-		if err != nil {
-			if !apierrors.IsNotFound(err) {
-				return k8serrors.K8sToTypedError(err)
-			}
-		}
-
-		// Set uid with uuid again - ignore existing uid in grafana
-		artifactStr, err := grafana.SetGrafanaDashboardUID(ctx, string(ext.Artifact), uuid.New().String())
-		if err != nil {
-			return err
-		}
-
-		artifactRef := deploymentv1beta1.ArtifactRef{
-			Name:        ext.Name,
-			Description: ext.Description,
-			Artifact:    artifactStr,
-		}
-
-		// GrafanaExtension does not exist - create CR
-		// Add deployId Label to map all CRs to deployment
-		g = &deploymentv1beta1.GrafanaExtension{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      crName,
-				Namespace: d.Namespace,
-				Labels: map[string]string{
-					string(deploymentv1beta1.DeploymentID): d.DeployID,
-				},
-			},
-			Spec: deploymentv1beta1.GrafanaExtensionSpec{
-				DisplayName: ext.Name,
-				Project:     d.Project,
-				ArtifactRef: artifactRef,
-			},
-		}
-
-		_, err = s.crClient.GrafanaExtensions(d.Namespace).Create(ctx, g, metav1.CreateOptions{})
-		if err != nil {
-			return k8serrors.K8sToTypedError(err)
-		}
-	}
-
-	return nil
-}
-
 // Delete the api extension associated to the deployment.
 func deleteAPIExtCrs(ctx context.Context, crClient clientv1beta1.AppDeploymentClientInterface, d *Deployment) error {
 	apiExtEnabled, err := utils.GetAPIExtEnabled()
@@ -241,46 +165,6 @@ func deleteAPIExtCrs(ctx context.Context, crClient clientv1beta1.AppDeploymentCl
 	for _, ext := range apiExtensions.Items {
 		// Delete
 		err = crClient.APIExtensions(d.Namespace).Delete(ctx, ext.ObjectMeta.Name, metav1.DeleteOptions{})
-		if err != nil {
-			if apierrors.IsNotFound(err) {
-				continue
-			}
-			return k8serrors.K8sToTypedError(err)
-		}
-	}
-
-	return nil
-}
-
-// Delete the grafana extension associated to the deployment.
-func deleteGrafanaExtCrs(ctx context.Context, crClient clientv1beta1.AppDeploymentClientInterface, _ *kubernetes.Clientset, d *Deployment) error {
-	grafanaExtEnabled, err := utils.GetGrafanaExtEnabled()
-	if err != nil {
-		return err
-	}
-
-	// Don't delete CR if grafana extension disabled.
-	if grafanaExtEnabled == "false" {
-		return nil
-	}
-
-	labelSelector := metav1.LabelSelector{
-		MatchLabels: map[string]string{string(deploymentv1beta1.DeploymentID): d.DeployID},
-	}
-
-	listOpts := metav1.ListOptions{
-		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
-	}
-
-	// List all grafana extension objects and match the deployment-id of deployment
-	grafanaExtensions, err := crClient.GrafanaExtensions("").List(ctx, listOpts)
-	if err != nil {
-		return k8serrors.K8sToTypedError(err)
-	}
-
-	for _, ext := range grafanaExtensions.Items {
-		// Delete
-		err = crClient.GrafanaExtensions(d.Namespace).Delete(ctx, ext.ObjectMeta.Name, metav1.DeleteOptions{})
 		if err != nil {
 			if apierrors.IsNotFound(err) {
 				continue

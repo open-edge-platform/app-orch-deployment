@@ -33,7 +33,6 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/controllers/cluster"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/controllers/deployment"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/controllers/deploymentcluster"
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/controllers/grafanaextension"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/config"
 	deploymentwebhook "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/webhooks/deployment"
 	//+kubebuilder:scaffold:imports
@@ -178,22 +177,6 @@ func main() {
 	defer cancelFunc()
 	// Start monitoring for Git Ca Cert file
 	go utils.WatchGitCaCertFile(ctx, gitCaCertFolder, gitCaCertFile)
-
-	grafanaExtEnabled, err := utils.GetGrafanaExtEnabled()
-	if err != nil {
-		setupLog.Error(err, "controller", "GrafanaExtension")
-		os.Exit(1)
-	}
-
-	if grafanaExtEnabled == "true" {
-		if err = (&grafanaextension.Reconciler{
-			Client: mgr.GetClient(),
-			Scheme: mgr.GetScheme(),
-		}).SetupWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create controller", "controller", "GrafanaExtension")
-			os.Exit(1)
-		}
-	}
 
 	if err = (&deploymentwebhook.Deployment{
 		Client: mgr.GetClient(),

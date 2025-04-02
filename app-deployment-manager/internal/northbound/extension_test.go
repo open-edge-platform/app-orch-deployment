@@ -10,7 +10,6 @@ import (
 
 	"errors"
 	"github.com/bufbuild/protovalidate-go"
-	"k8s.io/client-go/kubernetes"
 	"net/http"
 	"net/http/httptest"
 
@@ -36,19 +35,16 @@ import (
 
 var _ = Describe("Gateway gRPC Service", func() {
 	var (
-		deploymentServer         *DeploymentSvc
-		k8sClient                *mocks.FakeDeploymentV1
-		protoValidator           *protovalidate.Validator
-		kClient                  *kubernetes.Clientset
-		apiExtensionInstance     *deploymentv1beta1.APIExtension
-		grafanaExtensionInstance *deploymentv1beta1.GrafanaExtension
-		apiExtensionListSrc      deploymentv1beta1.APIExtensionList
+		deploymentServer     *DeploymentSvc
+		k8sClient            *mocks.FakeDeploymentV1
+		protoValidator       *protovalidate.Validator
+		apiExtensionInstance *deploymentv1beta1.APIExtension
+		apiExtensionListSrc  deploymentv1beta1.APIExtensionList
 	)
 
 	Describe("APIExtension Get", func() {
 		BeforeEach(func() {
 			os.Setenv("API_EXT_ENABLED", "true")
-			os.Setenv("GRAFANA_EXT_ENABLED", "true")
 
 			// populates a mock APIExtension object
 			var apiExtensionListSrc deploymentv1beta1.APIExtensionList
@@ -81,7 +77,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 		It("fails due to API extensions is disabled", func() {
 			os.Setenv("API_EXT_ENABLED", "false")
-			os.Setenv("GRAFANA_EXT_ENABLED", "false")
 			resp, err := deploymentServer.GetAPIExtension(context.Background(), &deploymentpb.GetAPIExtensionRequest{
 				Name: "test",
 			})
@@ -143,7 +138,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 	Describe("UIExtension List", func() {
 		BeforeEach(func() {
 			os.Setenv("API_EXT_ENABLED", "true")
-			os.Setenv("GRAFANA_EXT_ENABLED", "true")
 
 			// populates a mock APIExtension object
 			setAPIExtensionListObject(&apiExtensionListSrc)
@@ -178,7 +172,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 		It("fails due to API extensions is disabled", func() {
 			os.Setenv("API_EXT_ENABLED", "false")
-			os.Setenv("GRAFANA_EXT_ENABLED", "false")
 			resp, err := deploymentServer.ListUIExtensions(context.Background(), &deploymentpb.ListUIExtensionsRequest{
 				ServiceName: []string{"test-servicename"},
 			})
@@ -324,270 +317,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 		})
 	})
 
-	Describe("Delete Grafana Extension CR", func() {
-		var (
-			ctx                     context.Context
-			grafanaExtensionListSrc deploymentv1beta1.GrafanaExtensionList
-			d                       *Deployment
-		)
-
-		BeforeEach(func() {
-			os.Setenv("GRAFANA_EXT_ENABLED", "true")
-
-			// populates a mock extension objects
-			setGrafanaExtensionListObject(&grafanaExtensionListSrc)
-
-			grafanaExtensionInstance = setGrafanaExtensionInstance(&grafanaExtensionListSrc)
-
-			k8sClient = &mocks.FakeDeploymentV1{}
-
-			md := metadata.Pairs("foo", "test")
-			ctx = metadata.NewIncomingContext(context.Background(), md)
-
-			d = setDeployment()
-
-			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusOK)
-				_, err := w.Write([]byte(`{"apiVersion": "v1", "kind": "Secret", "metadata": {"name": "test-name"}}`))
-				Expect(err).ToNot(HaveOccurred())
-			}))
-
-			defer ts.Close()
-
-			kClient = mockK8Client(ts.URL)
-
-		})
-
-		It("successfully delete grafana extension CR", func() {
-			k8sClient.On(
-				"List", nbmocks.AnyContextValue, mock.AnythingOfType("v1.ListOptions"),
-			).Return(&deploymentv1beta1.GrafanaExtensionList{
-				ListMeta: grafanaExtensionListSrc.ListMeta,
-				TypeMeta: grafanaExtensionListSrc.TypeMeta,
-				Items:    grafanaExtensionListSrc.Items,
-			}, nil).Once()
-
-			k8sClient.On(
-				"Delete", nbmocks.AnyContextValue, mock.AnythingOfType("string"), mock.AnythingOfType("v1.DeleteOptions"),
-			).Return(nil).Once()
-
-			err := deleteGrafanaExtCrs(ctx, k8sClient, kClient, d)
-
-			Expect(err).ShouldNot(HaveOccurred())
-			s, ok := status.FromError(err)
-			Expect(s.Code()).To(Equal(codes.OK))
-			Expect(ok).To(BeTrue())
-		})
-
-		It("fails due to GRAFANA_EXT_ENABLED env not set", func() {
-			os.Unsetenv("GRAFANA_EXT_ENABLED")
-
-			err := deleteGrafanaExtCrs(ctx, nil, nil, d)
-
-			Expect(err).Should(HaveOccurred())
-			s, ok := status.FromError(err)
-			Expect(s.Code()).To(Equal(codes.Unknown))
-			Expect(ok).To(BeFalse())
-			Expect(s.Message()).Should(Equal("GRAFANA_EXT_ENABLED env var not set"))
-		})
-
-		It("fails due to LIST error", func() {
-			k8sClient.On(
-				"List", nbmocks.AnyContextValue, mock.AnythingOfType("v1.ListOptions"),
-			).Return(&deploymentv1beta1.GrafanaExtensionList{
-				ListMeta: grafanaExtensionListSrc.ListMeta,
-				TypeMeta: grafanaExtensionListSrc.TypeMeta,
-				Items:    grafanaExtensionListSrc.Items,
-			}, errors.New("mock err")).Once()
-
-			err := deleteGrafanaExtCrs(ctx, k8sClient, kClient, d)
-
-			Expect(err).Should(HaveOccurred())
-			s, ok := status.FromError(err)
-			Expect(s.Code()).To(Equal(codes.Unknown))
-			Expect(ok).To(BeFalse())
-			Expect(s.Message()).Should(Equal("mock err"))
-		})
-
-		It("fails due to DELETE error", func() {
-			k8sClient.On(
-				"List", nbmocks.AnyContextValue, mock.AnythingOfType("v1.ListOptions"),
-			).Return(&deploymentv1beta1.GrafanaExtensionList{
-				ListMeta: grafanaExtensionListSrc.ListMeta,
-				TypeMeta: grafanaExtensionListSrc.TypeMeta,
-				Items:    grafanaExtensionListSrc.Items,
-			}, nil).Once()
-
-			k8sClient.On(
-				"Delete", nbmocks.AnyContextValue, mock.AnythingOfType("string"), mock.AnythingOfType("v1.DeleteOptions"),
-			).Return(errors.New("mock err")).Once()
-
-			err := deleteGrafanaExtCrs(ctx, k8sClient, kClient, d)
-
-			Expect(err).Should(HaveOccurred())
-			s, ok := status.FromError(err)
-			Expect(s.Code()).To(Equal(codes.Unknown))
-			Expect(ok).To(BeFalse())
-			Expect(s.Message()).Should(Equal("mock err"))
-		})
-	})
-
-	Describe("Create Grafana Extension CR", func() {
-		var (
-			catalogClient           *mockerymock.MockeryCatalogClient
-			ctx                     context.Context
-			grafanaExtensionListSrc deploymentv1beta1.GrafanaExtensionList
-			d                       *Deployment
-		)
-
-		BeforeEach(func() {
-			os.Setenv("GRAFANA_EXT_ENABLED", "true")
-
-			// populates a mock extension objects
-			setGrafanaExtensionListObject(&grafanaExtensionListSrc)
-
-			grafanaExtensionInstance = setGrafanaExtensionInstance(&grafanaExtensionListSrc)
-
-			k8sClient = &mocks.FakeDeploymentV1{}
-
-			md := metadata.Pairs("foo", "test")
-			ctx = metadata.NewIncomingContext(context.Background(), md)
-
-			d = setDeployment()
-
-			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusOK)
-				_, err := w.Write([]byte(`{"apiVersion": "v1", "kind": "Secret", "metadata": {"name": "test-name"}}`))
-				Expect(err).ToNot(HaveOccurred())
-			}))
-
-			defer ts.Close()
-
-			kClient = mockK8Client(ts.URL)
-			catalogClient = mockerymock.NewMockeryCatalogClient(GinkgoT())
-
-		})
-
-		It("successfully create grafana extension CR", func() {
-			k8sClient.On(
-				"Get", nbmocks.AnyContextValue, mock.AnythingOfType("string"), mock.AnythingOfType("v1.GetOptions"),
-			).Return(grafanaExtensionInstance, nil).Once()
-
-			k8sClient.On(
-				"Create", nbmocks.AnyContextValue, grafanaExtensionInstance, mock.AnythingOfType("v1.CreateOptions"),
-			).Return(grafanaExtensionInstance, nil).Once()
-
-			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, catalogClient, protoValidator, nil)
-
-			catalogClient.On("GetDeploymentPackage", nbmocks.AnyContextValue, nbmocks.AnyGetDpReq).Return(&nbmocks.DpGrafanaRespGood, nil)
-			catalogClient.On("ListArtifacts", nbmocks.AnyContextValue, nbmocks.AnyArtReq).Return(&nbmocks.ArtiResp, nil)
-
-			err := createGrafanaExtCrs(ctx, deploymentServer, d)
-
-			Expect(err).ShouldNot(HaveOccurred())
-			s, ok := status.FromError(err)
-			Expect(s.Code()).To(Equal(codes.OK))
-			Expect(ok).To(BeTrue())
-		})
-
-		It("successfully return with no grafana extension found to create", func() {
-			deploymentServer = NewDeployment(nil, nil, nil, nil, catalogClient, protoValidator, nil)
-
-			catalogClient.On("GetDeploymentPackage", nbmocks.AnyContextValue, nbmocks.AnyGetDpReq).Return(&nbmocks.DpNoGrafanaRespGood, nil)
-			catalogClient.On("ListArtifacts", nbmocks.AnyContextValue, nbmocks.AnyArtReq).Return(&nbmocks.ArtiResp, nil)
-
-			err := createGrafanaExtCrs(ctx, deploymentServer, d)
-
-			Expect(err).ShouldNot(HaveOccurred())
-			s, ok := status.FromError(err)
-			Expect(s.Code()).To(Equal(codes.OK))
-			Expect(ok).To(BeTrue())
-		})
-
-		It("fails due to GRAFANA_EXT_ENABLED env not set", func() {
-			os.Unsetenv("GRAFANA_EXT_ENABLED")
-
-			deploymentServer = NewDeployment(nil, nil, nil, nil, nil, protoValidator, nil)
-
-			err := createGrafanaExtCrs(ctx, deploymentServer, d)
-
-			Expect(err).Should(HaveOccurred())
-			s, ok := status.FromError(err)
-			Expect(s.Code()).To(Equal(codes.Unknown))
-			Expect(ok).To(BeFalse())
-			Expect(s.Message()).Should(Equal("GRAFANA_EXT_ENABLED env var not set"))
-		})
-
-		It("fails due to GET error", func() {
-			k8sClient.On(
-				"Get", nbmocks.AnyContextValue, mock.AnythingOfType("string"), mock.AnythingOfType("v1.GetOptions"),
-			).Return(grafanaExtensionInstance, status.Error(codes.Unknown, "mock err")).Once()
-
-			k8sClient.On(
-				"Create", nbmocks.AnyContextValue, grafanaExtensionInstance, mock.AnythingOfType("v1.CreateOptions"),
-			).Return(grafanaExtensionInstance, nil).Once()
-
-			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, catalogClient, protoValidator, nil)
-
-			catalogClient.On("GetDeploymentPackage", nbmocks.AnyContextValue, nbmocks.AnyGetDpReq).Return(&nbmocks.DpGrafanaRespGood, nil)
-			catalogClient.On("ListArtifacts", nbmocks.AnyContextValue, nbmocks.AnyArtReq).Return(&nbmocks.ArtiResp, nil)
-
-			err := createGrafanaExtCrs(ctx, deploymentServer, d)
-
-			Expect(err).Should(HaveOccurred())
-			s, ok := status.FromError(err)
-			Expect(s.Code()).To(Equal(codes.Unknown))
-			Expect(ok).To(BeFalse())
-		})
-
-		It("fails due to CREATE error", func() {
-			k8sClient.On(
-				"Get", nbmocks.AnyContextValue, mock.AnythingOfType("string"), mock.AnythingOfType("v1.GetOptions"),
-			).Return(grafanaExtensionInstance, nil).Once()
-
-			k8sClient.On(
-				"Create", nbmocks.AnyContextValue, grafanaExtensionInstance, mock.AnythingOfType("v1.CreateOptions"),
-			).Return(grafanaExtensionInstance, status.Error(codes.Unknown, "mock err")).Once()
-
-			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, catalogClient, protoValidator, nil)
-
-			catalogClient.On("GetDeploymentPackage", nbmocks.AnyContextValue, nbmocks.AnyGetDpReq).Return(&nbmocks.DpGrafanaRespGood, nil)
-			catalogClient.On("ListArtifacts", nbmocks.AnyContextValue, nbmocks.AnyArtReq).Return(&nbmocks.ArtiResp, nil)
-
-			err := createGrafanaExtCrs(ctx, deploymentServer, d)
-
-			Expect(err).Should(HaveOccurred())
-			s, ok := status.FromError(err)
-			Expect(s.Code()).To(Equal(codes.Unknown))
-			Expect(ok).To(BeFalse())
-		})
-
-		It("fails due to DeploymentPackage error", func() {
-			k8sClient.On(
-				"Get", nbmocks.AnyContextValue, mock.AnythingOfType("string"), mock.AnythingOfType("v1.GetOptions"),
-			).Return(grafanaExtensionInstance, nil).Once()
-
-			k8sClient.On(
-				"Create", nbmocks.AnyContextValue, grafanaExtensionInstance, mock.AnythingOfType("v1.CreateOptions"),
-			).Return(grafanaExtensionInstance, nil).Once()
-
-			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, catalogClient, protoValidator, nil)
-
-			catalogClient.On("GetDeploymentPackage", nbmocks.AnyContextValue, nbmocks.AnyGetDpReq).Return(&nbmocks.DpGrafanaRespGood, status.Error(codes.Unknown, "mock err"))
-
-			err := createGrafanaExtCrs(ctx, deploymentServer, d)
-
-			Expect(err).Should(HaveOccurred())
-			s, ok := status.FromError(err)
-			Expect(s.Code()).To(Equal(codes.Unknown))
-			Expect(ok).To(BeTrue())
-			Expect(s.Message()).Should(Equal("mock err"))
-		})
-
-	})
-
 	Describe("Create API Extension CR", func() {
 		var (
 			catalogClient       *mockerymock.MockeryCatalogClient
@@ -621,7 +350,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 			defer ts.Close()
 
-			kClient = mockK8Client(ts.URL)
 			catalogClient = mockerymock.NewMockeryCatalogClient(GinkgoT())
 		})
 
@@ -843,62 +571,6 @@ func setAPIExtensionInstance(apiExtensionListSrc *deploymentv1beta1.APIExtension
 				Name:           apiExtensionListSrc.Items[0].Status.TokenSecretRef.Name,
 				GeneratedToken: apiExtensionListSrc.Items[0].Status.TokenSecretRef.GeneratedToken,
 			},
-		},
-	}
-
-	return instance
-}
-
-func setGrafanaExtensionListObject(grafanaExtensionListSrc *deploymentv1beta1.GrafanaExtensionList) {
-	grafanaExtensionListSrc.TypeMeta.Kind = KIND_GRAFANA_EXT
-	grafanaExtensionListSrc.TypeMeta.APIVersion = apiVersion
-
-	grafanaExtensionListSrc.ListMeta.ResourceVersion = "6"
-	grafanaExtensionListSrc.ListMeta.Continue = "yes"
-	remainingItem := int64(10)
-	grafanaExtensionListSrc.ListMeta.RemainingItemCount = &remainingItem
-
-	grafanaExtensionListSrc.Items = make([]deploymentv1beta1.GrafanaExtension, 1)
-	setGrafanaExtensionObject(&grafanaExtensionListSrc.Items[0])
-}
-
-func setGrafanaExtensionObject(grafanaExtensionListSrc *deploymentv1beta1.GrafanaExtension) {
-	grafanaExtensionListSrc.ObjectMeta.Name = "test-deployment"
-	grafanaExtensionListSrc.ObjectMeta.GenerateName = "test-generate-name"
-	grafanaExtensionListSrc.ObjectMeta.Namespace = VALID_PROJECT_ID
-	grafanaExtensionListSrc.ObjectMeta.UID = types.UID(VALID_UID)
-	grafanaExtensionListSrc.ObjectMeta.ResourceVersion = "6"
-	grafanaExtensionListSrc.ObjectMeta.Generation = 24456
-
-	currentTime := metav1.Now()
-	grafanaExtensionListSrc.ObjectMeta.CreationTimestamp = currentTime
-	grafanaExtensionListSrc.ObjectMeta.DeletionTimestamp = &currentTime
-
-	grafanaExtensionListSrc.ObjectMeta.Labels = make(map[string]string)
-	grafanaExtensionListSrc.ObjectMeta.Labels["app.edge-orchestrator.intel.com/deployment-id"] = ""
-
-	grafanaExtensionListSrc.Spec.DisplayName = "sample-dashboard"
-	grafanaExtensionListSrc.Spec.Project = "test-project"
-
-	grafanaExtensionListSrc.Spec.ArtifactRef = deploymentv1beta1.ArtifactRef{
-		Publisher:   "",
-		Name:        "sample-dashboard",
-		Description: "",
-		Artifact:    "test-artifact",
-	}
-}
-
-func setGrafanaExtensionInstance(grafanaExtensionListSrc *deploymentv1beta1.GrafanaExtensionList) *deploymentv1beta1.GrafanaExtension {
-	instance := &deploymentv1beta1.GrafanaExtension{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      grafanaExtensionListSrc.Items[0].ObjectMeta.Name,
-			Namespace: grafanaExtensionListSrc.Items[0].ObjectMeta.Namespace,
-			Labels:    grafanaExtensionListSrc.Items[0].ObjectMeta.Labels,
-		},
-		Spec: deploymentv1beta1.GrafanaExtensionSpec{
-			DisplayName: grafanaExtensionListSrc.Items[0].Spec.DisplayName,
-			Project:     grafanaExtensionListSrc.Items[0].Spec.Project,
-			ArtifactRef: grafanaExtensionListSrc.Items[0].Spec.ArtifactRef,
 		},
 	}
 

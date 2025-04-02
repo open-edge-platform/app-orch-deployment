@@ -165,9 +165,6 @@ adm:
   config: {}
   defaultNamespace: "orch-apps"
 
-  grafanaExtension:
-    enabled: false
-
   capi:
     enabled: false
   # API extension configurations.
