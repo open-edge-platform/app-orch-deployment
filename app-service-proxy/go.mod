@@ -14,7 +14,7 @@ require (
 	github.com/onsi/gomega v1.36.0
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager v2.3.39+incompatible
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 v2.3.21
-	github.com/open-edge-platform/orch-library/go v0.5.29
+	github.com/open-edge-platform/orch-library/go v0.5.30
 	github.com/rancher/fleet/pkg/apis v0.0.0-20230316110153-df88fcf0c4f6
 	github.com/rancher/remotedialer v0.4.1
 	github.com/sirupsen/logrus v1.9.3
@@ -103,7 +103,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/oapi-codegen/runtime v1.1.1 // indirect
 	github.com/open-edge-platform/app-orch-catalog v0.11.21 // indirect
-	github.com/open-edge-platform/orch-library/go/dazl v0.5.2 // indirect
+	github.com/open-edge-platform/orch-library/go/dazl v0.5.4 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
