@@ -10,10 +10,11 @@ on:
     - cron: "0 0 * * *" # Run every day at midnight
   workflow_dispatch:  # Run on manual trigger
     inputs:
-      run-component-tests:
+      run-adm:
         description: 'Run App Deployment Manager component tests'
         required: true
-        default: 'false'
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,7 +24,7 @@ jobs:
   component-tests:
     name: Deploy Kind Orchestrator and Run Component Tests
     if: |
-      github.event.label.name == 'run-adm-component-tests'
+      ${{ inputs.run-adm || github.event_name == 'schedule' || github.event.label.name == 'run-adm-component-tests' }}
     runs-on: ubuntu-24.04-16core-64GB # ubuntu-24.04-4core-16GB ubuntu-22.04-32core-128GB & ubuntu-24.04-16core-64GB
     timeout-minutes: 60
     env:
@@ -49,7 +50,6 @@ jobs:
 
       - name: Setup asdf and install dependencies
         uses: open-edge-platform/orch-utils/.github/actions/setup-asdf@main
-
 
       - name: Checkout app-orch-deployment repository
         uses: actions/checkout@v4
@@ -81,6 +81,7 @@ jobs:
           echo "Orchestrator deployment done!"
           echo "Root App Status:"
           kubectl -n dev get applications root-app -o yaml
+
       - name: Verify Kind Deployment
         timeout-minutes: 50
         run: |
@@ -96,9 +97,6 @@ jobs:
           echo "Orchestrator deployment verified!"
           mage router:stop router:start || true
           echo "Router restarted"
-    
-
-  
 
       - name: Describe app-deployment-manager
         run: kubectl describe application -n orch-app app-deployment-manager
