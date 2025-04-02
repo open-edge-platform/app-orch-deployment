@@ -17,15 +17,6 @@ runs:
   using: "composite"
   steps:
     - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        # Fetch all history, workaround sporadic issue with missing tags
-        fetch-depth: 0
-        # Fetch tags
-        fetch-tags: true
-        # Checkout the branch that triggered the workflow to avoid detached HEAD
-        ref: ${{ github.head_ref }}
-    - name: Checkout code
       uses: actions/checkout@v4.2.1
       with:
         repository: open-edge-platform/edge-manageability-framework
@@ -72,7 +63,6 @@ runs:
         DOCKERHUB_TOKEN: ${{ env.DOCKERHUB_TOKEN }}
         DOCKERHUB_USERNAME: ${{ env.DOCKERHUB_USERNAME }}
       run: |
-        exit 1
         set +x
         echo "Starting to deploy Orchestrator..."
         mage deploy:kindMinimal
