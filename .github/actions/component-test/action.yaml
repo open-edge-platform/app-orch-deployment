@@ -75,10 +75,9 @@ runs:
 
     - name: Verify Kind Deployment
       shell: bash
-      timeout-minutes: 50
       run: |
         echo "Starting to verify Orchestrator deployment..."
-        mage deploy:waitUntilComplete &
+        timeout 50m mage deploy:waitUntilComplete &
         WAIT_PID=$!
         while kill -0 $WAIT_PID 2>/dev/null; do
           echo "Waiting for Orchestrator deployment to complete..."
@@ -113,6 +112,7 @@ runs:
 
     - name: Deploy Edge Cluster using EniC
       if: ${{ inputs.use-enic }}
+      shell: bash
       run: |
         mage deploy:edgeCluster
         echo "ENIC deployment done!"
@@ -132,6 +132,7 @@ runs:
 
     - name: Get diagnostic information
       if: always()
+      shell: bash
       run: |
         kubectl get pods -o wide -A | tee pods-list.txt
         kubectl describe pods -A | tee pods-describe.txt
