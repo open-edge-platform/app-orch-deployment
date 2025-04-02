@@ -33,7 +33,7 @@ jobs:
       DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
       DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
       GH_TOKEN: ${{ secrets.SYS_ORCH_GITHUB }}
-      EMF_BRANCH: feature/component-updates
+      EMF_BRANCH: main
     steps:
     - name: Checkout code
       uses: actions/checkout@v1
