@@ -10,7 +10,7 @@ FUZZ_SUBPROJECTS ?= app-resource-manager app-deployment-manager app-service-prox
 
 all: build lint test
 	@# Help: Runs build, lint, test stages for all subprojects
-	
+
 build:
 	@# Help: Runs build stage in all subprojects
 	@echo "---MAKEFILE BUILD---"
