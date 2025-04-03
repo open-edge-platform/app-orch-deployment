@@ -48,8 +48,8 @@ require (
 	github.com/hashicorp/vault/api v1.14.0
 	github.com/hashicorp/vault/api/auth/kubernetes v0.7.0
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 v2.0.0-00010101000000-000000000000
-	github.com/open-edge-platform/orch-library/go v0.5.29
-	github.com/open-edge-platform/orch-library/go/dazl v0.5.2
+	github.com/open-edge-platform/orch-library/go v0.5.30
+	github.com/open-edge-platform/orch-library/go/dazl v0.5.4
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.19.1
 	github.com/rancher/lasso v0.0.0-20221227210133-6ea88ca2fbcc
