@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 	url2 "net/url"
 	"os"
 	"testing"
@@ -196,14 +195,6 @@ func FuzzProxyHeaderProto(f *testing.F) {
 		req.Header.Add("X-Forwarded-Port", "8080")
 		resp, err := http.DefaultClient.Do(req)
 		require.NoError(t, err)
-		fmt.Print("http err : ", err)
-		reqDump, err := httputil.DumpRequest(req, true)
-		if err != nil {
-			fmt.Print(err)
-		}
-
-		// Print the request as a string
-		fmt.Printf("%s\n", reqDump)
 		//require.Equal(t, resp.StatusCode, http.StatusUnauthorized)
 		if resp.StatusCode != http.StatusBadRequest && resp.StatusCode != http.StatusUnauthorized && resp.StatusCode != http.StatusGatewayTimeout {
 			t.Errorf("Unexpected status code: %d", resp.StatusCode)
