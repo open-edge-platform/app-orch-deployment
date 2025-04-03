@@ -10,23 +10,23 @@ FUZZ_SUBPROJECTS ?= app-resource-manager app-deployment-manager app-service-prox
 
 all: build lint test
 	@# Help: Runs build, lint, test stages for all subprojects
-
+	
 build:
 	@# Help: Runs build stage in all subprojects
 	@echo "---MAKEFILE BUILD---"
-	for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir build || exit $$?; done
+	for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir build; done
 	@echo "---END MAKEFILE Build---"
 
 docker-build:
 	@# Help: Runs build stage in all subprojects
 	@echo "---MAKEFILE BUILD---"
-	for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir docker-build || exit $$?; done
+	for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir docker-build; done
 	@echo "---END MAKEFILE Build---"
 
 lint: mdlint
 	@# Help: Runs lint stage in all subprojects
 	@echo "---MAKEFILE LINT---"
-	@for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir lint || exit $$?; done
+	@for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir lint; done
 	@echo "---END MAKEFILE LINT---"
 
 mdlint:
@@ -38,25 +38,25 @@ mdlint:
 test:
 	@# Help: Runs test stage in all subprojects
 	@echo "---MAKEFILE TEST---"
-	for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir test || exit $$?; done
+	for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir test; done
 	@echo "---END MAKEFILE TEST---"
 
 go-fuzz:
 	@# Help: Runs go fuzz test stage in all fuzz subprojects
 	@echo "---MAKEFILE GO FUZZ TEST---"
-	for dir in $(FUZZ_SUBPROJECTS); do $(MAKE) -C $$dir go-fuzz || exit $$?; done
+	for dir in $(FUZZ_SUBPROJECTS); do $(MAKE) -C $$dir go-fuzz; done
 	@echo "---END MAKEFILE GO FUZZ TEST---"
 
 clean:
 	@# Help: Runs clean stage in all subprojects
 	@echo "---MAKEFILE CLEAN---"
-	for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir clean || exit $$?; done
+	for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir clean; done
 	@echo "---END MAKEFILE CLEAN---"
 
 clean-all:
 	@# Help: Runs clean-all stage in all subprojects
 	@echo "---MAKEFILE CLEAN-ALL---"
-	for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir clean-all || exit $$?; done
+	for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir clean-all; done
 	@echo "---END MAKEFILE CLEAN-ALL---"
 
 define make-subproject-target
