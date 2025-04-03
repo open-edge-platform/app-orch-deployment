@@ -53,8 +53,8 @@ type Server struct {
 	router                 *mux.Router
 	authNenabled           bool
 	authZenabled           bool
-	authenticate           func(req *http.Request) error
-	authorize              func(req *http.Request, projectID string) error
+	Authenticate           func(req *http.Request) error
+	Authorize              func(req *http.Request, projectID string) error
 	admClient              admclient.ADMClient
 	vaultManager           vault.Manager
 	agentNamespace         string
@@ -207,6 +207,7 @@ func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	fmt.Print("step 1\n")
 	// Create proxy and set the Transport rancher/remoteDialer client
 	proxy := httputil.NewSingleHostReverseProxy(target)
 	proxy.Transport = &RewritingTransport{}
@@ -232,14 +233,14 @@ func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
 
 func (a *Server) isAllowed(req *http.Request, projectID string) error {
 	if a.authNenabled {
-		err := a.authenticate(req)
+		err := a.Authenticate(req)
 		if err != nil {
 			logrus.Warnf("Authentication failed: %v", err)
 			return err
 		}
 	}
 	if a.authZenabled {
-		err := a.authorize(req, projectID)
+		err := a.Authorize(req, projectID)
 		if err != nil {
 			logrus.Warnf("Authorization failed: %v", err)
 			return err
@@ -415,7 +416,7 @@ func (a *Server) initAuth() {
 	} else {
 		logrus.Warnf("Authentication is disabled")
 	}
-	a.authenticate = rbac.Authenticate
+	a.Authenticate = rbac.AuthenticateFunc
 
 	// Authorization
 	if os.Getenv("OPA_ENABLED") == "true" {
@@ -424,7 +425,7 @@ func (a *Server) initAuth() {
 	} else {
 		logrus.Warnf("Authorization is disabled")
 	}
-	a.authorize = rbac.Authorize
+	a.Authorize = rbac.AuthorizeFunc
 }
 
 func (a *Server) initAdmClient() error {
