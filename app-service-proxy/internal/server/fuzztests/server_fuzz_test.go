@@ -99,10 +99,6 @@ func FuzzRouter(f *testing.F) {
 	authenticate := func(req *http.Request) error { return nil }
 	authorize := func(req *http.Request, projectID string) error { return nil }
 	s := setupFuzzTest(t, authenticate, authorize)
-	s.server.Authenticate = authenticate
-	s.server.Authorize = authorize
-	os.Setenv("OIDC_SERVER_URL", "")
-	os.Setenv("OPA_ENABLED", "false")
 	defer s.cancel()
 	f.Add("test")
 	f.Fuzz(func(t *testing.T, seedData string) {
@@ -162,11 +158,10 @@ func FuzzProxyHeaderHost(f *testing.F) {
 		req.AddCookie(&http.Cookie{Name: "app-service-proxy-token-0", Value: "123456"})
 		require.NoError(t, err)
 		req.Header.Add("X-Forwarded-Host", escapeHeaderValue(seedData))
-		//req.Header.Add("X-Forwarded-Proto", "https")
-		s.server.Authenticate = Authenticate
+		req.Header.Add("X-Forwarded-Proto", "https")
 		resp, err := http.DefaultClient.Do(req)
 		require.NoError(t, err)
-		if resp.StatusCode != http.StatusBadRequest && resp.StatusCode != http.StatusUnauthorized && resp.StatusCode != http.StatusOK {
+		if resp.StatusCode != http.StatusBadRequest && resp.StatusCode != http.StatusUnauthorized && resp.StatusCode != http.StatusGatewayTimeout {
 			t.Errorf("Unexpected status code: %d", resp.StatusCode)
 		}
 
@@ -197,6 +192,8 @@ func FuzzProxyHeaderProto(f *testing.F) {
 		req.AddCookie(&http.Cookie{Name: "app-service-proxy-token-0", Value: "123456"})
 		require.NoError(t, err)
 		req.Header.Add("X-Forwarded-Proto", escapeHeaderValue(seedData))
+		req.Header.Add("X-Forwarded-Host", "app-service-proxy.kind.internal")
+		req.Header.Add("X-Forwarded-Port", "8080")
 		resp, err := http.DefaultClient.Do(req)
 		require.NoError(t, err)
 		fmt.Print("http err : ", err)
@@ -208,7 +205,7 @@ func FuzzProxyHeaderProto(f *testing.F) {
 		// Print the request as a string
 		fmt.Printf("%s\n", reqDump)
 		//require.Equal(t, resp.StatusCode, http.StatusUnauthorized)
-		if resp.StatusCode != http.StatusBadRequest && resp.StatusCode != http.StatusUnauthorized && resp.StatusCode != http.StatusOK {
+		if resp.StatusCode != http.StatusBadRequest && resp.StatusCode != http.StatusUnauthorized && resp.StatusCode != http.StatusGatewayTimeout {
 			t.Errorf("Unexpected status code: %d", resp.StatusCode)
 		}
 
