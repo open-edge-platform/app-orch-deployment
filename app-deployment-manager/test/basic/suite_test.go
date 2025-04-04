@@ -50,6 +50,8 @@ func (s *TestSuite) SetupTest() {
 	s.DeploymentRESTServerUrl = fmt.Sprintf("http://%s:%s", RestAddressPortForward, PortForwardRemotePort)
 	s.projectID, err = auth.GetProjectId(context.TODO())
 	s.NoError(err)
+	cmd, err := portForwardToADM()
+	s.NoError(err)
 }
 
 func killportForwardToADM(cmd *exec.Cmd) error {
@@ -76,4 +78,6 @@ func TestTestSuite(t *testing.T) {
 
 // TearDownTest tears down remnants of each integration test
 func (s *TestSuite) TearDownTest(ctx context.Context) {
+	cmd, err := killportForwardToADM()
+	s.NoError(err)
 }

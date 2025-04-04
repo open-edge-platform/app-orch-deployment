@@ -15,13 +15,13 @@ func (s *TestSuite) listDeployments(verb string) (*http.Response, error) {
 	// url := "https://api.kind.internal/v1/projects/sample-project1/appdeployment/deployments"
 	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments", s.DeploymentRESTServerUrl)
 	fmt.Println("List Deployments")
-	cmd, err := portForwardToADM()
-	s.NoError(err)
-	defer func() {
-		if err := killportForwardToADM(cmd); err != nil {
-			fmt.Println("Error killing port-forward process:", err)
-		}
-	}()
+	// cmd, err := portForwardToADM()
+	// s.NoError(err)
+	// defer func() {
+	// 	if err := killportForwardToADM(cmd); err != nil {
+	// 		fmt.Println("Error killing port-forward process:", err)
+	// 	}
+	// }()
 
 	req, err := http.NewRequest(verb, url, nil)
 	if err != nil {
