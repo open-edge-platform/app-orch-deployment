@@ -35,11 +35,10 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
       GH_TOKEN: ${{ secrets.SYS_ORCH_GITHUB }}
       EMF_BRANCH: main
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v1
-    - name: Component tests
-      uses: open-edge-platform/app-orch-deployment/.github/workflows/component-tests.yaml@main
-      with:
-        component: app-deployment-manager
-        use-enic: false # todo: set to true after testing
+    uses: open-edge-platform/app-orch-deployment/.github/workflows/component-tests.yaml@main
+    with:
+      component: app-deployment-manager
+      use-enic: false # todo: set to true after testing
+    # steps:
+    # - name: Checkout code
+    #   uses: actions/checkout@v1
