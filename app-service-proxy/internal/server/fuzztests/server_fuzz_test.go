@@ -17,13 +17,10 @@ import (
 
 	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/admclient"
 	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/auth"
-	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/rbac"
 	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/server"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type FuzzTestSuite struct {
@@ -94,8 +91,6 @@ func setupFuzzTest(t testing.TB, enableAuth bool) *FuzzTestSuite {
 	s.ctx, s.cancel = context.WithCancel(context.Background())
 
 	var err error
-	rbac.AuthenticateFunc = authenticate
-	rbac.AuthorizeFunc = authorize
 	s.server, err = server.NewServer(s.addr)
 	require.NoError(t, err)
 
