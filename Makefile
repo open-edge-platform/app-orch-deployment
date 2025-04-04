@@ -41,6 +41,12 @@ test:
 	for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir test; done
 	@echo "---END MAKEFILE TEST---"
 
+component-test:
+	@# Help: Runs component test stage in all subprojects
+	@echo "---MAKEFILE TEST---"
+	for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir component-test; done
+	@echo "---END MAKEFILE TEST---"
+
 go-fuzz:
 	@# Help: Runs go fuzz test stage in all fuzz subprojects
 	@echo "---MAKEFILE GO FUZZ TEST---"

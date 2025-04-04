@@ -15,6 +15,11 @@ on:
         required: true
         type: boolean
         default: false
+      run-arm:
+        description: 'Run App Resource Manager component tests'
+        required: true
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -22,23 +27,20 @@ concurrency:
 
 jobs:
   component-test-adm:
-    if: |
-      ${{ inputs.run-adm || github.event_name == 'schedule' || github.event.label.name == 'run-adm-component-tests' }}
-    name: Deploy Kind Orchestrator and Run ADM Component Tests
-    runs-on: ubuntu-24.04-16core-64GB # ubuntu-24.04-4core-16GB ubuntu-22.04-32core-128GB & ubuntu-24.04-16core-64GB
-    timeout-minutes: 60
-    env:
-      ORCH_DEFAULT_PASSWORD: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
-      CODER_DIR: ${{ github.workspace }}
-      DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
-      DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
-      GH_TOKEN: ${{ secrets.SYS_ORCH_GITHUB }}
-      EMF_BRANCH: main
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v1
-    - name: Component tests
-      uses: ./.github/actions/component-test
-      with:
-        component: app-deployment-manager
-        use-enic: true
+    if: ${{ inputs.run-adm || github.event_name == 'schedule' || github.event.label.name == 'run-adm-component-tests' }}
+    name: ADM Component Test
+    uses: ./.github/workflows/common-comp-tests.yml
+    with:
+      component: app-deployment-manager
+      use-enic: true
+      emf-branch: main
+    secrets: inherit
+  component-test-arm:
+    if: ${{ inputs.run-arm || github.event_name == 'schedule' || github.event.label.name == 'run-arm-component-tests' }}
+    name: ARM Component Test
+    uses: ./.github/workflows/common-comp-tests.yml
+    with:
+      component: app-resource-manager
+      use-enic: true
+      emf-branch: main
+    secrets: inherit
