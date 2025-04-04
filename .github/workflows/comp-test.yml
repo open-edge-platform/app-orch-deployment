@@ -30,7 +30,6 @@ concurrency:
 jobs:
   component-test-adm: # if: ${{ inputs.run-adm || github.event_name == 'schedule' || github.event.label.name == 'run-adm-component-tests' }}
     uses: ./.github/workflows/component-tests.yml
-    timeout-minutes: 60
     with:
       component: app-deployment-manager
       use-enic: false # todo: set to true after testing
