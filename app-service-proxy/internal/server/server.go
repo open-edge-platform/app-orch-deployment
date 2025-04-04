@@ -103,6 +103,13 @@ func extractCookieInfo(req *http.Request) (*CookieInfo, error) {
 }
 
 func NewServer(addr string) (*Server, error) {
+	// To allow connections to be reused, we need to set the following parameters.
+	// By default, the http.DefaultTransport will set MaxIdleConnsPerHost to 2.
+	// All outgoing requests from ASP to a CCG are to the same host, hence we
+	// increase this to prevent connections from constantly being opened and closed.
+	http.DefaultTransport.(*http.Transport).DisableKeepAlives = false
+	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 64
+
 	var err error
 	if os.Getenv("CATTLE_TUNNEL_DATA_DEBUG") == "true" {
 		remotedialer.PrintTunnelData = true
