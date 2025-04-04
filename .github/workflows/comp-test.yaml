@@ -32,7 +32,7 @@ jobs:
     # if: ${{ inputs.run-adm || github.event_name == 'schedule' || github.event.label.name == 'run-adm-component-tests' }}
     name: Deploy Kind Orchestrator and Run ADM Component Tests
     timeout-minutes: 60
-    uses: open-edge-platform/app-orch-deployment/.github/workflows/component-tests.yaml@c424f194d59230b4a326cea67e1580bf12e1bca8
+    uses: ./.github/workflows/component-tests.yaml
     with:
       component: app-deployment-manager
       use-enic: false # todo: set to true after testing
