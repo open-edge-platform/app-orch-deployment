@@ -103,13 +103,13 @@ jobs:
       # - name: Describe ${{ inputs.component }}
       #   run: kubectl describe application -n dev ${{ inputs.component }}
 
-      - name: Setup Test environment
-        run: |
-          sudo awk -i inplace '/BEGIN ORCH DEVELOPMENT HOSTS/,/END ORCH DEVELOPMENT HOSTS/ { next } 1' /etc/hosts
-          sudo awk -i inplace '/BEGIN ORCH SRE DEVELOPMENT HOST/,/END ORCH SRE DEVELOPMENT HOST/ { next } 1' /etc/hosts
-          mage gen:hostfileTraefik | sudo tee -a /etc/hosts > /dev/null
-          echo "Updated Hostfile entries!"
-          mage gen:orchCa deploy:orchCa
+      # - name: Setup Test environment
+      #   run: |
+      #     sudo awk -i inplace '/BEGIN ORCH DEVELOPMENT HOSTS/,/END ORCH DEVELOPMENT HOSTS/ { next } 1' /etc/hosts
+      #     sudo awk -i inplace '/BEGIN ORCH SRE DEVELOPMENT HOST/,/END ORCH SRE DEVELOPMENT HOST/ { next } 1' /etc/hosts
+      #     mage gen:hostfileTraefik | sudo tee -a /etc/hosts > /dev/null
+      #     echo "Updated Hostfile entries!"
+      #     mage gen:orchCa deploy:orchCa
 
       # - name: Setup users and project/org
       #   run: |
