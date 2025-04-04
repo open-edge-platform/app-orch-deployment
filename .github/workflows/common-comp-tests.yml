@@ -100,8 +100,8 @@ jobs:
       #     mage router:stop router:start || true
       #     echo "Router restarted"
 
-      - name: Describe ${{ inputs.component }}
-        run: kubectl describe application -n dev ${{ inputs.component }}
+      # - name: Describe ${{ inputs.component }}
+      #   run: kubectl describe application -n dev ${{ inputs.component }}
 
       - name: Setup Test environment
         run: |
