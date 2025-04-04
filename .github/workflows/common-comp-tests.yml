@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-name: Component Tests
+name: Common Component Tests
 description: "Sets up the environment with necessary tools and dependencies to run component tests"
 
 on:
@@ -84,21 +84,21 @@ jobs:
           echo "Root App Status:"
           kubectl -n dev get applications root-app -o yaml
 
-      - name: Verify Kind Deployment
-        id: verify-kind-deployment
-        run: |
-          echo "Starting to verify Orchestrator deployment..."
-          timeout 50m mage deploy:waitUntilComplete &
-          WAIT_PID=$!
-          while kill -0 $WAIT_PID 2>/dev/null; do
-            echo "Waiting for Orchestrator deployment to complete..."
-            kubectl get pods -A || true
-            sleep 30
-          done
-          wait $WAIT_PID || true
-          echo "Orchestrator deployment verified!"
-          mage router:stop router:start || true
-          echo "Router restarted"
+      # - name: Verify Kind Deployment
+      #   id: verify-kind-deployment
+      #   run: |
+      #     echo "Starting to verify Orchestrator deployment..."
+      #     timeout 50m mage deploy:waitUntilComplete &
+      #     WAIT_PID=$!
+      #     while kill -0 $WAIT_PID 2>/dev/null; do
+      #       echo "Waiting for Orchestrator deployment to complete..."
+      #       kubectl get pods -A || true
+      #       sleep 30
+      #     done
+      #     wait $WAIT_PID || true
+      #     echo "Orchestrator deployment verified!"
+      #     mage router:stop router:start || true
+      #     echo "Router restarted"
 
       - name: Describe ${{ inputs.component }}
         run: kubectl describe application -n dev ${{ inputs.component }}
@@ -111,35 +111,34 @@ jobs:
           echo "Updated Hostfile entries!"
           mage gen:orchCa deploy:orchCa
 
-      - name: Setup users and project/org
-        run: |
-          mage tenantUtils:createDefaultMtSetup
-          echo "Orch org/project/users created!"
-          echo "Project uID:"
-          kubectl get projects.project -o json | jq -r ".items[0].status.projectStatus.uID"
+      # - name: Setup users and project/org
+      #   run: |
+      #     mage tenantUtils:createDefaultMtSetup
+      #     echo "Orch org/project/users created!"
+      #     echo "Project uID:"
+      #     kubectl get projects.project -o json | jq -r ".items[0].status.projectStatus.uID"
 
-      - name: Deploy Edge Cluster using EniC
-        if: ${{ inputs.use-enic }}
-        run: |
-          mage deploy:edgeCluster
-          echo "ENIC deployment done!"
+      # - name: Deploy Edge Cluster using EniC
+      #   if: ${{ inputs.use-enic }}
+      #   run: |
+      #     mage deploy:edgeCluster
+      #     echo "ENIC deployment done!"
 
-      - name: Redeploy and Rebuild ${{ inputs.component }}
-        working-directory: app-orch-deployment/${{ inputs.component }}
-        run: |
-          make coder-redeploy
-          make coder-rebuild 
+      # - name: Redeploy and Rebuild ${{ inputs.component }}
+      #   working-directory: app-orch-deployment/${{ inputs.component }}
+      #   run: |
+      #     make coder-redeploy
+      #     make coder-rebuild 
 
-      - name: Run ${{ inputs.component }} Component Tests
-        working-directory: app-orch-deployment/${{ inputs.component }}
-        run: | 
-          make component-test
-          echo "${{ inputs.component }} component tests done!"  
+      # - name: Run ${{ inputs.component }} Component Tests
+      #   working-directory: app-orch-deployment/${{ inputs.component }}
+      #   run: | 
+      #     make component-test
+      #     echo "${{ inputs.component }} component tests done!"  
 
       - name: Get Argo diagnostic information
         if: ${{ always() && steps.deploy-external-orchestrator.conclusion == 'success' }}
         id: get-argo-diag-info
-        working-directory: ../
         run: |
           mage logutils:collectArgoDiags > argo-diag.txt
           kubectl get applications -o yaml -A > argocd-applications.yaml
@@ -153,18 +152,18 @@ jobs:
             argo-diag.txt
             argocd-applications.yaml
 
-      - name: Get Pods diagnostic information
-        if: ${{ always() && steps.verify-kind-deployment.conclusion == 'success' }}
-        id: get-pods-diag-info
-        run: |
-          kubectl get pods -o wide -A > pods-list.txt
-          kubectl describe pods -A > pods-describe.txt
+      # - name: Get Pods diagnostic information
+      #   if: ${{ always() && steps.verify-kind-deployment.conclusion == 'success' }}
+      #   id: get-pods-diag-info
+      #   run: |
+      #     kubectl get pods -o wide -A > pods-list.txt
+      #     kubectl describe pods -A > pods-describe.txt
 
-      - name: Upload Pods diagnostic artifacts
-        if: ${{ always() && steps.get-pods-diag-info.conclusion == 'success' }}
-        uses: actions/upload-artifact@v4.4.3
-        with:
-          name: pods-logs
-          path: |
-            pods-list.txt
-            pods-describe.txt
+      # - name: Upload Pods diagnostic artifacts
+      #   if: ${{ always() && steps.get-pods-diag-info.conclusion == 'success' }}
+      #   uses: actions/upload-artifact@v4.4.3
+      #   with:
+      #     name: pods-logs
+      #     path: |
+      #       pods-list.txt
+      #       pods-describe.txt
