@@ -4,6 +4,10 @@
 
 name: OLD Component Tests
 on:
+  pull_request:
+    types: [labeled]
+  schedule:
+    - cron: "0 0 * * *" # Run every day at midnight
   workflow_dispatch:  # Run on manual trigger
     inputs:
       run-adm:

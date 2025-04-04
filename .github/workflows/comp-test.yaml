@@ -4,6 +4,13 @@
 
 name: Component Tests
 on:
+  pull_request:
+    types: [labeled]
+    branches:
+      - main
+      - release-*
+  schedule:
+    - cron: "0 0 * * *" # Run every day at midnight
   workflow_dispatch:  # Run on manual trigger
     inputs:
       run-adm:
@@ -24,21 +31,12 @@ concurrency:
 jobs:
   component-test-adm:
     if: |
-      ${{ inputs.run-adm || github.event_name == 'schedule' || github.event.label.name == 'run-adm-component-tests' }}
+      ${{ inputs.run-adm || github.event_name == 'schedule' || github.event_name == 'pull_request' || github.event.label.name == 'run-adm-component-tests' }}
     name: Deploy Kind Orchestrator and Run ADM Component Tests
-    runs-on: ubuntu-24.04-16core-64GB # ubuntu-24.04-4core-16GB ubuntu-22.04-32core-128GB & ubuntu-24.04-16core-64GB
     timeout-minutes: 60
-    env:
-      ORCH_DEFAULT_PASSWORD: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
-      CODER_DIR: ${{ github.workspace }}
-      DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
-      DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
-      GH_TOKEN: ${{ secrets.SYS_ORCH_GITHUB }}
-      EMF_BRANCH: main
     uses: open-edge-platform/app-orch-deployment/.github/workflows/component-tests.yaml@main
     with:
       component: app-deployment-manager
       use-enic: false # todo: set to true after testing
-    # steps:
-    # - name: Checkout code
-    #   uses: actions/checkout@v1
+      EMF_BRANCH: main
+    secrets: inherit
