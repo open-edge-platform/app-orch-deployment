@@ -56,11 +56,17 @@ var atomsToAttrs = map[atom.Atom]sets.Set[string]{
 }
 
 // RewritingTransport wraps the default http.RoundTripper
-type RewritingTransport struct{}
+type RewritingTransport struct {
+	transport http.RoundTripper
+}
 
 // RoundTrip executes a single HTTP transaction and allows for response manipulation
 func (t *RewritingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	resp, err := http.DefaultTransport.RoundTrip(req)
+	// Send the request using the default transport if no custom transport is set
+	if t.transport == nil {
+		t.transport = http.DefaultTransport
+	}
+	resp, err := t.transport.RoundTrip(req)
 	if err != nil {
 		logrus.Errorf("transport error for URL %s: %v", req.URL, err)
 		return nil, err
