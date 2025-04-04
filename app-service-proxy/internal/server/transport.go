@@ -63,19 +63,27 @@ type RewritingTransport struct {
 // RoundTrip executes a single HTTP transaction and allows for response manipulation
 func (t *RewritingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	// Send the request using the default transport
-	if t.transport == nil {
-		t.transport = http.DefaultTransport
-	}
-	resp, err := t.transport.RoundTrip(req)
+	// if t.transport == nil {
+	// 	t.transport =
+	// }
+
+	// http.DefaultTransport.(*http.Transport).CloseIdleConnections()
+	// http.DefaultTransport.(*http.Transport).DisableKeepAlives = true
+
+	resp, err := http.DefaultTransport.RoundTrip(req)
 	if err != nil {
-		logrus.Errorf("transport error: %s", req.URL)
-		return &http.Response{
-			StatusCode: http.StatusBadRequest,
-			Status:     http.StatusText(http.StatusBadRequest),
-			Body:       io.NopCloser(strings.NewReader(fmt.Sprintf("Error: %v", err))),
-			Request:    req,
-		}, nil
+		logrus.Errorf("transport error for URL %s: %v", req.URL, err)
+		return nil, err
 	}
+
+	// req.Body.Close()
+
+	// buf := &bytes.Buffer{}
+	// io.Copy(buf, resp.Body)
+	// resp.Body.Close()
+	// resp.Body = io.NopCloser(buf)
+
+	// return resp, err
 
 	cType := resp.Header.Get("Content-Type")
 	cType = strings.TrimSpace(strings.SplitN(cType, ";", 2)[0])
@@ -261,10 +269,15 @@ func rewriteHTML(reader io.Reader, writer io.Writer, ci *CookieInfo, kubeapiAddr
 func (t *RewritingTransport) rewriteResponse(
 	req *http.Request, resp *http.Response) (*http.Response, error) {
 	origBody := resp.Body
-	defer origBody.Close()
+	defer func() {
+		io.Copy(io.Discard, origBody)
+		origBody.Close()
+		logrus.Errorf("Closing original body")
+	}()
+	// defer origBody.Close()
 
 	newContent := &bytes.Buffer{}
-	var reader io.Reader = origBody
+	var reader io.Reader = resp.Body
 	var writer io.Writer = newContent
 	encoding := resp.Header.Get("Content-Encoding")
 	switch encoding {
@@ -304,9 +317,8 @@ func (t *RewritingTransport) rewriteResponse(
 	sourceURL, err := url.Parse(origProto + "://" + origHost)
 	if err != nil {
 		logrus.Errorf("Proxy encountered error in parsing X-Forwarded headers: %v", err)
-		return resp, err
+		return nil, err
 	}
-
 	logrus.Debugf("sourceURL : %s", sourceURL)
 
 	ci, err := extractCookieInfo(req)
@@ -318,14 +330,14 @@ func (t *RewritingTransport) rewriteResponse(
 	kubeapiAddr, err := url.Parse(origProto + "://" + "kubernetes.default.svc")
 	if err != nil {
 		logrus.Errorf("Error creating kube API URL: %v", err)
-		return resp, err
+		return nil, err
 	}
 
 	logrus.Debugf("kubeapiAddr : %s", kubeapiAddr)
 	err = rewriteHTML(reader, writer, ci, kubeapiAddr, sourceURL)
 	if err != nil {
 		logrus.Errorf("Failed to rewrite URLs: %v", err)
-		return resp, err
+		return nil, err
 	}
 
 	resp.Body = io.NopCloser(newContent)

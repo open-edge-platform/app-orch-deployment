@@ -51,6 +51,7 @@ type Server struct {
 	ccgAddress             string
 	remotedialerServer     *remotedialer.Server
 	router                 *mux.Router
+	server                 *http.Server
 	authNenabled           bool
 	authZenabled           bool
 	authenticate           func(req *http.Request) error
@@ -158,8 +159,14 @@ func (a *Server) Run() error {
 		return nil
 	}
 	logrus.Infof("Listening on %s", a.addr)
-	srv := &http.Server{Addr: a.addr, Handler: a.router, ReadTimeout: 10 * time.Second}
-	return srv.ListenAndServe()
+	a.server = &http.Server{Addr: a.addr, Handler: a.router, ReadTimeout: 10 * time.Second}
+	return a.server.ListenAndServe()
+}
+
+func (a *Server) Close() error {
+	logrus.Info("Closing server")
+	a.server.Shutdown(context.Background())
+	return a.server.Close()
 }
 
 func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
