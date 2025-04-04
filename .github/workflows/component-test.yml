@@ -33,7 +33,7 @@ jobs:
     with:
       component: app-deployment-manager
       use-enic: true
-      emf-branch: itep-25615
+      emf-branch: main
     secrets: inherit
   component-test-arm:
     if: ${{ inputs.run-arm || github.event_name == 'schedule' || github.event.label.name == 'run-arm-component-tests' }}

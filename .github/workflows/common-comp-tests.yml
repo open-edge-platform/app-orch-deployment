@@ -138,7 +138,7 @@ jobs:
         if: ${{ failure() }}
         id: get-argo-diag-info
         run: |
-          mage logutils:collectArgoDiags | tee argo-diag.txt
+          mage logutils:collectArgoDiags > argo-diag.txt
           kubectl get applications -o yaml -A > argocd-applications.yaml
 
       - name: Upload Argo diagnostic artifacts
