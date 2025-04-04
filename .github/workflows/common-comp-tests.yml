@@ -69,7 +69,6 @@ jobs:
         run: echo "GIT_HASH_DEPLOY=$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
 
       - name: Deploy External Orchestrator
-        id: deploy-external-orchestrator
         env:
           GIT_USER: "git"
           GIT_TOKEN: ${{ env.GH_TOKEN }}
@@ -85,7 +84,6 @@ jobs:
           kubectl -n dev get applications root-app -o yaml
 
       - name: Verify Kind Deployment
-        id: verify-kind-deployment
         run: |
           echo "Starting to verify Orchestrator deployment..."
           timeout 50m mage deploy:waitUntilComplete &
@@ -137,14 +135,14 @@ jobs:
           echo "${{ inputs.component }} component tests done!"
 
       - name: Get Argo diagnostic information
-        if: ${{ always() && steps.deploy-external-orchestrator.conclusion == 'success' }}
+        if: ${{ failure() }}
         id: get-argo-diag-info
         run: |
-          mage logutils:collectArgoDiags > argo-diag.txt
+          mage logutils:collectArgoDiags | tee argo-diag.txt
           kubectl get applications -o yaml -A > argocd-applications.yaml
 
       - name: Upload Argo diagnostic artifacts
-        if: ${{ always() && steps.get-argo-diag-info.conclusion == 'success' }}
+        if: ${{ failure() && steps.get-argo-diag-info.conclusion == 'success' }}
         uses: actions/upload-artifact@v4.4.3
         with:
           name: argo-diag-logs
@@ -153,14 +151,14 @@ jobs:
             argocd-applications.yaml
 
       - name: Get Pods diagnostic information
-        if: ${{ always() && steps.verify-kind-deployment.conclusion == 'success' }}
+        if: ${{ failure() }}
         id: get-pods-diag-info
         run: |
           kubectl get pods -o wide -A > pods-list.txt
           kubectl describe pods -A > pods-describe.txt
 
       - name: Upload Pods diagnostic artifacts
-        if: ${{ always() && steps.get-pods-diag-info.conclusion == 'success' }}
+        if: ${{ failure() && steps.get-pods-diag-info.conclusion == 'success' }}
         uses: actions/upload-artifact@v4.4.3
         with:
           name: pods-logs
