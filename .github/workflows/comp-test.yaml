@@ -37,4 +37,3 @@ jobs:
       component: app-deployment-manager
       use-enic: false # todo: set to true after testing
       EMF_BRANCH: main
-    secrets: inherit
