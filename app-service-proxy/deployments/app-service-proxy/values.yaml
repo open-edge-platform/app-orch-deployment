@@ -206,44 +206,6 @@ admRateLimiter:
   qps: 30
   burst: 2000
 
-## agent defines params for app-service-proxy-agent deployment
-agent:
-  ## @param agent.image app-service-proxy-agent image overriding values
-  ## @param agent.image.registry app-service-proxy-agent image registry overriding values
-  ## @param agent.image.registry.name app-service-proxy-agent image registry URL
-  ## @param agent.chart app-service-proxy-agent Helm chart repository URL
-  ## @param agent.version app-service-proxy-agent Helm chart version
-  ## @param agent.chartRepoSecret app-service-proxy-agent Helm chart repository access secret name
-  ## @param agent.targetNamespace app-service-proxy-agent Helm chart installation target namespace
-  ## @param agent.config app-service-proxy-agent Helm chart overriding values
-  ## @param agent.config.proxyServerURL app-service-proxy connect URL
-  ## @param agent.config.proxyServerCA Root CA to be used to access app-service-proxy. Automatically set by proxyServerCASecret when not set.
-  ## @param agent.config.insecureSkipVerify A switch to enable or disable SSL for app-service-proxy access
-  ## @param agent.config.proxyServerCASecret Source of root CA for app-service-proxy access. Explicitly set empty values if no cert is required.
-  ## @param agent.authToken.serviceAccount ServiceAccount name for app-service-proxy to authenticate edge cluster
-  ## @param agent.authToken.expiration Duration of validity of the authentication token creation request
-  ## @param agent.tokenTTLHours TTL for the token used by app-service-proxy-agent to connect app-service-proxy-server
-  image:
-    registry:
-      name: registry-rs.edgeorchestration.intel.com/edge-orch
-  chart: "oci://rs-proxy.orch-platform.svc.cluster.local:8443/edge-orch/app/charts/app-service-proxy-agent"
-  version: "1.3.0"
-  chartRepoSecret: "fleet-rs-secret"
-  targetNamespace: "orchestrator-system"
-  config:
-    proxyDomain: "app-service-proxy.kind.internal"
-    proxyServerURL: "wss://app-orch.kind.internal/app-service-proxy"
-    #proxyServerCA: ""
-    insecureSkipVerify: "false"
-  proxyServerCASecret:
-    namespace: gateway-system
-    name: tls-orch
-    key: tls.crt
-  authToken:
-    serviceAccount: "orchestrator-service-proxy-proxy-agent"
-    expirationSeconds: 172800
-  tokenTTLHours: 100
-
 git:
   ## @param git.repoName The name of git repository and fleet gitrepo object
   repoName: "orchestrator-service-proxy"
