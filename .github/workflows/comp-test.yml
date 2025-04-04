@@ -28,9 +28,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  component-test-adm:
-    # if: ${{ inputs.run-adm || github.event_name == 'schedule' || github.event.label.name == 'run-adm-component-tests' }}
-    timeout-minutes: 60
+  component-test-adm: # if: ${{ inputs.run-adm || github.event_name == 'schedule' || github.event.label.name == 'run-adm-component-tests' }}
     uses: ./.github/workflows/component-tests.yml
     with:
       component: app-deployment-manager
