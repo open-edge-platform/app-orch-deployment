@@ -10,6 +10,7 @@ on:
     inputs:
       component:
         required: true
+        type: string
         description: "The component to test (e.g., app-deployment-manager, app-resource-manager)"
       use-enic:
         required: true
