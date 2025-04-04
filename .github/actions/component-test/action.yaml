@@ -7,7 +7,7 @@ description: "Sets up the environment with necessary tools and dependencies to r
 inputs:
   component:
     required: true
-    description: "The Component to test (e.g., app-deployment-manager, app-resource-manager)"
+    description: "The component to test (e.g., app-deployment-manager, app-resource-manager)"
   use-enic:
     required: true
     description: "Deploy Edge Cluster using EniC"
