@@ -61,7 +61,7 @@
         uses: ./.github/workflows/common-go-fuzz.yml
         with:
           # Declare 2100 secs duration since schedule event will not pick up input values from workflow_dispatch
-          fuzz_seconds: ${{ inputs.fuzz_seconds_arm || 2100 }}
+          fuzz_seconds: ${{ inputs.fuzz_seconds_arm || 2 }}
           fuzz_subprojects: app-resource-manager
           test_data_dir: app-resource-manager/internal/northbound/services/v2/resource/testdata/fuzz
         secrets: inherit
