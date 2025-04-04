@@ -49,7 +49,7 @@ func setupDummyHttpServer(t testing.TB) *http.Server {
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil {
-			logrus.Errorf("Dummy HTTP server exited: %v", err)
+			logrus.Warnf("Dummy HTTP server exited: %v", err)
 			t.Error(err)
 		}
 	}()
@@ -111,7 +111,7 @@ func setupFuzzTest(t testing.TB, enableAuth bool) *FuzzTestSuite {
 			t.Error(err)
 			s.cancel()
 		}
-		logrus.Errorf("ASP server exited: %v", err)
+		logrus.Warnf("ASP server exited: %v", err)
 	}()
 
 	httpServer := setupDummyHttpServer(t)

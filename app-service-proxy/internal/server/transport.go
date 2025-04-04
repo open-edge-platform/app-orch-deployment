@@ -62,14 +62,6 @@ type RewritingTransport struct {
 
 // RoundTrip executes a single HTTP transaction and allows for response manipulation
 func (t *RewritingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	// Send the request using the default transport
-	// if t.transport == nil {
-	// 	t.transport =
-	// }
-
-	// http.DefaultTransport.(*http.Transport).CloseIdleConnections()
-	// http.DefaultTransport.(*http.Transport).DisableKeepAlives = true
-
 	resp, err := http.DefaultTransport.RoundTrip(req)
 	if err != nil {
 		logrus.Errorf("transport error for URL %s: %v", req.URL, err)
@@ -272,9 +264,7 @@ func (t *RewritingTransport) rewriteResponse(
 	defer func() {
 		io.Copy(io.Discard, origBody)
 		origBody.Close()
-		logrus.Errorf("Closing original body")
 	}()
-	// defer origBody.Close()
 
 	newContent := &bytes.Buffer{}
 	var reader io.Reader = resp.Body
