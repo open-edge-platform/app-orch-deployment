@@ -195,7 +195,7 @@ var _ = Describe("Server", func() {
 				request.AddCookie(&http.Cookie{Name: "app-service-proxy-service", Value: "mock-service:80"})
 				Expect(err).NotTo(HaveOccurred())
 				testServer.router.ServeHTTP(recorder, request)
-				Expect(recorder.Code).To(Equal(http.StatusGatewayTimeout))
+				Expect(recorder.Code).To(Equal(http.StatusBadGateway))
 			})
 		})
 	})
