@@ -30,7 +30,6 @@ concurrency:
 jobs:
   component-test-adm:
     # if: ${{ inputs.run-adm || github.event_name == 'schedule' || github.event.label.name == 'run-adm-component-tests' }}
-    name: Deploy Kind Orchestrator and Run ADM Component Tests
     timeout-minutes: 60
     uses: ./.github/workflows/component-tests.yml
     with:
