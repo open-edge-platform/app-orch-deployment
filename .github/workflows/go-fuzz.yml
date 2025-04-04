@@ -63,7 +63,7 @@
           test_data_dir: app-resource-manager/internal/northbound/services/v2/resource/testdata/fuzz
         secrets: inherit
       go-fuzz-asp:
-        if: ${{ inputs.run_asp }}
+        if: ${{ inputs.run_asp || github.event_name == 'schedule'}}
         name: ASP Go Fuzzing Tests
         uses: ./.github/workflows/common-go-fuzz.yml
         with:
