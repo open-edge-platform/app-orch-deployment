@@ -5,7 +5,6 @@
 name: Component Tests
 on:
   pull_request:
-    types: [labeled]
     branches:
       - main
       - release-*
