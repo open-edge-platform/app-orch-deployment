@@ -17,6 +17,11 @@ on:
         description: "Deploy Edge Cluster using EniC"
         type: boolean
         default: true
+      emf-branch:
+        required: true
+        description: "Branch in edge-manageability-framework to checkout"
+        type: string
+        default: main
 
 jobs:
   comp-test:
@@ -33,7 +38,7 @@ jobs:
         with:
           repository: open-edge-platform/edge-manageability-framework
           token: ${{ env.GH_TOKEN }}
-          ref: ${{ env.EMF_BRANCH }}
+          ref: ${{ inputs.emf-branch}}
 
       - name: Fetch all branches
         shell: bash
