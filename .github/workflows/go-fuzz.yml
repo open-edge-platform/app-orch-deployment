@@ -1,0 +1,77 @@
+---
+    # SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+    # SPDX-License-Identifier: Apache-2.0
+    
+    name: Go Fuzzing Tests
+    
+    on:
+      pull_request:
+        branches:
+          - main
+          - release-*
+      workflow_dispatch:
+        inputs:
+          run_adm:
+            description: 'Run ADM fuzzing tests'
+            required: false
+            type: boolean
+            default: true
+          fuzz_seconds_adm:
+            description: 'Duration per test case in secs. Total duration is secs X # of test cases'
+            required: false
+            type: number
+            default: 1200
+          run_arm:
+            description: 'Run ARM fuzzing tests'
+            required: false
+            type: boolean
+            default: true
+          fuzz_seconds_arm:
+            description: 'Duration per test case in secs. Total duration is secs X # of test cases'
+            required: false
+            type: number
+            default: 2100
+          run_asp:
+            description: 'Run ASP fuzzing tests'
+            required: false
+            type: boolean
+            default: true
+          fuzz_seconds_asp:
+            description: 'Duration per test case in secs. Total duration is secs X # of test cases'
+            required: false
+            type: number
+            default: 4800
+      # Scheduled workflows will only run on the default branch. Input values from workflow_dispatch will be null when schedule event is triggered
+      schedule:
+        - cron: "0 0 * * 6"   # every week, at 00:00 on Saturday
+    
+    jobs:
+      # go-fuzz-adm:
+      #   if: ${{ inputs.run_adm || github.event_name == 'schedule' }}
+      #   name: ADM Go Fuzzing Tests
+      #   uses: ./.github/workflows/common-go-fuzz.yml
+      #   with:
+      #     # Declare 1200 secs duration since schedule event will not pick up input values from workflow_dispatch
+      #     fuzz_seconds: ${{ inputs.fuzz_seconds_adm || 1200 }}
+      #     fuzz_subprojects: app-deployment-manager
+      #     test_data_dir: app-deployment-manager/internal/northbound/fuzztests/testdata/fuzz
+      #   secrets: inherit
+      go-fuzz-arm: 
+        name: ARM Go Fuzzing Tests
+        uses: ./.github/workflows/common-go-fuzz.yml
+        with:
+          # Declare 2100 secs duration since schedule event will not pick up input values from workflow_dispatch
+          fuzz_seconds: ${{ inputs.fuzz_seconds_arm || 2100 }}
+          fuzz_subprojects: app-resource-manager
+          test_data_dir: app-resource-manager/internal/northbound/services/v2/resource/testdata/fuzz
+        secrets: inherit
+      # go-fuzz-asp:
+      #   if: ${{ inputs.run_asp }}
+      #   name: ASP Go Fuzzing Tests
+      #   uses: ./.github/workflows/common-go-fuzz.yml
+      #   with:
+      #     # Declare 4800 secs duration since schedule event will not pick up input values from workflow_dispatch
+      #     fuzz_seconds: ${{ inputs.fuzz_seconds_asp || 4800 }}
+      #     fuzz_subprojects: app-service-proxy
+      #     test_data_dir: app-service-proxy/internal/server/fuzztests/testdata/fuzz
+      #   secrets: inherit
