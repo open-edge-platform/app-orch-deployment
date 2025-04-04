@@ -135,6 +135,15 @@ jobs:
       #   run: | 
       #     make component-test
       #     echo "${{ inputs.component }} component tests done!"  
+      
+      - name: ls directory
+        run: |
+          echo "ls"
+          ls
+          echo
+          echo "pwd"
+          ls
+          echo
 
       - name: Get Argo diagnostic information
         if: ${{ always() && steps.deploy-external-orchestrator.conclusion == 'success' }}
