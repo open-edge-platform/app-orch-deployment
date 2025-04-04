@@ -5,9 +5,7 @@
 name: Component Tests
 on:
   pull_request:
-    branches:
-      - main
-      - release-*
+    types: [labeled]
   schedule:
     - cron: "0 0 * * *" # Run every day at midnight
   workflow_dispatch:  # Run on manual trigger
@@ -28,17 +26,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  component-test-adm: # if: ${{ inputs.run-adm || github.event_name == 'schedule' || github.event.label.name == 'run-adm-component-tests' }}
+  component-test-adm:
+    if: ${{ inputs.run-adm || github.event_name == 'schedule' || github.event.label.name == 'run-adm-component-tests' }}
     name: ADM Component Test
     uses: ./.github/workflows/common-comp-tests.yml
     with:
       component: app-deployment-manager
-      use-enic: false # todo: set to true after testing
+      use-enic: true
       emf-branch: main
     secrets: inherit
   component-test-arm:
-    name: ARM Component Test
     if: ${{ inputs.run-arm || github.event_name == 'schedule' || github.event.label.name == 'run-arm-component-tests' }}
+    name: ARM Component Test
     uses: ./.github/workflows/common-comp-tests.yml
     with:
       component: app-resource-manager
