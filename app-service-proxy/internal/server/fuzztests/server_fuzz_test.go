@@ -210,10 +210,6 @@ func FuzzProxyHeaderHost(f *testing.F) {
 		err = resp.Body.Close()
 		require.NoError(t, err)
 	})
-
-	s.cancel()
-	s.wg.Wait()
-	logrus.Warn("FuzzProxyHeaderHost completed")
 }
 
 func FuzzProxyHeaderProto(f *testing.F) {

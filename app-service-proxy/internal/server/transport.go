@@ -56,9 +56,7 @@ var atomsToAttrs = map[atom.Atom]sets.Set[string]{
 }
 
 // RewritingTransport wraps the default http.RoundTripper
-type RewritingTransport struct {
-	transport http.RoundTripper
-}
+type RewritingTransport struct{}
 
 // RoundTrip executes a single HTTP transaction and allows for response manipulation
 func (t *RewritingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -67,15 +65,6 @@ func (t *RewritingTransport) RoundTrip(req *http.Request) (*http.Response, error
 		logrus.Errorf("transport error for URL %s: %v", req.URL, err)
 		return nil, err
 	}
-
-	// req.Body.Close()
-
-	// buf := &bytes.Buffer{}
-	// io.Copy(buf, resp.Body)
-	// resp.Body.Close()
-	// resp.Body = io.NopCloser(buf)
-
-	// return resp, err
 
 	cType := resp.Header.Get("Content-Type")
 	cType = strings.TrimSpace(strings.SplitN(cType, ";", 2)[0])
@@ -262,12 +251,12 @@ func (t *RewritingTransport) rewriteResponse(
 	req *http.Request, resp *http.Response) (*http.Response, error) {
 	origBody := resp.Body
 	defer func() {
-		io.Copy(io.Discard, origBody)
+		_, _ = io.Copy(io.Discard, origBody)
 		origBody.Close()
 	}()
 
 	newContent := &bytes.Buffer{}
-	var reader io.Reader = resp.Body
+	var reader io.Reader = origBody
 	var writer io.Writer = newContent
 	encoding := resp.Header.Get("Content-Encoding")
 	switch encoding {

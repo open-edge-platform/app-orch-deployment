@@ -172,7 +172,6 @@ func (a *Server) Run() error {
 
 func (a *Server) Close() error {
 	logrus.Info("Closing server")
-	a.server.Shutdown(context.Background())
 	return a.server.Close()
 }
 
