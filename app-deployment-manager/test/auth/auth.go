@@ -22,8 +22,8 @@ import (
 )
 
 const (
-	SampleOrg              = "sample-org"
-	SampleProject          = "sample-project"
+	SampleOrg     = "sample-org"
+	SampleProject = "sample-project"
 )
 
 func SetUpAccessToken(t *testing.T, server string) string {

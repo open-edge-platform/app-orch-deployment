@@ -35,6 +35,7 @@ type TestSuite struct {
 	DeploymentRESTServerUrl string
 	token                   string
 	projectID               string
+	portForwardCmd          *exec.Cmd
 }
 
 // SetupSuite sets-up the integration tests for the ADM basic test suite
@@ -50,7 +51,7 @@ func (s *TestSuite) SetupTest() {
 	s.DeploymentRESTServerUrl = fmt.Sprintf("http://%s:%s", RestAddressPortForward, PortForwardRemotePort)
 	s.projectID, err = auth.GetProjectId(context.TODO())
 	s.NoError(err)
-	cmd, err := portForwardToADM()
+	s.portForwardCmd, err = portForwardToADM()
 	s.NoError(err)
 }
 
@@ -78,6 +79,6 @@ func TestTestSuite(t *testing.T) {
 
 // TearDownTest tears down remnants of each integration test
 func (s *TestSuite) TearDownTest(ctx context.Context) {
-	cmd, err := killportForwardToADM()
+	err := killportForwardToADM(s.portForwardCmd)
 	s.NoError(err)
 }

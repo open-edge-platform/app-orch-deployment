@@ -5,9 +5,11 @@
 package basic
 
 import (
+	"context"
 	"fmt"
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/auth"
 	"net/http"
+
+	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/auth"
 )
 
 // listDeployments allows the verb to be overridden, for tests related to http verb restriction
@@ -43,4 +45,6 @@ func (s *TestSuite) TestBasics() {
 	res, err := s.listDeployments(http.MethodGet)
 	s.NoError(err)
 	s.Equal("200 OK", res.Status)
+
+	s.TearDownTest(context.TODO())
 }
