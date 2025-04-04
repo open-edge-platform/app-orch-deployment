@@ -5,7 +5,7 @@
 name: Shared Component Test
 description: "Sets up the environment with necessary tools and dependencies to run component tests"
 
-on:  # yamllint disable-line rule:truthy
+on:
   workflow_call:
     inputs:
       component:
