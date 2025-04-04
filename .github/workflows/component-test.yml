@@ -30,7 +30,7 @@ concurrency:
 jobs:
   component-test-adm: # if: ${{ inputs.run-adm || github.event_name == 'schedule' || github.event.label.name == 'run-adm-component-tests' }}
     name: ADM Component Test
-    uses: ./.github/workflows/common/component-tests.yml
+    uses: ./.github/workflows/common-comp-tests.yml
     with:
       component: app-deployment-manager
       use-enic: false # todo: set to true after testing
@@ -39,7 +39,7 @@ jobs:
   component-test-arm:
     name: ARM Component Test
     if: ${{ inputs.run-arm || github.event_name == 'schedule' || github.event.label.name == 'run-arm-component-tests' }}
-    uses: ./.github/workflows/common/component-tests.yml
+    uses: ./.github/workflows/common-comp-tests.yml
     with:
       component: app-resource-manager
       use-enic: true
