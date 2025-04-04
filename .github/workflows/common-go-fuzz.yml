@@ -45,7 +45,7 @@ jobs:
         # Checkout the branch that triggered the workflow to avoid detached HEAD
         ref: ${{ github.head_ref }}
 
-    - name: Checkout action repository
+    - name: Checkout orch-ci repository
       uses: actions/checkout@v4
       with:
         repository: open-edge-platform/orch-ci
