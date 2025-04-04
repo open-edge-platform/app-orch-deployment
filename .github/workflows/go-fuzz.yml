@@ -48,7 +48,7 @@ jobs:
     uses: ./.github/workflows/common-go-fuzz.yml
     with:
       # Declare 1200 secs duration since schedule event will not pick up input values from workflow_dispatch
-      fuzz_seconds: ${{ inputs.fuzz_seconds_adm || 1200 }}
+      fuzz_seconds: ${{ fromJSON(inputs.fuzz_seconds_adm) || 1200 }}
       fuzz_subprojects: app-deployment-manager
       test_data_dir: app-deployment-manager/internal/northbound/fuzztests/testdata/fuzz
     secrets: inherit
@@ -58,7 +58,7 @@ jobs:
     uses: ./.github/workflows/common-go-fuzz.yml
     with:
       # Declare 2100 secs duration since schedule event will not pick up input values from workflow_dispatch
-      fuzz_seconds: ${{ inputs.fuzz_seconds_arm || 2100 }}
+      fuzz_seconds: ${{ fromJSON(inputs.fuzz_seconds_arm) || 2100 }}
       fuzz_subprojects: app-resource-manager
       test_data_dir: app-resource-manager/internal/northbound/services/v2/resource/testdata/fuzz
     secrets: inherit
@@ -68,7 +68,7 @@ jobs:
     uses: ./.github/workflows/common-go-fuzz.yml
     with:
       # Declare 4800 secs duration since schedule event will not pick up input values from workflow_dispatch
-      fuzz_seconds: ${{ inputs.fuzz_seconds_asp || 4800 }}
+      fuzz_seconds: ${{ fromJSON(inputs.fuzz_seconds_asp) || 4800 }}
       fuzz_subprojects: app-service-proxy
       test_data_dir: app-service-proxy/internal/server/fuzztests/testdata/fuzz
     secrets: inherit
