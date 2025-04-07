@@ -35,6 +35,9 @@ const (
 	tokenCookieCount  = tokenCookiePrefix + "s"
 )
 
+var AuthenticateFunc = Authenticate
+var AuthorizeFunc = Authorize
+
 func Getenv(key, fallback string) string {
 	value := os.Getenv(key)
 	if len(value) == 0 {

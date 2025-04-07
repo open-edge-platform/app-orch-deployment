@@ -415,7 +415,7 @@ func (a *Server) initAuth() {
 	} else {
 		logrus.Warnf("Authentication is disabled")
 	}
-	a.authenticate = rbac.Authenticate
+	a.authenticate = rbac.AuthenticateFunc
 
 	// Authorization
 	if os.Getenv("OPA_ENABLED") == "true" {
@@ -424,7 +424,7 @@ func (a *Server) initAuth() {
 	} else {
 		logrus.Warnf("Authorization is disabled")
 	}
-	a.authorize = rbac.Authorize
+	a.authorize = rbac.AuthorizeFunc
 }
 
 func (a *Server) initAdmClient() error {
