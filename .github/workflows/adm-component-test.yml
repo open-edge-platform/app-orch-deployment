@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-name: Component Tests
+name: ADM Component Tests
 on:
   pull_request:
     types: [labeled]
@@ -15,15 +15,7 @@ on:
         required: true
         type: boolean
         default: false
-      run-arm:
-        description: 'Run App Resource Manager component tests'
-        required: true
-        type: boolean
-        default: false
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   component-test-adm:
@@ -32,15 +24,6 @@ jobs:
     uses: ./.github/workflows/common-comp-tests.yml
     with:
       component: app-deployment-manager
-      use-enic: true
-      emf-branch: main
-    secrets: inherit
-  component-test-arm:
-    if: ${{ inputs.run-arm || github.event_name == 'schedule' || github.event.label.name == 'run-arm-component-tests' }}
-    name: ARM Component Test
-    uses: ./.github/workflows/common-comp-tests.yml
-    with:
-      component: app-resource-manager
       use-enic: true
       emf-branch: main
     secrets: inherit

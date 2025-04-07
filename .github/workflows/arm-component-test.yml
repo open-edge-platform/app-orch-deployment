@@ -1,0 +1,28 @@
+---
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+name: ARM Component Tests
+on:
+  pull_request:
+    types: [labeled]
+  schedule:
+    - cron: "0 0 * * *" # Run every day at midnight
+  workflow_dispatch:  # Run on manual trigger
+    inputs:
+      run-arm:
+        description: 'Run App Resource Manager component tests'
+        required: true
+        type: boolean
+        default: false
+
+jobs:
+  component-test-arm:
+    if: ${{ inputs.run-arm || github.event_name == 'schedule' || github.event.label.name == 'run-arm-component-tests' }}
+    name: ARM Component Test
+    uses: ./.github/workflows/common-comp-tests.yml
+    with:
+      component: app-resource-manager
+      use-enic: true
+      emf-branch: main
+    secrets: inherit
