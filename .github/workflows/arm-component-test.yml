@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-name: Component Tests
+name: ARM Component Tests
 on:
   pull_request:
     types: [labeled]
@@ -10,11 +10,6 @@ on:
     - cron: "0 0 * * *" # Run every day at midnight
   workflow_dispatch:  # Run on manual trigger
     inputs:
-      run-adm:
-        description: 'Run App Deployment Manager component tests'
-        required: true
-        type: boolean
-        default: false
       run-arm:
         description: 'Run App Resource Manager component tests'
         required: true
@@ -26,15 +21,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  component-test-adm:
-    if: ${{ inputs.run-adm || github.event_name == 'schedule' || github.event.label.name == 'run-adm-component-tests' }}
-    name: ADM Component Test
-    uses: ./.github/workflows/common-comp-tests.yml
-    with:
-      component: app-deployment-manager
-      use-enic: true
-      emf-branch: main
-    secrets: inherit
   component-test-arm:
     if: ${{ inputs.run-arm || github.event_name == 'schedule' || github.event.label.name == 'run-arm-component-tests' }}
     name: ARM Component Test
