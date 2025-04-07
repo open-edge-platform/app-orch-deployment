@@ -8,6 +8,7 @@ import (
 	"flag"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/restproxy"
 	"github.com/open-edge-platform/orch-library/go/dazl"
+	_ "github.com/open-edge-platform/orch-library/go/dazl/zap"
 )
 
 var log = dazl.GetPackageLogger()

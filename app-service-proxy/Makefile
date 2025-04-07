@@ -165,7 +165,7 @@ kind-load-app-service-proxy: common-kind-load-app-service-proxy
 
 MAKEDIR          := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 API_PROXY_HELM_PKG  ?= $(MAKEDIR)/build/_output/app-service-proxy-${VERSION}.tgz
-CODER_DIR ?= ~/orch-deploy
+CODER_DIR ?= ~/edge-manageability-framework
 
 use-orch-context:
 	kubectl config use-context ${MGMT_CLUSTER}
