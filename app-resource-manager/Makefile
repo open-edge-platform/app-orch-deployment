@@ -39,7 +39,7 @@ ARM_GATEWAY_NAME       ?= arm-gateway
 # Coder variables
 MGMT_NAME           ?= kind
 MGMT_CLUSTER        ?= kind-${MGMT_NAME}
-CODER_DIR           ?= ~/orch-deploy
+CODER_DIR           ?= ~/edge-manageability-framework
 HELM_VERSION        ?= $(shell cat VERSION)
 ARM_HELM_CHART      ?= app-resource-manager-${HELM_VERSION}.tgz
 ARM_NS              ?= orch-app
