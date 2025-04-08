@@ -1,0 +1,167 @@
+---
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+name: Common Component Tests
+description: "Sets up the environment with necessary tools and dependencies to run component tests"
+
+on:
+  workflow_call:
+    inputs:
+      component:
+        required: true
+        type: string
+        description: "The component to test (e.g., app-deployment-manager, app-resource-manager)"
+      use-enic:
+        required: true
+        description: "Deploy Edge Cluster using EniC"
+        type: boolean
+        default: true
+      emf-branch:
+        required: true
+        description: "Branch in edge-manageability-framework to checkout"
+        type: string
+        default: main
+
+jobs:
+  component-test:
+    runs-on: ubuntu-24.04-16core-64GB # ubuntu-24.04-4core-16GB ubuntu-22.04-32core-128GB & ubuntu-24.04-16core-64GB
+    timeout-minutes: 60
+    env:
+      ORCH_DEFAULT_PASSWORD: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
+      CODER_DIR: ${{ github.workspace }}
+      DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
+      DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
+      GH_TOKEN: ${{ secrets.SYS_ORCH_GITHUB }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.1
+        with:
+          repository: open-edge-platform/edge-manageability-framework
+          token: ${{ env.GH_TOKEN }}
+          ref: ${{ inputs.emf-branch}}
+
+      - name: Fetch all branches
+        run: git fetch --all
+
+      - name: Set up git credentials
+        run: |
+          echo "GOPRIVATE=github.com/open-edge-platform" >> $GITHUB_ENV
+          git config --global url."https://${{ env.GH_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+
+      - name: Setup asdf and install dependencies
+        uses: open-edge-platform/orch-utils/.github/actions/setup-asdf@main
+
+      - name: Checkout app-orch-deployment repository
+        uses: actions/checkout@v4
+        with:
+          repository: open-edge-platform/app-orch-deployment
+          path: app-orch-deployment
+          token: ${{ env.GH_TOKEN }}
+
+      - name: Get current git hash of the app-orch-deployment PR
+        id: get-git-hash-app-orch-deployment
+        working-directory: app-orch-deployment
+        run: echo "GIT_HASH_CHARTS=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_ENV"
+
+      - name: Get current git hash of the edge-manageability-framework PR
+        id: get-git-hash-deploy
+        run: echo "GIT_HASH_DEPLOY=$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
+
+      - name: Deploy External Orchestrator
+        env:
+          GIT_USER: "git"
+          GIT_TOKEN: ${{ env.GH_TOKEN }}
+          ORCH_DEPLOY_REV: ${{ env.GIT_HASH_DEPLOY }}
+          DOCKERHUB_TOKEN: ${{ env.DOCKERHUB_TOKEN }}
+          DOCKERHUB_USERNAME: ${{ env.DOCKERHUB_USERNAME }}
+        run: |
+          set +x
+          echo "Starting to deploy Orchestrator..."
+          mage deploy:kindMinimal
+          echo "Orchestrator deployment done!"
+          echo "Root App Status:"
+          kubectl -n dev get applications root-app -o yaml
+
+      - name: Verify Kind Deployment
+        run: |
+          echo "Starting to verify Orchestrator deployment..."
+          timeout 50m mage deploy:waitUntilComplete &
+          WAIT_PID=$!
+          while kill -0 $WAIT_PID 2>/dev/null; do
+            echo "Waiting for Orchestrator deployment to complete..."
+            kubectl get pods -A || true
+            sleep 30
+          done
+          wait $WAIT_PID || true
+          echo "Orchestrator deployment verified!"
+          mage router:stop router:start || true
+          echo "Router restarted"
+
+      - name: Describe ${{ inputs.component }}
+        run: kubectl describe application -n dev ${{ inputs.component }}
+
+      - name: Setup Test environment
+        run: |
+          sudo awk -i inplace '/BEGIN ORCH DEVELOPMENT HOSTS/,/END ORCH DEVELOPMENT HOSTS/ { next } 1' /etc/hosts
+          sudo awk -i inplace '/BEGIN ORCH SRE DEVELOPMENT HOST/,/END ORCH SRE DEVELOPMENT HOST/ { next } 1' /etc/hosts
+          mage gen:hostfileTraefik | sudo tee -a /etc/hosts > /dev/null
+          echo "Updated Hostfile entries!"
+          mage gen:orchCa deploy:orchCa
+
+      - name: Setup users and project/org
+        run: |
+          mage tenantUtils:createDefaultMtSetup
+          echo "Orch org/project/users created!"
+          echo "Project uID:"
+          kubectl get projects.project -o json | jq -r ".items[0].status.projectStatus.uID"
+
+      - name: Deploy Edge Cluster using EniC
+        if: ${{ inputs.use-enic }}
+        run: |
+          mage deploy:edgeCluster
+          echo "ENIC deployment done!"
+
+      - name: Redeploy and Rebuild ${{ inputs.component }}
+        working-directory: app-orch-deployment/${{ inputs.component }}
+        run: |
+          make coder-redeploy
+          make coder-rebuild
+
+      - name: Run ${{ inputs.component }} Component Tests
+        working-directory: app-orch-deployment/${{ inputs.component }}
+        run: |
+          make component-test
+          echo "${{ inputs.component }} component tests done!"
+
+      - name: Get Argo diagnostic information
+        if: ${{ failure() }}
+        id: get-argo-diag-info
+        run: |
+          mage logutils:collectArgoDiags > argo-diag.txt
+          kubectl get applications -o yaml -A > argocd-applications.yaml
+
+      - name: Upload Argo diagnostic artifacts
+        if: ${{ failure() && steps.get-argo-diag-info.conclusion == 'success' }}
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: argo-diag-logs
+          path: |
+            argo-diag.txt
+            argocd-applications.yaml
+
+      - name: Get Pods diagnostic information
+        if: ${{ failure() }}
+        id: get-pods-diag-info
+        run: |
+          kubectl get pods -o wide -A > pods-list.txt
+          kubectl describe pods -A > pods-describe.txt
+
+      - name: Upload Pods diagnostic artifacts
+        if: ${{ failure() && steps.get-pods-diag-info.conclusion == 'success' }}
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: pods-logs
+          path: |
+            pods-list.txt
+            pods-describe.txt

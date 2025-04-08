@@ -21,6 +21,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apiserver/pkg/storage/names"
@@ -377,20 +378,23 @@ func (c *DeploymentInstance) createDeploymentObject(ctx context.Context, s *Depl
 
 		secretValue, err := utils.GetSecretValue(ctx, s.k8sClient, c.deployment.ObjectMeta.Namespace, app.ValueSecretName+"-masked")
 		if err != nil {
-			if errors.IsNotFound(err) {
+			if apierrors.IsNotFound(err) {
 				secretValue, err = utils.GetSecretValue(ctx, s.k8sClient, c.deployment.ObjectMeta.Namespace, app.ValueSecretName)
 				if err != nil {
-					utils.LogActivity(ctx, "get", "ADM", "cannot get secret "+fmt.Sprintf("%v", err))
+					utils.LogActivity(ctx, "get", "ADM", fmt.Sprintf("cannot get secret %s, error: %v", app.ValueSecretName, err))
+					continue
 				}
 			} else {
-				utils.LogActivity(ctx, "get", "ADM", "cannot get secret "+fmt.Sprintf("%v", err))
+				utils.LogActivity(ctx, "get", "ADM", fmt.Sprintf("cannot get secret %s-masked, error: %v", app.ValueSecretName, err))
+				continue
 			}
 		}
 
 		// Convert data values back to JSON to unmarshal
 		val, err := yaml2.YAMLToJSON(secretValue.Data["values"])
 		if err != nil {
-			utils.LogActivity(ctx, "get", "ADM", "cannot convert values to JSON "+fmt.Sprintf("%v", err))
+			utils.LogActivity(ctx, "get", "ADM", fmt.Sprintf("cannot convert values to JSON %v", err))
+			continue
 		}
 
 		var valuesStrPb *structpb.Struct

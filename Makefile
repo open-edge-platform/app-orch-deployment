@@ -1,9 +1,8 @@
 # SPDX-FileCopyrightText: (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-SHELL=/bin/bash -o pipefail
-
-SUBPROJECTS := app-resource-manager app-deployment-manager app-interconnect app-service-proxy-agent app-service-proxy
+SHELL            := bash -eu -o pipefail
+SUBPROJECTS      := app-resource-manager app-deployment-manager app-interconnect app-service-proxy-agent app-service-proxy
 FUZZ_SUBPROJECTS ?= app-resource-manager app-deployment-manager app-service-proxy
 
 .DEFAULT_GOAL := help
@@ -11,7 +10,7 @@ FUZZ_SUBPROJECTS ?= app-resource-manager app-deployment-manager app-service-prox
 
 all: build lint test
 	@# Help: Runs build, lint, test stages for all subprojects
-	
+
 build:
 	@# Help: Runs build stage in all subprojects
 	@echo "---MAKEFILE BUILD---"
@@ -40,6 +39,12 @@ test:
 	@# Help: Runs test stage in all subprojects
 	@echo "---MAKEFILE TEST---"
 	for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir test; done
+	@echo "---END MAKEFILE TEST---"
+
+component-test:
+	@# Help: Runs component test stage in all subprojects
+	@echo "---MAKEFILE TEST---"
+	for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir component-test; done
 	@echo "---END MAKEFILE TEST---"
 
 go-fuzz:

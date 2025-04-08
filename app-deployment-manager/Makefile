@@ -53,7 +53,7 @@ HELM_DIRS = $(shell find ./deployment/charts -maxdepth 1 -mindepth 1 -type d -pr
 # Coder variables
 MGMT_NAME           ?= kind
 MGMT_CLUSTER        ?= kind-${MGMT_NAME}
-CODER_DIR           ?= ~/orch-deploy
+CODER_DIR           ?= ~/edge-manageability-framework
 HELM_VERSION        ?= $(shell cat VERSION)
 ADM_HELM_CHART      ?= app-deployment-manager-${HELM_VERSION}.tgz
 ADM_CRD_HELM_CHART  ?= app-deployment-crd-${HELM_VERSION}.tgz
@@ -156,6 +156,9 @@ test: manifests fmt vet envtest opa-test ## Run tests
 		-covermode atomic `go list ${PKG_LIST} | grep -v "/mocks" | grep -v "/mockery" | grep -v "/test/" | ${EXCLUDE_PKGS_TEST}`
 	${GOBIN}/gocov convert cover.out | ${GOBIN}/gocov-xml > coverage.xml
 	go tool cover -html=cover.out -o coverage.html
+
+COMP_TEST_COVER := atomic ./test/...
+component-test: common-component-test ## Run component tests
 
 go-fuzz: FUZZ_FUNCS ?= FuzzCreateDeployment FuzzListDeployments$$ FuzzGetDeployment FuzzDeleteDeployment \
 	FuzzUpdateDeployment FuzzDeploymentsStatus FuzzListDeploymentsPerCluster FuzzListDeploymentClusters \

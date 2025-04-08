@@ -7,6 +7,7 @@ import (
 	"flag"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/manager"
+	_ "github.com/open-edge-platform/orch-library/go/dazl/zap"
 )
 
 func main() {

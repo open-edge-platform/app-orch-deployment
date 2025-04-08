@@ -20,8 +20,8 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
 	github.com/onsi/ginkgo/v2 v2.22.0
 	github.com/onsi/gomega v1.36.0
-	github.com/open-edge-platform/app-orch-catalog v0.11.15
-	github.com/open-edge-platform/orch-utils/tenancy-datamodel v0.0.0-20250312121040-f4b11832045f
+	github.com/open-edge-platform/app-orch-catalog v0.11.21
+	github.com/open-edge-platform/orch-utils/tenancy-datamodel v0.0.0-20250401180309-9c2571c45857
 	github.com/rancher/fleet/pkg/apis v0.0.0-20230316110153-df88fcf0c4f6
 	github.com/undefinedlabs/go-mpatch v1.0.7
 	google.golang.org/protobuf v1.35.1
@@ -48,9 +48,9 @@ require (
 	github.com/hashicorp/vault/api v1.14.0
 	github.com/hashicorp/vault/api/auth/kubernetes v0.7.0
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 v2.0.0-00010101000000-000000000000
-	github.com/open-edge-platform/orch-library/go v0.5.28
-	github.com/open-edge-platform/orch-library/go/dazl v0.5.1
-	github.com/open-edge-platform/orch-library/go/dazl/zap v0.5.1
+	github.com/open-edge-platform/orch-library/go v0.5.30
+	github.com/open-edge-platform/orch-library/go/dazl v0.5.4
+	github.com/open-edge-platform/orch-library/go/dazl/zap v0.5.4
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.19.1
 	github.com/rancher/lasso v0.0.0-20221227210133-6ea88ca2fbcc
@@ -183,15 +183,15 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/arch v0.7.0 // indirect
-	golang.org/x/crypto v0.35.0 // indirect
+	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0 // indirect
 	golang.org/x/mod v0.21.0 // indirect
-	golang.org/x/net v0.36.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.24.0 // indirect
-	golang.org/x/sync v0.11.0 // indirect
-	golang.org/x/sys v0.30.0 // indirect
-	golang.org/x/term v0.29.0 // indirect
-	golang.org/x/text v0.22.0 // indirect
+	golang.org/x/sync v0.12.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/term v0.30.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.7.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect

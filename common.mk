@@ -260,6 +260,10 @@ go-test: $(OUT_DIR) $(GO_TEST_DEPS) ## Run go test and calculate code coverage
 	$(GOCMD) tool cover -html=$(OUT_DIR)/coverage.out -o $(OUT_DIR)/coverage.html
 	$(GOCMD) tool cover -func=$(OUT_DIR)/coverage.out -o $(OUT_DIR)/function_coverage.log
 
+common-component-test: ## Run component tests
+	$(GOCMD) test -v \
+	-covermode $(COMP_TEST_COVER)
+
 common-go-fuzz-test: ## GO fuzz tests
 	for func in $(FUZZ_FUNCS); do \
 		$(GOCMD) test $(FUZZ_FUNC_PATH) -fuzz $$func -fuzztime=${FUZZ_SECONDS}s -v; \
