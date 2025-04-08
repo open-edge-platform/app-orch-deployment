@@ -155,6 +155,7 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 	// fixme: remove hardcode and get value from context of JWT
 	d.Project = "app.edge-orchestrator.intel.com"
 
+	utils.RecordTimestamp(d.AppName, "start", "GetDeploymentPackage")
 	dp, helmApps, defaultProfileName, err := catalogclient.CatalogLookupDPAndHelmApps(ctx, s.catalogClient,
 		d.AppName,
 		d.AppVersion,
@@ -164,6 +165,7 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 	}
 
 	d.HelmApps = helmApps
+	utils.RecordTimestamp(d.AppName, "end", "GetDeploymentPackage")
 
 	// Validate namespaces
 	if len(dp.Namespaces) > 0 {
@@ -612,6 +614,10 @@ func (s *DeploymentSvc) CreateDeployment(ctx context.Context, in *deploymentpb.C
 		return nil, errors.Status(errors.NewInvalid("incomplete request")).Err()
 	}
 
+	if in.GetDeployment().GetAppName() != "" {
+		utils.RecordTimestamp(in.GetDeployment().GetAppName(), "start", "Create Deployment")
+	}
+
 	if err := s.protoValidator.Validate(in); err != nil {
 		log.Warnf("%v", err)
 		return nil, errors.Status(errors.NewInvalid("%v", err)).Err()
@@ -769,6 +775,7 @@ func (s *DeploymentSvc) CreateDeployment(ctx context.Context, in *deploymentpb.C
 	}
 
 	utils.LogActivity(ctx, "create", "ADM", "deployment-name "+d.Name, "deploy-id "+d.DeployID, "deployment-app-version "+d.AppVersion)
+	utils.RecordTimestamp(d.AppName, "end", "Create Deployment")
 	return &deploymentpb.CreateDeploymentResponse{DeploymentId: d.DeployID}, nil
 }
 

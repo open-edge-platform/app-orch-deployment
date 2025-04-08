@@ -22,6 +22,7 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	deploymentpb "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
+	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/metrics"
 	ginutils "github.com/open-edge-platform/orch-library/go/pkg/middleware/gin"
 	openapiutils "github.com/open-edge-platform/orch-library/go/pkg/openapi"
 )
@@ -44,7 +45,7 @@ func isHeaderAllowed(s string) (string, bool) {
 	return s, false
 }
 
-func Run(grpcAddr string, gwAddr int, allowedCorsOrigins string, basePath string, openapiSpecFilePath string) error {
+func Run(grpcAddr string, gwAddr int, allowedCorsOrigins string, basePath string, openapiSpecFilePath string, metricsPort int) error {
 	log.Infof("Serving gRPC-Gateway on port %d", gwAddr)
 
 	gin.DefaultWriter = ginlogger.NewWriter(log)
@@ -65,6 +66,8 @@ func Run(grpcAddr string, gwAddr int, allowedCorsOrigins string, basePath string
 		runtime.WithRoutingErrorHandler(ginutils.HandleRoutingError),
 	)
 
+	// Run metrics service
+	go metrics.RunMetricsServer(metricsPort)
 	// Register DeploymentService
 	err := deploymentpb.RegisterDeploymentServiceHandlerFromEndpoint(context.Background(), gwmux, grpcAddr, []grpc.DialOption{
 		grpc.WithBlock(), // nolint:staticcheck

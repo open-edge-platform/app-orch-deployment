@@ -148,6 +148,11 @@ spec:
             - name: opa
               containerPort: {{ .Values.openpolicyagent.port }}
               protocol: TCP
+            {{- if .Values.adm.metrics.enabled }}
+            - containerPort: 8080
+              name: http-metrics
+              protocol: TCP
+            {{- end }}
           args:
             - "run"
             - "--server"

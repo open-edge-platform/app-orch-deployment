@@ -59,4 +59,45 @@ spec:
       - "false"
     matchLabels:
       {{- include "app-deployment-manager.labels" . | nindent 6 }}
+---
+{{- if .Values.gateway.metrics.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "app-deployment-manager-api.labels" . | nindent 4 }}
+  name: {{ template "app-deployment-manager-api.name" . }}-api-metrics
+spec:
+  ports:
+    - name: http-metrics
+      port: {{ .Values.gateway.metrics.port }}
+      protocol: TCP
+      targetPort: http-metrics
+  selector:
+    {{- include "app-deployment-manager-api.labels" . | nindent 4 }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    {{- include "app-deployment-manager-api.labels" . | nindent 4 }}
+  name: {{ template "app-deployment-manager-api.name" . }}
+spec:
+  endpoints:
+  - port: http-metrics
+    scheme: http
+    path: /metrics
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  selector:
+    matchExpressions:
+    - key: prometheus.io/service-monitor
+      operator: NotIn
+      values:
+      - "false"
+    matchLabels:
+      {{- include "app-deployment-manager.labels" . | nindent 6 }}
+      {{- include "app-deployment-manager-api.labels" . | nindent 6 }}
+{{- end }}
 {{- end }}

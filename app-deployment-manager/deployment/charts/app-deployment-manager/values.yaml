@@ -193,6 +193,10 @@ gateway:
     runAsUser: 65532
     runAsNonRoot: true
 
+  metrics:
+    enabled: true
+    port: 8082
+
   resources:
     limits:
       cpu: 1

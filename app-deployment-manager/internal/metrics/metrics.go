@@ -5,12 +5,37 @@
 package metrics
 
 import (
+	"fmt"
+	"github.com/open-edge-platform/orch-library/go/dazl"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"net/http"
 )
+
+var log = dazl.GetPackageLogger()
 
 var (
 	// Custom collector
 	Reg = prometheus.NewRegistry()
+
+	TimestampGauge = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "code_execution_timestamp",
+			Help: "Timestamp of code execution in different parts of the code",
+		},
+		[]string{"deployment", "part", "event"},
+	)
+
+	TimeDifferenceGauge = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "code_execution_time_difference",
+			Help: "Time difference between first and last timestamp",
+		},
+		[]string{"deployment"},
+	)
+
+	// Map to store timestamps for each deployment
+	Timestamps = make(map[string]map[string]float64)
 
 	// DeploymentStatus is a prometheus metric which holds the deployment id,
 	// deployment name and deployment status of a ADM per-deployment.
@@ -27,7 +52,22 @@ var (
 	}, []string{"projectId", "deployment_id", "deployment_name", "cluster_id", "cluster_name", "status"})
 )
 
+// RunMetricsServer starts an HTTP server to expose Prometheus metrics
+func RunMetricsServer(port int) {
+	// Set up the HTTP handler for the /metrics endpoint
+	http.Handle("/metrics", promhttp.Handler())
+
+	// Start the HTTP server
+	addr := fmt.Sprintf(":%d", port)
+	log.Infof("Starting metrics server on %s\n", addr)
+	if err := http.ListenAndServe(addr, nil); err != nil {
+		log.Errorf("Error starting metrics server: %v\n", err)
+	}
+}
+
 func init() {
 	// Register custom metrics with prometheus registry
 	Reg.MustRegister(DeploymentStatus, DeploymentClusterStatus)
+	prometheus.MustRegister(TimestampGauge)
+	prometheus.MustRegister(TimeDifferenceGauge)
 }

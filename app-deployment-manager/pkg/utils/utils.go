@@ -37,6 +37,7 @@ import (
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/v1beta1"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/catalogclient"
+	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/metrics"
 	"github.com/open-edge-platform/orch-library/go/pkg/auth"
 )
 
@@ -542,4 +543,30 @@ func ToInt32Clamped(i int) int32 {
 		return math.MaxInt32
 	}
 	return int32(i)
+}
+
+func RecordTimestamp(deployment, part, event string) {
+	timestamp := float64(time.Now().Unix())
+	key := part + "_" + event
+
+	// Initialize the map for the deployment if it doesn't exist
+	if _, exists := metrics.Timestamps[deployment]; !exists {
+		metrics.Timestamps[deployment] = make(map[string]float64)
+	}
+
+	metrics.Timestamps[deployment][key] = timestamp
+	metrics.TimestampGauge.WithLabelValues(deployment, part, event).Set(timestamp)
+}
+
+func CalculateTimeDifference(deployment, firstPart, firstEvent, lastPart, lastEvent string) {
+	firstKey := firstPart + "_" + firstEvent
+	lastKey := lastPart + "_" + lastEvent
+
+	firstTimestamp, firstExists := metrics.Timestamps[deployment][firstKey]
+	lastTimestamp, lastExists := metrics.Timestamps[deployment][lastKey]
+
+	if firstExists && lastExists {
+		timeDifference := lastTimestamp - firstTimestamp
+		metrics.TimeDifferenceGauge.WithLabelValues(deployment).Set(timeDifference)
+	}
 }
