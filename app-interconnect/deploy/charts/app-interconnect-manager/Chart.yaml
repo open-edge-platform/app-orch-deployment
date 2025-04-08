@@ -6,8 +6,8 @@ apiVersion: v2
 name: app-interconnect-manager
 description: A Helm chart for Kubernetes
 type: application
-version: 0.1.16
-appVersion: "0.1.16"
+version: 0.1.17
+appVersion: "0.1.17"
 annotations:
-  revision: "aa20b21"
-  created: "2025-04-02T18:29:13Z"
+  revision: "60a3a71"
+  created: "2025-04-08T09:35:59Z"
