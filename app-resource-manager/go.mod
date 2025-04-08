@@ -4,9 +4,8 @@
 
 module github.com/open-edge-platform/app-orch-deployment/app-resource-manager
 
-go 1.23.0
+go 1.24
 
-toolchain go1.23.2
 
 replace (
 	github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 => ./api/nbi/v2

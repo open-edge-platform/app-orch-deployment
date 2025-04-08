@@ -4,7 +4,7 @@
 
 module github.com/open-edge-platform/app-orch-deployment/app-service-proxy
 
-go 1.23.2
+go 1.24
 
 require (
 	github.com/gorilla/mux v1.8.1

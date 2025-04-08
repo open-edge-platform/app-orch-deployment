@@ -4,7 +4,7 @@
 
 module github.com/open-edge-platform/app-orch-deployment/app-deployment-manager
 
-go 1.23.2
+go 1.24
 
 replace (
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 => ./api/nbi/v2
