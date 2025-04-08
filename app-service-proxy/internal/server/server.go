@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/gitclient"
-	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/fleet"
 	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/vault"
 
 	"github.com/gorilla/mux"
@@ -47,24 +46,17 @@ type CookieInfo struct {
 }
 
 type Server struct {
-	addr                   string
-	ccgAddress             string
-	remotedialerServer     *remotedialer.Server
-	router                 *mux.Router
-	server                 *http.Server
-	authNenabled           bool
-	authZenabled           bool
-	authenticate           func(req *http.Request) error
-	authorize              func(req *http.Request, projectID string) error
-	admClient              admclient.ADMClient
-	vaultManager           vault.Manager
-	agentNamespace         string
-	authTokenReqSA         string
-	authTokenReqExpiration int64
-
-	// FIXME: Use redis or memcached for caching jwt token
-	// key: cluster ID, value: jwt token
-	authTokenMap map[string]string
+	addr               string
+	ccgAddress         string
+	remotedialerServer *remotedialer.Server
+	router             *mux.Router
+	server             *http.Server
+	authNenabled       bool
+	authZenabled       bool
+	authenticate       func(req *http.Request) error
+	authorize          func(req *http.Request, projectID string) error
+	admClient          admclient.ADMClient
+	vaultManager       vault.Manager
 }
 
 func extractCookieInfo(req *http.Request) (*CookieInfo, error) {
@@ -110,7 +102,6 @@ func NewServer(addr string) (*Server, error) {
 	http.DefaultTransport.(*http.Transport).DisableKeepAlives = false
 	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 64
 
-	var err error
 	if os.Getenv("CATTLE_TUNNEL_DATA_DEBUG") == "true" {
 		remotedialer.PrintTunnelData = true
 	} else {
@@ -121,24 +112,8 @@ func NewServer(addr string) (*Server, error) {
 		addr: addr,
 	}
 
-	if a.agentNamespace = os.Getenv("AGENT_TARGET_NAMESPACE"); a.agentNamespace == "" {
-		return nil, fmt.Errorf("AGENT_TARGET_NAMESPACE is not set")
-	}
-
-	if a.authTokenReqSA = os.Getenv("AUTH_TOKEN_SERVICE_ACCOUNT"); a.authTokenReqSA == "" {
-		return nil, fmt.Errorf("AUTH_TOKEN_SERVICE_ACCOUNT is not set")
-	}
-
 	if a.ccgAddress = os.Getenv("CCG_ADDRESS"); a.ccgAddress == "" {
 		return nil, fmt.Errorf("CCG_ADDRESS is not set")
-	}
-
-	var expiration string
-	if expiration = os.Getenv("AUTH_TOKEN_EXPIRATION"); expiration == "" {
-		return nil, fmt.Errorf("AUTH_TOKEN_EXPIRATION is not set")
-	}
-	if a.authTokenReqExpiration, err = strconv.ParseInt(expiration, 10, 64); err != nil {
-		return nil, fmt.Errorf("invalid AUTH_TOKEN_EXPIRATION %s", expiration)
 	}
 
 	if l, ok := os.LookupEnv("ASP_LOG_LEVEL"); ok {
@@ -150,8 +125,6 @@ func NewServer(addr string) (*Server, error) {
 	} else {
 		logrus.SetLevel(logrus.WarnLevel)
 	}
-
-	a.authTokenMap = make(map[string]string)
 
 	a.initAuth()
 	a.initVault()
@@ -297,12 +270,6 @@ func (a *Server) RenewToken(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	token, err := a.vaultManager.GetToken(context.Background(), clusterID)
-	if err != nil {
-		remotedialer.DefaultErrorWriter(rw, req, http.StatusInternalServerError, err)
-		return
-	}
-
 	gitRepoName := os.Getenv("GIT_REPO_NAME")
 	if gitRepoName == "" {
 		err = fmt.Errorf("failed to find GIT_REPO_NAME")
@@ -340,14 +307,6 @@ func (a *Server) RenewToken(rw http.ResponseWriter, req *http.Request) {
 	err = gc.Clone(basedir)
 	if err != nil {
 		remotedialer.DefaultErrorWriter(rw, req, http.StatusInternalServerError, fmt.Errorf("failed to clone git repo %v", err))
-		return
-	}
-
-	err = fleet.WriteSecretToken(basedir, fleet.GetTargetCustomizationName(clusterID),
-		a.agentNamespace, token.Value, fmt.Sprintf("%d", token.TTLHours), token.UpdatedTime.Format(time.DateTime))
-	if err != nil {
-		rw.WriteHeader(http.StatusInternalServerError)
-		_, _ = rw.Write([]byte(err.Error()))
 		return
 	}
 
