@@ -49,9 +49,6 @@ var _ = Describe("Server", func() {
 		os.Setenv("GIT_PROVIDER", "mock-git-provider")
 		os.Setenv("PROXY_SERVER_URL", "wss://app-orch.kind.internal/app-service-proxy")
 		os.Setenv("SECRET_SERVICE_ENABLED", "true")
-		os.Setenv("AGENT_TARGET_NAMESPACE", "mock-app-namespace")
-		os.Setenv("AUTH_TOKEN_SERVICE_ACCOUNT", "mock-service-account")
-		os.Setenv("AUTH_TOKEN_EXPIRATION", "100")
 		os.Setenv("ASP_LOG_LEVEL", "debug")
 		auth.RenewTokenAuthorizer = func(req *http.Request, id string) (bool, error) { return true, nil }
 		addr = "127.0.0.1:8123"
@@ -93,34 +90,11 @@ var _ = Describe("Server", func() {
 	})
 
 	Describe("New Server", func() {
-		Context("When a server is created with AGENT_TARGET_NAMESPACE not set", func() {
+		Context("When a server is created with CCG_ADDRESS not set", func() {
 			It("Should not be created", func() {
-				os.Unsetenv("AGENT_TARGET_NAMESPACE")
+				os.Setenv("CCG_ADDRESS", "")
 				testServer, err = NewServer(addr)
 				Expect(err).To(HaveOccurred())
-				os.Setenv("AGENT_TARGET_NAMESPACE", "mock-app-namespace")
-			})
-		})
-	})
-
-	Describe("New Server", func() {
-		Context("When a server is created with AUTH_TOKEN_SERVICE_ACCOUNT not set", func() {
-			It("Should not be created", func() {
-				os.Unsetenv("AUTH_TOKEN_SERVICE_ACCOUNT")
-				testServer, err = NewServer(addr)
-				Expect(err).To(HaveOccurred())
-				os.Setenv("AUTH_TOKEN_SERVICE_ACCOUNT", "mock-service-account")
-			})
-		})
-	})
-
-	Describe("New Server", func() {
-		Context("When a server is created with AUTH_TOKEN_EXPIRATION not set", func() {
-			It("Should not be created", func() {
-				os.Unsetenv("AUTH_TOKEN_EXPIRATION")
-				testServer, err = NewServer(addr)
-				Expect(err).To(HaveOccurred())
-				os.Setenv("AUTH_TOKEN_EXPIRATION", "100")
 			})
 		})
 	})
