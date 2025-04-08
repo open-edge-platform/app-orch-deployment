@@ -43,7 +43,7 @@ var _ = Describe("Server", func() {
 		os.Setenv("RATE_LIMITER_QPS", "30")
 		os.Setenv("RATE_LIMITER_BURST", "2000")
 		os.Setenv("TOKEN_TTL_HOURS", "100")
-		os.Setenv("CCG_ADDRESS", "cluster-connect-gateway.orch-cluster.svc:8080")
+		os.Setenv("CCG_ADDRESS", "localhost:8085")
 		os.Setenv("GIT_REPO_NAME", "mock-git-repo")
 		os.Setenv("GIT_SERVER", "mock-git-server")
 		os.Setenv("GIT_PROVIDER", "mock-git-provider")
