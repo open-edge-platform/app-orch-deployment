@@ -63,7 +63,7 @@ func SetUpAccessToken(t *testing.T, server string) string {
 
 func AddRestAuthHeader(req *http.Request, token string, projectID string) {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	req.Header.Set("Activeprojectid", fmt.Sprintf("%s", projectID))
+	req.Header.Set("Activeprojectid", projectID)
 }
 
 func GetProjectId(ctx context.Context) (string, error) {
