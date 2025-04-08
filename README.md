@@ -36,7 +36,6 @@ Each of the applications has its own documentation that describes how to get sta
 - [App Resource Manager](app-resource-manager/README.md)
 - [App Interconnect](app-interconnect/README.md)
 - [App Service Proxy](app-service-proxy/README.md)
-- [App Service Proxy Agent](app-service-proxy-agent/README.md)
 
 ## Develop
 

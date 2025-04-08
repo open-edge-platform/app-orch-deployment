@@ -54,14 +54,6 @@ spec:
             value: {{ .Values.openidc.insecureSkipVerify | quote }}
           - name: OPA_PORT
             value: {{ .Values.openpolicyagent.port | quote }}
-          - name: AGENT_TARGET_NAMESPACE
-            value: {{ .Values.agent.targetNamespace }}
-          - name: AUTH_TOKEN_SERVICE_ACCOUNT
-            value: {{ .Values.agent.authToken.serviceAccount | quote }}
-          - name: PROXY_SERVER_URL
-            value: {{ .Values.agent.config.proxyServerURL }}
-          - name: AUTH_TOKEN_EXPIRATION
-            value: {{ .Values.agent.authToken.expirationSeconds | quote }}
           - name: USE_M2M_TOKEN
             value: {{  .Values.useM2MToken | quote }}
           {{- if .Values.openpolicyagent.enabled }}
@@ -86,20 +78,6 @@ spec:
             value: {{ .Values.git.provider }}
           - name: SECRET_SERVICE_ENABLED
             value: {{ .Values.git.secretService.enabled | quote }}
-          - name: TOKEN_TTL_HOURS
-            value: {{ .Values.agent.tokenTTLHours | quote }}
-          {{- with .Values.agent.config.proxyServerCA }}
-          - name: PROXY_SERVER_CA
-            value: {{ . }}
-          {{- end }}
-          {{- with .Values.agent.config.insecureSkipVerify }}
-          - name: INSECURE_SKIP_VERIFY
-            value: {{ . | quote }}
-          {{- end }}
-          {{- with .Values.agent.chartRepoSecret }}
-          - name: AGENT_CHART_REPO_SECRET
-            value: {{ . }}
-          {{- end }}
           {{- with .Values.git.user }}
           - name: GIT_USER
             value: {{ . }}
