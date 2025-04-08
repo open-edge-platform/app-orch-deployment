@@ -66,7 +66,7 @@ func AddRestAuthHeader(req *http.Request, token string, projectID string) {
 	req.Header.Set("Activeprojectid", projectID)
 }
 
-func GetProjectId(ctx context.Context) (string, error) {
+func GetProjectID(ctx context.Context) (string, error) {
 	config := ctrl.GetConfigOrDie()
 	nexusClient, err := nexus_client.NewForConfig(config)
 	if err != nil {
