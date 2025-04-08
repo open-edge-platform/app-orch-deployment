@@ -87,6 +87,26 @@ func (mr *MockDeploymentServiceClientMockRecorder) DeleteDeployment(ctx, in any,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDeployment", reflect.TypeOf((*MockDeploymentServiceClient)(nil).DeleteDeployment), varargs...)
 }
 
+// GetAPIExtension mocks base method.
+func (m *MockDeploymentServiceClient) GetAPIExtension(ctx context.Context, in *deploymentv1.GetAPIExtensionRequest, opts ...grpc.CallOption) (*deploymentv1.GetAPIExtensionResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetAPIExtension", varargs...)
+	ret0, _ := ret[0].(*deploymentv1.GetAPIExtensionResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAPIExtension indicates an expected call of GetAPIExtension.
+func (mr *MockDeploymentServiceClientMockRecorder) GetAPIExtension(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAPIExtension", reflect.TypeOf((*MockDeploymentServiceClient)(nil).GetAPIExtension), varargs...)
+}
+
 // GetAppNamespace mocks base method.
 func (m *MockDeploymentServiceClient) GetAppNamespace(ctx context.Context, in *deploymentv1.GetAppNamespaceRequest, opts ...grpc.CallOption) (*deploymentv1.GetAppNamespaceResponse, error) {
 	m.ctrl.T.Helper()
@@ -288,6 +308,21 @@ func (m *MockDeploymentServiceServer) CreateDeployment(arg0 context.Context, arg
 func (mr *MockDeploymentServiceServerMockRecorder) CreateDeployment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDeployment", reflect.TypeOf((*MockDeploymentServiceServer)(nil).CreateDeployment), arg0, arg1)
+}
+
+// GetAPIExtension mocks base method.
+func (m *MockDeploymentServiceServer) GetAPIExtension(arg0 context.Context, arg1 *deploymentv1.GetAPIExtensionRequest) (*deploymentv1.GetAPIExtensionResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAPIExtension", arg0, arg1)
+	ret0, _ := ret[0].(*deploymentv1.GetAPIExtensionResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAPIExtension indicates an expected call of GetAPIExtension.
+func (mr *MockDeploymentServiceServerMockRecorder) GetAPIExtension(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAPIExtension", reflect.TypeOf((*MockDeploymentServiceServer)(nil).GetAPIExtension), arg0, arg1)
 }
 
 // DeleteDeployment mocks base method.

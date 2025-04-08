@@ -468,7 +468,6 @@ func (s *DeploymentSvc) GetDeploymentsStatus(ctx context.Context, in *deployment
 	}
 
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
-	listOpts := metav1.ListOptions{}
 
 	activeProjectID, err := s.GetActiveProjectID(ctx)
 	if err != nil {
@@ -480,7 +479,7 @@ func (s *DeploymentSvc) GetDeploymentsStatus(ctx context.Context, in *deployment
 		MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
 	}
 
-	listOpts = metav1.ListOptions{
+	listOpts := metav1.ListOptions{
 		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 
@@ -629,7 +628,6 @@ func (s *DeploymentSvc) CreateDeployment(ctx context.Context, in *deploymentpb.C
 		return nil, errors.Status(errors.NewForbidden("cannot create deployment: %v", err)).Err()
 	}
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
-	listOpts := metav1.ListOptions{}
 
 	activeProjectID, err := s.GetActiveProjectID(ctx)
 	if err != nil {
@@ -641,7 +639,7 @@ func (s *DeploymentSvc) CreateDeployment(ctx context.Context, in *deploymentpb.C
 		MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
 	}
 
-	listOpts = metav1.ListOptions{
+	listOpts := metav1.ListOptions{
 		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 
@@ -799,7 +797,6 @@ func (s *DeploymentSvc) GetDeployment(ctx context.Context, in *deploymentpb.GetD
 
 	UID := in.DeplId
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
-	listOpts := metav1.ListOptions{}
 
 	activeProjectID, err := s.GetActiveProjectID(ctx)
 	if err != nil {
@@ -811,7 +808,7 @@ func (s *DeploymentSvc) GetDeployment(ctx context.Context, in *deploymentpb.GetD
 		MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
 	}
 
-	listOpts = metav1.ListOptions{
+	listOpts := metav1.ListOptions{
 		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 
@@ -884,15 +881,13 @@ func (s *DeploymentSvc) ListDeploymentsPerCluster(ctx context.Context, in *deplo
 	}
 
 	namespace := activeProjectID
-	listOpts := metav1.ListOptions{}
-	labelSelector := metav1.LabelSelector{}
 
 	// Filter deployments with only project id
-	labelSelector = metav1.LabelSelector{
+	labelSelector := metav1.LabelSelector{
 		MatchLabels: map[string]string{string(deploymentv1beta1.AppOrchActiveProjectID): activeProjectID},
 	}
 
-	listOpts = metav1.ListOptions{
+	listOpts := metav1.ListOptions{
 		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 
@@ -1026,7 +1021,6 @@ func (s *DeploymentSvc) ListDeployments(ctx context.Context, in *deploymentpb.Li
 	}
 
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
-	listOpts := metav1.ListOptions{}
 
 	activeProjectID, err := s.GetActiveProjectID(ctx)
 	if err != nil {
@@ -1038,7 +1032,7 @@ func (s *DeploymentSvc) ListDeployments(ctx context.Context, in *deploymentpb.Li
 		MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
 	}
 
-	listOpts = metav1.ListOptions{
+	listOpts := metav1.ListOptions{
 		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 
@@ -1102,7 +1096,6 @@ func (s *DeploymentSvc) DeleteDeployment(ctx context.Context, in *deploymentpb.D
 	d.DeployID = in.DeplId
 
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
-	listOpts := metav1.ListOptions{}
 
 	activeProjectID, err := s.GetActiveProjectID(ctx)
 	if err != nil {
@@ -1114,7 +1107,7 @@ func (s *DeploymentSvc) DeleteDeployment(ctx context.Context, in *deploymentpb.D
 		MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
 	}
 
-	listOpts = metav1.ListOptions{
+	listOpts := metav1.ListOptions{
 		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 
@@ -1159,9 +1152,7 @@ func (s *DeploymentSvc) DeleteDeployment(ctx context.Context, in *deploymentpb.D
 		utils.LogActivity(ctx, "delete", "ADM", "deployment-name "+d.Name, "deploy-id "+d.DeployID, "delete-type "+in.DeleteType.String())
 	} else {
 		// case 3
-		listOpts = metav1.ListOptions{}
-
-		labelSelector := metav1.LabelSelector{
+		labelSelector = metav1.LabelSelector{
 			MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
 		}
 
@@ -1236,8 +1227,6 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 		return nil, errors.Status(errors.NewForbidden("cannot update deployment: %v", err)).Err()
 	}
 
-	listOpts := metav1.ListOptions{}
-
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
 	activeProjectID, err := s.GetActiveProjectID(ctx)
 	if err != nil {
@@ -1249,7 +1238,7 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 		MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
 	}
 
-	listOpts = metav1.ListOptions{
+	listOpts := metav1.ListOptions{
 		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 
@@ -1416,8 +1405,6 @@ func (s *DeploymentSvc) ListDeploymentClusters(ctx context.Context, in *deployme
 		return nil, errors.Status(errors.NewForbidden("cannot get deployment clusters: %v", err)).Err()
 	}
 
-	listOpts := metav1.ListOptions{}
-
 	activeProjectID, err := s.GetActiveProjectID(ctx)
 	if err != nil {
 		msg := fmt.Sprintf("failed to get tenant project ID %s", err.Error())
@@ -1430,7 +1417,7 @@ func (s *DeploymentSvc) ListDeploymentClusters(ctx context.Context, in *deployme
 		MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
 	}
 
-	listOpts = metav1.ListOptions{
+	listOpts := metav1.ListOptions{
 		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 

@@ -49,7 +49,7 @@ func (s *TestSuite) SetupTest() {
 	var err error
 	s.token = auth.SetUpAccessToken(s.T(), s.KeycloakServer)
 	s.DeploymentRESTServerUrl = fmt.Sprintf("http://%s:%s", RestAddressPortForward, PortForwardRemotePort)
-	s.projectID, err = auth.GetProjectId(context.TODO())
+	s.projectID, err = auth.GetProjectID(context.TODO())
 	s.NoError(err)
 	s.portForwardCmd, err = portForwardToADM()
 	s.NoError(err)

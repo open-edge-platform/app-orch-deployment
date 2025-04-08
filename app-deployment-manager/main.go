@@ -46,8 +46,8 @@ var (
 	scheme   = runtime.NewScheme()
 	setupLog = dazl.GetPackageLogger()
 
-	gitCaCertFolder      string
-	gitCaCertFile        string
+	gitCaCertFolder string
+	gitCaCertFile   string
 )
 
 func init() {

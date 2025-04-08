@@ -79,8 +79,9 @@ TEST_COVER := atomic ./...
 
 FUZZ_SECONDS ?= 60
 
-EXCLUDE_PKGS_TEST := grep -v ./pkg/api | grep -v ./api | grep -v ./pkg/utils/ratelimiter \
-	| grep -v ./internal/grafana/mockery | grep -v ./internal/catalogclient/mockery | grep -v ./internal/catalogclient/mocks
+EXCLUDE_PKGS_TEST := grep -v ./pkg/api | grep -v ./api | grep -v ./pkg/utils/ratelimiter | grep -v ./test \
+	| grep -v ./internal/grafana/mockery | grep -v ./internal/catalogclient/mockery | grep -v ./internal/catalogclient/mocks \
+	| grep -v ./pkg/fleet/mocks
 
 PKG_LIST := ./cmd/... ./controllers/... ./webhooks/... ./pkg/... ./internal/...
 
@@ -105,17 +106,15 @@ install-protoc-plugins: common-install-protoc-plugins ## Install protoc plugins
 
 verify-protoc-plugins: common-verify-protoc-plugins  ## Verify protoc plugins
 
-# TODO - add buf lint
-
-proto-generate: buf-generate
-
-buf-generate: common-buf-generate ## Generate protobuf code
+proto-generate: common-buf-update common-buf-generate ## Generate protobuf code
 
 buf-lint-fix: common-buf-lint-fix ## Lint and format protobuf files
 
 buf-update: common-buf-update ## Update buf modules
 
 buf-lint: common-buf-lint ## Lint and format protobuf files
+
+install-buf: common-install-buf ## Install buf and protobuf tools
 
 #### Development Targets ####
 
@@ -153,7 +152,7 @@ test: manifests fmt vet envtest opa-test ## Run tests
 	go install github.com/AlekSi/gocov-xml@${GOLANG_GOCOV_XML_VERSION}
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" \
 		go test -gcflags="-l" -race -coverpkg=$$(go list ./... | ${EXCLUDE_PKGS_TEST} | tr '\n' ,) -coverprofile cover.out \
-		-covermode atomic `go list ${PKG_LIST} | grep -v "/mocks" | grep -v "/mockery" | grep -v "/test/" | ${EXCLUDE_PKGS_TEST}`
+		-covermode atomic `go list ${PKG_LIST} | grep -v "/mocks" | grep -v "/mockery" | ${EXCLUDE_PKGS_TEST}`
 	${GOBIN}/gocov convert cover.out | ${GOBIN}/gocov-xml > coverage.xml
 	go tool cover -html=cover.out -o coverage.html
 

@@ -270,33 +270,40 @@ common-go-fuzz-test: ## GO fuzz tests
 	done
 
 #### Protobuf Targets ####
+LOCALBIN ?= $(shell pwd)/bin
+BUF ?= $(LOCALBIN)/buf
+BUF_VERSION ?= v1.52.1
+common-install-buf: ## Download buf tool and golang module protoc-gen-openapi
+	@echo Downloading buf binary to $(LOCALBIN)
+	mkdir -p $(LOCALBIN)
+	GOBIN=$(LOCALBIN) go install github.com/bufbuild/buf/cmd/buf@${BUF_VERSION}
+	go install github.com/google/gnostic/cmd/protoc-gen-openapi@latest
 
 common-buf-lint-fix: $(VENV_NAME) ## Lint and when possible fix protobuf files
-	buf --version
-	buf format -d -w
-	buf lint
+	$(BUF) --version
+	$(BUF) format -d -w
+	$(BUF) lint
 
 common-buf-generate: $(VENV_NAME) ## Compile protobuf files in api into code
 	set +u; . ./$</bin/activate; set -u ;\
-        buf --version ;\
-        buf generate
+        $(BUF) --version ;\
+        $(BUF) generate
 
 .PHONY: openapi-spec-validate
 common-openapi-spec-validate: $(VENV_NAME)
 		set +u; . ./$</bin/activate; set -u ;\
 	openapi-spec-validator $(OPENAPI_SPEC_FILE)
 
-
 common-buf-update: $(VENV_NAME) ## Update buf modules
 	set +u; . ./$</bin/activate; set -u ;\
-  buf --version ;\
-  pushd api; buf dep update; popd ;\
-  buf build
+  $(BUF) --version ;\
+  pushd api; $(BUF) dep update; popd ;\
+  $(BUF) build
 
 common-buf-lint: $(VENV_NAME) ## Lint and format protobuf files
-	buf --version
-	buf format -d --exit-code
-	buf lint
+	$(BUF) --version
+	$(BUF) format -d --exit-code
+	$(BUF) lint
 
 
 #### Helm Targets ####

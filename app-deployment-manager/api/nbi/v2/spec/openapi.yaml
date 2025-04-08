@@ -1,5 +1,5 @@
 # Generated with protoc-gen-openapi
-# https://github.com/kollalabs/protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
 
 openapi: 3.0.3
 info:
@@ -11,7 +11,6 @@ paths:
         get:
             tags:
                 - DeploymentService
-            summary: GetAPIExtension
             description: Gets a deployment's APIExtension identified by the name of the APIExtension CR.
             operationId: DeploymentService_GetAPIExtension
             parameters:
@@ -32,7 +31,6 @@ paths:
         get:
             tags:
                 - ClusterService
-            summary: ListClusters
             description: Gets a list of all cluster objects.
             operationId: ClusterService_ListClusters
             parameters:
@@ -76,7 +74,6 @@ paths:
         get:
             tags:
                 - ClusterService
-            summary: GetCluster
             description: Gets a cluster object.
             operationId: ClusterService_GetCluster
             parameters:
@@ -97,7 +94,6 @@ paths:
         get:
             tags:
                 - DeploymentService
-            summary: ListDeployments
             description: Gets a list of all deployment objects.
             operationId: DeploymentService_ListDeployments
             parameters:
@@ -140,7 +136,6 @@ paths:
         post:
             tags:
                 - DeploymentService
-            summary: CreateDeployment
             description: Creates a deployment object.
             operationId: DeploymentService_CreateDeployment
             requestBody:
@@ -160,7 +155,6 @@ paths:
         get:
             tags:
                 - DeploymentService
-            summary: ListDeploymentsPerCluster
             operationId: DeploymentService_ListDeploymentsPerCluster
             parameters:
                 - name: clusterId
@@ -208,7 +202,6 @@ paths:
         get:
             tags:
                 - DeploymentService
-            summary: GetDeployment
             description: Gets a deployment object.
             operationId: DeploymentService_GetDeployment
             parameters:
@@ -228,7 +221,6 @@ paths:
         put:
             tags:
                 - DeploymentService
-            summary: UpdateDeployment
             description: Updates a deployment object.
             operationId: DeploymentService_UpdateDeployment
             parameters:
@@ -254,7 +246,6 @@ paths:
         delete:
             tags:
                 - DeploymentService
-            summary: DeleteDeployment
             description: Deletes a deployment object.
             operationId: DeploymentService_DeleteDeployment
             parameters:
@@ -281,7 +272,6 @@ paths:
         get:
             tags:
                 - DeploymentService
-            summary: ListDeploymentClusters
             description: Gets a list of all deployment cluster objects.
             operationId: DeploymentService_ListDeploymentClusters
             parameters:
@@ -324,7 +314,6 @@ paths:
         get:
             tags:
                 - DeploymentService
-            summary: GetDeploymentsStatus
             description: Gets all deployment clusters count status.
             operationId: DeploymentService_GetDeploymentsStatus
             parameters:
@@ -346,7 +335,6 @@ paths:
         get:
             tags:
                 - DeploymentService
-            summary: ListUIExtensions
             description: Gets a list of all UIExtensions.
             operationId: DeploymentService_ListUIExtensions
             parameters:
