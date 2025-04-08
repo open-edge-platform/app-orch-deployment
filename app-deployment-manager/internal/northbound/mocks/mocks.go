@@ -37,10 +37,6 @@ func (c *FakeDeploymentV1) Clusters(namespace string) v1beta1.ClusterInterface {
 	return &FakeClusters{c, namespace}
 }
 
-func (c *FakeDeploymentV1) APIExtensions(namespace string) v1beta1.APIExtensionInterface {
-	return &FakeAPIExtensions{c, namespace}
-}
-
 type FakeDeployments struct {
 	Fake *FakeDeploymentV1
 	ns   string
@@ -52,11 +48,6 @@ type FakeDeploymentClusters struct {
 }
 
 type FakeClusters struct {
-	Fake *FakeDeploymentV1
-	ns   string
-}
-
-type FakeAPIExtensions struct {
 	Fake *FakeDeploymentV1
 	ns   string
 }
@@ -139,30 +130,6 @@ func (c *FakeClusters) Get(ctx context.Context, name string, opts metav1.GetOpti
 func (c *FakeClusters) List(ctx context.Context, opts metav1.ListOptions) (*deploymentv1beta1.ClusterList, error) {
 	args := c.Fake.Called(ctx, opts)
 	return args.Get(0).(*deploymentv1beta1.ClusterList), args.Error(1)
-}
-
-func (c *FakeAPIExtensions) List(ctx context.Context, opts metav1.ListOptions) (*deploymentv1beta1.APIExtensionList, error) {
-	args := c.Fake.Called(ctx, opts)
-	return args.Get(0).(*deploymentv1beta1.APIExtensionList), args.Error(1)
-}
-
-func (c *FakeAPIExtensions) Get(ctx context.Context, name string, opts metav1.GetOptions) (*deploymentv1beta1.APIExtension, error) {
-	args := c.Fake.Called(ctx, name, opts)
-	return args.Get(0).(*deploymentv1beta1.APIExtension), args.Error(1)
-}
-
-func (c *FakeAPIExtensions) Create(ctx context.Context, apiExtension *deploymentv1beta1.APIExtension, opts metav1.CreateOptions) (*deploymentv1beta1.APIExtension, error) {
-	apiExtension.Name = "test-deployment"
-	apiExtension.Spec.Project = "test-project"
-	apiExtension.Status.TokenSecretRef.Name = "test-token"
-	apiExtension.Status.TokenSecretRef.GeneratedToken = "this-is-a-test-token"
-	args := c.Fake.Called(ctx, apiExtension, opts)
-	return args.Get(0).(*deploymentv1beta1.APIExtension), args.Error(1)
-}
-
-func (c *FakeAPIExtensions) Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error {
-	args := c.Fake.Called(ctx, name, opts)
-	return args.Error(0)
 }
 
 type MockAuthService struct {
@@ -324,36 +291,6 @@ var DpAPIRespGood = catalog.GetDeploymentPackageResponse{
 			},
 		},
 		Artifacts: []*catalog.ArtifactReference{},
-		DefaultNamespaces: map[string]string{
-			appname: "test-deployment",
-		},
-	},
-}
-
-var DpNoAPIRespGood = catalog.GetDeploymentPackageResponse{
-	DeploymentPackage: &catalog.DeploymentPackage{
-		Name:    dpname,
-		Version: dpver,
-		ApplicationReferences: []*catalog.ApplicationReference{
-			&appRef,
-		},
-		Profiles: []*catalog.DeploymentProfile{
-			{
-				Name: dpprof,
-				ApplicationProfiles: map[string]string{
-					appname: appprof,
-				},
-			},
-		},
-		DefaultProfileName: dpprof,
-		ApplicationDependencies: []*catalog.ApplicationDependency{
-			{
-				Name:     appname,
-				Requires: "dependency",
-			},
-		},
-		Extensions: []*catalog.APIExtension{},
-		Artifacts:  []*catalog.ArtifactReference{},
 		DefaultNamespaces: map[string]string{
 			appname: "test-deployment",
 		},

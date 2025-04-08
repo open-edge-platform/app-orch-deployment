@@ -142,7 +142,6 @@ func setupFuzzTest() *FuzzTestSuite {
 
 func FuzzCreateDeployment(f *testing.F) {
 	s := setupFuzzTest()
-	os.Setenv("API_EXT_ENABLED", "false")
 	os.Setenv("SECRET_SERVICE_ENABLED", "false")
 
 	s.deployInstance = setDeployInstance(&s.deploymentListSrc, "create")

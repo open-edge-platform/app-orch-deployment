@@ -79,7 +79,7 @@ TEST_COVER := atomic ./...
 
 FUZZ_SECONDS ?= 60
 
-EXCLUDE_PKGS_TEST := grep -v ./pkg/api | grep -v ./api | grep -v ./pkg/utils/ratelimiter | grep -v ./internal/ingresshandler \
+EXCLUDE_PKGS_TEST := grep -v ./pkg/api | grep -v ./api | grep -v ./pkg/utils/ratelimiter \
 	| grep -v ./internal/grafana/mockery | grep -v ./internal/catalogclient/mockery | grep -v ./internal/catalogclient/mocks
 
 PKG_LIST := ./cmd/... ./controllers/... ./webhooks/... ./pkg/... ./internal/...
@@ -261,7 +261,6 @@ coder-clean-adm-crd:
 	kubectl patch application -n dev root-app --type=merge -p '{"spec":{"syncPolicy":{"automated":{"selfHeal":false}}}}'
 	kubectl delete application -n dev app-deployment-manager --ignore-not-found=true
 	kubectl delete application -n dev app-deployment-crd --ignore-not-found=true
-	kubectl delete crd apiextensions.app.edge-orchestrator.intel.com --ignore-not-found=true
 	kubectl delete crd clusters.app.edge-orchestrator.intel.com --ignore-not-found=true
 	kubectl delete crd deploymentclusters.app.edge-orchestrator.intel.com --ignore-not-found=true
 	kubectl delete crd deployments.app.edge-orchestrator.intel.com --ignore-not-found=true

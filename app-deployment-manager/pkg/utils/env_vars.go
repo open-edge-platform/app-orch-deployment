@@ -357,22 +357,13 @@ func GetSecretServiceEndpoint() string {
 	return endpoint
 }
 
-func GetCAPIEnableD() (string, error) {
+func GetCAPIEnabled() (string, error) {
 	enable, ok := os.LookupEnv("CAPI_ENABLED")
 	if !ok {
 		return "", errors.NewNotFound("CAPI_ENABLED env var not set")
 	}
 
 	return enable, nil
-}
-
-func GetAPIExtEnabled() (string, error) {
-	ext, ok := os.LookupEnv("API_EXT_ENABLED")
-	if !ok {
-		return "", errors.NewNotFound("API_EXT_ENABLED env var not set")
-	}
-
-	return ext, nil
 }
 
 func GetIntegerFromEnv(envvar string, defaultvalue int) (int, string) {

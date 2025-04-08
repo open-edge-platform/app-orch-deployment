@@ -214,16 +214,15 @@ func addDepAndRelationships(ctx context.Context, d *Deployment, s *DeploymentSvc
 					// no further action needed for case 1 and 3 since action for them is just create new Deployment object
 					if depDPRef.ForbidsMultipleDeployments {
 						listOpts := metav1.ListOptions{}
-						// TODO: if activeProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
-						if activeProjectID != "" {
-							labelSelector := metav1.LabelSelector{
-								MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
-							}
-
-							listOpts = metav1.ListOptions{
-								LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
-							}
+						
+						labelSelector := metav1.LabelSelector{
+							MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
 						}
+
+						listOpts = metav1.ListOptions{
+							LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
+						}
+						
 						// case 4
 						depDeplCRs, err := getDeploymentCRWithDeploymentPackage(ctx, s, d.Namespace, catalogclient.GetDeploymentPackageID(depDPRef.Name, depDPRef.Version, depDPRef.ProfileName), listOpts)
 						if err != nil {

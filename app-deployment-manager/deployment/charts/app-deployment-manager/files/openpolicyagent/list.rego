@@ -8,7 +8,3 @@ import future.keywords.in
 ListDeploymentsRequest {
 	hasReadAccess
 }
-
-ListUIExtensionsRequest {
-	hasReadAccess
-}

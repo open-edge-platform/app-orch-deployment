@@ -30,11 +30,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/v1beta1"
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/controllers/apiextension"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/controllers/cluster"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/controllers/deployment"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/controllers/deploymentcluster"
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/config"
 	deploymentwebhook "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/webhooks/deployment"
 	//+kubebuilder:scaffold:imports
 
@@ -48,18 +46,6 @@ var (
 	scheme   = runtime.NewScheme()
 	setupLog = dazl.GetPackageLogger()
 
-	ingressKind       string
-	apiProxyURL       string
-	apiProxyNamespace string
-	apiProxyService   string
-	apiProxyPort      int
-	apiGroupDomain    string
-	tokenExpiryDays   string
-
-	apiAgentChartRepo    string
-	apiAgentChart        string
-	apiAgentChartVersion string
-	apiAgentNamespace    string
 	gitCaCertFolder      string
 	gitCaCertFile        string
 )
@@ -83,18 +69,6 @@ func main() {
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
-	flag.StringVar(&ingressKind, "ingress-kind", "traefik", "The ingress provider kind name.")
-	flag.StringVar(&apiProxyURL, "api-proxy-url", "https://service-proxy.orchestrator.intel.com",
-		"The API proxy URL that API agent connects to.")
-	flag.StringVar(&apiProxyNamespace, "api-proxy-namespace", "", "The namespace name that API proxy service is running.")
-	flag.StringVar(&apiProxyService, "api-proxy-service", "api-proxy", "The API proxy service name.")
-	flag.IntVar(&apiProxyPort, "api-proxy-port", 8123, "The API proxy service port.")
-	flag.StringVar(&apiGroupDomain, "api-group-domain", "orchestrator-extension.apis", "The extension API group domain name.")
-	flag.StringVar(&apiAgentChartRepo, "api-agent-chart-repo", "", "API agent helm chart repo URL")
-	flag.StringVar(&apiAgentChart, "api-agent-chart", "api-agent", "API agent helm chart name")
-	flag.StringVar(&apiAgentChartVersion, "api-agent-chart-version", "latest", "API agent helm chart version")
-	flag.StringVar(&apiAgentNamespace, "api-agent-namespace", "orch-app", "API agent target namespace")
-	flag.StringVar(&tokenExpiryDays, "token-expiry-days", "90", "Number of days after which API proxy expires registration token")
 	flag.StringVar(&gitCaCertFolder, "git-ca-cert-folder", "/etc/ssl/certs/", "Folder containing the Git CA Cert file")
 	flag.StringVar(&gitCaCertFile, "git-ca-cert-file", "ca.crt", "Git CA Cert file name within the Git CA Cert Folder")
 	opts := zap.Options{
@@ -140,40 +114,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	apiExtEnabled, err := utils.GetAPIExtEnabled()
-	if err != nil {
-		setupLog.Error(err, "controller", "APIExtension")
-		os.Exit(1)
-	}
-
-	if apiExtEnabled == "true" {
-		// register config first to ensure the configs are available to the controllers.
-		if err := config.SetAPIExtensionConfig(&config.APIExtensionConfig{
-			IngressKind:          ingressKind,
-			APIProxyURL:          apiProxyURL,
-			APIProxyNamespace:    apiProxyNamespace,
-			APIProxyService:      apiProxyService,
-			APIProxyPort:         utils.ToInt32Clamped(apiProxyPort),
-			APIGroupDomain:       apiGroupDomain,
-			APIAgentChartRepo:    apiAgentChartRepo,
-			APIAgentChart:        apiAgentChart,
-			APIAgentChartVersion: apiAgentChartVersion,
-			APIAgentNamespace:    apiAgentNamespace,
-			TokenExpiryDays:      tokenExpiryDays,
-		}); err != nil {
-			setupLog.Error(err, "unable to set config")
-			os.Exit(1)
-		}
-
-		if err = (&apiextension.Reconciler{
-			Client: mgr.GetClient(),
-			Scheme: mgr.GetScheme(),
-		}).SetupWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create controller", "controller", "APIExtension")
-			os.Exit(1)
-		}
-	}
-
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	defer cancelFunc()
 	// Start monitoring for Git Ca Cert file
@@ -202,7 +142,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	capiEnabled, err := utils.GetCAPIEnableD()
+	capiEnabled, err := utils.GetCAPIEnabled()
 	if err != nil {
 		setupLog.Error(err, "controller", "CAPI")
 		os.Exit(1)

@@ -7,7 +7,6 @@ rules:
 - apiGroups:
   - app.edge-orchestrator.intel.com
   resources:
-  - apiextensions
   - clusters
   - deploymentclusters
   - deployments
@@ -22,21 +21,10 @@ rules:
 - apiGroups:
   - app.edge-orchestrator.intel.com
   resources:
-  - apiextensions/finalizers
   - clusters/finalizers
   - deploymentclusters/finalizers
   - deployments/finalizers
   verbs:
-  - update
-- apiGroups:
-  - app.edge-orchestrator.intel.com
-  resources:
-  - apiextensions/status
-  - deploymentclusters/status
-  - deployments/status
-  verbs:
-  - get
-  - patch
   - update
 - apiGroups:
   - app.edge-orchestrator.intel.com
@@ -48,30 +36,22 @@ rules:
   - patch
   - update
 - apiGroups:
-  - ""
+  - app.edge-orchestrator.intel.com
   resources:
-  - events
+  - deploymentclusters/status
+  - deployments/status
   verbs:
-  - create
+  - get
   - patch
+  - update
 - apiGroups:
   - ""
   resources:
   - secrets
   verbs:
-  - create
-  - delete
   - get
   - list
-  - patch
-  - update
   - watch
-- apiGroups:
-  - ""
-  resources:
-  - secrets/status
-  verbs:
-  - get
 - apiGroups:
   - fleet.cattle.io
   resources:
@@ -94,49 +74,3 @@ rules:
   - patch
   - update
   - watch
-- apiGroups:
-  - networking.k8s.io
-  resources:
-  - ingresses
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - networking.k8s.io
-  resources:
-  - ingresses/finalizers
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - networking.k8s.io
-  resources:
-  - ingresses/status
-  verbs:
-  - get
-- apiGroups:
-  - traefik.containo.us
-  resources:
-  - ingressroutes
-  - middlewares
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - traefik.containo.us
-  resources:
-  - ingressroutes/status
-  - middlewares/status
-  verbs:
-  - get

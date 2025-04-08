@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	appOrchResources = []string{"deployments", "clusters", "deploymentclusters", "apiextensions"}
+	appOrchResources = []string{"deployments", "clusters", "deploymentclusters"}
 	rancherResources = []string{"gitrepos", "clusters", "bundles"}
 )
 

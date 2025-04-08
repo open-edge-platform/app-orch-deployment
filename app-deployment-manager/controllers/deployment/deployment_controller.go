@@ -676,10 +676,7 @@ func (r *Reconciler) reconcileGitRepo(ctx context.Context, d *v1beta1.Deployment
 				gitRepo.Spec.CABundle = []byte(caCert)
 			}
 
-			// TODO: if activeProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
-			if activeProjectID, ok := d.Labels[string(v1beta1.AppOrchActiveProjectID)]; ok {
-				gitRepo.Labels[string(v1beta1.AppOrchActiveProjectID)] = activeProjectID
-			}
+			gitRepo.Labels[string(v1beta1.AppOrchActiveProjectID)] = d.Labels[string(v1beta1.AppOrchActiveProjectID)]
 
 			if err := ctrl.SetControllerReference(d, gitRepo, r.Scheme); err != nil {
 				return ctrl.Result{}, err

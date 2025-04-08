@@ -287,22 +287,6 @@ var _ = Describe("Test Utils", func() {
 		})
 	})
 
-	Describe("Test GetAPIExtEnabled", func() {
-		It("successfully get API_EXT_ENABLED from env vars", func() {
-			expected := "test-api-ext-enabled"
-			os.Setenv("API_EXT_ENABLED", expected)
-			v, err := GetAPIExtEnabled()
-			Expect(err).ToNot(HaveOccurred())
-			Expect(v).To(Equal(expected))
-		})
-
-		It("fails due to env missing", func() {
-			os.Unsetenv("API_EXT_ENABLED")
-			_, err := GetAPIExtEnabled()
-			Expect(err).To(HaveOccurred())
-		})
-	})
-
 	Describe("Test IsSecretServiceEnabled", func() {
 		It("successfully get flag to check if secret service enabled or not from env vars", func() {
 			expected := true

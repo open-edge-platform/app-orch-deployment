@@ -24,6 +24,5 @@ var (
 
 	DeploymentsResource        = "deployments"
 	DeploymentClustersResource = "deploymentclusters"
-	APIExtensionResource       = "apiextensions"
 	ClustersResource           = "clusters"
 )

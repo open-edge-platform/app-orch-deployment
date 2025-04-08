@@ -13,10 +13,6 @@ GetDeploymentsStatusRequest {
 	hasReadAccess
 }
 
-GetAPIExtensionRequest {
-	hasReadAccess
-}
-
 GetClusterRequest {
 	hasReadAccess
 }

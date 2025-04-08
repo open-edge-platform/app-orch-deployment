@@ -80,10 +80,8 @@ func createDeploymentCr(d *Deployment, scenario string, resourceVersion string) 
 	}
 
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
-	// TODO: if ActiveProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
-	if d.ActiveProjectID != "" {
-		labelList[activeProjectIDKey] = d.ActiveProjectID
-	}
+
+	labelList[activeProjectIDKey] = d.ActiveProjectID
 
 	// fixme: understand where namespaceLabel is retrieved from ie controller, fleet ?
 	namespaceLabels := map[string]string{}

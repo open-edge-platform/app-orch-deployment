@@ -54,7 +54,6 @@ const VALID_CLUSTERID = "cluster-01234567"
 const INVALID_UID = "023456-023456-023456"
 const KIND = "deployments"
 const KIND_DC = "deploymentclusters"
-const KIND_API_EXT = "apiextensions"
 const KIND_C = "clusters"
 const VALID_CLUSTER_ID = "cluster-0123456789"
 const VALID_PROJECT_ID = "0000-1111-2222-3333-4444"
@@ -79,7 +78,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 	var (
 		deploymentServer         *DeploymentSvc
 		deploymentListSrc        deploymentv1beta1.DeploymentList
-		apiExtListSrc            deploymentv1beta1.APIExtensionList
 		k8sClient                *nbmocks.FakeDeploymentV1
 		protoValidator           *protovalidate.Validator
 		deployInstance           *deploymentv1beta1.Deployment
@@ -1387,7 +1385,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 	Describe("Gateway API Delete", func() {
 		BeforeEach(func() {
-			os.Setenv("API_EXT_ENABLED", "false")
 			s.k8sClient = &nbmocks.FakeDeploymentV1{}
 
 			// protovalidate Validator
@@ -1398,7 +1395,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 			// populates a mock deployment object
 			setDeploymentListObject(&deploymentListSrc)
-			setAPIExtListObject(&apiExtListSrc)
 
 			deployInstance = SetDeployInstance(&deploymentListSrc, "")
 
@@ -1429,14 +1425,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
 				Items:    deploymentListSrc.Items,
-			}, nil).Once()
-
-			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
-			).Return(&deploymentv1beta1.APIExtensionList{
-				ListMeta: apiExtListSrc.ListMeta,
-				TypeMeta: apiExtListSrc.TypeMeta,
-				Items:    apiExtListSrc.Items,
 			}, nil).Once()
 
 			k8sClient.On(
@@ -1583,14 +1571,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
-			).Return(&deploymentv1beta1.APIExtensionList{
-				ListMeta: apiExtListSrc.ListMeta,
-				TypeMeta: apiExtListSrc.TypeMeta,
-				Items:    apiExtListSrc.Items,
-			}, nil).Once()
-
-			k8sClient.On(
 				"Delete", context.Background(), "test-deployment",
 				mock.AnythingOfType("v1.DeleteOptions"),
 			).Return(nil)
@@ -1600,46 +1580,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 			})
 
 			Expect(err).ToNot(HaveOccurred())
-		})
-
-		It("fails due to API_EXT_ENABLED env not set", func() {
-			os.Unsetenv("API_EXT_ENABLED")
-
-			defer ts.Close()
-
-			k8sClient := &nbmocks.FakeDeploymentV1{}
-			deploymentServer = NewDeployment(k8sClient, nil, s.kc, nil, nil, s.protoValidator, nil)
-
-			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
-			).Return(&deploymentv1beta1.DeploymentList{
-				ListMeta: deploymentListSrc.ListMeta,
-				TypeMeta: deploymentListSrc.TypeMeta,
-				Items:    deploymentListSrc.Items,
-			}, nil).Once()
-
-			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
-			).Return(&deploymentv1beta1.APIExtensionList{
-				ListMeta: apiExtListSrc.ListMeta,
-				TypeMeta: apiExtListSrc.TypeMeta,
-				Items:    apiExtListSrc.Items,
-			}, nil).Once()
-
-			k8sClient.On(
-				"Delete", context.Background(), "test-deployment",
-				mock.AnythingOfType("v1.DeleteOptions"),
-			).Return(nil)
-
-			_, err := deploymentServer.DeleteDeployment(context.Background(), &deploymentpb.DeleteDeploymentRequest{
-				DeplId: VALID_UID,
-			})
-
-			Expect(err).To(HaveOccurred())
-			s, ok := status.FromError(err)
-			Expect(s.Code()).To(Equal(codes.NotFound))
-			Expect(ok).To(BeTrue())
-			Expect(s.Message()).Should(Equal("API_EXT_ENABLED env var not set"))
 		})
 	})
 
@@ -1766,13 +1706,11 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 	Describe("Gateway API Create", func() {
 		BeforeEach(func() {
-			os.Setenv("API_EXT_ENABLED", "false")
 			os.Setenv("USE_M2M_TOKEN", "true")
 			os.Setenv("SECRET_SERVICE_ENABLED", "false")
 
 			// populates a mock deployment object
 			setDeploymentListObject(&deploymentListSrc)
-			setAPIExtListObject(&apiExtListSrc)
 
 			deploymentListSrc.Items[0].Spec.DeploymentType = deploymentv1beta1.AutoScaling
 			deploymentListSrc.Items[0].Spec.DisplayName = "test display name 2"
@@ -2722,44 +2660,14 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(ok).To(BeTrue())
 			Expect(s.Message()).Should(Equal("the server does not allow this method on the requested resource (get namespaces 0000-1111-2222-3333-4444)"))
 		})
-
-		It("fails due to API_EXT_ENABLED env not set", func() {
-			os.Unsetenv("API_EXT_ENABLED")
-			os.Setenv("SECRET_SERVICE_ENABLED", "false")
-			defer ts.Close()
-
-			s.k8sClient.On(
-				"Create", nbmocks.AnyContext, deployInstance, mock.AnythingOfType("v1.CreateOptions"),
-			).Return(deployInstance, nil)
-
-			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
-			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
-
-			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
-			s.catalogClient.On("GetApplication", nbmocks.AnyContext, nbmocks.AnyGetAppReq).Return(&nbmocks.AppHelmResp, nil)
-			s.catalogClient.On("GetRegistry", nbmocks.AnyContext, nbmocks.AnyGetRegReq).Return(&nbmocks.HelmRegResp, nil)
-
-			_, err := s.deploymentServer.CreateDeployment(s.ctx, &deploymentpb.CreateDeploymentRequest{
-				Deployment: deployInstanceResp,
-			})
-
-			Expect(err).Should(HaveOccurred())
-			s, ok := status.FromError(err)
-			Expect(s.Code()).To(Equal(codes.NotFound))
-			Expect(ok).To(BeTrue())
-			Expect(s.Message()).Should(Equal("API_EXT_ENABLED env var not set"))
-		})
 	})
 
 	Describe("Gateway API Update", func() {
 		BeforeEach(func() {
-			os.Setenv("API_EXT_ENABLED", "false")
 			os.Setenv("SECRET_SERVICE_ENABLED", "false")
 
 			// populates a mock deployment object
 			setDeploymentListObject(&deploymentListSrc)
-			setAPIExtListObject(&apiExtListSrc)
 
 			deployInstance = SetDeployInstance(&deploymentListSrc, "")
 			deployInstanceResp = getDeployInstance(&deploymentListSrc)
@@ -2825,14 +2733,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s.k8sClient.On(
 				"Update", nbmocks.AnyContext, mock.AnythingOfType("string"), deployInstance, mock.AnythingOfType("v1.UpdateOptions"),
 			).Return(deployInstance, nil)
-
-			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
-			).Return(&deploymentv1beta1.APIExtensionList{
-				ListMeta: apiExtListSrc.ListMeta,
-				TypeMeta: apiExtListSrc.TypeMeta,
-				Items:    apiExtListSrc.Items,
-			}, nil).Once()
 
 			s.k8sClient.On(
 				"Delete", nbmocks.AnyContext, mock.AnythingOfType("string"), mock.AnythingOfType("v1.DeleteOptions"),
@@ -3063,14 +2963,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, errors.New("mock deployment list err")).Once()
 
 			k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
-			).Return(&deploymentv1beta1.APIExtensionList{
-				ListMeta: apiExtListSrc.ListMeta,
-				TypeMeta: apiExtListSrc.TypeMeta,
-				Items:    apiExtListSrc.Items,
-			}, nil).Once()
-
-			k8sClient.On(
 				"Delete", nbmocks.AnyContext, mock.AnythingOfType("string"), mock.AnythingOfType("v1.DeleteOptions"),
 			).Return(nil).Once()
 
@@ -3097,94 +2989,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(s.Code()).To(Equal(codes.Unknown))
 			Expect(ok).To(BeTrue())
 			Expect(s.Message()).Should(Equal("mock deployment list err"))
-		})
-
-		It("fails due api ext LIST error", func() {
-			os.Setenv("API_EXT_ENABLED", "true")
-			defer ts.Close()
-
-			k8sClient := &nbmocks.FakeDeploymentV1{}
-
-			deploymentServer = NewDeployment(k8sClient, nil, s.kc, nil, s.catalogClient, s.protoValidator, s.vaultAuthMock)
-			deployInstance = SetDeployInstance(&deploymentListSrc, "")
-
-			k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
-			).Return(&deploymentv1beta1.DeploymentList{
-				ListMeta: deploymentListSrc.ListMeta,
-				TypeMeta: deploymentListSrc.TypeMeta,
-				Items:    deploymentListSrc.Items,
-			}, nil).Once()
-
-			k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
-			).Return(&deploymentv1beta1.APIExtensionList{
-				ListMeta: apiExtListSrc.ListMeta,
-				TypeMeta: apiExtListSrc.TypeMeta,
-				Items:    apiExtListSrc.Items,
-			}, errors.New("mock api ext list err")).Once()
-
-			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
-			s.catalogClient.On("GetApplication", nbmocks.AnyContext, nbmocks.AnyGetAppReq).Return(&nbmocks.AppResp, nil)
-			s.catalogClient.On("GetRegistry", nbmocks.AnyContext, nbmocks.AnyGetRegReq).Return(&nbmocks.HelmRegResp, nil)
-			s.catalogClient.On("GetRegistry", nbmocks.AnyContext, nbmocks.AnyGetDockerRegReq).Return(&nbmocks.DockerRegResp, nil)
-
-			_, err := deploymentServer.UpdateDeployment(s.ctx, &deploymentpb.UpdateDeploymentRequest{
-				Deployment: deployInstanceResp,
-				DeplId:     VALID_UID,
-			})
-
-			Expect(err).To(HaveOccurred())
-			s, ok := status.FromError(err)
-			Expect(s.Code()).To(Equal(codes.Unknown))
-			Expect(ok).To(BeTrue())
-			Expect(s.Message()).Should(Equal("mock api ext list err"))
-		})
-
-		It("fails due api ext DELETE error", func() {
-			os.Setenv("API_EXT_ENABLED", "true")
-			defer ts.Close()
-
-			k8sClient := &nbmocks.FakeDeploymentV1{}
-
-			deploymentServer = NewDeployment(k8sClient, nil, s.kc, nil, s.catalogClient, s.protoValidator, s.vaultAuthMock)
-			deployInstance = SetDeployInstance(&deploymentListSrc, "")
-
-			k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
-			).Return(&deploymentv1beta1.DeploymentList{
-				ListMeta: deploymentListSrc.ListMeta,
-				TypeMeta: deploymentListSrc.TypeMeta,
-				Items:    deploymentListSrc.Items,
-			}, nil).Once()
-
-			k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
-			).Return(&deploymentv1beta1.APIExtensionList{
-				ListMeta: apiExtListSrc.ListMeta,
-				TypeMeta: apiExtListSrc.TypeMeta,
-				Items:    apiExtListSrc.Items,
-			}, nil).Once()
-
-			k8sClient.On(
-				"Delete", nbmocks.AnyContext, mock.AnythingOfType("string"), mock.AnythingOfType("v1.DeleteOptions"),
-			).Return(errors.New("mock api ext delete err")).Once()
-
-			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
-			s.catalogClient.On("GetApplication", nbmocks.AnyContext, nbmocks.AnyGetAppReq).Return(&nbmocks.AppResp, nil)
-			s.catalogClient.On("GetRegistry", nbmocks.AnyContext, nbmocks.AnyGetRegReq).Return(&nbmocks.HelmRegResp, nil)
-			s.catalogClient.On("GetRegistry", nbmocks.AnyContext, nbmocks.AnyGetDockerRegReq).Return(&nbmocks.DockerRegResp, nil)
-
-			_, err := deploymentServer.UpdateDeployment(s.ctx, &deploymentpb.UpdateDeploymentRequest{
-				Deployment: deployInstanceResp,
-				DeplId:     VALID_UID,
-			})
-
-			Expect(err).To(HaveOccurred())
-			s, ok := status.FromError(err)
-			Expect(s.Code()).To(Equal(codes.Unknown))
-			Expect(ok).To(BeTrue())
-			Expect(s.Message()).Should(Equal("mock api ext delete err"))
 		})
 
 		It("fails due to UPDATE error", func() {
@@ -3516,66 +3320,6 @@ func setDeploymentClusterObject(deploymentClusterSrc *deploymentv1beta1.Deployme
 	deploymentClusterSrc.Status.Status.Summary.Running = 2
 	deploymentClusterSrc.Status.Status.Summary.Down = 1
 	deploymentClusterSrc.Status.Status.Summary.Unknown = 0
-}
-
-func setAPIExtListObject(apiExtListSrc *deploymentv1beta1.APIExtensionList) {
-	apiExtListSrc.TypeMeta.Kind = KIND_API_EXT
-	apiExtListSrc.TypeMeta.APIVersion = apiVersion
-
-	apiExtListSrc.ListMeta.ResourceVersion = "6"
-	apiExtListSrc.ListMeta.Continue = "yes"
-	remainingItem := int64(10)
-	apiExtListSrc.ListMeta.RemainingItemCount = &remainingItem
-
-	apiExtListSrc.Items = make([]deploymentv1beta1.APIExtension, 1)
-
-	setAPIExtObject(&apiExtListSrc.Items[0])
-}
-
-func setAPIExtObject(apiExtListSrc *deploymentv1beta1.APIExtension) {
-	apiExtListSrc.ObjectMeta.Name = "test-deployment"
-	apiExtListSrc.ObjectMeta.Namespace = VALID_PROJECT_ID
-	apiExtListSrc.ObjectMeta.UID = types.UID(VALID_UID)
-	apiExtListSrc.ObjectMeta.ResourceVersion = "6"
-	apiExtListSrc.ObjectMeta.Generation = 24456
-
-	currentTime := metav1.Now()
-	apiExtListSrc.ObjectMeta.CreationTimestamp = currentTime
-	apiExtListSrc.ObjectMeta.DeletionTimestamp = &currentTime
-
-	apiExtListSrc.ObjectMeta.Labels = make(map[string]string)
-	apiExtListSrc.ObjectMeta.Labels["app.edge-orchestrator.intel.com/deployment-id"] = "deployment"
-
-	apiExtListSrc.Spec.AgentClusterLabels = make(map[string]string)
-	apiExtListSrc.Spec.AgentClusterLabels["color"] = "blue"
-
-	apiExtListSrc.Spec.APIGroup = deploymentv1beta1.APIGroup{
-		Name:    "test-apiGroup",
-		Version: "v1",
-	}
-
-	apiExtListSrc.Spec.DisplayName = "test-displayname"
-	apiExtListSrc.Spec.Project = "app.edge-orchestrator.intel.com"
-
-	apiExtListSrc.Spec.ProxyEndpoints = make([]deploymentv1beta1.ProxyEndpoint, 1)
-	apiExtListSrc.Spec.ProxyEndpoints[0] = deploymentv1beta1.ProxyEndpoint{
-		AppName:     "wordpress",
-		AuthType:    "mtls",
-		Backend:     "wordpress.apps2:80",
-		Path:        "index",
-		Scheme:      "http",
-		ServiceName: "wordpress",
-	}
-
-	apiExtListSrc.Spec.UIExtensions = make([]deploymentv1beta1.UIExtension, 1)
-	apiExtListSrc.Spec.UIExtensions[0] = deploymentv1beta1.UIExtension{
-		AppName:     "wordpress-app-name",
-		Description: "This is the ui extension of wordpress application",
-		FileName:    "wordpress.js",
-		Label:       "wordpress-label",
-		ModuleName:  "word-press-module-name",
-		ServiceName: "wordpress",
-	}
 }
 
 func setDeploymentObject(deploymentSrc *deploymentv1beta1.Deployment) {

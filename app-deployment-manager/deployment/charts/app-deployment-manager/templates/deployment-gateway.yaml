@@ -117,8 +117,6 @@ spec:
           - name: OPA_ENABLED
             value: "true"
           {{- end}}
-          - name: API_EXT_ENABLED
-            value: {{ .Values.adm.apiExtension.enabled | quote }}
           {{- with .Values.adm.releaseServiceProxy.repo }}
           - name: RS_PROXY_REPO
             value: "{{ . }}"
