@@ -105,9 +105,6 @@ spec:
                           profileName:
                             description: Profile to use for the base Helm values
                             type: string
-                          publisher:
-                            description: Publisher of the deployment package
-                            type: string
                           version:
                             description: Version of the deployment package
                             type: string
@@ -271,9 +268,6 @@ spec:
                         profileName:
                           description: Profile to use for the base Helm values
                           type: string
-                        publisher:
-                          description: Publisher of the deployment package
-                          type: string
                         version:
                           description: Version of the deployment package
                           type: string
@@ -322,9 +316,6 @@ spec:
                     type: array
                   profileName:
                     description: Profile to use for the base Helm values
-                    type: string
-                  publisher:
-                    description: Publisher of the deployment package
                     type: string
                   version:
                     description: Version of the deployment package
@@ -510,9 +501,6 @@ spec:
                           type: array
                         profileName:
                           description: Profile to use for the base Helm values
-                          type: string
-                        publisher:
-                          description: Publisher of the deployment package
                           type: string
                         version:
                           description: Version of the deployment package

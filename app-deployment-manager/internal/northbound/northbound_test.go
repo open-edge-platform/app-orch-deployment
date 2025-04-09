@@ -3156,7 +3156,6 @@ func setDeployment() *Deployment {
 	d.Name = "test-name"
 	d.AppName = "wordpress"
 	d.AppVersion = "0.1.0"
-	d.PublisherName = "intel"
 
 	d.Namespace = VALID_PROJECT_ID
 	if d.Namespace == "" {
@@ -3348,7 +3347,6 @@ func setDeploymentObject(deploymentSrc *deploymentv1beta1.Deployment) {
 	deploymentSrc.Spec.DeploymentPackageRef.Name = "wordpress"
 	deploymentSrc.Spec.DeploymentPackageRef.Version = "0.1.0"
 	deploymentSrc.Spec.DeploymentPackageRef.ProfileName = "default"
-	deploymentSrc.Spec.DeploymentPackageRef.Publisher = "intel"
 	deploymentSrc.Spec.DeploymentType = deploymentv1beta1.AutoScaling
 
 	deploymentSrc.Spec.Applications = make([]deploymentv1beta1.Application, 1)
@@ -3404,7 +3402,6 @@ func SetDeployInstance(deploymentListSrc *deploymentv1beta1.DeploymentList, scen
 		}
 
 		dpRef := deploymentv1beta1.DeploymentPackageRef{
-			Publisher:   "intel",
 			Name:        "wordpress",
 			Version:     "0.1.0",
 			ProfileName: "default",
@@ -3452,7 +3449,6 @@ func SetDeployInstance(deploymentListSrc *deploymentv1beta1.DeploymentList, scen
 		}
 
 		dpRef := deploymentv1beta1.DeploymentPackageRef{
-			Publisher:   "intel",
 			Name:        "wordpress",
 			Version:     "0.1.0",
 			ProfileName: "default",
@@ -3557,7 +3553,6 @@ func getDeployInstance(deploymentListSrc *deploymentv1beta1.DeploymentList) *dep
 		DisplayName:          deploymentListSrc.Items[0].Spec.DisplayName,
 		AppVersion:           deploymentListSrc.Items[0].Spec.DeploymentPackageRef.Version,
 		ProfileName:          deploymentListSrc.Items[0].Spec.DeploymentPackageRef.ProfileName,
-		PublisherName:        deploymentListSrc.Items[0].Spec.DeploymentPackageRef.Publisher,
 		NetworkName:          deploymentListSrc.Items[0].Spec.NetworkRef.Name,
 		Status:               status,
 		OverrideValues:       OverrideValuesList,

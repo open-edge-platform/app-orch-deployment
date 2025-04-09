@@ -41,7 +41,6 @@ type Deployment struct {
 	DisplayName                string                                             `yaml:"displayName"`
 	AppVersion                 string                                             `yaml:"appVersion"`
 	ProfileName                string                                             `yaml:"profileName"`
-	PublisherName              string                                             `yaml:"publisherName"`
 	DeployID                   string                                             `yaml:"deployId"`
 	DeploymentType             string                                             `yaml:"deploymentType"`
 	Project                    string                                             `yaml:"project"`
@@ -76,9 +75,6 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 	d.ProfileName = in.GetProfileName()
 	d.ServiceExports = in.GetServiceExports()
 	d.NetworkName = in.GetNetworkName()
-	// PublisherName was removed in Catalog v0.10.0, for backward compatibility, setting as optional
-	// will remove field publisher in CRD and field publisherName in API in v2
-	d.PublisherName = in.GetPublisherName()
 	d.OverrideValues = in.GetOverrideValues()
 	d.TargetClusters = in.GetTargetClusters()
 	d.AllAppTargetClusters = in.GetAllAppTargetClusters()
@@ -441,7 +437,6 @@ func (c *DeploymentInstance) createDeploymentObject(ctx context.Context, s *Depl
 		AppName:        c.deployment.Spec.DeploymentPackageRef.Name,
 		AppVersion:     c.deployment.Spec.DeploymentPackageRef.Version,
 		ProfileName:    c.deployment.Spec.DeploymentPackageRef.ProfileName,
-		PublisherName:  c.deployment.Spec.DeploymentPackageRef.Publisher,
 		DeploymentType: string(c.deployment.Spec.DeploymentType),
 		CreateTime:     createTimePbUnix,
 		DeployId:       string(c.deployment.ObjectMeta.UID),
@@ -1299,11 +1294,11 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 	newDepDeplMap := make(map[string]string)
 
 	for _, childDepl := range deployment.Spec.ChildDeploymentList {
-		childDeplMap[fmt.Sprintf("%s/%s", childDepl.DeploymentPackageRef.Publisher, childDepl.DeploymentPackageRef.Name)] = fmt.Sprintf("%s/%s", childDepl.DeploymentPackageRef.Version, childDepl.DeploymentPackageRef.ProfileName)
+		childDeplMap[childDepl.DeploymentPackageRef.Name] = fmt.Sprintf("%s/%s", childDepl.DeploymentPackageRef.Version, childDepl.DeploymentPackageRef.ProfileName)
 	}
 
 	for _, reqDepl := range d.RequiredDeploymentPackage {
-		newDepDeplMap[fmt.Sprintf("%s/%s", reqDepl.Publisher, reqDepl.Name)] = fmt.Sprintf("%s/%s", reqDepl.Version, reqDepl.ProfileName)
+		newDepDeplMap[reqDepl.Name] = fmt.Sprintf("%s/%s", reqDepl.Version, reqDepl.ProfileName)
 	}
 
 	if !reflect.DeepEqual(childDeplMap, newDepDeplMap) {

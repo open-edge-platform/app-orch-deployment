@@ -110,12 +110,9 @@ common-install-protoc-plugins:
 	@echo "Installing protoc-gen-openapi"
 	@go install github.com/kollalabs/protoc-gen-openapi@latest
 	@echo "Installing oapi-codegen"
-	# for the binary install
 	@go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@${OAPI_CODEGEN_VERSION}
-	@echo Downloading buf binary to $(LOCALBIN)
-	mkdir -p $(LOCALBIN)
-	@GOBIN=$(LOCALBIN) go install github.com/bufbuild/buf/cmd/buf@${BUF_VERSION}
-	# for the binary installation
+	@echo "Installing buf"
+	@go install github.com/bufbuild/buf/cmd/buf@${BUF_VERSION}
 	@echo "Adding Go bin directory to PATH..."
 	@export PATH=$(PATH):$(GOBIN)
 	@echo "All plugins installed successfully."
@@ -130,6 +127,10 @@ common-verify-protoc-plugins:
 	@command -v protoc-gen-go-grpc >/dev/null 2>&1 && echo "protoc-gen-go-grpc is installed." || echo "protoc-gen-go-grpc is not installed."
 	@echo "Verifying protoc-gen-openapi installation..."
 	@command -v protoc-gen-openapi >/dev/null 2>&1 && echo "protoc-gen-openapi is installed." || echo "protoc-gen-openapi is not installed."
+	@echo "Verifying oapi-codegen installation..."
+	@command -v oapi-codegen >/dev/null 2>&1 && echo "oapi-codegen is installed." || echo "oapi-codegen is not installed."
+	@echo "Verifying buf installation..."
+	@command -v buf >/dev/null 2>&1 && echo "buf is installed." || echo "buf is not installed."
 
 
 #### Docker Targets ####
@@ -275,16 +276,15 @@ common-go-fuzz-test: ## GO fuzz tests
 
 #### Protobuf Targets ####
 
-BUF ?= $(LOCALBIN)/buf
 common-buf-lint-fix: $(VENV_NAME) ## Lint and when possible fix protobuf files
-	$(BUF) --version
-	$(BUF) format -d -w
-	$(BUF) lint
+	buf --version
+	buf format -d -w
+	buf lint
 
 common-buf-generate: $(VENV_NAME) ## Compile protobuf files in api into code
 	set +u; . ./$</bin/activate; set -u ;\
-        $(BUF) --version ;\
-        $(BUF) generate
+        buf --version ;\
+        buf generate
 
 common-openapi-spec-validate: $(VENV_NAME)
 		set +u; . ./$</bin/activate; set -u ;\
@@ -292,14 +292,14 @@ common-openapi-spec-validate: $(VENV_NAME)
 
 common-buf-update: $(VENV_NAME) ## Update buf modules
 	set +u; . ./$</bin/activate; set -u ;\
-  $(BUF) --version ;\
-  pushd api; $(BUF) dep update; popd ;\
-  $(BUF) build
+  buf --version ;\
+  pushd api; buf dep update; popd ;\
+  buf build
 
 common-buf-lint: $(VENV_NAME) ## Lint and format protobuf files
-	$(BUF) --version
-	$(BUF) format -d --exit-code
-	$(BUF) lint
+	buf --version
+	buf format -d --exit-code
+	buf lint
 
 #### Rest Client Targets ####
 common-rest-client-gen: ## Generate rest-client.

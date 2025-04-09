@@ -191,7 +191,6 @@ func createDeploymentCr(d *Deployment, scenario string, resourceVersion string) 
 	}
 
 	dpRef := deploymentv1beta1.DeploymentPackageRef{
-		Publisher:                  d.PublisherName,
 		Name:                       d.AppName,
 		Version:                    d.AppVersion,
 		ProfileName:                d.ProfileName,

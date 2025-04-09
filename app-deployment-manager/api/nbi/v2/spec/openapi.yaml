@@ -401,9 +401,6 @@ components:
                 profileName:
                     type: string
                     description: The selected profile name to be used for the base Helm values of the different applications in the deployment package
-                publisherName:
-                    type: string
-                    description: DEPRECATED - will remove in v2. Publisher of the deployment package.
                 createTime:
                     readOnly: true
                     type: string
@@ -431,10 +428,6 @@ components:
                     items:
                         $ref: '#/components/schemas/App'
                     description: Application details.
-                defaultProfileName:
-                    readOnly: true
-                    type: string
-                    description: DEPRECATED - will remove in v2. Name of the default DeploymentProfile to use when deploying this DeploymentPackage. If no profileName is provided, use defaultProfileName from deployment package.
                 deploymentType:
                     type: string
                     description: The deployment type for the target cluster deployment can be either auto-scaling or targeted. In Auto-scaling type, the application will be automatically deployed on all the clusters which match the Target cluster label. In Targeted type, the user has to select among pre created clusters to deploy the application.

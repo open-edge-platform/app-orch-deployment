@@ -189,7 +189,6 @@ var _ = Describe("Deployment controller", func() {
 				DisplayName: "My Wordpress Blog",
 				Project:     "test-project",
 				DeploymentPackageRef: v1beta1.DeploymentPackageRef{
-					Publisher:   "intel",
 					Name:        "wordpress",
 					Version:     "0.1.0",
 					ProfileName: "default",
