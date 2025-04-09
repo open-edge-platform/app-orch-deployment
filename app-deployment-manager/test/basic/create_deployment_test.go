@@ -20,6 +20,7 @@ func (s *TestSuite) TestCreateWordpressDeployment() {
 		s.T().Log("deployment: ", *deployment.DisplayName)
 		if *deployment.DisplayName == "wordpress" {
 			response, err := s.client.DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), *deployment.DeployId, nil)
+			s.T().Log("wordpress deployment found, deleting it")
 			s.NoError(err)
 			s.Equal(200, response.StatusCode())
 		}
