@@ -121,7 +121,7 @@ jobs:
       - name: Deploy Edge Cluster using EniC
         if: ${{ inputs.use-enic }}
         run: |
-          mage deploy:edgeCluster
+          mage deploy:edgeCluster dev-minimal
           echo "ENIC deployment done!"
 
       - name: Upload Deployment Packages to Catalog
