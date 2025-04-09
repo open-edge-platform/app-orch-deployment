@@ -43,6 +43,31 @@ func (s *TestSuite) MarshalRequestBody(reqBody map[string]interface{}) []byte {
 	return body
 }
 
+// deleteDeployment sends a DELETE request to remove a deployment by name.
+func (s *TestSuite) deleteDeployment(appName string) error {
+	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s", s.DeploymentRESTServerUrl, appName)
+	fmt.Println("Delete Deployment")
+
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		return err
+	}
+
+	auth.AddRestAuthHeader(req, s.token, s.projectID)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusNotFound {
+		return fmt.Errorf("unexpected status code: %d", res.StatusCode)
+	}
+
+	return nil
+}
+
 // TestCreateWordpressDeployment tests creating a wordpress deployment using the REST API.
 func (s *TestSuite) TestCreateWordpressDeployment() {
 	reqBody := map[string]interface{}{
@@ -62,6 +87,10 @@ func (s *TestSuite) TestCreateWordpressDeployment() {
 			},
 		},
 	}
+
+	// Ensure any existing deployment with the same name is deleted
+	err := s.deleteDeployment("wordpress")
+	s.Require().NoError(err, "Failed to delete existing deployment")
 
 	// Call the helper method to create the deployment
 	res, err := s.createDeployment(reqBody)
