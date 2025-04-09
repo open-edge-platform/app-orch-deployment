@@ -53,7 +53,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // To facilitate local development, do not redirect if the URL contains 'localhost'
     if (!windowUrl.includes('localhost')) {
-      window.location.href = windowUrl + '/'
+    //   window.location.href = windowUrl + '/'
+      document.getElementById('asp-iframe').src = windowUrl
     }
   }).catch(function (err) {
     console.log('Failed to initialize', err)
