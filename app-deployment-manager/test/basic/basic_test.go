@@ -75,7 +75,7 @@ func (s *TestSuite) TestBasics() {
 	err = json.NewDecoder(res.Body).Decode(&responseBody)
 	s.NoError(err, "Failed to parse response body")
 
-	_, ok := responseBody["deployments"].([]interface{}) // Check for deployments key
+	deployments, ok := responseBody["deployments"].([]interface{}) // Check for deployments key
 	s.True(ok, "Response does not contain 'deployments' key")
 
 	s.TearDownTest(context.TODO())

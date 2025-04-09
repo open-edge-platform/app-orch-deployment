@@ -164,14 +164,18 @@ func (s *TestSuite) TestCreateWordpressDeployment() {
 	s.Require().Equal("200 OK", listRes.Status, "Expected status code 200 for listing deployments")
 
 	// Parse the response body
-	var deploymentsList []map[string]interface{}
-	err = json.NewDecoder(listRes.Body).Decode(&deploymentsList)
+	var listResponseBody map[string]interface{}
+	err = json.NewDecoder(listRes.Body).Decode(&listResponseBody)
 	s.Require().NoError(err, "Failed to parse deployments list")
+
+	deployments, ok = listResponseBody["deployments"].([]interface{})
+	s.Require().True(ok, "Unexpected response format: missing 'deployments' key")
 
 	// Check if the created deployment exists in the list
 	found := false
-	for _, deployment := range deploymentsList {
-		if deployment["appName"] == "wordpress" && deployment["displayName"] == "wordpress" {
+	for _, deployment := range deployments {
+		deploymentMap, ok := deployment.(map[string]interface{})
+		if ok && deploymentMap["appName"] == "wordpress" && deploymentMap["displayName"] == "wordpress" {
 			found = true
 			break
 		}
