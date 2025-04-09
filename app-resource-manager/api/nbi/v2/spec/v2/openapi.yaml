@@ -1,5 +1,5 @@
 # Generated with protoc-gen-openapi
-# https://github.com/kollalabs/protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
 
 openapi: 3.0.3
 info:
@@ -11,7 +11,6 @@ paths:
         get:
             tags:
                 - EndpointsService
-            summary: ListAppEndpoints
             description: Gets a list of all endpoints for an application of a deployment in a cluster.
             operationId: EndpointsService_ListAppEndpoints
             parameters:
@@ -38,7 +37,6 @@ paths:
         put:
             tags:
                 - PodService
-            summary: DeletePod
             description: Deletes the pod for an application in a cluster.
             operationId: PodService_DeletePod
             parameters:
@@ -71,7 +69,6 @@ paths:
         put:
             tags:
                 - VirtualMachineService
-            summary: RestartVirtualMachine
             description: Restarts a virtual machine for an application of a deployment in a cluster.
             operationId: VirtualMachineService_RestartVirtualMachine
             parameters:
@@ -104,7 +101,6 @@ paths:
         put:
             tags:
                 - VirtualMachineService
-            summary: StartVirtualMachine
             description: Starts a virtual machine for an application of a deployment in a cluster.
             operationId: VirtualMachineService_StartVirtualMachine
             parameters:
@@ -137,7 +133,6 @@ paths:
         put:
             tags:
                 - VirtualMachineService
-            summary: StopVirtualMachine
             description: Stops a virtual machine for an application of a deployment in a cluster.
             operationId: VirtualMachineService_StopVirtualMachine
             parameters:
@@ -170,7 +165,6 @@ paths:
         get:
             tags:
                 - VirtualMachineService
-            summary: GetVNC
             description: Accesses the VNC console to access a virtual machine.
             operationId: VirtualMachineService_GetVNC
             parameters:
@@ -203,7 +197,6 @@ paths:
         get:
             tags:
                 - AppWorkloadService
-            summary: ListAppWorkloads
             description: Gets a list of all workloads for an application of a deployment in a cluster.
             operationId: AppWorkloadService_ListAppWorkloads
             parameters:
@@ -233,6 +226,7 @@ components:
             properties:
                 state:
                     enum:
+                        - STATE_UNSPECIFIED
                         - STATE_UP
                         - STATE_DOWN
                     type: string
@@ -246,12 +240,8 @@ components:
                     readOnly: true
                     type: string
                     description: Endpoint object UID (e.g. service or ingress UID)
-                    format: uuid
                 name:
                     readOnly: true
-                    maxLength: 40
-                    minLength: 1
-                    pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
                     type: string
                     description: Endpoint name
                 fqdns:
@@ -277,6 +267,7 @@ components:
             properties:
                 type:
                     enum:
+                        - TYPE_UNSPECIFIED
                         - TYPE_VIRTUAL_MACHINE
                         - TYPE_POD
                     type: string
@@ -285,11 +276,7 @@ components:
                 id:
                     type: string
                     description: Workload UUID
-                    format: uuid
                 name:
-                    maxLength: 253
-                    minLength: 1
-                    pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
                     type: string
                     description: Workload name
                 namespace:
@@ -316,9 +303,6 @@ components:
             type: object
             properties:
                 name:
-                    maxLength: 63
-                    minLength: 1
-                    pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
                     type: string
                     description: Container name
                 imageName:
@@ -386,6 +370,7 @@ components:
                 state:
                     readOnly: true
                     enum:
+                        - STATE_UNSPECIFIED
                         - STATE_READY
                         - STATE_NOT_READY
                     type: string
@@ -397,7 +382,6 @@ components:
             properties:
                 fqdn:
                     type: string
-                    format: hostname
             description: Fully qualified domain name.
         GetVNCResponse:
             required:
@@ -442,6 +426,7 @@ components:
             properties:
                 state:
                     enum:
+                        - STATE_UNSPECIFIED
                         - STATE_PENDING
                         - STATE_RUNNING
                         - STATE_SUCCEEDED
@@ -455,9 +440,6 @@ components:
             properties:
                 name:
                     readOnly: true
-                    maxLength: 40
-                    minLength: 1
-                    pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
                     type: string
                     description: Port name
                 value:
@@ -499,6 +481,7 @@ components:
             properties:
                 state:
                     enum:
+                        - STATE_UNSPECIFIED
                         - STATE_STOPPED
                         - STATE_PROVISIONING
                         - STATE_STARTING

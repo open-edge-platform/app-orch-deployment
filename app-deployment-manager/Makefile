@@ -102,11 +102,13 @@ GOEXTRAFLAGS += $(COMMON_GOEXTRAFLAGS)
 
 APIPKG_DIR ?= pkg/api
 
-install-protoc-plugins: common-install-protoc-plugins ## Install protoc plugins
+install-protoc-plugins: common-install-protoc-plugins ## Install protoc, buf and protobuf tools
 
 verify-protoc-plugins: common-verify-protoc-plugins  ## Verify protoc plugins
 
-proto-generate: common-buf-update common-buf-generate ## Generate protobuf code
+OPENAPI_SPEC_FILE ?= ./api/nbi/v2/spec/openapi.yaml
+REST_CLIENT_DIR ?= ./api/nbi/v2/pkg/restClient
+proto-generate: common-buf-update common-buf-generate common-openapi-spec-validate common-rest-client-gen common-buf-lint ## Generate protobuf code
 
 buf-lint-fix: common-buf-lint-fix ## Lint and format protobuf files
 
@@ -114,7 +116,7 @@ buf-update: common-buf-update ## Update buf modules
 
 buf-lint: common-buf-lint ## Lint and format protobuf files
 
-install-buf: common-install-buf ## Install buf and protobuf tools
+rest-client-gen: common-rest-client-gen ## Generate REST client code
 
 #### Development Targets ####
 

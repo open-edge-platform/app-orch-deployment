@@ -50,20 +50,6 @@ service DeploymentService {
     option (google.api.http) = {delete: "/deployment.orchestrator.apis/v1/deployments/{depl_id}"};
   }
 
-  // === APIExtension ===
-
-  // Gets a deployment's APIExtension identified by the name of the APIExtension CR.
-  rpc GetAPIExtension(GetAPIExtensionRequest) returns (GetAPIExtensionResponse) {
-    option (google.api.http) = {get: "/deployment.orchestrator.apis/v1/apiextensions/{name}"};
-  }
-
-  // === UIExtension ===
-
-  // Gets a list of all UIExtensions.
-  rpc ListUIExtensions(ListUIExtensionsRequest) returns (ListUIExtensionsResponse) {
-    option (google.api.http) = {get: "/deployment.orchestrator.apis/v1/ui_extensions"};
-  }
-
   // === Summary ===
 
   // Gets all deployment clusters count status.
@@ -202,7 +188,7 @@ message ListDeploymentsPerClusterRequest {
 // Response message for the ListDeploymentsPerCluster method.
 message ListDeploymentsPerClusterResponse {
   // A list of Deployment Instance Cluster Objects.
-  repeated deployment.v1.DeploymentInstancesCluster deploymentInstancesCluster = 1 [(google.api.field_behavior) = REQUIRED];
+  repeated deployment.v1.DeploymentInstancesCluster deployment_instances_cluster = 1 [(google.api.field_behavior) = REQUIRED];
 
   int32 total_elements = 2 [(google.api.field_behavior) = REQUIRED];
 }
@@ -328,53 +314,6 @@ message GetDeploymentsStatusResponse {
     (google.api.field_behavior) = OUTPUT_ONLY,
     (buf.validate.field).int32.gte = 0
   ];
-}
-
-// === APIExtension ===
-
-// Request message for GetAPIExtension method.
-message GetAPIExtensionRequest {
-  // Required. Name of the apiExtension.
-  string name = 1 [
-    (google.api.field_behavior) = REQUIRED,
-    (buf.validate.field).string = {
-      min_len: 1
-      max_len: 40
-      pattern: "^([a-zA-Z0-9][\\w\\- \\.\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$"
-    }
-  ];
-}
-
-// Response message for GetAPIExtension method.
-message GetAPIExtensionResponse {
-  // The Deployment Object requested.
-  deployment.v1.APIExtension api_extension = 1 [(google.api.field_behavior) = REQUIRED];
-}
-
-// Request message for the ListUIExtensions method.
-message ListUIExtensionsRequest {
-  // Optional. A string array that filters service names
-  // to be displayed. Service names separated by a comma.
-  repeated string service_name = 1 [
-    (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).repeated = {
-      min_items: 0
-      max_items: 20
-      items: {
-        string: {
-          min_len: 1
-          max_len: 200
-          pattern: "(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$"
-        }
-      }
-    }
-  ];
-}
-
-// Response message for the ListUIExtensions method.
-message ListUIExtensionsResponse {
-  // A list of UIExtensions.
-  repeated deployment.v1.UIExtension ui_extensions = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
 // Request message for the GetappNamespace method.

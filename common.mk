@@ -26,7 +26,8 @@ SHELL := bash -eu -o pipefail
 GOARCH	:= $(shell go env GOARCH)
 GOCMD   := GOPRIVATE="github.com/open-edge-platform/*" go
 OAPI_CODEGEN_VERSION ?= v2.2.0
-
+LOCALBIN ?= $(shell pwd)/bin
+BUF_VERSION ?= v1.52.1
 
 ## Path variables ##
 OUT_DIR	:= out
@@ -108,9 +109,12 @@ common-install-protoc-plugins:
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 	@echo "Installing protoc-gen-openapi"
 	@go install github.com/kollalabs/protoc-gen-openapi@latest
-	echo "Installing oapi-codegen"
+	@echo "Installing oapi-codegen"
 	# for the binary install
-	go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@${OAPI_CODEGEN_VERSION}
+	@go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@${OAPI_CODEGEN_VERSION}
+	@echo Downloading buf binary to $(LOCALBIN)
+	mkdir -p $(LOCALBIN)
+	@GOBIN=$(LOCALBIN) go install github.com/bufbuild/buf/cmd/buf@${BUF_VERSION}
 	# for the binary installation
 	@echo "Adding Go bin directory to PATH..."
 	@export PATH=$(PATH):$(GOBIN)
@@ -270,15 +274,8 @@ common-go-fuzz-test: ## GO fuzz tests
 	done
 
 #### Protobuf Targets ####
-LOCALBIN ?= $(shell pwd)/bin
-BUF ?= $(LOCALBIN)/buf
-BUF_VERSION ?= v1.52.1
-common-install-buf: ## Download buf tool and golang module protoc-gen-openapi
-	@echo Downloading buf binary to $(LOCALBIN)
-	mkdir -p $(LOCALBIN)
-	GOBIN=$(LOCALBIN) go install github.com/bufbuild/buf/cmd/buf@${BUF_VERSION}
-	go install github.com/google/gnostic/cmd/protoc-gen-openapi@latest
 
+BUF ?= $(LOCALBIN)/buf
 common-buf-lint-fix: $(VENV_NAME) ## Lint and when possible fix protobuf files
 	$(BUF) --version
 	$(BUF) format -d -w
@@ -289,7 +286,6 @@ common-buf-generate: $(VENV_NAME) ## Compile protobuf files in api into code
         $(BUF) --version ;\
         $(BUF) generate
 
-.PHONY: openapi-spec-validate
 common-openapi-spec-validate: $(VENV_NAME)
 		set +u; . ./$</bin/activate; set -u ;\
 	openapi-spec-validator $(OPENAPI_SPEC_FILE)
@@ -305,6 +301,12 @@ common-buf-lint: $(VENV_NAME) ## Lint and format protobuf files
 	$(BUF) format -d --exit-code
 	$(BUF) lint
 
+#### Rest Client Targets ####
+common-rest-client-gen: ## Generate rest-client.
+	@echo Generate Rest client from the generated openapi spec.
+	mkdir -p $(REST_CLIENT_DIR)
+	oapi-codegen -generate client -old-config-style -package restClient -o $(REST_CLIENT_DIR)/client.go $(OPENAPI_SPEC_FILE)
+	oapi-codegen -generate types -old-config-style -package restClient -o $(REST_CLIENT_DIR)/types.go $(OPENAPI_SPEC_FILE)
 
 #### Helm Targets ####
 

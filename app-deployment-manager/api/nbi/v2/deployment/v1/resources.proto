@@ -285,35 +285,3 @@ message Cluster {
   // Apps has per-app details.
   repeated App apps = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
 }
-
-// Details of API extension
-message APIExtension {
-  // Name of the API Extension.
-  string name = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
-
-  // Token for secure websocket connection between api-proxy and api-agent.
-  string token = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
-
-  // TODO - add other details of APIExtension.
-}
-
-// Details of UI Extension.
-message UIExtension {
-  // The name of the API Extension endpoint.
-  string service_name = 1 [(google.api.field_behavior) = REQUIRED];
-
-  // Description states the purpose of the dashboard that this UIExtension represents.
-  string description = 2 [(google.api.field_behavior) = REQUIRED];
-
-  // Label represents a dashboard in the main UI.
-  string label = 3 [(google.api.field_behavior) = REQUIRED];
-
-  // The name of the main file to load this specific UI extension.
-  string file_name = 4 [(google.api.field_behavior) = REQUIRED];
-
-  // The name of the application corresponding to this UI extension.
-  string app_name = 5 [(google.api.field_behavior) = REQUIRED];
-
-  // The application module to be loaded.
-  string module_name = 6 [(google.api.field_behavior) = REQUIRED];
-}

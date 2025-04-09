@@ -30,7 +30,7 @@ plugins:
       - title=App Resource Manager API
       - version=1.0.0
       - default_response=false
-      - validate=true
+      - enum_type=string
       - description=App Resource Manager service providing operations for resource management
     strategy: all
   - local: protoc-gen-grpc-gateway

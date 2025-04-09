@@ -115,7 +115,7 @@ type ListAppWorkloadsRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ListAppWorkloadsRequestMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
+	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -255,7 +255,7 @@ type ListAppWorkloadsResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ListAppWorkloadsResponseMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
+	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

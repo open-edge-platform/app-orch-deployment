@@ -7,26 +7,6 @@ info:
     description: Application Deployment Manager service providing operations for deploying and managing applications.
     version: 2.0.0
 paths:
-    /deployment.orchestrator.apis/v1/apiextensions/{name}:
-        get:
-            tags:
-                - DeploymentService
-            description: Gets a deployment's APIExtension identified by the name of the APIExtension CR.
-            operationId: DeploymentService_GetAPIExtension
-            parameters:
-                - name: name
-                  in: path
-                  description: Required. Name of the apiExtension.
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/GetAPIExtensionResponse'
     /deployment.orchestrator.apis/v1/clusters:
         get:
             tags:
@@ -331,41 +311,8 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/GetDeploymentsStatusResponse'
-    /deployment.orchestrator.apis/v1/ui_extensions:
-        get:
-            tags:
-                - DeploymentService
-            description: Gets a list of all UIExtensions.
-            operationId: DeploymentService_ListUIExtensions
-            parameters:
-                - name: serviceName
-                  in: query
-                  description: Optional. A string array that filters service names to be displayed. Service names separated by a comma.
-                  schema:
-                    type: array
-                    items:
-                        type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListUIExtensionsResponse'
 components:
     schemas:
-        APIExtension:
-            type: object
-            properties:
-                name:
-                    readOnly: true
-                    type: string
-                    description: Name of the API Extension.
-                token:
-                    readOnly: true
-                    type: string
-                    description: Token for secure websocket connection between api-proxy and api-agent.
-            description: Details of API extension
         App:
             type: object
             properties:
@@ -546,14 +493,6 @@ components:
                 summary:
                     $ref: '#/components/schemas/Summary'
             description: Status has details of the deployment.
-        GetAPIExtensionResponse:
-            required:
-                - apiExtension
-            type: object
-            properties:
-                apiExtension:
-                    $ref: '#/components/schemas/APIExtension'
-            description: Response message for GetAPIExtension method.
         GetClusterResponse:
             type: object
             properties:
@@ -663,17 +602,6 @@ components:
                     type: integer
                     format: int32
             description: Response message for the ListDeployments method.
-        ListUIExtensionsResponse:
-            required:
-                - uiExtensions
-            type: object
-            properties:
-                uiExtensions:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/UIExtension'
-                    description: A list of UIExtensions.
-            description: Response message for the ListUIExtensions method.
         OverrideValues:
             required:
                 - appName
@@ -741,35 +669,6 @@ components:
                     type: string
                     description: Cluster id to match the target cluster when targeted deployment.
             description: Set target clusters based on labels.
-        UIExtension:
-            required:
-                - serviceName
-                - description
-                - label
-                - fileName
-                - appName
-                - moduleName
-            type: object
-            properties:
-                serviceName:
-                    type: string
-                    description: The name of the API Extension endpoint.
-                description:
-                    type: string
-                    description: Description states the purpose of the dashboard that this UIExtension represents.
-                label:
-                    type: string
-                    description: Label represents a dashboard in the main UI.
-                fileName:
-                    type: string
-                    description: The name of the main file to load this specific UI extension.
-                appName:
-                    type: string
-                    description: The name of the application corresponding to this UI extension.
-                moduleName:
-                    type: string
-                    description: The application module to be loaded.
-            description: Details of UI Extension.
         UpdateDeploymentResponse:
             required:
                 - deployment
