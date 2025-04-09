@@ -36,6 +36,7 @@ require (
 	code.gitea.io/sdk/gitea v0.18.0
 	github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6
 	github.com/atomix/atomix/api v1.1.0
+	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/aws/aws-sdk-go v1.55.6
 	github.com/bufbuild/protovalidate-go v0.6.3
 	github.com/fsnotify/fsnotify v1.7.0
