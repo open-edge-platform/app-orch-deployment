@@ -1,7 +1,3 @@
-// SPDX-FileCopyrightText: (C) 2025-present Intel Corporation
-//
-// SPDX-License-Identifier: Apache-2.0
-
 package basic
 
 import (
@@ -15,23 +11,35 @@ const (
 	worldpressAppVersion  = "0.1.1"
 	worldpressDisplayName = "wordpress"
 	testClusterID         = "demo-cluster"
+	retryCount            = 10
+	retryDelay            = 5 * time.Second
 )
 
-// TestCreateWordpressDeployment tests creating a wordpress deployment using the REST API.
 func (s *TestSuite) TestCreateWordpressDeployment() {
 	// Delete existing "wordpress" deployment if it exists
+	s.deleteExistingDeployment(worldpressDisplayName)
+
+	// Confirm deletion of "wordpress" deployment
+	s.retryUntilDeleted(worldpressDisplayName, retryCount, retryDelay)
+
+	// Create a new "wordpress" deployment
+	s.createDeployment()
+
+	// Wait for the deployment to reach "Running" status
+	s.waitForDeploymentStatus(worldpressDisplayName, "Running", retryCount, retryDelay)
+}
+
+func (s *TestSuite) deleteExistingDeployment(displayName string) {
 	if deployments, err := s.getDeployments(); err == nil {
 		for _, deployment := range deployments {
-			if *deployment.DisplayName == worldpressDisplayName {
+			if *deployment.DisplayName == displayName {
 				s.deleteDeployment(*deployment.DeployId)
 			}
 		}
 	}
+}
 
-	// Confirm deletion of "wordpress" deployment
-	s.retryUntilDeleted("wordpress", 10, 5*time.Second)
-
-	// Create a new "wordpress" deployment
+func (s *TestSuite) createDeployment() {
 	reqBody := restClient.DeploymentServiceCreateDeploymentJSONRequestBody{
 		AppName:        worldpressAppName,
 		AppVersion:     worldpressAppVersion,
@@ -48,6 +56,19 @@ func (s *TestSuite) TestCreateWordpressDeployment() {
 	createRes, err := s.client.DeploymentServiceCreateDeploymentWithResponse(context.TODO(), reqBody)
 	s.NoError(err)
 	s.Equal(200, createRes.StatusCode())
+}
+
+func (s *TestSuite) waitForDeploymentStatus(displayName, status string, retries int, delay time.Duration) {
+	for i := 0; i < retries; i++ {
+		deployments, err := s.getDeployments()
+		s.NoError(err)
+		for _, deployment := range deployments {
+			if *deployment.DisplayName == displayName && *deployment.Status.State == restClient.RUNNING {
+				return
+			}
+		}
+		time.Sleep(delay)
+	}
 }
 
 func (s *TestSuite) getDeployments() ([]restClient.Deployment, error) {
@@ -67,20 +88,22 @@ func (s *TestSuite) deleteDeployment(deployId string) {
 func (s *TestSuite) retryUntilDeleted(displayName string, retries int, delay time.Duration) {
 	for i := 0; i < retries; i++ {
 		if deployments, err := s.getDeployments(); err == nil {
-			found := false
-			for _, deployment := range deployments {
-				if *deployment.DisplayName == displayName {
-					found = true
-					break
-				}
-			}
-			if !found {
+			if !s.deploymentExists(deployments, displayName) {
 				s.T().Logf("%s deployment deleted", displayName)
 				return
 			}
 		}
 		time.Sleep(delay)
 	}
+}
+
+func (s *TestSuite) deploymentExists(deployments []restClient.Deployment, displayName string) bool {
+	for _, deployment := range deployments {
+		if *deployment.DisplayName == displayName {
+			return true
+		}
+	}
+	return false
 }
 
 func ptr[T any](v T) *T {
