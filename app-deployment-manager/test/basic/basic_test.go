@@ -55,28 +55,16 @@ func (s *TestSuite) findDeploymentIDByAppName(appName string) (string, error) {
 
 	for _, deployment := range deployments {
 		deploymentMap, ok := deployment.(map[string]interface{})
-		if ok && deploymentMap["appName"] == appName {
-			if deployId, exists := deploymentMap["deployId"].(string); exists {
-				return deployId, nil
-			}
+		if !ok {
+			return "", fmt.Errorf("unexpected deployment format: not a map")
 		}
-	}
 
-	return "", fmt.Errorf("deployment with appName '%s' not found", appName)
-}
+		appNameField, appNameOk := deploymentMap["appName"].(string)
+		if !appNameOk || appNameField == "" {
+			continue // Skip invalid or missing appName
+		}
 
-// TestRest tests basics of exercising the REST API of the catalog service.
-func (s *TestSuite) TestBasics() {
-	res, err := s.listDeployments(http.MethodGet)
-	s.NoError(err)
-	s.Equal("200 OK", res.Status)
-
-	var responseBody map[string]interface{} // Adjust to handle object response
-	err = json.NewDecoder(res.Body).Decode(&responseBody)
-	s.NoError(err, "Failed to parse response body")
-
-	_, ok := responseBody["deployments"].([]interface{}) // Check for deployments key
-	s.True(ok, "Response does not contain 'deployments' key")
-
-	s.TearDownTest(context.TODO())
-}
+		if appNameField == appName {
+			deployId, deployIdOk := deploymentMap["deployId"].(string)
+			if deployIdOk && deployId != "" {
+			

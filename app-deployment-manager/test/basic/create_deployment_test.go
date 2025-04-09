@@ -139,8 +139,25 @@ func (s *TestSuite) TestCreateWordpressDeployment() {
 
 	for _, deployment := range deployments {
 		deploymentMap, ok := deployment.(map[string]interface{})
-		if ok && deploymentMap["appName"] == "wordpress" {
-			err = s.deleteDeployment(deploymentMap["id"].(string))
+		if !ok {
+			s.Fail("Unexpected deployment format: not a map")
+			continue
+		}
+
+		appName, appNameOk := deploymentMap["appName"].(string)
+		if !appNameOk || appName == "" {
+			s.Fail("Missing or invalid 'appName' in deployment")
+			continue
+		}
+
+		if appName == "wordpress" {
+			id, idOk := deploymentMap["id"].(string)
+			if !idOk || id == "" {
+				s.Fail("Missing or invalid 'id' for deployment with appName 'wordpress'")
+				continue
+			}
+
+			err = s.deleteDeployment(id)
 			s.Require().NoError(err, "Failed to delete existing deployment")
 			break
 		}
@@ -175,7 +192,14 @@ func (s *TestSuite) TestCreateWordpressDeployment() {
 	found := false
 	for _, deployment := range deployments {
 		deploymentMap, ok := deployment.(map[string]interface{})
-		if ok && deploymentMap["appName"] == "wordpress" && deploymentMap["displayName"] == "wordpress" {
+		if !ok {
+			s.Fail("Unexpected deployment format: not a map")
+			continue
+		}
+
+		appName, appNameOk := deploymentMap["appName"].(string)
+		displayName, displayNameOk := deploymentMap["displayName"].(string)
+		if appNameOk && displayNameOk && appName == "wordpress" && displayName == "wordpress" {
 			found = true
 			break
 		}
