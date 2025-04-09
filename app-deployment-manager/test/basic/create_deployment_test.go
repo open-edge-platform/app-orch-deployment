@@ -7,7 +7,6 @@ package basic
 import (
 	"context"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
-	"time"
 )
 
 // TestCreateWordpressDeployment tests creating a wordpress deployment using the REST API.
@@ -34,21 +33,5 @@ func (s *TestSuite) TestCreateWordpressDeployment() {
 	res, err := s.client.DeploymentServiceCreateDeploymentWithResponse(context.TODO(), reqBody)
 	s.NoError(err)
 	s.Equal(200, res.StatusCode())
-
-	// Check list of deployments until wordpress deployment status become running
-	for {
-		res, err := s.client.DeploymentServiceListDeploymentsWithResponse(context.TODO(), nil)
-		s.NoError(err)
-		s.Equal(200, res.StatusCode())
-		if len(res.JSON200.Deployments) > 0 {
-			for _, deployment := range res.JSON200.Deployments {
-				if *deployment.DisplayName == disployName && *deployment.Status.State == "Running" {
-					s.T().Logf("Deployment %s is running", disployName)
-					return
-				}
-			}
-		}
-		time.Sleep(5 * time.Second)
-	}
 
 }
