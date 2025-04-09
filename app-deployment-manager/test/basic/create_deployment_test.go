@@ -137,6 +137,8 @@ func (s *TestSuite) TestCreateWordpressDeployment() {
 	deployments, ok := responseBody["deployments"].([]interface{})
 	s.Require().True(ok, "Unexpected response format: missing 'deployments' key")
 
+	s.T().Log("Deployments: ", deployments)
+
 	for _, deployment := range deployments {
 		deploymentMap, ok := deployment.(map[string]interface{})
 		if !ok {
