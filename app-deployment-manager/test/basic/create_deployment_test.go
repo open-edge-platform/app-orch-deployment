@@ -17,6 +17,7 @@ func (s *TestSuite) TestCreateWordpressDeployment() {
 	s.Equal(200, listRes.StatusCode())
 	deployments := listRes.JSON200.Deployments
 	for _, deployment := range deployments {
+		s.T().Log("deployment: ", deployment)
 		if deployment.AppName != "" && *deployment.DisplayName == "wordpress" {
 			response, err := s.client.DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), *deployment.DeployId, nil)
 			s.NoError(err)
