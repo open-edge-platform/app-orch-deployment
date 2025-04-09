@@ -267,7 +267,7 @@ go-test: $(OUT_DIR) $(GO_TEST_DEPS) ## Run go test and calculate code coverage
 	$(GOCMD) tool cover -func=$(OUT_DIR)/coverage.out -o $(OUT_DIR)/function_coverage.log
 
 common-component-test: ## Run component tests
-	$(GOCMD) test -v \
+	$(GOCMD) test -v count=1 \
 	-covermode $(COMP_TEST_COVER)
 
 common-go-fuzz-test: ## GO fuzz tests
