@@ -75,6 +75,8 @@ jobs:
           ORCH_DEPLOY_REV: ${{ env.GIT_HASH_DEPLOY }}
           DOCKERHUB_TOKEN: ${{ env.DOCKERHUB_TOKEN }}
           DOCKERHUB_USERNAME: ${{ env.DOCKERHUB_USERNAME }}
+          ORCH_PROJECT: sample-project
+          ORCH_USER: sample-project-edge-mgr
         run: |
           set +x
           echo "Starting to deploy Orchestrator..."
@@ -121,6 +123,11 @@ jobs:
         run: |
           mage deploy:edgeCluster
           echo "ENIC deployment done!"
+
+      - name: Upload Deployment Packages to Catalog
+        run: |
+          mage app:upload
+          echo "Deployment packages uploaded to catalog!"
 
       - name: Redeploy and Rebuild ${{ inputs.component }}
         working-directory: app-orch-deployment/${{ inputs.component }}
