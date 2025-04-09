@@ -74,15 +74,21 @@ func (s *TestSuite) deleteDeployment(appName string) error {
 		}
 		defer listRes.Body.Close()
 
-		var deployments []map[string]interface{}
-		err = json.NewDecoder(listRes.Body).Decode(&deployments)
+		var responseBody map[string]interface{} // Adjust to handle object response
+		err = json.NewDecoder(listRes.Body).Decode(&responseBody)
 		if err != nil {
 			return err
 		}
 
+		deployments, ok := responseBody["deployments"].([]interface{}) // Extract deployments array
+		if !ok {
+			return fmt.Errorf("unexpected response format: missing 'deployments' key")
+		}
+
 		found := false
 		for _, deployment := range deployments {
-			if deployment["appName"] == appName {
+			deploymentMap, ok := deployment.(map[string]interface{})
+			if ok && deploymentMap["appName"] == appName {
 				found = true
 				break
 			}

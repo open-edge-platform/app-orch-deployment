@@ -6,6 +6,7 @@ package basic
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -38,6 +39,13 @@ func (s *TestSuite) TestBasics() {
 	res, err := s.listDeployments(http.MethodGet)
 	s.NoError(err)
 	s.Equal("200 OK", res.Status)
+
+	var responseBody map[string]interface{} // Adjust to handle object response
+	err = json.NewDecoder(res.Body).Decode(&responseBody)
+	s.NoError(err, "Failed to parse response body")
+
+	_, ok := responseBody["deployments"].([]interface{}) // Check for deployments key
+	s.True(ok, "Response does not contain 'deployments' key")
 
 	s.TearDownTest(context.TODO())
 }
