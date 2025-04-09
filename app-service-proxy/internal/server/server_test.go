@@ -43,15 +43,12 @@ var _ = Describe("Server", func() {
 		os.Setenv("RATE_LIMITER_QPS", "30")
 		os.Setenv("RATE_LIMITER_BURST", "2000")
 		os.Setenv("TOKEN_TTL_HOURS", "100")
-		os.Setenv("CCG_ADDRESS", "cluster-connect-gateway.orch-cluster.svc:8080")
+		os.Setenv("CCG_ADDRESS", "localhost:8085")
 		os.Setenv("GIT_REPO_NAME", "mock-git-repo")
 		os.Setenv("GIT_SERVER", "mock-git-server")
 		os.Setenv("GIT_PROVIDER", "mock-git-provider")
 		os.Setenv("PROXY_SERVER_URL", "wss://app-orch.kind.internal/app-service-proxy")
 		os.Setenv("SECRET_SERVICE_ENABLED", "true")
-		os.Setenv("AGENT_TARGET_NAMESPACE", "mock-app-namespace")
-		os.Setenv("AUTH_TOKEN_SERVICE_ACCOUNT", "mock-service-account")
-		os.Setenv("AUTH_TOKEN_EXPIRATION", "100")
 		os.Setenv("ASP_LOG_LEVEL", "debug")
 		auth.RenewTokenAuthorizer = func(req *http.Request, id string) (bool, error) { return true, nil }
 		addr = "127.0.0.1:8123"
@@ -93,34 +90,11 @@ var _ = Describe("Server", func() {
 	})
 
 	Describe("New Server", func() {
-		Context("When a server is created with AGENT_TARGET_NAMESPACE not set", func() {
+		Context("When a server is created with CCG_ADDRESS not set", func() {
 			It("Should not be created", func() {
-				os.Unsetenv("AGENT_TARGET_NAMESPACE")
+				os.Setenv("CCG_ADDRESS", "")
 				testServer, err = NewServer(addr)
 				Expect(err).To(HaveOccurred())
-				os.Setenv("AGENT_TARGET_NAMESPACE", "mock-app-namespace")
-			})
-		})
-	})
-
-	Describe("New Server", func() {
-		Context("When a server is created with AUTH_TOKEN_SERVICE_ACCOUNT not set", func() {
-			It("Should not be created", func() {
-				os.Unsetenv("AUTH_TOKEN_SERVICE_ACCOUNT")
-				testServer, err = NewServer(addr)
-				Expect(err).To(HaveOccurred())
-				os.Setenv("AUTH_TOKEN_SERVICE_ACCOUNT", "mock-service-account")
-			})
-		})
-	})
-
-	Describe("New Server", func() {
-		Context("When a server is created with AUTH_TOKEN_EXPIRATION not set", func() {
-			It("Should not be created", func() {
-				os.Unsetenv("AUTH_TOKEN_EXPIRATION")
-				testServer, err = NewServer(addr)
-				Expect(err).To(HaveOccurred())
-				os.Setenv("AUTH_TOKEN_EXPIRATION", "100")
 			})
 		})
 	})
@@ -193,6 +167,8 @@ var _ = Describe("Server", func() {
 				request.AddCookie(&http.Cookie{Name: "app-service-proxy-cluster", Value: "mock-cluster"})
 				request.AddCookie(&http.Cookie{Name: "app-service-proxy-namespace", Value: "mock-namespace"})
 				request.AddCookie(&http.Cookie{Name: "app-service-proxy-service", Value: "mock-service:80"})
+				request.AddCookie(&http.Cookie{Name: "app-service-proxy-tokens", Value: "1"})
+				request.AddCookie(&http.Cookie{Name: "app-service-proxy-token-0", Value: "123456"})
 				Expect(err).NotTo(HaveOccurred())
 				testServer.router.ServeHTTP(recorder, request)
 				Expect(recorder.Code).To(Equal(http.StatusBadGateway))
@@ -213,6 +189,8 @@ var _ = Describe("Server", func() {
 				request.AddCookie(&http.Cookie{Name: "app-service-proxy-cluster", Value: "mock-cluster"})
 				request.AddCookie(&http.Cookie{Name: "app-service-proxy-namespace", Value: "mock-namespace"})
 				request.AddCookie(&http.Cookie{Name: "app-service-proxy-service", Value: "mock-service:80"})
+				request.AddCookie(&http.Cookie{Name: "app-service-proxy-tokens", Value: "1"})
+				request.AddCookie(&http.Cookie{Name: "app-service-proxy-token-0", Value: "123456"})
 				testServer.router.ServeHTTP(recorder, request)
 				Expect(recorder.Code).To(Equal(http.StatusUnauthorized))
 				testServer.authenticate = func(req *http.Request) error { return nil }
