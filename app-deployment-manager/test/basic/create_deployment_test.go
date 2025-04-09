@@ -66,7 +66,7 @@ func (s *TestSuite) TestCreateWordpressDeployment() {
 	// Call the helper method to create the deployment
 	res, err := s.createDeployment(reqBody)
 	s.Require().NoError(err, "Failed to send POST request")
-	s.Require().Equal(200, res.StatusCode, "Expected status code 200 for successful deployment creation")
+	s.Require().Equal(201, res.StatusCode, "Expected status code 201 for successful deployment creation")
 
 	// Verify the deployment exists by listing deployments
 	listRes, err := s.listDeployments(http.MethodGet)
