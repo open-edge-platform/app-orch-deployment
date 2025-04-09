@@ -8,10 +8,13 @@ package basic
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os/exec"
 
+	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/auth"
 	"github.com/stretchr/testify/suite"
+
 	"testing"
 	"time"
 )
@@ -36,6 +39,7 @@ type TestSuite struct {
 	token                   string
 	projectID               string
 	portForwardCmd          *exec.Cmd
+	client                  *restClient.ClientWithResponses
 }
 
 // SetupSuite sets-up the integration tests for the ADM basic test suite
@@ -52,6 +56,10 @@ func (s *TestSuite) SetupTest() {
 	s.projectID, err = auth.GetProjectID(context.TODO())
 	s.NoError(err)
 	s.portForwardCmd, err = portForwardToADM()
+	s.client, err = restClient.NewClientWithResponses(s.DeploymentRESTServerUrl, restClient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+		auth.AddRestAuthHeader(req, s.token, s.projectID)
+		return nil
+	}))
 	s.NoError(err)
 }
 
