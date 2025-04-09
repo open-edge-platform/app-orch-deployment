@@ -151,9 +151,9 @@ func (s *TestSuite) TestCreateWordpressDeployment() {
 		}
 
 		if appName == "wordpress" {
-			id, idOk := deploymentMap["id"].(string)
+			id, idOk := deploymentMap["deployId"].(string) // Use "deployId" instead of "id"
 			if !idOk || id == "" {
-				s.Fail("Missing or invalid 'id' for deployment with appName 'wordpress'")
+				s.Fail("Missing or invalid 'deployId' for deployment with appName 'wordpress'")
 				continue
 			}
 
