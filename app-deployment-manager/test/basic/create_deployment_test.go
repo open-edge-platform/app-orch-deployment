@@ -40,6 +40,7 @@ func (s *TestSuite) TestCreateWordpressDeployment() {
 			}
 		}
 		if !found {
+			s.T().Log("wordpress deployment deleted")
 			break
 		}
 		time.Sleep(5 * time.Second)
