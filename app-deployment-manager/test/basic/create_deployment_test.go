@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/auth"
 )
@@ -43,7 +44,7 @@ func (s *TestSuite) MarshalRequestBody(reqBody map[string]interface{}) []byte {
 	return body
 }
 
-// deleteDeployment sends a DELETE request to remove a deployment by name.
+// deleteDeployment sends a DELETE request to remove a deployment by name and waits for it to be fully deleted.
 func (s *TestSuite) deleteDeployment(appName string) error {
 	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s", s.DeploymentRESTServerUrl, appName)
 	fmt.Println("Delete Deployment")
@@ -65,7 +66,36 @@ func (s *TestSuite) deleteDeployment(appName string) error {
 		return fmt.Errorf("unexpected status code: %d", res.StatusCode)
 	}
 
-	return nil
+	// Poll to ensure the deployment is fully deleted
+	for i := 0; i < 10; i++ { // Retry up to 10 times
+		listRes, err := s.listDeployments(http.MethodGet)
+		if err != nil {
+			return err
+		}
+		defer listRes.Body.Close()
+
+		var deployments []map[string]interface{}
+		err = json.NewDecoder(listRes.Body).Decode(&deployments)
+		if err != nil {
+			return err
+		}
+
+		found := false
+		for _, deployment := range deployments {
+			if deployment["appName"] == appName {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return nil // Deployment successfully deleted
+		}
+
+		time.Sleep(1 * time.Second) // Wait before retrying
+	}
+
+	return fmt.Errorf("deployment '%s' was not fully deleted", appName)
 }
 
 // TestCreateWordpressDeployment tests creating a wordpress deployment using the REST API.
