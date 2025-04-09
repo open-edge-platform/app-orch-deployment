@@ -11,6 +11,19 @@ import (
 
 // TestCreateWordpressDeployment tests creating a wordpress deployment using the REST API.
 func (s *TestSuite) TestCreateWordpressDeployment() {
+	// Get list of deployments and if there is a deployment with same name, delete it first
+	listRes, err := s.client.DeploymentServiceListDeploymentsWithResponse(context.TODO(), nil)
+	s.NoError(err)
+	s.Equal(200, listRes.StatusCode())
+	deployments := listRes.JSON200.Deployments
+	for _, deployment := range deployments {
+		if deployment.AppName != "" && *deployment.DisplayName == "wordpress" {
+			response, err := s.client.DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), *deployment.DeployId, nil)
+			s.NoError(err)
+			s.Equal(200, response.StatusCode())
+		}
+	}
+
 	deploymentType := "targeted"
 	disployName := "wordpress"
 	profileName := "testing"
@@ -30,8 +43,8 @@ func (s *TestSuite) TestCreateWordpressDeployment() {
 		ProfileName:    &profileName,
 		TargetClusters: &targetClusters,
 	}
-	res, err := s.client.DeploymentServiceCreateDeploymentWithResponse(context.TODO(), reqBody)
+	createRes, err := s.client.DeploymentServiceCreateDeploymentWithResponse(context.TODO(), reqBody)
 	s.NoError(err)
-	s.Equal(200, res.StatusCode())
+	s.Equal(200, createRes.StatusCode())
 
 }
