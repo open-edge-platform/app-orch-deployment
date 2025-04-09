@@ -2,10 +2,8 @@ package basic
 
 import (
 	"context"
-	"time"
-
-	"github.com/avast/retry-go"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
+	"time"
 )
 
 const (
@@ -22,13 +20,13 @@ func (s *TestSuite) TestCreateWordpressDeployment() {
 	s.deleteExistingDeployment(worldpressDisplayName)
 
 	// Confirm deletion of "wordpress" deployment
-	s.retryUntilDeleted(worldpressDisplayName)
+	s.retryUntilDeleted(worldpressDisplayName, retryCount, retryDelay)
 
 	// Create a new "wordpress" deployment
 	s.createDeployment()
 
 	// Wait for the deployment to reach "Running" status
-	s.waitForDeploymentStatus(worldpressDisplayName, restClient.RUNNING)
+	s.waitForDeploymentStatus(worldpressDisplayName, "Running", retryCount, retryDelay)
 }
 
 func (s *TestSuite) deleteExistingDeployment(displayName string) {
@@ -60,24 +58,17 @@ func (s *TestSuite) createDeployment() {
 	s.Equal(200, createRes.StatusCode())
 }
 
-func (s *TestSuite) waitForDeploymentStatus(displayName string, status restClient.DeploymentStatusState) {
-	err := retry.Do(
-		func() error {
-			deployments, err := s.getDeployments()
-			if err != nil {
-				return err
+func (s *TestSuite) waitForDeploymentStatus(displayName, status string, retries int, delay time.Duration) {
+	for i := 0; i < retries; i++ {
+		deployments, err := s.getDeployments()
+		s.NoError(err)
+		for _, deployment := range deployments {
+			if *deployment.DisplayName == displayName && *deployment.Status.State == restClient.RUNNING {
+				return
 			}
-			for _, deployment := range deployments {
-				if *deployment.DisplayName == displayName && *deployment.Status.State == status {
-					return nil
-				}
-			}
-			return retry.Unrecoverable(err) // Continue retrying if status is not met
-		},
-		retry.Attempts(uint(retryCount)),
-		retry.Delay(retryDelay),
-	)
-	s.NoError(err)
+		}
+		time.Sleep(delay)
+	}
 }
 
 func (s *TestSuite) getDeployments() ([]restClient.Deployment, error) {
@@ -94,23 +85,16 @@ func (s *TestSuite) deleteDeployment(deployId string) {
 	s.Equal(200, response.StatusCode())
 }
 
-func (s *TestSuite) retryUntilDeleted(displayName string) {
-	err := retry.Do(
-		func() error {
-			deployments, err := s.getDeployments()
-			if err != nil {
-				return err
+func (s *TestSuite) retryUntilDeleted(displayName string, retries int, delay time.Duration) {
+	for i := 0; i < retries; i++ {
+		if deployments, err := s.getDeployments(); err == nil {
+			if !s.deploymentExists(deployments, displayName) {
+				s.T().Logf("%s deployment deleted", displayName)
+				return
 			}
-			if s.deploymentExists(deployments, displayName) {
-				return retry.Unrecoverable(err) // Continue retrying if deployment still exists
-			}
-			s.T().Logf("%s deployment deleted", displayName)
-			return nil
-		},
-		retry.Attempts(uint(retryCount)),
-		retry.Delay(retryDelay),
-	)
-	s.NoError(err)
+		}
+		time.Sleep(delay)
+	}
 }
 
 func (s *TestSuite) deploymentExists(deployments []restClient.Deployment, displayName string) bool {
