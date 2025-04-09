@@ -34,6 +34,37 @@ func (s *TestSuite) listDeployments(verb string) (*http.Response, error) {
 	return res, err
 }
 
+// findDeploymentIDByAppName searches for a deployment by appName and returns its deployId.
+func (s *TestSuite) findDeploymentIDByAppName(appName string) (string, error) {
+	res, err := s.listDeployments(http.MethodGet)
+	if err != nil {
+		return "", fmt.Errorf("failed to list deployments: %w", err)
+	}
+	defer res.Body.Close()
+
+	var responseBody map[string]interface{}
+	err = json.NewDecoder(res.Body).Decode(&responseBody)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse deployments list: %w", err)
+	}
+
+	deployments, ok := responseBody["deployments"].([]interface{})
+	if !ok {
+		return "", fmt.Errorf("unexpected response format: missing 'deployments' key")
+	}
+
+	for _, deployment := range deployments {
+		deploymentMap, ok := deployment.(map[string]interface{})
+		if ok && deploymentMap["appName"] == appName {
+			if deployId, exists := deploymentMap["deployId"].(string); exists {
+				return deployId, nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("deployment with appName '%s' not found", appName)
+}
+
 // TestRest tests basics of exercising the REST API of the catalog service.
 func (s *TestSuite) TestBasics() {
 	res, err := s.listDeployments(http.MethodGet)

@@ -6,6 +6,7 @@ package basic
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -44,9 +45,9 @@ func (s *TestSuite) MarshalRequestBody(reqBody map[string]interface{}) []byte {
 	return body
 }
 
-// deleteDeployment sends a DELETE request to remove a deployment by name and waits for it to be fully deleted.
-func (s *TestSuite) deleteDeployment(appName string) error {
-	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s", s.DeploymentRESTServerUrl, appName)
+// deleteDeployment sends a DELETE request to remove a deployment by ID and waits for it to be fully deleted.
+func (s *TestSuite) deleteDeployment(deploymentID string) error {
+	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s", s.DeploymentRESTServerUrl, deploymentID)
 	fmt.Println("Delete Deployment")
 
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
@@ -72,15 +73,15 @@ func (s *TestSuite) deleteDeployment(appName string) error {
 		if err != nil {
 			return err
 		}
-		defer listRes.Body.Close()
 
-		var responseBody map[string]interface{} // Adjust to handle object response
+		var responseBody map[string]interface{}
 		err = json.NewDecoder(listRes.Body).Decode(&responseBody)
+		listRes.Body.Close() // Ensure the body is closed after decoding
 		if err != nil {
 			return err
 		}
 
-		deployments, ok := responseBody["deployments"].([]interface{}) // Extract deployments array
+		deployments, ok := responseBody["deployments"].([]interface{})
 		if !ok {
 			return fmt.Errorf("unexpected response format: missing 'deployments' key")
 		}
@@ -88,7 +89,7 @@ func (s *TestSuite) deleteDeployment(appName string) error {
 		found := false
 		for _, deployment := range deployments {
 			deploymentMap, ok := deployment.(map[string]interface{})
-			if ok && deploymentMap["appName"] == appName {
+			if ok && deploymentMap["id"] == deploymentID {
 				found = true
 				break
 			}
@@ -101,7 +102,7 @@ func (s *TestSuite) deleteDeployment(appName string) error {
 		time.Sleep(1 * time.Second) // Wait before retrying
 	}
 
-	return fmt.Errorf("deployment '%s' was not fully deleted", appName)
+	return fmt.Errorf("deployment with ID '%s' was not fully deleted", deploymentID)
 }
 
 // TestCreateWordpressDeployment tests creating a wordpress deployment using the REST API.
@@ -125,8 +126,25 @@ func (s *TestSuite) TestCreateWordpressDeployment() {
 	}
 
 	// Ensure any existing deployment with the same name is deleted
-	err := s.deleteDeployment("wordpress")
-	s.Require().NoError(err, "Failed to delete existing deployment")
+	listRes, err := s.listDeployments(http.MethodGet)
+	s.Require().NoError(err, "Failed to list deployments")
+
+	var responseBody map[string]interface{}
+	err = json.NewDecoder(listRes.Body).Decode(&responseBody)
+	listRes.Body.Close()
+	s.Require().NoError(err, "Failed to parse deployments list")
+
+	deployments, ok := responseBody["deployments"].([]interface{})
+	s.Require().True(ok, "Unexpected response format: missing 'deployments' key")
+
+	for _, deployment := range deployments {
+		deploymentMap, ok := deployment.(map[string]interface{})
+		if ok && deploymentMap["appName"] == "wordpress" {
+			err = s.deleteDeployment(deploymentMap["id"].(string))
+			s.Require().NoError(err, "Failed to delete existing deployment")
+			break
+		}
+	}
 
 	// Call the helper method to create the deployment
 	res, err := s.createDeployment(reqBody)
@@ -134,31 +152,30 @@ func (s *TestSuite) TestCreateWordpressDeployment() {
 
 	// Log the response body for debugging in case of unexpected status codes
 	defer res.Body.Close()
-	var responseBody map[string]interface{}
 	err = json.NewDecoder(res.Body).Decode(&responseBody)
 	s.Require().NoError(err, "Failed to parse response body")
 	fmt.Printf("Response Body: %+v\n", responseBody)
 
-	// Allow both 200 and 201 as valid status codes for successful creation
-	s.Require().True(res.StatusCode == 201 || res.StatusCode == 200, "Expected status code 201 or 200 for successful deployment creation")
+	s.Require().True(res.StatusCode == 200, "Expected status code 201 or 200 for successful deployment creation")
 
 	// Verify the deployment exists by listing deployments
-	listRes, err := s.listDeployments(http.MethodGet)
+	listRes, err = s.listDeployments(http.MethodGet)
 	s.Require().NoError(err, "Failed to send GET request")
 	s.Require().Equal("200 OK", listRes.Status, "Expected status code 200 for listing deployments")
 
 	// Parse the response body
-	var deployments []map[string]interface{}
-	err = json.NewDecoder(listRes.Body).Decode(&deployments)
+	var deploymentsList []map[string]interface{}
+	err = json.NewDecoder(listRes.Body).Decode(&deploymentsList)
 	s.Require().NoError(err, "Failed to parse deployments list")
 
 	// Check if the created deployment exists in the list
 	found := false
-	for _, deployment := range deployments {
+	for _, deployment := range deploymentsList {
 		if deployment["appName"] == "wordpress" && deployment["displayName"] == "wordpress" {
 			found = true
 			break
 		}
 	}
 	s.Require().True(found, "Deployment 'wordpress' not found in the list")
+	s.TearDownTest(context.TODO())
 }
