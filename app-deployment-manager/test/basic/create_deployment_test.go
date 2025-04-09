@@ -26,7 +26,7 @@ func (s *TestSuite) TestCreateWordpressDeployment() {
 	s.createDeployment()
 
 	// Wait for the deployment to reach "Running" status
-	s.waitForDeploymentStatus(worldpressDisplayName, "Running", retryCount, retryDelay)
+	s.waitForDeploymentStatus(worldpressDisplayName, restClient.RUNNING, retryCount, retryDelay)
 }
 
 func (s *TestSuite) deleteExistingDeployment(displayName string) {
@@ -58,12 +58,12 @@ func (s *TestSuite) createDeployment() {
 	s.Equal(200, createRes.StatusCode())
 }
 
-func (s *TestSuite) waitForDeploymentStatus(displayName, status string, retries int, delay time.Duration) {
+func (s *TestSuite) waitForDeploymentStatus(displayName string, status restClient.DeploymentStatusState, retries int, delay time.Duration) {
 	for i := 0; i < retries; i++ {
 		deployments, err := s.getDeployments()
 		s.NoError(err)
 		for _, deployment := range deployments {
-			if *deployment.DisplayName == displayName && *deployment.Status.State == restClient.RUNNING {
+			if *deployment.DisplayName == displayName && *deployment.Status.State == status {
 				return
 			}
 		}
