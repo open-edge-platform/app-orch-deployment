@@ -21,6 +21,7 @@ const (
 )
 
 func (s *TestSuite) TestCreateTargetedDeployment() {
+	s.T().Parallel()
 	// Delete existing "wordpress" deployment if it exists
 	s.T().Log("Attempting to delete existing 'wordpress' deployment...")
 	err := deleteAndRetryUntilDeleted(s.client, worldpressTargetedDisplayName, retryCount, retryDelay)
@@ -49,6 +50,7 @@ func (s *TestSuite) TestCreateTargetedDeployment() {
 
 func (s *TestSuite) TestCreateAutoScaleDeployment() {
 	// Delete existing "wordpress" deployment if it exists
+	s.T().Parallel()
 	s.T().Log("Attempting to delete existing 'wordpress' deployment...")
 	err := deleteAndRetryUntilDeleted(s.client, worldpressAutoScaleDisplayName, retryCount, retryDelay)
 	s.NoError(err, "Failed to delete existing deployment")
