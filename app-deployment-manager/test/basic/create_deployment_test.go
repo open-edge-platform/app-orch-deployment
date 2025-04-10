@@ -30,7 +30,7 @@ func (s *TestSuite) TestCreateTargetedDeployment() {
 
 	// Create a new "wordpress" deployment
 	s.T().Log("Creating a new 'wordpress' deployment...")
-	err = createTargetedDeployment(s.client, CreateDeploymentParams{
+	err = createDeployment(s.client, CreateDeploymentParams{
 		ClusterID:      testClusterID,
 		AppName:        wordpressAppName,
 		AppVersion:     wordpressAppVersion,
@@ -57,7 +57,7 @@ func (s *TestSuite) TestCreateAutoScaleDeployment() {
 
 	// Create a new "wordpress" deployment
 	s.T().Log("Creating a new 'wordpress' deployment...")
-	err = createTargetedDeployment(s.client, CreateDeploymentParams{
+	err = createDeployment(s.client, CreateDeploymentParams{
 		AppName:        wordpressAppName,
 		AppVersion:     wordpressAppVersion,
 		DisplayName:    wordpressAutoScaleDisplayName,

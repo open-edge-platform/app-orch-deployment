@@ -97,7 +97,7 @@ type CreateDeploymentParams struct {
 	DeploymentType string
 }
 
-func createTargetedDeployment(client *restClient.ClientWithResponses, params CreateDeploymentParams) error {
+func createDeployment(client *restClient.ClientWithResponses, params CreateDeploymentParams) error {
 	reqBody := restClient.DeploymentServiceCreateDeploymentJSONRequestBody{
 		AppName:        params.AppName,
 		AppVersion:     params.AppVersion,
