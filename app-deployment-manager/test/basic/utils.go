@@ -24,16 +24,6 @@ func deleteDeployment(client *restClient.ClientWithResponses, deployId string) e
 	return nil
 }
 
-func retryUntilDeleted(client *restClient.ClientWithResponses, displayName string, retries int, delay time.Duration) error {
-	for i := 0; i < retries; i++ {
-		if deployments, err := getDeployments(client); err == nil && !deploymentExists(deployments, displayName) {
-			return nil
-		}
-		time.Sleep(delay)
-	}
-	return fmt.Errorf("deployment %s not deleted after %d retries", displayName, retries)
-}
-
 func deploymentExists(deployments []restClient.Deployment, displayName string) bool {
 	for _, d := range deployments {
 		if *d.DisplayName == displayName {
