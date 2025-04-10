@@ -92,16 +92,3 @@ func (s *TestSuite) TearDownTest(ctx context.Context) {
 	s.NoError(err)
 
 }
-
-/*func (s *TestSuite) TearDownSuite() {
-	s.T().Log("Cleaning up deployments created during the test suite...")
-	for _, displayName := range s.createdDeployments {
-		s.T().Logf("Attempting to delete deployment '%s'...", displayName)
-		err := deleteAndRetryUntilDeleted(s.client, displayName, retryCount, retryDelay)
-		if err != nil {
-			s.T().Logf("Failed to delete deployment '%s': %v", displayName, err)
-		} else {
-			s.T().Logf("Successfully deleted deployment '%s'", displayName)
-		}
-	}
-}*/
