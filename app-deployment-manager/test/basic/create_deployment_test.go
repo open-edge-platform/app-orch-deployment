@@ -22,15 +22,9 @@ const (
 func (s *TestSuite) TestCreateTargetedDeployment() {
 	// Delete existing "wordpress" deployment if it exists
 	s.T().Log("Attempting to delete existing 'wordpress' deployment...")
-	err := deleteDeploymentByDisplayName(s.client, worldpressDisplayName)
+	err := deleteAndRetryUntilDeleted(s.client, worldpressDisplayName, retryCount, retryDelay)
 	s.NoError(err, "Failed to delete existing deployment")
 	s.T().Log("'wordpress' deployment deletion initiated.")
-
-	// Confirm deletion of "wordpress" deployment
-	s.T().Log("Waiting for 'wordpress' deployment to be deleted...")
-	err = retryUntilDeleted(s.client, worldpressDisplayName, retryCount, retryDelay)
-	s.NoError(err, "Failed to delete existing deployment")
-	s.T().Log("'wordpress' deployment successfully deleted.")
 
 	// Create a new "wordpress" deployment
 	s.T().Log("Creating a new 'wordpress' deployment...")
@@ -52,18 +46,12 @@ func (s *TestSuite) TestCreateTargetedDeployment() {
 	s.T().Log("'wordpress' deployment is now in 'RUNNING' status.")
 }
 
-func (s *TestSuite) TestCreateAutomaticDeployment() {
+func (s *TestSuite) TestCreateAutoScaleDeployment() {
 	// Delete existing "wordpress" deployment if it exists
 	s.T().Log("Attempting to delete existing 'wordpress' deployment...")
-	err := deleteDeploymentByDisplayName(s.client, worldpressDisplayName)
+	err := deleteAndRetryUntilDeleted(s.client, worldpressDisplayName, retryCount, retryDelay)
 	s.NoError(err, "Failed to delete existing deployment")
 	s.T().Log("'wordpress' deployment deletion initiated.")
-
-	// Confirm deletion of "wordpress" deployment
-	s.T().Log("Waiting for 'wordpress' deployment to be deleted...")
-	err = retryUntilDeleted(s.client, worldpressDisplayName, retryCount, retryDelay)
-	s.NoError(err, "Failed to delete existing deployment")
-	s.T().Log("'wordpress' deployment successfully deleted.")
 
 	// Create a new "wordpress" deployment
 	s.T().Log("Creating a new 'wordpress' deployment...")

@@ -40,6 +40,7 @@ type TestSuite struct {
 	projectID               string
 	portForwardCmd          *exec.Cmd
 	client                  *restClient.ClientWithResponses
+	createdDeployments      []string
 }
 
 // SetupSuite sets-up the integration tests for the ADM basic test suite
@@ -89,4 +90,18 @@ func TestTestSuite(t *testing.T) {
 func (s *TestSuite) TearDownTest(ctx context.Context) {
 	err := killportForwardToADM(s.portForwardCmd)
 	s.NoError(err)
+
 }
+
+/*func (s *TestSuite) TearDownSuite() {
+	s.T().Log("Cleaning up deployments created during the test suite...")
+	for _, displayName := range s.createdDeployments {
+		s.T().Logf("Attempting to delete deployment '%s'...", displayName)
+		err := deleteAndRetryUntilDeleted(s.client, displayName, retryCount, retryDelay)
+		if err != nil {
+			s.T().Logf("Failed to delete deployment '%s': %v", displayName, err)
+		} else {
+			s.T().Logf("Successfully deleted deployment '%s'", displayName)
+		}
+	}
+}*/
