@@ -343,6 +343,10 @@ func (a *Server) initRouter() {
 		_, _ = rw.Write([]byte("Missing some query parameter: project, cluster, namespace, service"))
 	}).Methods("GET")
 
+	a.router.HandleFunc("/app-service-proxy-keycloak.min.js", func(rw http.ResponseWriter, req *http.Request) {
+		rw.Header().Set("Content-Type", "application/javascript")
+		http.ServeFile(rw, req, "web-login/app-service-proxy-keycloak.min.js")
+	}).Methods("GET")
 	a.router.HandleFunc("/app-service-proxy-main.js", func(rw http.ResponseWriter, req *http.Request) {
 		rw.Header().Set("Content-Type", "application/javascript")
 		http.ServeFile(rw, req, "web-login/app-service-proxy-main.js")
