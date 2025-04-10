@@ -16,7 +16,7 @@ const (
 	worldpressDisplayName = "wordpress"
 	testClusterID         = "demo-cluster"
 	retryCount            = 10
-	retryDelay            = 5 * time.Second
+	retryDelay            = 10 * time.Second
 )
 
 func (s *TestSuite) TestCreateTargetedDeployment() {
