@@ -5,7 +5,6 @@
 package basic
 
 import (
-	"context"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 	"time"
 )
@@ -15,6 +14,7 @@ const (
 	worldpressAppVersion  = "0.1.1"
 	worldpressDisplayName = "wordpress"
 	testClusterID         = "demo-cluster"
+	wordpressProfileName  = "testing"
 	retryCount            = 10
 	retryDelay            = 10 * time.Second
 )
@@ -30,28 +30,15 @@ func (s *TestSuite) TestCreateTargetedDeployment() {
 	s.NoError(err, "Failed to delete existing deployment")
 
 	// Create a new "wordpress" deployment
-	s.createWordpressDeployment()
+	err = createTargetedDeployment(s.client, CreateDeploymentParams{
+		ClusterID:   testClusterID,
+		AppName:     worldpressAppName,
+		AppVersion:  worldpressAppVersion,
+		DisplayName: worldpressDisplayName,
+		ProfileName: wordpressProfileName,
+	})
 
 	// Wait for the deployment to reach "Running" status
 	err = waitForDeploymentStatus(s.client, worldpressDisplayName, restClient.RUNNING, retryCount, retryDelay)
 	s.NoError(err, "Deployment did not reach RUNNING status")
-}
-
-func (s *TestSuite) createWordpressDeployment() {
-	reqBody := restClient.DeploymentServiceCreateDeploymentJSONRequestBody{
-		AppName:        worldpressAppName,
-		AppVersion:     worldpressAppVersion,
-		DeploymentType: ptr("targeted"),
-		DisplayName:    ptr(worldpressDisplayName),
-		ProfileName:    ptr("testing"),
-		TargetClusters: &[]restClient.TargetClusters{
-			{
-				AppName:   ptr(worldpressAppName),
-				ClusterId: ptr(testClusterID),
-			},
-		},
-	}
-	createRes, err := s.client.DeploymentServiceCreateDeploymentWithResponse(context.TODO(), reqBody)
-	s.NoError(err)
-	s.Equal(200, createRes.StatusCode())
 }
