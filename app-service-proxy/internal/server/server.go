@@ -180,7 +180,7 @@ func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
 	proxy := httputil.NewSingleHostReverseProxy(target)
 	proxy.Transport = &RewritingTransport{}
 	newPath := fmt.Sprintf("/kubernetes/%s-%s/api/v1/namespaces/%s/services/%s/proxy%s",
-		ci.projectID, ci.cluster, ci.namespace, ci.service, req.URL.Path)
+		ci.projectID, clusterInfraName, ci.namespace, ci.service, req.URL.Path)
 	originalDirector := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		originalDirector(req)
