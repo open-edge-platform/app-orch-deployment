@@ -34,6 +34,8 @@ DOCKER_IMG_VERSION   ?= ${VERSION}
 OPA_IMAGE_VER        = 0.67.1-static
 GIT_COMMIT           ?= $(shell git rev-parse --short HEAD)
 HELM_CHART_NAME	     ?= app-service-proxy
+HELM_CHART_PATH	     ?= ./deployments/${HELM_CHART_NAME}
+HELM_DIRS            ?= $(HELM_CHART_PATH)
 
 # Add an identifying suffix for `-dev` builds only.
 # Release build versions are verified as unique by the CI build process.
@@ -147,6 +149,10 @@ docker-build-app-service-proxy: common-docker-build-app-service-proxy
 docker-push: docker-push-app-service-proxy ## Tag and push Docker image
 docker-push-app-service-proxy: DOCKER_BUILD_FLAGS += --push
 docker-push-app-service-proxy: common-docker-build-app-service-proxy
+
+docker-list: docker-list-app-service-proxy ## Build Docker image
+docker-list-app-service-proxy: DOCKER_NAME   := $(DOCKER_NAME)
+docker-list-app-service-proxy:  common-docker-list-app-service-proxy
 
 helm-build-clean: common-helm-package-clean
 

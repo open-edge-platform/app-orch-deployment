@@ -23,6 +23,14 @@ docker-build:
 	for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir docker-build; done
 	@echo "---END MAKEFILE Build---"
 
+docker-list: ## Print name of docker container image
+	@echo "images:"
+	@for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir docker-list; done
+
+helm-list: ## List helm charts, tag format, and versions in YAML format
+	@echo "charts:"
+	@for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir helm-list; done
+
 lint: mdlint
 	@# Help: Runs lint stage in all subprojects
 	@echo "---MAKEFILE LINT---"
