@@ -72,7 +72,7 @@ func (s *TestSuite) TestCreateAutomaticDeployment() {
 		AppVersion:     worldpressAppVersion,
 		DisplayName:    worldpressDisplayName,
 		ProfileName:    wordpressProfileName,
-		DeploymentType: "automatic",
+		DeploymentType: "auto-scaling",
 		Labels: &map[string]string{
 			"color": "blue",
 		},
