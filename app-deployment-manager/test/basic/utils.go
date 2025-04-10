@@ -1,0 +1,81 @@
+package basic
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
+)
+
+func ptr[T any](v T) *T {
+	return &v
+}
+
+func deleteDeployment(client *restClient.ClientWithResponses, deployId string) error {
+	resp, err := client.DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployId, nil)
+	if err != nil || resp.StatusCode() != 200 {
+		return fmt.Errorf("failed to delete deployment: %v, status: %d", err, resp.StatusCode())
+	}
+	return nil
+}
+
+func retryUntilDeleted(client *restClient.ClientWithResponses, displayName string, retries int, delay time.Duration) error {
+	for i := 0; i < retries; i++ {
+		if deployments, err := getDeployments(client); err == nil && !deploymentExists(deployments, displayName) {
+			return nil
+		}
+		time.Sleep(delay)
+	}
+	return fmt.Errorf("deployment %s not deleted after %d retries", displayName, retries)
+}
+
+func deploymentExists(deployments []restClient.Deployment, displayName string) bool {
+	for _, d := range deployments {
+		if *d.DisplayName == displayName {
+			return true
+		}
+	}
+	return false
+}
+
+func getDeployments(client *restClient.ClientWithResponses) ([]restClient.Deployment, error) {
+	resp, err := client.DeploymentServiceListDeploymentsWithResponse(context.TODO(), nil)
+	if err != nil || resp.StatusCode() != 200 {
+		return nil, fmt.Errorf("failed to list deployments: %v, status: %d", err, resp.StatusCode())
+	}
+	return resp.JSON200.Deployments, nil
+}
+
+func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName string, status restClient.DeploymentStatusState, retries int, delay time.Duration) error {
+	for i := 0; i < retries; i++ {
+		if deployments, err := getDeployments(client); err == nil {
+			for _, d := range deployments {
+				if *d.DisplayName == displayName && *d.Status.State == status {
+					return nil
+				}
+			}
+		}
+		time.Sleep(delay)
+	}
+	return fmt.Errorf("deployment %s did not reach status %s after %d retries", displayName, status, retries)
+}
+
+func findDeploymentIDByDisplayName(client *restClient.ClientWithResponses, displayName string) (string, error) {
+	if deployments, err := getDeployments(client); err == nil {
+		for _, d := range deployments {
+			if *d.DisplayName == displayName {
+				return *d.DeployId, nil
+			}
+		}
+	}
+	return "", fmt.Errorf("deployment %s not found", displayName)
+}
+
+func deleteDeploymentByDisplayName(client *restClient.ClientWithResponses, displayName string) error {
+	if deployId, err := findDeploymentIDByDisplayName(client, displayName); err == nil {
+		return deleteDeployment(client, deployId)
+	} else {
+		return err
+	}
+}

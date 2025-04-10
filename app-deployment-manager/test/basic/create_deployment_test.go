@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025-present Intel Corporation
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package basic
 
 import (
@@ -15,31 +19,25 @@ const (
 	retryDelay            = 5 * time.Second
 )
 
-func (s *TestSuite) TestCreateWordpressDeployment() {
+func (s *TestSuite) TestCreateTargetedDeployment() {
 	// Delete existing "wordpress" deployment if it exists
-	s.deleteExistingDeployment(worldpressDisplayName)
+
+	err := deleteDeploymentByDisplayName(s.client, worldpressDisplayName)
+	s.NoError(err, "Failed to delete existing deployment")
 
 	// Confirm deletion of "wordpress" deployment
-	s.retryUntilDeleted(worldpressDisplayName, retryCount, retryDelay)
+	err = retryUntilDeleted(s.client, worldpressDisplayName, retryCount, retryDelay)
+	s.NoError(err, "Failed to delete existing deployment")
 
 	// Create a new "wordpress" deployment
-	s.createDeployment()
+	s.createWordpressDeployment()
 
 	// Wait for the deployment to reach "Running" status
-	s.waitForDeploymentStatus(worldpressDisplayName, restClient.RUNNING, retryCount, retryDelay)
+	err = waitForDeploymentStatus(s.client, worldpressDisplayName, restClient.RUNNING, retryCount, retryDelay)
+	s.NoError(err, "Deployment did not reach RUNNING status")
 }
 
-func (s *TestSuite) deleteExistingDeployment(displayName string) {
-	if deployments, err := s.getDeployments(); err == nil {
-		for _, deployment := range deployments {
-			if *deployment.DisplayName == displayName {
-				s.deleteDeployment(*deployment.DeployId)
-			}
-		}
-	}
-}
-
-func (s *TestSuite) createDeployment() {
+func (s *TestSuite) createWordpressDeployment() {
 	reqBody := restClient.DeploymentServiceCreateDeploymentJSONRequestBody{
 		AppName:        worldpressAppName,
 		AppVersion:     worldpressAppVersion,
@@ -56,56 +54,4 @@ func (s *TestSuite) createDeployment() {
 	createRes, err := s.client.DeploymentServiceCreateDeploymentWithResponse(context.TODO(), reqBody)
 	s.NoError(err)
 	s.Equal(200, createRes.StatusCode())
-}
-
-func (s *TestSuite) waitForDeploymentStatus(displayName string, status restClient.DeploymentStatusState, retries int, delay time.Duration) {
-	for i := 0; i < retries; i++ {
-		deployments, err := s.getDeployments()
-		s.NoError(err)
-		for _, deployment := range deployments {
-			if *deployment.DisplayName == displayName && *deployment.Status.State == status {
-				return
-			}
-		}
-		time.Sleep(delay)
-	}
-}
-
-func (s *TestSuite) getDeployments() ([]restClient.Deployment, error) {
-	listRes, err := s.client.DeploymentServiceListDeploymentsWithResponse(context.TODO(), nil)
-	if err != nil || listRes.StatusCode() != 200 {
-		return nil, err
-	}
-	return listRes.JSON200.Deployments, nil
-}
-
-func (s *TestSuite) deleteDeployment(deployId string) {
-	response, err := s.client.DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployId, nil)
-	s.NoError(err)
-	s.Equal(200, response.StatusCode())
-}
-
-func (s *TestSuite) retryUntilDeleted(displayName string, retries int, delay time.Duration) {
-	for i := 0; i < retries; i++ {
-		if deployments, err := s.getDeployments(); err == nil {
-			if !s.deploymentExists(deployments, displayName) {
-				s.T().Logf("%s deployment deleted", displayName)
-				return
-			}
-		}
-		time.Sleep(delay)
-	}
-}
-
-func (s *TestSuite) deploymentExists(deployments []restClient.Deployment, displayName string) bool {
-	for _, deployment := range deployments {
-		if *deployment.DisplayName == displayName {
-			return true
-		}
-	}
-	return false
-}
-
-func ptr[T any](v T) *T {
-	return &v
 }
