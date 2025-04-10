@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// nolint:unused
 package basic
 
 import (
@@ -12,12 +13,13 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 )
 
+//nolint:unused
 func ptr[T any](v T) *T {
 	return &v
 }
 
-func deleteDeployment(client *restClient.ClientWithResponses, deployId string) error {
-	resp, err := client.DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployId, nil)
+func deleteDeployment(client *restClient.ClientWithResponses, deployID string) error {
+	resp, err := client.DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployID, nil)
 	if err != nil || resp.StatusCode() != 200 {
 		return fmt.Errorf("failed to delete deployment: %v, status: %d", err, resp.StatusCode())
 	}
@@ -67,14 +69,16 @@ func findDeploymentIDByDisplayName(client *restClient.ClientWithResponses, displ
 }
 
 func deleteDeploymentByDisplayName(client *restClient.ClientWithResponses, displayName string) error {
-	if deployId, err := findDeploymentIDByDisplayName(client, displayName); err == nil {
-		return deleteDeployment(client, deployId)
-	} else {
+	deployID, err := findDeploymentIDByDisplayName(client, displayName)
+	if err != nil {
 		if err.Error() == fmt.Errorf("deployment %s not found", displayName).Error() {
 			return nil
 		}
 		return err
 	}
+
+	return deleteDeployment(client, deployID)
+
 }
 
 type CreateDeploymentParams struct {
