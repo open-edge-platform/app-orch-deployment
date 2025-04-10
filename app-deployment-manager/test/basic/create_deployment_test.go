@@ -35,11 +35,47 @@ func (s *TestSuite) TestCreateTargetedDeployment() {
 	// Create a new "wordpress" deployment
 	s.T().Log("Creating a new 'wordpress' deployment...")
 	err = createTargetedDeployment(s.client, CreateDeploymentParams{
-		ClusterID:   testClusterID,
-		AppName:     worldpressAppName,
-		AppVersion:  worldpressAppVersion,
-		DisplayName: worldpressDisplayName,
-		ProfileName: wordpressProfileName,
+		ClusterID:      testClusterID,
+		AppName:        worldpressAppName,
+		AppVersion:     worldpressAppVersion,
+		DisplayName:    worldpressDisplayName,
+		ProfileName:    wordpressProfileName,
+		DeploymentType: "targeted",
+	})
+	s.NoError(err, "Failed to create 'wordpress' deployment")
+	s.T().Log("'wordpress' deployment creation initiated.")
+
+	// Wait for the deployment to reach "Running" status
+	s.T().Log("Waiting for 'wordpress' deployment to reach 'RUNNING' status...")
+	err = waitForDeploymentStatus(s.client, worldpressDisplayName, restClient.RUNNING, retryCount, retryDelay)
+	s.NoError(err, "Deployment did not reach RUNNING status")
+	s.T().Log("'wordpress' deployment is now in 'RUNNING' status.")
+}
+
+func (s *TestSuite) TestCreateAutomaticDeployment() {
+	// Delete existing "wordpress" deployment if it exists
+	s.T().Log("Attempting to delete existing 'wordpress' deployment...")
+	err := deleteDeploymentByDisplayName(s.client, worldpressDisplayName)
+	s.NoError(err, "Failed to delete existing deployment")
+	s.T().Log("'wordpress' deployment deletion initiated.")
+
+	// Confirm deletion of "wordpress" deployment
+	s.T().Log("Waiting for 'wordpress' deployment to be deleted...")
+	err = retryUntilDeleted(s.client, worldpressDisplayName, retryCount, retryDelay)
+	s.NoError(err, "Failed to delete existing deployment")
+	s.T().Log("'wordpress' deployment successfully deleted.")
+
+	// Create a new "wordpress" deployment
+	s.T().Log("Creating a new 'wordpress' deployment...")
+	err = createTargetedDeployment(s.client, CreateDeploymentParams{
+		AppName:        worldpressAppName,
+		AppVersion:     worldpressAppVersion,
+		DisplayName:    worldpressDisplayName,
+		ProfileName:    wordpressProfileName,
+		DeploymentType: "automatic",
+		Labels: &map[string]string{
+			"color": "blue",
+		},
 	})
 	s.NoError(err, "Failed to create 'wordpress' deployment")
 	s.T().Log("'wordpress' deployment creation initiated.")

@@ -81,27 +81,40 @@ func deleteDeploymentByDisplayName(client *restClient.ClientWithResponses, displ
 }
 
 type CreateDeploymentParams struct {
-	AppName     string
-	AppVersion  string
-	DisplayName string
-	ProfileName string
-	ClusterID   string
+	AppName        string
+	AppVersion     string
+	DisplayName    string
+	ProfileName    string
+	ClusterID      string
+	Labels         *map[string]string
+	DeploymentType string
 }
 
 func createTargetedDeployment(client *restClient.ClientWithResponses, params CreateDeploymentParams) error {
 	reqBody := restClient.DeploymentServiceCreateDeploymentJSONRequestBody{
 		AppName:        params.AppName,
 		AppVersion:     params.AppVersion,
-		DeploymentType: ptr("targeted"),
+		DeploymentType: ptr(params.DeploymentType),
 		DisplayName:    ptr(params.DisplayName),
 		ProfileName:    ptr(params.ProfileName),
-		TargetClusters: &[]restClient.TargetClusters{
+	}
+
+	if params.ClusterID != "" {
+		reqBody.TargetClusters = &[]restClient.TargetClusters{
 			{
 				AppName:   ptr(params.AppName),
 				ClusterId: ptr(params.ClusterID),
 			},
-		},
+		}
+	} else if params.Labels != nil {
+		reqBody.TargetClusters = &[]restClient.TargetClusters{
+			{
+				AppName: ptr(params.AppName),
+				Labels:  params.Labels,
+			},
+		}
 	}
+
 	createRes, err := client.DeploymentServiceCreateDeploymentWithResponse(context.TODO(), reqBody)
 	if err != nil || createRes.StatusCode() != 200 {
 		return fmt.Errorf("failed to create deployment: %v, status: %d", err, createRes.StatusCode())
