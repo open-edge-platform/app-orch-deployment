@@ -31,6 +31,87 @@ spec:
       Host: {{ include "app-service-proxy.fullname" . }}.{{ .Release.Namespace }}.svc
 ---
 apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "app-service-proxy.fullname" . }}-secure-headers
+  namespace: {{ .Values.traefik.gatewayNamespace }}
+spec:
+  headers:
+    customResponseHeaders:
+      $wsep: ""
+      Cache-Control: no-store, max-age=0
+      Content-Security-Policy: ' default-src ''self''; form-action ''self''; object-src
+        ''none''; frame-ancestors ''none''; script-src ''self'' ''unsafe-eval'' https://app-service-proxy.kind.internal;
+        style-src ''self'' ''unsafe-inline''; img-src ''self'' data:; connect-src
+        ''self'' https://keycloak.kind.internal https://app-service-proxy.kind.internal ; upgrade-insecure-requests;
+        block-all-mixed-content; frame-src ''self'' https://keycloak.kind.internal https://app-service-proxy.kind.internal'
+      Cross-Origin-Embedder-Policy: require-corp
+      Cross-Origin-Opener-Policy: same-origin
+      Cross-Origin-Resource-Policy: same-origin
+      Host-Header: ""
+      K-Proxy-Request: ""
+      Liferay-Portal: ""
+      OracleCommerceCloud-Version: ""
+      Pega-Host: ""
+      Permissions-Policy: accelerometer=(),ambient-light-sensor=(),autoplay=(),battery=(),camera=(),display-capture=(),document-domain=(),encrypted-media=(),fullscreen=(),gamepad=(),geolocation=(),gyroscope=(),layout-animations=(self),legacy-image-formats=(self),magnetometer=(),microphone=(),midi=(),oversized-images=(self),payment=(),picture-in-picture=(),publickey-credentials-get=(),speaker-selection=(),sync-xhr=(self),unoptimized-images=(self),unsized-media=(self),usb=(),screen-wake-lock=(),web-share=(),xr-spatial-tracking=()
+      Powered-By: ""
+      Pragma: no-cache
+      Product: ""
+      Server: ""
+      SourceMap: ""
+      X-AspNet-Version: ""
+      X-AspNetMvc-Version: ""
+      X-Atmosphere-error: ""
+      X-Atmosphere-first-request: ""
+      X-Atmosphere-tracking-id: ""
+      X-B3-ParentSpanId: ""
+      X-B3-Sampled: ""
+      X-B3-SpanId: ""
+      X-B3-TraceId: ""
+      X-CF-Powered-By: ""
+      X-CMS: ""
+      X-Content-Encoded-By: ""
+      X-Envoy-Attempt-Count: ""
+      X-Envoy-External-Address: ""
+      X-Envoy-Internal: ""
+      X-Envoy-Original-Dst-Host: ""
+      X-Envoy-Upstream-Service-Time: ""
+      X-Framework: ""
+      X-Generated-By: ""
+      X-Generator: ""
+      X-LiteSpeed-Cache: ""
+      X-LiteSpeed-Purge: ""
+      X-LiteSpeed-Tag: ""
+      X-LiteSpeed-Vary: ""
+      X-Litespeed-Cache-Control: ""
+      X-Mod-Pagespeed: ""
+      X-Nextjs-Cache: ""
+      X-Nextjs-Matched-Path: ""
+      X-Nextjs-Page: ""
+      X-Nextjs-Redirect: ""
+      X-Old-Content-Length: ""
+      X-OneAgent-JS-Injection: ""
+      X-Page-Speed: ""
+      X-Permitted-Cross-Domain-Policies: none
+      X-Php-Version: ""
+      X-Powered-By: ""
+      X-Powered-By-Plesk: ""
+      X-Powered-CMS: ""
+      X-Redirect-By: ""
+      X-Server-Powered-By: ""
+      X-SourceFiles: ""
+      X-SourceMap: ""
+      X-Turbo-Charged-By: ""
+      X-Umbraco-Version: ""
+      X-Varnish-Backend: ""
+      X-Varnish-Server: ""
+      X-dtAgentId: ""
+      X-dtHealthCheck: ""
+      X-dtInjectedServlet: ""
+      X-ruxit-JS-Agent: ""
+    referrerPolicy: no-referrer
+---
+apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: {{ include "app-service-proxy.fullname" . }}
@@ -70,7 +151,7 @@ spec:
       kind: Rule
       middlewares:
         - name: {{ include "app-service-proxy.fullname" . }}
-        - name: secure-headers
+        - name: {{ include "app-service-proxy.fullname" . }}-secure-headers
       services:
         - name: {{ include "app-service-proxy.fullname" . }}
           port: {{ .Values.service.apiProxy.port }}
