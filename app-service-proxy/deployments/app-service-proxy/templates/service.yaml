@@ -60,16 +60,17 @@ spec:
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: ws-{{ include "app-service-proxy.fullname" . }}
+  name: {{ include "app-service-proxy.fullname" . }}-src
   namespace: {{ .Values.traefik.gatewayNamespace }}
 spec:
   entryPoints: # We listen to requests coming from ports 443
     - websecure
   routes:
-    - match: {{ required "Traefik route match is required!" .Values.traefik.matchRouteWs }}
+    - match: {{ required "Traefik route match is required!" .Values.traefik.matchRouteSrc }}
       kind: Rule
       middlewares:
         - name: {{ include "app-service-proxy.fullname" . }}
+        - name: secure-headers
       services:
         - name: {{ include "app-service-proxy.fullname" . }}
           port: {{ .Values.service.apiProxy.port }}
