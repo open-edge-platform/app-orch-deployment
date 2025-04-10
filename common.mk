@@ -49,7 +49,7 @@ HELM_SUB_PROJ           ?= app
 HELM_CHART_PREFIX       ?= charts
 HELM_CHART_BUILD_DIR    ?= build/_output/
 HELM_CHART_PATH         ?= "./deployment/${HELM_CHART_NAME}"
-HELM_DIRS               ?= = $(shell find ./deployment/charts -maxdepth 1 -mindepth 1 -type d -print )
+HELM_DIRS               ?= $(shell find ./deployment/charts -maxdepth 1 -mindepth 1 -type d -print )
 
 ## Kind variables ##
 KIND_CLUSTER_NAME := kind
