@@ -1065,7 +1065,7 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 
 	d.Status.Display = fmt.Sprintf("Clusters: %v/%v/%v/%v, Apps: %v", clustercounts.Total, clustercounts.Running,
 		clustercounts.Down, clustercounts.Unknown, apps)
-	d.Status.Message = message
+	d.Status.Message = "hello"
 	d.Status.Summary = clustercounts
 	d.Status.State = newState
 }
