@@ -45,7 +45,6 @@ func (s *TestSuite) TestCreateTargetedDeployment() {
 	s.T().Log("Waiting for 'wordpress' deployment to reach 'RUNNING' status...")
 	err = waitForDeploymentStatus(s.client, worldpressTargetedDisplayName, restClient.RUNNING, retryCount, retryDelay)
 	s.NoError(err, "Deployment did not reach RUNNING status")
-	s.T().Log("'wordpress' deployment is now in 'RUNNING' status.")
 }
 
 func (s *TestSuite) TestCreateAutoScaleDeployment() {
@@ -75,5 +74,4 @@ func (s *TestSuite) TestCreateAutoScaleDeployment() {
 	s.T().Log("Waiting for 'wordpress' deployment to reach 'RUNNING' status...")
 	err = waitForDeploymentStatus(s.client, worldpressAutoScaleDisplayName, restClient.RUNNING, retryCount, retryDelay)
 	s.NoError(err, "Deployment did not reach RUNNING status")
-	s.T().Log("'wordpress' deployment is now in 'RUNNING' status.")
 }

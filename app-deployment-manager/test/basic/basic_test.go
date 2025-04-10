@@ -10,6 +10,7 @@ import (
 
 // TestRest tests basics of exercising the REST API of the catalog service.
 func (s *TestSuite) TestBasics() {
+	s.T().Parallel()
 	res, err := s.client.DeploymentServiceListDeploymentsWithResponse(context.TODO(), nil)
 	s.NoError(err)
 	s.Equal(200, res.StatusCode())
