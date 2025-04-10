@@ -120,6 +120,9 @@ docker-push: ## Push the app-interconnect-manager image
 docker-push: DOCKER_BUILD_FLAGS += -f build/Dockerfile
 docker-push: common-docker-push
 
+docker-list: ## list the app-interconnect-manager image
+docker-list: common-docker-list-app-interconnect-manager
+
 helm-build-clean: HELM_DIRS = $(shell find ./deploy/charts -maxdepth 1 -mindepth 1 -type d -print )
 helm-build-clean: common-helm-package-clean
 

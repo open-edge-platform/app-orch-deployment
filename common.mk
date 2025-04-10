@@ -46,10 +46,10 @@ DOCKER_BUILD_FLAGS      :=
 HELM_REGISTRY           ?= oci://080137407410.dkr.ecr.us-west-2.amazonaws.com
 HELM_REPOSITORY         ?= edge-orch
 HELM_SUB_PROJ           ?= app
-HELM_CHART_PREFIX    	?= charts
-HELM_CHART_BUILD_DIR ?= ./build/_output/
-HELM_CHART_PATH	     ?= "./deployments/${HELM_CHART_NAME}"
-HELM_DIRS = $(shell find ./deployments/ -maxdepth 1 -mindepth 1 -type d -print )
+HELM_CHART_PREFIX       ?= charts
+HELM_CHART_BUILD_DIR    ?= build/_output/
+HELM_CHART_PATH         ?= "./deployment/${HELM_CHART_NAME}"
+HELM_DIRS               ?= = $(shell find ./deployment/charts -maxdepth 1 -mindepth 1 -type d -print )
 
 ## Kind variables ##
 KIND_CLUSTER_NAME := kind
@@ -178,6 +178,12 @@ common-docker-push-%: DOCKER_BUILD_FLAGS += --push
 common-docker-push-%: common-docker-build-%
 	echo "Pushing $(DOCKER_REGISTRY)/$(DOCKER_REPOSITORY)/$(DOCKER_SUB_PROJ)/$(DOCKER_NAME):$(DOCKER_VERSION)"
 
+common-docker-list-%: ## Print name of docker container image
+	@echo "  $(DOCKER_NAME):"
+	@echo "    name: '$(DOCKER_REGISTRY)/$(DOCKER_REPOSITORY)/$(DOCKER_SUB_PROJ)/$(DOCKER_NAME):$(DOCKER_VERSION)'"
+	@echo "    version: '$(DOCKER_VERSION)'"
+	@echo "    gitTagPrefix: '$(PROJECT_NAME)/v'"
+	@echo "    buildTarget: '$(PROJECT_NAME)-docker-build'"
 
 #### Go Targets ####
 
@@ -325,6 +331,14 @@ common-helm-push-%: ## Tag and push Docker image
 	aws ecr create-repository --region us-west-2 --repository-name $(HELM_REPOSITORY)/$(HELM_SUB_PROJ)/$(HELM_CHART_PREFIX)/$(HELM_CHART_NAME) || true
 	helm push ${HELM_CHART_BUILD_DIR}${HELM_CHART_NAME}-[0-9]*.tgz $(HELM_REGISTRY)/$(HELM_REPOSITORY)/$(HELM_SUB_PROJ)/$(HELM_CHART_PREFIX)
 
+helm-list:
+	@for d in $(HELM_DIRS); do \
+    cname=$$(grep "^name:" "$$d/Chart.yaml" | cut -d " " -f 2) ;\
+    echo "  $$cname:" ;\
+    echo -n "    "; grep "^version" "$$d/Chart.yaml"  ;\
+    echo "    gitTagPrefix: '${PROJECT_NAME}/v'" ;\
+    echo "    outDir: '${PROJECT_NAME}/${HELM_CHART_BUILD_DIR}'" ;\
+  done
 
 #### Clean Targets ####
 

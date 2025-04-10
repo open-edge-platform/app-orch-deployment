@@ -170,12 +170,22 @@ docker-push-rest-proxy: ## Push the rest-proxy image
 docker-push-rest-proxy: DOCKER_BUILD_FLAGS += --push
 docker-push-rest-proxy: docker-build-rest-proxy
 
+docker-list: docker-list-app-resource-manager docker-list-vnc-proxy docker-list-rest-proxy
+
+docker-list-app-resource-manager: DOCKER_NAME := $(ARM_DOCKER_NAME)
+docker-list-app-resource-manager: common-docker-list-app-resource-manager
+
+docker-list-vnc-proxy: DOCKER_NAME := $(VNC_PROXY_DOCKER_NAME)
+docker-list-vnc-proxy: common-docker-list-vnc-proxy
+
+docker-list-rest-proxy: DOCKER_NAME := $(REST_PROXY_DOCKER_NAME)
+docker-list-rest-proxy: common-docker-list-rest-proxy
+
 helm-build-clean: common-helm-package-clean
 
 helm-build: common-helm-package ## Package helm charts.
 
 helm-push: common-helm-push ## Push helm charts.
-
 
 rollup-rfb:
 	@# Help: Rollup the NoVNC RFB Javascript files
