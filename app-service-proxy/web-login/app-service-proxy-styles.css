@@ -8,6 +8,14 @@
     font-family: "Gill Sans", "Gill Sans MT", Calibri, "Lucida Sans", "Noto Sans", sans-serif;
 }
 
+iframe {
+    display: block;       /* iframes are inline by default */
+    background: #000;
+    border: none;         /* Reset default border */
+    height: 100vh;        /* Viewport-relative units */
+    width: 100vw;
+}
+
 body {
     margin: 0;
 }
