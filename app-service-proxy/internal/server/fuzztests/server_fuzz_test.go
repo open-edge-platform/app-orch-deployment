@@ -53,7 +53,7 @@ func setupDummyHttpServer(t testing.TB) *http.Server {
 
 	time.Sleep(1 * time.Second)
 
-	resp, err := http.Get("http://localhost:8080/test")
+	resp, err := http.Get("http://localhost:8080/app-service-proxy-index.html")
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -128,7 +128,7 @@ func setupFuzzTest(t testing.TB, enableAuth bool) *FuzzTestSuite {
 	time.Sleep(1 * time.Second)
 
 	// Send a request to the server
-	resp, err := http.Get("http://" + s.addr + "/test")
+	resp, err := http.Get("http://" + s.addr + "/app-service-proxy-index.html")
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
