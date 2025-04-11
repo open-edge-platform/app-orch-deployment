@@ -47,7 +47,7 @@ spec:
         block-all-mixed-content; frame-src ''self'' https://keycloak.kind.internal https://app-service-proxy.kind.internal'
       Cross-Origin-Embedder-Policy: require-corp
       Cross-Origin-Opener-Policy: same-origin
-      Cross-Origin-Resource-Policy: cross-origin
+      Cross-Origin-Resource-Policy: same-origin
       Host-Header: ""
       K-Proxy-Request: ""
       Liferay-Portal: ""
