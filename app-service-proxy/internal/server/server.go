@@ -153,11 +153,13 @@ func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
 
 	ci, err := extractCookieInfo(req)
 	if err != nil {
-		logrus.Errorf("Error extracting cookie info: %v", err)
 		if err == http.ErrNoCookie {
+			logrus.Errorf("Cookie not present - redirecting: %v", err)
+			rw.Header().Set("X-Reason", err.Error())
 			http.Redirect(rw, req, "/app-service-proxy-index.html", http.StatusFound)
 			return
 		}
+		logrus.Errorf("Error extracting cookie info: %v", err)
 		remotedialer.DefaultErrorWriter(rw, req, http.StatusBadRequest, err)
 		return
 	}
