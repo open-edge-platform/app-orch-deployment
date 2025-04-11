@@ -199,7 +199,7 @@ remotedialer:
   debug: "true"
 
 # Application-wide log level. Must be a valid logrus log level string.
-logLevel: "debug"
+logLevel: "warn"
 
 admAddress: app-deployment-api-grpc-server:8080
 ccgAddress: cluster-connect-gateway.orch-cluster.svc:8080
