@@ -183,6 +183,7 @@ traefik:
   secretName: tls-demo
   matchRoute: Host(`app-service-proxy.kind.internal`)
   matchRouteSrc: Host(`app-service-proxy.kind.internal`) && PathPrefix(`/app-service-proxy`)
+  keycloakFqdn: "keycloak.kind.internal"
   tlsOption: gateway-tls
 
 ## @section OIDC Parameters
