@@ -321,6 +321,11 @@ func (a *Server) initRouter() {
 	a.remotedialerServer = remotedialer.New(auth.ConnectAuthorizer, remotedialer.DefaultErrorWriter)
 
 	a.router = mux.NewRouter()
+	a.router.HandleFunc("/app-service-proxy-test", func(rw http.ResponseWriter, _ *http.Request) {
+		if _, err := rw.Write([]byte("Ok\n")); err != nil {
+			return
+		}
+	}).Methods("GET")
 	a.router.HandleFunc("/", a.ServicesProxy)
 
 	a.router.HandleFunc("/app-service-proxy-index.html", func(rw http.ResponseWriter, req *http.Request) {

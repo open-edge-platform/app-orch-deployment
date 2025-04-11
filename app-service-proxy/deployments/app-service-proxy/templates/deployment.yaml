@@ -161,20 +161,6 @@ spec:
           - name: FLEET_GIT_REMOTE_TYPE
             value: "{{ . }}"
           {{- end }}
-        livenessProbe:
-          httpGet:
-            path: /app-service-proxy-index.html
-            scheme: HTTP
-            port: {{ .Values.service.apiProxy.port }}
-          initialDelaySeconds: 10
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /app-service-proxy-index.html
-            scheme: HTTP
-            port: {{ .Values.service.apiProxy.port }}
-          initialDelaySeconds: 10
-          periodSeconds: 10
         securityContext:
           {{- toYaml .Values.containerSecurityContext | nindent 10 }}
         {{- if .Values.resources }}
