@@ -26,3 +26,8 @@ python3 -m http.server 3000
 And then open a browser to `http://localhost:3000/app-service-proxy-index.html?project=p2&cluster=c2&namespace=n2&service=s2&port=1234`
 
 If any of the query parameters are missing, the page will display an error message.
+
+## Keycloak Client
+
+Keycloak client library is used to handle the login process. The client library is included in the HTML page using a script tag.
+The minified file was pulled from https://cdn.jsdelivr.net/npm/keycloak-js@25.0.5/dist/keycloak.min.js

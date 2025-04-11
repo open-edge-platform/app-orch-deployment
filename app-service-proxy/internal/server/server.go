@@ -153,6 +153,12 @@ func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
 
 	ci, err := extractCookieInfo(req)
 	if err != nil {
+		if err == http.ErrNoCookie {
+			logrus.Errorf("Cookie not present - redirecting: %v", err)
+			rw.Header().Set("X-Reason", err.Error())
+			http.Redirect(rw, req, "/app-service-proxy-index.html", http.StatusFound)
+			return
+		}
 		logrus.Errorf("Error extracting cookie info: %v", err)
 		remotedialer.DefaultErrorWriter(rw, req, http.StatusBadRequest, err)
 		return
@@ -317,7 +323,7 @@ func (a *Server) initRouter() {
 	a.remotedialerServer = remotedialer.New(auth.ConnectAuthorizer, remotedialer.DefaultErrorWriter)
 
 	a.router = mux.NewRouter()
-	a.router.HandleFunc("/test", func(rw http.ResponseWriter, _ *http.Request) {
+	a.router.HandleFunc("/app-service-proxy-test", func(rw http.ResponseWriter, _ *http.Request) {
 		if _, err := rw.Write([]byte("Ok\n")); err != nil {
 			return
 		}
@@ -343,6 +349,10 @@ func (a *Server) initRouter() {
 		_, _ = rw.Write([]byte("Missing some query parameter: project, cluster, namespace, service"))
 	}).Methods("GET")
 
+	a.router.HandleFunc("/app-service-proxy-keycloak.min.js", func(rw http.ResponseWriter, req *http.Request) {
+		rw.Header().Set("Content-Type", "application/javascript")
+		http.ServeFile(rw, req, "web-login/app-service-proxy-keycloak.min.js")
+	}).Methods("GET")
 	a.router.HandleFunc("/app-service-proxy-main.js", func(rw http.ResponseWriter, req *http.Request) {
 		rw.Header().Set("Content-Type", "application/javascript")
 		http.ServeFile(rw, req, "web-login/app-service-proxy-main.js")
