@@ -14,7 +14,7 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
-func DeletePod(armClient *restClient.ClientWithResponses, appId, podName, namespace string) error {
+func PodDelete(armClient *restClient.ClientWithResponses, namespace, podName string) error {
 	resp, err := armClient.PodServiceDeletePodWithResponse(context.TODO(), deploy.TestClusterID, namespace, podName)
 	if err != nil || resp.StatusCode() != 200 {
 		return fmt.Errorf("failed to delete pod: %v, status: %d", err, resp.StatusCode())
@@ -23,8 +23,8 @@ func DeletePod(armClient *restClient.ClientWithResponses, appId, podName, namesp
 	return nil
 }
 
-func methodsDeletePod(verb, restServerUrl, namespace, podName, token, projectID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/pods/%s/%s/%s/delete", restServerUrl, deploy.TestClusterID, namespace, podName)
+func methodsPodDelete(verb, restServerURL, namespace, podName, token, projectID string) (*http.Response, error) {
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/pods/%s/%s/%s/delete", restServerURL, deploy.TestClusterID, namespace, podName)
 	res, err := utils.CallMethod(url, verb, token, projectID)
 	if err != nil {
 		return nil, err

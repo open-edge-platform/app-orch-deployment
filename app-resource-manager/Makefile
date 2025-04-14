@@ -115,6 +115,9 @@ lint: license helmlint go-lint lint-html lint-css lint-js #hadolint #mdlint ## R
 
 test: go-test ## Run all unit tests
 
+COMP_TEST_COVER := atomic ./test/...
+component-test: common-component-test ## Run component tests
+
 go-fuzz: FUZZ_FUNCS ?= FuzzGetVNC FuzzStartVM FuzzStopVM FuzzRestartVM FuzzDeletePod FuzzListAppEndpoints FuzzListAppWorkloads
 go-fuzz: FUZZ_FUNC_PATH := ./internal/northbound/services/v2/resource
 go-fuzz: common-go-fuzz-test ## Run go fuzz tests

@@ -20,9 +20,14 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+var (
+	deployApps []*admClient.App
+	token      string
+	projectID  string
+	armclient  *armClient.ClientWithResponses
+)
+
 const (
-	ArmRestAddress         = "app-resource-manager-rest-proxy:8081/"
-	AdmRestAddress         = "app-deployment-api-rest-proxy:8081/"
 	RestAddressPortForward = "127.0.0.1"
 	KeycloakServer         = "keycloak.kind.internal"
 
@@ -33,55 +38,61 @@ const (
 // TestSuite is the basic test suite
 type TestSuite struct {
 	suite.Suite
-	KeycloakServer          string
-	ResourceRESTServerUrl   string
-	DeploymentRESTServerUrl string
-	token                   string
-	projectID               string
-	deployApps              []*admClient.App
-	AdmClient               *admClient.ClientWithResponses
-	ArmClient               *armClient.ClientWithResponses
+	ResourceRESTServerUrl string
+	token                 string
+	projectID             string
+	deployApps            []*admClient.App
+	ArmClient             *armClient.ClientWithResponses
 }
 
 // SetupTest sets up for each test
 func (s *TestSuite) SetupTest() {
-	var err error
-	s.KeycloakServer = KeycloakServer
-	s.DeploymentRESTServerUrl = AdmRestAddress
-	s.ResourceRESTServerUrl = ArmRestAddress
-	s.token = auth.SetUpAccessToken(s.T(), s.KeycloakServer)
-	s.DeploymentRESTServerUrl = fmt.Sprintf("http://%s:%s", RestAddressPortForward, AdmPortForwardRemote)
-	s.projectID, err = auth.GetProjectID(context.TODO())
-	s.NoError(err)
-
-	s.AdmClient, err = admClient.NewClientWithResponses(s.DeploymentRESTServerUrl, admClient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-		auth.AddRestAuthHeader(req, s.token, s.projectID)
-		return nil
-	}))
-	s.NoError(err)
+	s.token = token
+	s.projectID = projectID
 
 	s.ResourceRESTServerUrl = fmt.Sprintf("http://%s:%s", RestAddressPortForward, ArmPortForwardRemote)
 
-	s.ArmClient, err = armClient.NewClientWithResponses(s.ResourceRESTServerUrl, armClient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-		auth.AddRestAuthHeader(req, s.token, s.projectID)
-		return nil
-	}))
-	s.NoError(err)
-
-	// todo move ADM deployment to TestTestSuite to only deploy once for whole test suite
-	deployApps, err := deploy.CreateDeployment(s.AdmClient)
-	s.NoError(err)
-	s.NotEmpty(deployApps)
-	s.T().Log("successfully deployed app\n")
+	s.ArmClient = armclient
+	s.deployApps = deployApps
+	s.NotEmpty(s.deployApps)
 }
 
 func TestTestSuite(t *testing.T) {
 	portForwardCmd, err := utils.BringUpPortForward()
 	if err != nil {
-		t.Errorf("error: %v", err)
+		t.Fatalf("error: %v", err)
+	}
+	defer utils.TearDownPortForward(portForwardCmd)
+
+	token, err = auth.SetUpAccessToken(KeycloakServer)
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	projectID, err = auth.GetProjectID(context.TODO())
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	resourceRESTServerUrl := fmt.Sprintf("http://%s:%s", RestAddressPortForward, ArmPortForwardRemote)
+	armclient, err = utils.CreateArmClient(resourceRESTServerUrl, token, projectID)
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	deploymentRESTServerUrl := fmt.Sprintf("http://%s:%s", RestAddressPortForward, AdmPortForwardRemote)
+	admClientInstance, err := admClient.NewClientWithResponses(deploymentRESTServerUrl, admClient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+		auth.AddRestAuthHeader(req, token, projectID)
+		return nil
+	}))
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	deployApps, err = deploy.CreateDeployment(admClientInstance)
+	if err != nil {
+		t.Fatalf("error: %v", err)
 	}
 
 	suite.Run(t, new(TestSuite))
-
-	utils.TearDownPortForward(portForwardCmd)
 }

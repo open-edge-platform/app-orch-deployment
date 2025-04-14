@@ -16,8 +16,8 @@ func ptr[T any](v T) *T {
 	return &v
 }
 
-func deleteDeployment(client *restClient.ClientWithResponses, deployId string) error {
-	resp, err := client.DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployId, nil)
+func deleteDeployment(client *restClient.ClientWithResponses, deployID string) error {
+	resp, err := client.DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployID, nil)
 	if err != nil || resp.StatusCode() != 200 {
 		return fmt.Errorf("failed to delete deployment: %v, status: %d", err, resp.StatusCode())
 	}
@@ -36,7 +36,7 @@ func deploymentExists(deployments []restClient.Deployment, displayName string) b
 func getDeploymentPerCluster(client *restClient.ClientWithResponses) ([]restClient.DeploymentInstancesCluster, error) {
 	resp, err := client.DeploymentServiceListDeploymentsPerClusterWithResponse(context.TODO(), TestClusterID, nil)
 	if err != nil || resp.StatusCode() != 200 {
-		return nil, fmt.Errorf("failed to list deployments: %v, status: %d", err, resp.StatusCode())
+		return nil, fmt.Errorf("failed to list deployment cluster: %v, status: %d", err, resp.StatusCode())
 	}
 
 	return resp.JSON200.DeploymentInstancesCluster, nil
@@ -52,7 +52,7 @@ func getDeployments(client *restClient.ClientWithResponses) ([]restClient.Deploy
 }
 
 func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName string, status restClient.DeploymentStatusState, retries int, delay time.Duration) (string, error) {
-	for i := 0; i < retries; i++ {
+	for range retries {
 		if deployments, err := getDeployments(client); err == nil {
 			for _, d := range deployments {
 				if *d.DisplayName == displayName && *d.Status.State == status {
@@ -60,16 +60,17 @@ func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName
 				}
 			}
 		}
+		fmt.Printf("Waiting for deployment %s to reach status %s...\n", displayName, status)
 		time.Sleep(delay)
 	}
 
 	return "", fmt.Errorf("deployment %s did not reach status %s after %d retries", displayName, status, retries)
 }
 
-func getDeployApps(client *restClient.ClientWithResponses, deployId string) ([]*restClient.App, error) {
+func getDeployApps(client *restClient.ClientWithResponses, deployID string) ([]*restClient.App, error) {
 	if deployments, err := getDeploymentPerCluster(client); err == nil {
 		for _, d := range deployments {
-			if *d.DeploymentUid == deployId {
+			if *d.DeploymentUid == deployID {
 				apps := make([]*restClient.App, len(*d.Apps))
 				for i, app := range *d.Apps {
 					apps[i] = &app
@@ -79,7 +80,7 @@ func getDeployApps(client *restClient.ClientWithResponses, deployId string) ([]*
 		}
 	}
 
-	return []*restClient.App{}, fmt.Errorf("did not find deployment id %s", deployId)
+	return []*restClient.App{}, fmt.Errorf("did not find deployment id %s", deployID)
 }
 
 func findDeploymentIDByDisplayName(client *restClient.ClientWithResponses, displayName string) (string, error) {
@@ -94,8 +95,8 @@ func findDeploymentIDByDisplayName(client *restClient.ClientWithResponses, displ
 }
 
 func deleteDeploymentByDisplayName(client *restClient.ClientWithResponses, displayName string) error {
-	if deployId, err := findDeploymentIDByDisplayName(client, displayName); err == nil {
-		return deleteDeployment(client, deployId)
+	if deployID, err := findDeploymentIDByDisplayName(client, displayName); err == nil {
+		return deleteDeployment(client, deployID)
 	} else {
 		if err.Error() == fmt.Errorf("deployment %s not found", displayName).Error() {
 			return nil

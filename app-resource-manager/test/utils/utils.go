@@ -5,11 +5,13 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os/exec"
 	"time"
 
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/auth"
 )
 
@@ -96,4 +98,16 @@ func CallMethod(url, verb, token, projectID string) (*http.Response, error) {
 	}
 
 	return res, err
+}
+
+func CreateArmClient(restServerURL, token, projectID string) (*restClient.ClientWithResponses, error) {
+	armClient, err := restClient.NewClientWithResponses(restServerURL, restClient.WithRequestEditorFn(func(_ context.Context, req *http.Request) error {
+		auth.AddRestAuthHeader(req, token, projectID)
+		return nil
+	}))
+	if err != nil {
+		return nil, err
+	}
+
+	return armClient, err
 }

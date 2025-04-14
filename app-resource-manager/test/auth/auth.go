@@ -9,16 +9,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 
 	nexus_client "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/nexus-client"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/url"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"strings"
-	"testing"
 )
 
 const (
@@ -27,7 +24,7 @@ const (
 	kcPass        = "ChangeMeOn1stLogin!"
 )
 
-func SetUpAccessToken(t *testing.T, server string) string {
+func SetUpAccessToken(server string) (string, error) {
 	c := &http.Client{
 		Transport: &http.Transport{},
 	}
@@ -40,26 +37,36 @@ func SetUpAccessToken(t *testing.T, server string) string {
 	req, err := http.NewRequest(http.MethodPost,
 		url,
 		strings.NewReader(data.Encode()))
-	assert.NoError(t, err)
+	if err != nil {
+		return "", fmt.Errorf("error from keycloak: %v", err)
+	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := c.Do(req)
-	assert.NoError(t, err)
+	if err != nil {
+		return "", fmt.Errorf("error from keycloak: %v", err)
+	}
 	if resp == nil {
-		fmt.Fprintf(os.Stderr, "No response from keycloak: %s\n", url)
-		return ""
+		return "", fmt.Errorf("no response from keycloak: %v", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
-	assert.Equal(t, resp.StatusCode, http.StatusOK)
+
 	rawTokenData, err := io.ReadAll(resp.Body)
-	assert.NoError(t, err)
+	if err != nil {
+		return "", fmt.Errorf("error reading response body: %v", err)
+	}
+
 	tokenData := map[string]interface{}{}
 	err = json.Unmarshal(rawTokenData, &tokenData)
-	assert.NoError(t, err)
+	if err != nil {
+		return "", fmt.Errorf("error unmarshalling token data: %v", err)
+	}
 
 	accessToken := tokenData["access_token"].(string)
-	assert.NotContains(t, accessToken, `named cookie not present`)
-	return accessToken
+	if accessToken == "" {
+		return "", fmt.Errorf("access token is empty")
+	}
+	return accessToken, nil
 }
 
 func AddRestAuthHeader(req *http.Request, token string, projectID string) {

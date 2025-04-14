@@ -12,7 +12,7 @@ func (s *TestSuite) TestList() {
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
-		// nginx app workload len should be 1
+		// app workload len should be 1
 		if len(*appWorkloads) != 1 {
 			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
 		}

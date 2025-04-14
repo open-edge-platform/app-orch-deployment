@@ -5,62 +5,49 @@
 package deploy
 
 import (
-	// "fmt"
+	"fmt"
 	"time"
 
-	// "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/auth"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 )
 
 const (
-	wordpressAppName             = "nginx"
-	wordpressDP                  = "nginx-app"
-	wordpressAppVersion          = "0.1.0"
-	wordpressTargetedDisplayName = "wordpress-targeted"
-	TestClusterID                = "demo-ruben3"
-	wordpressProfileName         = "testing-default"
-	retryCount                   = 10
-	retryDelay                   = 10 * time.Second
+	appName              = "nginx"
+	deployPackage        = "nginx-app"
+	deployPackageVersion = "0.1.0"
+	displayName          = "nginx"
+	TestClusterID        = "demo-ruben5"
+	profileName          = "testing-default"
+	retryCount           = 10
+	retryDelay           = 10 * time.Second
 )
 
 func CreateDeployment(admClient *restClient.ClientWithResponses) ([]*restClient.App, error) {
-	// Delete existing "wordpress" deployment if it exists
-	// s.T().Log("Attempting to delete existing 'wordpress' deployment...")
-	err := deleteAndRetryUntilDeleted(admClient, wordpressTargetedDisplayName, retryCount, retryDelay)
+	err := deleteAndRetryUntilDeleted(admClient, displayName, retryCount, retryDelay)
 	if err != nil {
 		return []*restClient.App{}, err
 	}
-	// s.NoError(err, "Failed to delete existing deployment")
+	fmt.Printf("Existing %s deployment deleted successfully\n", displayName)
 
-	// s.NoError(err, "Failed to delete existing deployment")
-	// s.T().Log("'wordpress' deployment deletion initiated.")
-
-	// Create a new "wordpress" deployment
-	// s.T().Log("Creating a new 'wordpress' deployment...")
 	err = createTargetedDeployment(admClient, CreateDeploymentParams{
 		ClusterID:      TestClusterID,
-		DpName:         wordpressDP,
-		AppName:        wordpressAppName,
-		AppVersion:     wordpressAppVersion,
-		DisplayName:    wordpressTargetedDisplayName,
-		ProfileName:    wordpressProfileName,
+		DpName:         deployPackage,
+		AppName:        appName,
+		AppVersion:     deployPackageVersion,
+		DisplayName:    displayName,
+		ProfileName:    profileName,
 		DeploymentType: "targeted",
 	})
 	if err != nil {
 		return []*restClient.App{}, err
 	}
-	// s.NoError(err, "Failed to delete existing deployment")
+	fmt.Printf("New %s deployment creation initiated\n", displayName)
 
-	// s.NoError(err, "Failed to create 'wordpress' deployment")
-	// s.T().Log("'wordpress' deployment creation initiated.")
-
-	// Wait for the deployment to reach "Running" status
-	// s.T().Log("Waiting for 'wordpress' deployment to reach 'RUNNING' status...")
-
-	deployId, err := waitForDeploymentStatus(admClient, wordpressTargetedDisplayName, restClient.RUNNING, retryCount, retryDelay)
+	deployId, err := waitForDeploymentStatus(admClient, displayName, restClient.RUNNING, retryCount, retryDelay)
 	if err != nil {
 		return []*restClient.App{}, err
 	}
+	fmt.Printf("%s deployment is now in RUNNING status\n", displayName)
 
 	deployApps, err := getDeployApps(admClient, deployId)
 	if err != nil {
@@ -68,6 +55,4 @@ func CreateDeployment(admClient *restClient.ClientWithResponses) ([]*restClient.
 	}
 
 	return deployApps, nil
-	// s.NoError(err, "Deployment did not reach RUNNING status")
-	// s.T().Log("'wordpress' deployment is now in 'RUNNING' status.")
 }

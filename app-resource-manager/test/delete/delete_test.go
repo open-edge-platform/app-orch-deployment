@@ -22,13 +22,8 @@ func (s *TestSuite) TestDelete() {
 			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
 		}
 
-		s.T().Logf("app Workloads len: %+v\n", len(*appWorkloads))
-
 		for _, appWorkload := range *appWorkloads {
-			s.T().Logf("app Workload appWorkload.Namespace: %+v\n", *appWorkload.Namespace)
-			s.T().Logf("app Workload appWorkload.Name: %+v\n", appWorkload.Name)
-
-			err = DeletePod(s.ArmClient, appId, appWorkload.Name, *appWorkload.Namespace)
+			err = PodDelete(s.ArmClient, *appWorkload.Namespace, appWorkload.Name)
 			s.NoError(err)
 			s.T().Logf("deleted pod %s\n", appWorkload.Name)
 		}
