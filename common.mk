@@ -323,6 +323,7 @@ common-helm-package: ## Package helm charts.
 		yq eval -i '.annotations.revision = "${DOCKER_LABEL_REVISION}"' $$d/Chart.yaml; \
 		yq eval -i '.annotations.created = "${DOCKER_LABEL_BUILD_DATE}"' $$d/Chart.yaml; \
 		helm package --app-version=${DOCKER_VERSION} --version=${CHART_VERSION} --dependency-update  -u $$d --destination ${HELM_CHART_BUILD_DIR}; \
+		git checkout $$d/Chart.yaml ;\
 	done
 
 common-helm-push: common-helm-push-generic
