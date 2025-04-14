@@ -10,7 +10,7 @@
 
 iframe {
     display: block;       /* iframes are inline by default */
-    background: #aaa;
+    background: #eee;
     border: none;         /* Reset default border */
     height: 100vh;        /* Viewport-relative units */
     width: 100vw;
@@ -18,4 +18,15 @@ iframe {
 
 body {
     margin: 0;
+}
+
+dialog {
+    border: none;
+    border-radius: 0.5em;
+    box-shadow: 0 0 1em rgb(0 0 0 / 50%);
+    padding: 1em;
+    width: 80vw;
+    max-width: 600px;
+    font-family: "Gill Sans", "Gill Sans MT", Calibri, "Lucida Sans", "Noto Sans", sans-serif;
+    font-size: 1.2em;
 }
