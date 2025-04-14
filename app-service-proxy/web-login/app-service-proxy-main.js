@@ -129,8 +129,8 @@ document.addEventListener('DOMContentLoaded', function () {
       })
 
       expectedParams.forEach((param) => {
-        document.getElementById(`new-${param}-id`).innerText = err.existingQuery[param]
-        document.getElementById(`old-${param}-id`).innerText = err.newQuery[param]
+        document.getElementById(`new-${param}-id`).innerText = err.newQuery[param]
+        document.getElementById(`old-${param}-id`).innerText = err.existingQuery[param]
         if (err.existingQuery[param] !== err.newQuery[param]) {
           document.getElementById(`old-${param}-id`).style.color = 'green'
           document.getElementById(`new-${param}-id`).style.color = 'darkgreen'
