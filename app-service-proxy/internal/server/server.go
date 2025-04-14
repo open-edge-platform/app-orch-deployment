@@ -173,15 +173,6 @@ func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Now we can delete the app-service-proxy-token cookies, as we have all we need from the request
-	for _, cookie := range req.Cookies() {
-		if strings.HasPrefix(cookie.Name, "app-service-proxy-token") {
-			logrus.Infof("Deleting cookie %s", cookie.Name)
-			cookie.Value = ""
-			cookie.MaxAge = -1
-		}
-	}
-
 	// Parse the target URL. Is always "app-service-proxy.kind.internal" which
 	// maps to "kubernetes.default.svc.cluster.local" on the edge-node.
 	target, err := url.Parse("http" + "://" + a.ccgAddress)

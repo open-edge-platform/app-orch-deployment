@@ -134,6 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (err.existingQuery[param] !== err.newQuery[param]) {
           document.getElementById(`old-${param}-id`).style.color = 'green'
           document.getElementById(`new-${param}-id`).style.color = 'darkgreen'
+          document.getElementById(`${param}-same`).hidden = true
         } else {
           document.getElementById(`old-${param}`).hidden = true
           document.getElementById(`new-${param}`).hidden = true
@@ -148,6 +149,17 @@ document.addEventListener('DOMContentLoaded', function () {
         deleteAllCookies()
         window.location.reload() // Reload the page to reinitialize ASP and Keycloak
       })
+
+      const contextNotice = document.getElementById("context-notice");
+      contextNotice.addEventListener("click", function() {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.display === "block") {
+          content.style.display = "none";
+        } else {
+          content.style.display = "block";
+        }
+      });
     } else if (err instanceof Object && err.error !== undefined) {
       const dialogErr = document.getElementById('app-service-proxy-error-dialog')
       dialogErr.showModal()
