@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/gitclient"
@@ -170,6 +171,15 @@ func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
 		logrus.Warnf("Failed to authenticate/authorize request: %v", err)
 		remotedialer.DefaultErrorWriter(rw, req, http.StatusUnauthorized, err)
 		return
+	}
+
+	// Now we can delete the app-service-proxy-token cookies, as we have all we need from the request
+	for _, cookie := range req.Cookies() {
+		if strings.HasPrefix(cookie.Name, "app-service-proxy-token") {
+			logrus.Infof("Deleting cookie %s", cookie.Name)
+			cookie.Value = ""
+			cookie.MaxAge = -1
+		}
 	}
 
 	// Parse the target URL. Is always "app-service-proxy.kind.internal" which
