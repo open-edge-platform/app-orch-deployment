@@ -33,6 +33,8 @@ const (
 
 	AdmPortForwardRemote = "8081"
 	ArmPortForwardRemote = "8082"
+	dpDisplayName        = "nginx-test-delete"
+	dpName               = "nginx"
 )
 
 // TestSuite is the basic test suite
@@ -89,7 +91,7 @@ func TestTestSuite(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 
-	deployApps, err = deploy.CreateDeployment(admClientInstance)
+	deployApps, err = deploy.CreateDeployment(admClientInstance, dpName, dpDisplayName, 10)
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}

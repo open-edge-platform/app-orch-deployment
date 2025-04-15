@@ -12,41 +12,60 @@ import (
 )
 
 const (
-	appName              = "nginx"
-	deployPackage        = "nginx-app"
-	deployPackageVersion = "0.1.0"
-	displayName          = "nginx"
-	TestClusterID        = "demo-cluster"
-	profileName          = "testing-default"
-	retryCount           = 10
-	retryDelay           = 10 * time.Second
+	TestClusterID = "demo-ruben6"
+	retryCount    = 10
 )
 
-// const (
-// 	appName              = "librespeed-app"
-// 	deployPackage        = "nginx-app"
-// 	deployPackageVersion = "1.0.0"
-// 	displayName          = "vm"
-// 	TestClusterID        = "demo-ruben5"
-// 	profileName          = "testing-default"
-// 	retryCount           = 10
-// 	retryDelay           = 10 * time.Second
-// )
+var appConfigs = map[string]any{
+	"nginx": map[string]any{
+		"appNames":             []string{"nginx"},
+		"deployPackage":        "nginx-app",
+		"deployPackageVersion": "0.1.0",
+		"profileName":          "testing-default",
+	},
+	"vm": map[string]any{
+		"appNames":             []string{"librespeed-vm"},
+		"deployPackage":        "librespeed-app",
+		"deployPackageVersion": "1.0.0",
+		"profileName":          "virtual-cluster",
+	},
+	"virt-extension": map[string]any{
+		"appNames":             []string{"kubevirt", "cdi", "kube-helper"},
+		"deployPackage":        "virtualization",
+		"deployPackageVersion": "0.3.6",
+		"profileName":          "with-software-emulation-profile-nosm",
+	},
+}
 
-func CreateDeployment(admClient *restClient.ClientWithResponses) ([]*restClient.App, error) {
-	err := deleteAndRetryUntilDeleted(admClient, displayName, retryCount, retryDelay)
+func CreateDeployment(admClient *restClient.ClientWithResponses, dpName string, displayName string, retryDelay int) ([]*restClient.App, error) {
+	useDP := appConfigs[dpName].(map[string]any)
+
+	// Check if virt-extension DP is already running, do not recreate a new one
+	if dpName == "virt-extension" {
+		deployments, err := getDeploymentPerCluster(admClient)
+		if err != nil {
+			return []*restClient.App{}, fmt.Errorf("failed to get deployments: %v", err)
+		}
+		for _, deployment := range deployments {
+			if *deployment.DeploymentDisplayName == displayName && *deployment.Status.State == "RUNNING" {
+				fmt.Printf("Deployment %s already exists in cluster %s, skipping creation\n", useDP["deployPackage"], TestClusterID)
+				return []*restClient.App{}, nil
+			}
+		}
+	}
+
+	err := deleteAndRetryUntilDeleted(admClient, displayName, retryCount, time.Duration(retryDelay)*time.Second)
 	if err != nil {
 		return []*restClient.App{}, err
 	}
-	fmt.Printf("Existing %s deployment deleted successfully\n", displayName)
 
 	err = createTargetedDeployment(admClient, CreateDeploymentParams{
 		ClusterID:      TestClusterID,
-		DpName:         deployPackage,
-		AppName:        appName,
-		AppVersion:     deployPackageVersion,
+		DpName:         useDP["deployPackage"].(string),
+		AppNames:       useDP["appNames"].([]string),
+		AppVersion:     useDP["deployPackageVersion"].(string),
 		DisplayName:    displayName,
-		ProfileName:    profileName,
+		ProfileName:    useDP["profileName"].(string),
 		DeploymentType: "targeted",
 	})
 	if err != nil {
@@ -54,7 +73,7 @@ func CreateDeployment(admClient *restClient.ClientWithResponses) ([]*restClient.
 	}
 	fmt.Printf("New %s deployment creation initiated\n", displayName)
 
-	deployID, err := waitForDeploymentStatus(admClient, displayName, restClient.RUNNING, retryCount, retryDelay)
+	deployID, err := waitForDeploymentStatus(admClient, displayName, restClient.RUNNING, retryCount, time.Duration(retryDelay)*time.Second)
 	if err != nil {
 		return []*restClient.App{}, err
 	}

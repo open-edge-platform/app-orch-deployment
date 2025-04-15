@@ -56,7 +56,7 @@ func SetUpAccessToken(server string) (string, error) {
 		return "", fmt.Errorf("error reading response body: %v", err)
 	}
 
-	tokenData := map[string]interface{}{}
+	tokenData := map[string]any{}
 	err = json.Unmarshal(rawTokenData, &tokenData)
 	if err != nil {
 		return "", fmt.Errorf("error unmarshalling token data: %v", err)

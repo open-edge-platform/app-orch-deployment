@@ -112,12 +112,13 @@ func GetVNCStatus(armClient *restClient.ClientWithResponses, appID, virtMachineI
 			currState = string(*appWorkload.VirtualMachine.Status.State)
 			if appWorkload.Id.String() == virtMachineID {
 				if currState == desiredState {
+					fmt.Printf("Waiting for VM %s state %s ---> %s\n", appName, currState, desiredState)
 					return nil
 				}
 			}
 		}
 
-		fmt.Printf("Waiting for VM %s to %s...currently %s\n", appName, desiredState, currState)
+		fmt.Printf("Waiting for VM %s state %s ---> %s\n", appName, currState, desiredState)
 		time.Sleep(retryDelay)
 	}
 
