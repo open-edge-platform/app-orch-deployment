@@ -9,7 +9,6 @@ SPDX-License-Identifier: Apache-2.0
 [![ADM Component Test](https://github.com/open-edge-platform/app-orch-deployment/actions/workflows/adm-component-test.yml/badge.svg)](https://github.com/open-edge-platform/app-orch-deployment/actions/workflows/adm-component-test.yml)
 [![ARM Component Test](https://github.com/open-edge-platform/app-orch-deployment/actions/workflows/arm-component-test.yml/badge.svg)](https://github.com/open-edge-platform/app-orch-deployment/actions/workflows/arm-component-test.yml)
 
-
 ## Overview
 
 Application Orchestration Deployment is a collection of cloud-native applications (microservices) that facilitate the
