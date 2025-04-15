@@ -72,8 +72,8 @@ make license
 
 ## Community and Support
 
-To learn more about the project, its community, and governance, visit the Edge Orchestrator Community.
-For support, start with Troubleshooting or contact us.
+To learn more about the project, its community, and governance, visit the [Edge Orchestrator Community].
+For support, start with [Troubleshooting] or [Contact us].
 
 ## License
 
@@ -83,3 +83,6 @@ Application Orchestration Deployment is licensed under [Apache 2.0 License](app-
 [Cluster Manager]: https://github.com/open-edge-platform/cluster-manager
 [Foundational Platform]: https://literate-adventure-7vjeyem.pages.github.io/developer_guide/foundational_platform/foundational_platform_main.html
 [Contributor Guide]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/contributor_guide/index.html
+[Troubleshooting]: https://github.com/open-edge-platform/orch-docs
+[Contact us]: https://github.com/open-edge-platform
+[Edge Orchestrator Community]: https://github.com/open-edge-platform
