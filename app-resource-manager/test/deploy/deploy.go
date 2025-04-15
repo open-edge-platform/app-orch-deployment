@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	TestClusterID = "demo-ruben6"
+	TestClusterID = "demo-cluster"
 	retryCount    = 10
 )
 
@@ -34,6 +34,12 @@ var appConfigs = map[string]any{
 		"deployPackage":        "virtualization",
 		"deployPackageVersion": "0.3.6",
 		"profileName":          "with-software-emulation-profile-nosm",
+	},
+	"wordpress": map[string]any{
+		"appNames":             []string{"wordpress"},
+		"deployPackage":        "wordpress",
+		"deployPackageVersion": "0.1.1",
+		"profileName":          "testing",
 	},
 }
 
