@@ -95,6 +95,19 @@ func extractCookieInfo(req *http.Request) (*CookieInfo, error) {
 	return ci, nil
 }
 
+func sanitizeCookieHeader(cookieHeader string) string {
+	cookieHeader = strings.TrimPrefix(cookieHeader, "[\"")
+	cookieHeader = strings.TrimSuffix(cookieHeader, "\"]")
+	sanitizedParts := make([]string, 0)
+	for _, part := range strings.Split(cookieHeader, ";") {
+		part = strings.TrimSpace(part)
+		if !strings.HasPrefix(part, "app-service-proxy-token") {
+			sanitizedParts = append(sanitizedParts, part)
+		}
+	}
+	return strings.Join(sanitizedParts, "; ")
+}
+
 func NewServer(addr string) (*Server, error) {
 	// To allow connections to be reused, we need to set the following parameters.
 	// By default, the http.DefaultTransport will set MaxIdleConnsPerHost to 2.
@@ -193,10 +206,11 @@ func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
 		originalDirector(req)
 		for _, cookie := range req.Cookies() {
 			if strings.HasPrefix(cookie.Name, "app-service-proxy-token") {
-				logrus.Infof("Resetting cookie: %s", cookie.Name)
+				logrus.Debugf("Resetting cookie: %s", cookie.Name)
 				req.AddCookie(&http.Cookie{Name: cookie.Name, Value: "", MaxAge: -1})
 			}
 		}
+		req.Header.Set("Cookie", sanitizeCookieHeader(req.Header.Get("Cookie")))
 		req.URL.Path = newPath
 		req.Host = a.ccgAddress
 		existingHeader := req.Header.Get("Authorization")

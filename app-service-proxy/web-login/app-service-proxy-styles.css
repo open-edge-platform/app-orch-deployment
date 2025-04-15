@@ -31,16 +31,12 @@ dialog {
     font-size: 1.2em;
 }
 
-.context-collapsible:after {
+.context-collapsible::after {
     content: '\02795'; /* Unicode character for "plus" sign (+) */
     font-size: 13px;
     color: white;
     float: right;
     margin-left: 5px;
-}
-
-.active:after {
-    content: "\2796"; /* Unicode character for "minus" sign (-) */
 }
 
 /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
@@ -56,7 +52,7 @@ dialog {
     background-color: #f1f1f1;
 }
 
-.collapsible:after {
+.collapsible::after {
     content: '\02795'; /* Unicode character for "plus" sign (+) */
     font-size: 13px;
     color: white;
@@ -64,6 +60,6 @@ dialog {
     margin-left: 5px;
 }
 
-.active:after {
+.active::after {
     content: "\2796"; /* Unicode character for "minus" sign (-) */
 }

@@ -145,16 +145,16 @@ document.addEventListener('DOMContentLoaded', function () {
         window.location.reload() // Reload the page to reinitialize ASP and Keycloak
       })
 
-      const contextNotice = document.getElementById("context-notice");
-      contextNotice.addEventListener("click", function() {
-        this.classList.toggle("active");
-        var content = this.nextElementSibling;
-        if (content.style.display === "block") {
-          content.style.display = "none";
+      const contextNotice = document.getElementById('context-notice')
+      contextNotice.addEventListener('click', function () {
+        this.classList.toggle('active')
+        const content = this.nextElementSibling
+        if (content.style.display === 'block') {
+          content.style.display = 'none'
         } else {
-          content.style.display = "block";
+          content.style.display = 'block'
         }
-      });
+      })
     } else if (err instanceof Object && err.error !== undefined) {
       const dialogErr = document.getElementById('app-service-proxy-error-dialog')
       dialogErr.showModal()
