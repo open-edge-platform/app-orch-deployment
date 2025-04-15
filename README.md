@@ -77,7 +77,7 @@ For support, start with Troubleshooting or contact us.
 
 ## License
 
-Application Orchestration Deployment is licensed under [Apache 2.0 License](LICENSES/Apache-2.0.txt).
+Application Orchestration Deployment is licensed under [Apache 2.0 License](app-deployment-manager/LICENSES/Apache-2.0.txt).
 
 [Application Catalog]: https://github.com/open-edge-platform/app-orch-catalog
 [Cluster Manager]: https://github.com/open-edge-platform/cluster-manager
