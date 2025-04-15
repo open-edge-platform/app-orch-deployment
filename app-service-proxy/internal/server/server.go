@@ -191,6 +191,12 @@ func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
 	originalDirector := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		originalDirector(req)
+		for _, cookie := range req.Cookies() {
+			if strings.HasPrefix(cookie.Name, "app-service-proxy-token") {
+				logrus.Infof("Resetting cookie: %s", cookie.Name)
+				req.AddCookie(&http.Cookie{Name: cookie.Name, Value: "", MaxAge: -1})
+			}
+		}
 		req.URL.Path = newPath
 		req.Host = a.ccgAddress
 		existingHeader := req.Header.Get("Authorization")

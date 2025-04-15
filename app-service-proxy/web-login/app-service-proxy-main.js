@@ -103,11 +103,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.cookie = `app-service-proxy-tokens=${numCookies}; path=/; SameSite=Strict`
     console.log(`Token saved as ${numCookies} cookies`)
 
-    // Set the token expiration time as a cookie
-    const expirationTime = keycloak.tokenParsed.exp * 1000
-    const expirationDate = new Date(expirationTime)
-    document.cookie = `app-service-proxy-token-expiration=${expirationDate.toUTCString()}; path=/; SameSite=Strict`
-
     // Redirect to the application
     const windowUrl = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port
     console.log('Loading iFrame. URL: ' + windowUrl)
