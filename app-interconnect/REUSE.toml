@@ -3,7 +3,7 @@
 version = 1
 
 [[annotations]]
-path = ["VERSION", "go.sum", "build/_output/**", "internal/skupper/**", "artifacts/**"]
+path = ["VERSION", "go.sum", "build/_output/**", "internal/skupper/**", "artifacts/**", "config/**"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2025 Intel Corporation"
 SPDX-License-Identifier = "Apache-2.0"
