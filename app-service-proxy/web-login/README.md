@@ -17,13 +17,24 @@ The JavaScript first checks that the expected query parameters are present and s
 It then extracts the token from the Keycloak client, breaks it into chunks of 2k, and saves it
 as cookies. The cookies can then be read by the App Service Proxy and used to authenticate the user.
 
+### Local Development
+
 In production, the ASP serves up this HTML and JavaScript, but you can run it locally for testing using
 
 ```shell
 python3 -m http.server 3000
 ```
 
-And then open a browser to `http://localhost:3000/app-service-proxy-index.html?project=p2&cluster=c2&namespace=n2&service=s2&port=1234`
+You can also run your own Keycloak server - see https://github.com/open-edge-platform/app-orch-catalog and after setting
+up a KinD cluster use `make keycloak-install-kind` and port forward like: 
+
+```shell
+kubectl -n orch-app port-forward service/keycloak 8090:80
+```
+
+> You will have to add a temporary redirect on the Keycloak `webui-client` for `http://localhost:3000/app-service-proxy-index.html/*`
+
+And then open a browser to `http://localhost:3000/app-service-proxy-index.html?project=p2&cluster=c2&namespace=n2&service=s2`
 
 If any of the query parameters are missing, the page will display an error message.
 

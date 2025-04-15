@@ -13,5 +13,26 @@
 </head>
 <body>
     <iframe id="asp-iframe" src="" title="Application Service Proxy"></iframe>
+    <dialog id="app-service-proxy-dialog">
+        <p id="context-notice" class="collapsible">There may be another App Service Proxy window open for a different context.</p>
+        <div id="context-info" class="content">
+            <p><small>Comparison of context:</small></p>
+            <p id="old-project">Old Project: <span id="old-project-id"></span></p>
+            <p><span id="new-project">New </span>Project: <span id="new-project-id"></span><span id="project-same"> (same)</span></p>
+            <p id="old-cluster">Old Cluster: <span id="old-cluster-id"></span></p>
+            <p><span id="new-cluster">New </span>Cluster: <span id="new-cluster-id"></span><span id="cluster-same"> (same)</span></p>
+            <p id="old-namespace">Old Namespace: <span id="old-namespace-id"></span></p>
+            <p><span id="new-namespace">New </span>Namespace: <span id="new-namespace-id"></span><span id="namespace-same"> (same)</span></p>
+            <p id="old-service">Old Service: <span id="old-service-id"></span></p>
+            <p><span id="new-service">New </span>Service: <span id="new-service-id"></span><span id="service-same"> (same)</span></p>
+        </div>
+        <p><small>If you do not want to change context, close this tab</small></p>
+        <button id="change-button">Change context</button>
+    </dialog>
+    <dialog id="app-service-proxy-error-dialog">
+        <p>There was an error while trying to load the Application Service Proxy</p>
+        <p id="error-message"></p>
+        <p><small>Please close this window</small></p>
+    </dialog>
 </body>
 </html>
