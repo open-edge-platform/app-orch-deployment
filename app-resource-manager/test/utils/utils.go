@@ -39,10 +39,26 @@ func PortForward(scenario string, portForwardCmd map[string]*exec.Cmd) (map[stri
 		remotePort = ArmPortForwardRemote
 	}
 
-	fmt.Printf("%s port-forward with service %s, ports %s\n", scenario, service, fmt.Sprintf("%s:%s", remotePort, localPort))
+	portPort := fmt.Sprintf("%s:%s", remotePort, localPort)
 
-	cmd := exec.Command("kubectl", "port-forward", "-n", PortForwardServiceNamespace, service, fmt.Sprintf("%s:%s", remotePort, localPort), "--address", PortForwardAddress)
+	fmt.Printf("%s port-forward with service %s, ports %s\n", scenario, service, portPort)
+
+	// Check if the port-forward command is already running
+	if cmd, exists := portForwardCmd[scenario]; exists && cmd != nil && cmd.Process != nil {
+		fmt.Printf("%s port-forward command already running\n", scenario)
+		return portForwardCmd, nil
+	}
+
+	cmd := exec.Command("kubectl", "port-forward", "-n", PortForwardServiceNamespace, service, portPort, "--address", PortForwardAddress)
+	if cmd == nil {
+		return portForwardCmd, fmt.Errorf("failed to create kubectl command")
+	}
+
 	err := cmd.Start()
+	if err != nil {
+		return portForwardCmd, fmt.Errorf("failed to start kubectl command: %v", err)
+	}
+
 	time.Sleep(5 * time.Second) // Give some time for port-forwarding to establish
 	portForwardCmd[scenario] = cmd
 

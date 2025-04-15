@@ -10,10 +10,18 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/list"
 )
 
+var methods = map[string]int{
+	http.MethodPut:    200,
+	http.MethodGet:    405,
+	http.MethodDelete: 405,
+	http.MethodPatch:  405,
+	http.MethodPost:   405,
+}
+
 func (s *TestSuite) TestDeleteMethods() {
 	for _, app := range s.deployApps {
-		appId := *app.Id
-		appWorkloads, err := list.ListAppWorkloads(s.ArmClient, appId)
+		appID := *app.Id
+		appWorkloads, err := list.AppWorkloadsList(s.ArmClient, appID)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -28,25 +36,12 @@ func (s *TestSuite) TestDeleteMethods() {
 			namespace := *appWorkload.Namespace
 			podName := appWorkload.Name
 
-			res, err := methodsPodDelete(http.MethodPut, s.ResourceRESTServerUrl, namespace, podName, s.token, s.projectID)
-			s.NoError(err)
-			s.Equal(200, res.StatusCode)
-			s.T().Logf("delete pod method: %s (%d)\n", http.MethodPut, res.StatusCode)
-
-			res, err = methodsPodDelete(http.MethodGet, s.ResourceRESTServerUrl, namespace, podName, s.token, s.projectID)
-			s.NoError(err)
-			s.Equal(405, res.StatusCode)
-			s.T().Logf("delete pod method: %s (%d)\n", http.MethodGet, res.StatusCode)
-
-			res, err = methodsPodDelete(http.MethodDelete, s.ResourceRESTServerUrl, namespace, podName, s.token, s.projectID)
-			s.NoError(err)
-			s.Equal(405, res.StatusCode)
-			s.T().Logf("delete pod method: %s (%d)\n", http.MethodDelete, res.StatusCode)
-
-			res, err = methodsPodDelete(http.MethodPatch, s.ResourceRESTServerUrl, namespace, podName, s.token, s.projectID)
-			s.NoError(err)
-			s.Equal(405, res.StatusCode)
-			s.T().Logf("delete pod method: %s (%d)\n", http.MethodPatch, res.StatusCode)
+			for method, expectedStatus := range methods {
+				res, err := MethodPodDelete(method, s.ResourceRESTServerUrl, namespace, podName, s.token, s.projectID)
+				s.NoError(err)
+				s.Equal(expectedStatus, res.StatusCode)
+				s.T().Logf("delete pod method: %s (%d)\n", method, res.StatusCode)
+			}
 		}
 	}
 }

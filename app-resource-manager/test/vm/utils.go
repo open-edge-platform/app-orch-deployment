@@ -1,0 +1,125 @@
+// SPDX-FileCopyrightText: (C) 2025-present Intel Corporation
+//
+// SPDX-License-Identifier: Apache-2.0
+
+package vm
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"time"
+
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/deploy"
+
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/list"
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
+)
+
+func StartVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) error {
+	resp, err := armClient.VirtualMachineServiceStartVirtualMachineWithResponse(context.TODO(), appID, deploy.TestClusterID, virtMachineID)
+	if err != nil || resp.StatusCode() != 200 {
+		return fmt.Errorf("failed to start virtual machine: %v, status: %d", err, resp.StatusCode())
+	}
+
+	return nil
+}
+
+func StopVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) error {
+	resp, err := armClient.VirtualMachineServiceStopVirtualMachineWithResponse(context.TODO(), appID, deploy.TestClusterID, virtMachineID)
+	if err != nil || resp.StatusCode() != 200 {
+		return fmt.Errorf("failed to stop virtual machine: %v, status: %d", err, resp.StatusCode())
+	}
+
+	return nil
+}
+
+func RestartVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) error {
+	resp, err := armClient.VirtualMachineServiceRestartVirtualMachineWithResponse(context.TODO(), appID, deploy.TestClusterID, virtMachineID)
+	if err != nil || resp.StatusCode() != 200 {
+		return fmt.Errorf("failed to restart virtual machine: %v, status: %d", err, resp.StatusCode())
+	}
+
+	return nil
+}
+
+func GetVNC(armClient *restClient.ClientWithResponses, appID, virtMachineID string) error {
+	resp, err := armClient.VirtualMachineServiceGetVNCWithResponse(context.TODO(), appID, deploy.TestClusterID, virtMachineID)
+	if err != nil || resp.StatusCode() != 200 {
+		return fmt.Errorf("failed to get VNC: %v, status: %d", err, resp.StatusCode())
+	}
+
+	return nil
+}
+
+func MethodGetVNC(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/vnc", restServerURL, appID, deploy.TestClusterID, virtMachineID)
+	res, err := utils.CallMethod(url, verb, token, projectID)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, err
+}
+
+func MethodStartVNC(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/start", restServerURL, appID, deploy.TestClusterID, virtMachineID)
+	res, err := utils.CallMethod(url, verb, token, projectID)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, err
+}
+
+func MethodStopVNC(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/stop", restServerURL, appID, deploy.TestClusterID, virtMachineID)
+	res, err := utils.CallMethod(url, verb, token, projectID)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, err
+}
+
+func MethodRestartVNC(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/restart", restServerURL, appID, deploy.TestClusterID, virtMachineID)
+	res, err := utils.CallMethod(url, verb, token, projectID)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, err
+}
+
+func GetVNCStatus(armClient *restClient.ClientWithResponses, appID, virtMachineID, desiredState string) error {
+	var (
+		appName    string
+		currState  string
+		retryDelay = 10 * time.Second
+		retryCount = 10
+	)
+
+	for range retryCount {
+		appWorkloads, err := list.AppWorkloadsList(armClient, appID)
+		if err != nil {
+			return fmt.Errorf("failed to list app workloads: %v", err)
+		}
+
+		for _, appWorkload := range *appWorkloads {
+			appName = appWorkload.Name
+			currState = string(*appWorkload.VirtualMachine.Status.State)
+			if appWorkload.Id.String() == virtMachineID {
+				if currState == desiredState {
+					return nil
+				}
+			}
+		}
+
+		fmt.Printf("Waiting for VM %s to %s...currently %s\n", appName, desiredState, currState)
+		time.Sleep(retryDelay)
+	}
+
+	return nil
+}

@@ -15,8 +15,8 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
-func ListAppWorkloads(armClient *restClient.ClientWithResponses, appId string) (*[]restClient.AppWorkload, error) {
-	resp, err := armClient.AppWorkloadServiceListAppWorkloadsWithResponse(context.TODO(), appId, deploy.TestClusterID)
+func AppWorkloadsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppWorkload, error) {
+	resp, err := armClient.AppWorkloadServiceListAppWorkloadsWithResponse(context.TODO(), appID, deploy.TestClusterID)
 	if err != nil || resp.StatusCode() != 200 {
 		return &[]restClient.AppWorkload{}, fmt.Errorf("failed to list app workloads: %v, status: %d", err, resp.StatusCode())
 	}
@@ -24,8 +24,8 @@ func ListAppWorkloads(armClient *restClient.ClientWithResponses, appId string) (
 	return resp.JSON200.AppWorkloads, nil
 }
 
-func ListAppEndpoints(armClient *restClient.ClientWithResponses, appId string) (*[]restClient.AppEndpoint, error) {
-	resp, err := armClient.EndpointsServiceListAppEndpointsWithResponse(context.TODO(), appId, deploy.TestClusterID)
+func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppEndpoint, error) {
+	resp, err := armClient.EndpointsServiceListAppEndpointsWithResponse(context.TODO(), appID, deploy.TestClusterID)
 	if err != nil || resp.StatusCode() != 200 {
 		return &[]restClient.AppEndpoint{}, fmt.Errorf("failed to list app endpoints: %v, status: %d", err, resp.StatusCode())
 	}
@@ -33,8 +33,8 @@ func ListAppEndpoints(armClient *restClient.ClientWithResponses, appId string) (
 	return resp.JSON200.AppEndpoints, nil
 }
 
-func methodsListAppWorkloads(verb, restServerUrl, appId, token, projectID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/%s/%s", restServerUrl, appId, deploy.TestClusterID)
+func MethodAppWorkloadsList(verb, restServerURL, appID, token, projectID string) (*http.Response, error) {
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/%s/%s", restServerURL, appID, deploy.TestClusterID)
 	res, err := utils.CallMethod(url, verb, token, projectID)
 	if err != nil {
 		return nil, err
@@ -43,8 +43,8 @@ func methodsListAppWorkloads(verb, restServerUrl, appId, token, projectID string
 	return res, err
 }
 
-func methodsListAppEndpoints(verb, restServerUrl, appId, token, projectID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/endpoints/%s/%s", restServerUrl, appId, deploy.TestClusterID)
+func MethodAppEndpointsList(verb, restServerURL, appID, token, projectID string) (*http.Response, error) {
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/endpoints/%s/%s", restServerURL, appID, deploy.TestClusterID)
 	res, err := utils.CallMethod(url, verb, token, projectID)
 	if err != nil {
 		return nil, err

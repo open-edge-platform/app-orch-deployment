@@ -14,14 +14,14 @@ func (s *TestSuite) TestAuthProjectIDList() {
 	s.NoError(err)
 
 	for _, app := range s.deployApps {
-		appId := *app.Id
-		appWorkloads, err := ListAppWorkloads(armClient, appId)
+		appID := *app.Id
+		appWorkloads, err := AppWorkloadsList(armClient, appID)
 		s.Equal(err.Error(), "failed to list app workloads: <nil>, status: 403")
 		s.Error(err)
 		s.Empty(appWorkloads)
 		s.T().Logf("successfully handled invalid projectid to list app workloads\n")
 
-		appEndpoints, err := ListAppEndpoints(armClient, appId)
+		appEndpoints, err := AppEndpointsList(armClient, appID)
 		s.Equal(err.Error(), "failed to list app endpoints: <nil>, status: 403")
 		s.Error(err)
 		s.Empty(appEndpoints)
@@ -34,14 +34,14 @@ func (s *TestSuite) TestAuthJWTList() {
 	s.NoError(err)
 
 	for _, app := range s.deployApps {
-		appId := *app.Id
-		appWorkloads, err := ListAppWorkloads(armClient, appId)
+		appID := *app.Id
+		appWorkloads, err := AppWorkloadsList(armClient, appID)
 		s.Equal(err.Error(), "failed to list app workloads: <nil>, status: 500")
 		s.Error(err)
 		s.Empty(appWorkloads)
 		s.T().Logf("successfully handled invalid JWT to list app workloads\n")
 
-		appEndpoints, err := ListAppEndpoints(armClient, appId)
+		appEndpoints, err := AppEndpointsList(armClient, appID)
 		s.Equal(err.Error(), "failed to list app endpoints: <nil>, status: 500")
 		s.Error(err)
 		s.Empty(appEndpoints)

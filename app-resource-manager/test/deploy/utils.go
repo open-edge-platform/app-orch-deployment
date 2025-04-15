@@ -97,12 +97,9 @@ func findDeploymentIDByDisplayName(client *restClient.ClientWithResponses, displ
 func deleteDeploymentByDisplayName(client *restClient.ClientWithResponses, displayName string) error {
 	if deployID, err := findDeploymentIDByDisplayName(client, displayName); err == nil {
 		return deleteDeployment(client, deployID)
-	} else {
-		if err.Error() == fmt.Errorf("deployment %s not found", displayName).Error() {
-			return nil
-		}
-		return err
 	}
+
+	return fmt.Errorf("deployment %s not found", displayName)
 }
 
 type CreateDeploymentParams struct {

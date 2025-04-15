@@ -23,7 +23,7 @@ func PodDelete(armClient *restClient.ClientWithResponses, namespace, podName str
 	return nil
 }
 
-func methodsPodDelete(verb, restServerURL, namespace, podName, token, projectID string) (*http.Response, error) {
+func MethodPodDelete(verb, restServerURL, namespace, podName, token, projectID string) (*http.Response, error) {
 	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/pods/%s/%s/%s/delete", restServerURL, deploy.TestClusterID, namespace, podName)
 	res, err := utils.CallMethod(url, verb, token, projectID)
 	if err != nil {

@@ -11,11 +11,22 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 )
 
+// const (
+// 	appName              = "nginx"
+// 	deployPackage        = "nginx-app"
+// 	deployPackageVersion = "0.1.0"
+// 	displayName          = "nginx"
+// 	TestClusterID        = "demo-ruben5"
+// 	profileName          = "testing-default"
+// 	retryCount           = 10
+// 	retryDelay           = 10 * time.Second
+// )
+
 const (
-	appName              = "nginx"
+	appName              = "librespeed-app"
 	deployPackage        = "nginx-app"
-	deployPackageVersion = "0.1.0"
-	displayName          = "nginx"
+	deployPackageVersion = "1.0.0"
+	displayName          = "vm"
 	TestClusterID        = "demo-ruben5"
 	profileName          = "testing-default"
 	retryCount           = 10
@@ -43,13 +54,13 @@ func CreateDeployment(admClient *restClient.ClientWithResponses) ([]*restClient.
 	}
 	fmt.Printf("New %s deployment creation initiated\n", displayName)
 
-	deployId, err := waitForDeploymentStatus(admClient, displayName, restClient.RUNNING, retryCount, retryDelay)
+	deployID, err := waitForDeploymentStatus(admClient, displayName, restClient.RUNNING, retryCount, retryDelay)
 	if err != nil {
 		return []*restClient.App{}, err
 	}
 	fmt.Printf("%s deployment is now in RUNNING status\n", displayName)
 
-	deployApps, err := getDeployApps(admClient, deployId)
+	deployApps, err := getDeployApps(admClient, deployID)
 	if err != nil {
 		return []*restClient.App{}, err
 	}

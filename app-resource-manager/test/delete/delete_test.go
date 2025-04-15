@@ -13,7 +13,7 @@ import (
 func (s *TestSuite) TestDelete() {
 	for _, app := range s.deployApps {
 		appId := *app.Id
-		appWorkloads, err := list.ListAppWorkloads(s.ArmClient, appId)
+		appWorkloads, err := list.AppWorkloadsList(s.ArmClient, appId)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
