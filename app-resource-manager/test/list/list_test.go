@@ -7,8 +7,8 @@ package list
 // TestList tests list endpoints
 func (s *TestSuite) TestList() {
 	for _, app := range s.deployApps {
-		appId := *app.Id
-		appWorkloads, err := AppWorkloadsList(s.ArmClient, appId)
+		appID := *app.Id
+		appWorkloads, err := AppWorkloadsList(s.ArmClient, appID)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -19,7 +19,7 @@ func (s *TestSuite) TestList() {
 
 		s.T().Logf("app Workloads len: %+v\n", len(*appWorkloads))
 
-		appEndpoints, err := AppEndpointsList(s.ArmClient, appId)
+		appEndpoints, err := AppEndpointsList(s.ArmClient, appID)
 		s.NoError(err)
 		s.NotEmpty(appEndpoints)
 	}

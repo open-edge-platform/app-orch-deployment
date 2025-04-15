@@ -37,8 +37,8 @@ const (
 	VMStopped            = "STATE_STOPPED"
 	dpDisplayName        = "vm-test-vm"
 	vmExtDisplayName     = "virt-extension"
-	dpName               = "vm"
-	vmExtDPName          = "virt-extension"
+	dpConfigName        = "vm"
+	vmExtDPConfigName   = "virt-extension"
 )
 
 // TestSuite is the basic test suite
@@ -95,13 +95,12 @@ func TestTestSuite(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 
-	// todo deploy 1. base extension (this should already be deployed when cluster creates 2. virt dp 3. vm app
-	_, err = deploy.CreateDeployment(admClientInstance, vmExtDPName, vmExtDisplayName, 30)
+	_, err = deploy.CreateDeployment(admClientInstance, vmExtDPConfigName, vmExtDisplayName, 30)
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
 
-	deployApps, err = deploy.CreateDeployment(admClientInstance, dpName, dpDisplayName, 10)
+	deployApps, err = deploy.CreateDeployment(admClientInstance, dpConfigName, dpDisplayName, 10)
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}

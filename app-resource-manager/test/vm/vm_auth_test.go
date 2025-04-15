@@ -5,13 +5,14 @@
 package vm
 
 import (
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/auth"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/list"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
 // TestAuthProjectIDStopVM tests stop vm with invalid project id
 func (s *TestSuite) TestAuthProjectIDStopVM() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "s.projectID")
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
 	for _, app := range s.deployApps {
@@ -47,7 +48,7 @@ func (s *TestSuite) TestAuthProjectIDStopVM() {
 
 // TestAuthJWTStopVM tests stop vm with invalid jwt
 func (s *TestSuite) TestAuthJWTStopVM() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, "s.token", s.projectID)
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, auth.InvalidJWT, s.projectID)
 	s.NoError(err)
 
 	for _, app := range s.deployApps {
@@ -74,7 +75,7 @@ func (s *TestSuite) TestAuthJWTStopVM() {
 			}
 
 			err = StopVirtualMachine(armClient, appID, appWorkload.Id.String())
-			s.Equal(err.Error(), "failed to stop virtual machine: <nil>, status: 500")
+			s.Equal(err.Error(), "failed to stop virtual machine: <nil>, status: 401")
 			s.Error(err)
 			s.T().Logf("successfully handled invalid JWT to stop virtual machine\n")
 		}
@@ -83,7 +84,7 @@ func (s *TestSuite) TestAuthJWTStopVM() {
 
 // TestAuthProjectIDStartVM tests start vm with invalid project id
 func (s *TestSuite) TestAuthProjectIDStartVM() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "s.projectID")
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
 	for _, app := range s.deployApps {
@@ -119,7 +120,7 @@ func (s *TestSuite) TestAuthProjectIDStartVM() {
 
 // TestAuthJWTStartVM tests start vm with invalid jwt
 func (s *TestSuite) TestAuthJWTStartVM() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, "s.token", s.projectID)
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, auth.InvalidJWT, s.projectID)
 	s.NoError(err)
 
 	for _, app := range s.deployApps {
@@ -146,7 +147,7 @@ func (s *TestSuite) TestAuthJWTStartVM() {
 			}
 
 			err = StartVirtualMachine(armClient, appID, appWorkload.Id.String())
-			s.Equal(err.Error(), "failed to start virtual machine: <nil>, status: 500")
+			s.Equal(err.Error(), "failed to start virtual machine: <nil>, status: 401")
 			s.Error(err)
 			s.T().Logf("successfully handled invalid JWT to start virtual machine\n")
 		}
@@ -155,7 +156,7 @@ func (s *TestSuite) TestAuthJWTStartVM() {
 
 // TestAuthProjectIDRestartVM tests restart vm with invalid project id
 func (s *TestSuite) TestAuthProjectIDRestartVM() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "s.projectID")
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
 	for _, app := range s.deployApps {
@@ -191,7 +192,7 @@ func (s *TestSuite) TestAuthProjectIDRestartVM() {
 
 // TestAuthJWTRestartVM tests restart vm with invalid jwt
 func (s *TestSuite) TestAuthJWTRestartVM() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, "s.token", s.projectID)
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, auth.InvalidJWT, s.projectID)
 	s.NoError(err)
 
 	for _, app := range s.deployApps {
@@ -218,7 +219,7 @@ func (s *TestSuite) TestAuthJWTRestartVM() {
 			}
 
 			err = RestartVirtualMachine(armClient, appID, appWorkload.Id.String())
-			s.Equal(err.Error(), "failed to restart virtual machine: <nil>, status: 500")
+			s.Equal(err.Error(), "failed to restart virtual machine: <nil>, status: 401")
 			s.Error(err)
 			s.T().Logf("successfully handled invalid jwt to restart virtual machine\n")
 		}
@@ -227,7 +228,7 @@ func (s *TestSuite) TestAuthJWTRestartVM() {
 
 // TestAuthProjectIDGetVNC tests get vnc with invalid project id
 func (s *TestSuite) TestAuthProjectIDGetVNC() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "s.projectID")
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
 	for _, app := range s.deployApps {
@@ -252,7 +253,7 @@ func (s *TestSuite) TestAuthProjectIDGetVNC() {
 
 // TestAuthJWTGetVNC tests get vnc with invalid jwt
 func (s *TestSuite) TestAuthJWTGetVNC() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "s.projectID")
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, auth.InvalidJWT, s.projectID)
 	s.NoError(err)
 
 	for _, app := range s.deployApps {
@@ -268,7 +269,7 @@ func (s *TestSuite) TestAuthJWTGetVNC() {
 
 		for _, appWorkload := range *appWorkloads {
 			err = GetVNC(armClient, appID, appWorkload.Id.String())
-			s.Equal(err.Error(), "failed to get VNC: <nil>, status: 403")
+			s.Equal(err.Error(), "failed to get VNC: <nil>, status: 401")
 			s.Error(err)
 			s.T().Logf("successfully handled invalid JWT to get VNC\n")
 		}

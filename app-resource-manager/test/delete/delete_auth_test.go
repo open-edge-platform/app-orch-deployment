@@ -5,11 +5,12 @@
 package delete
 
 import (
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/auth"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
 func (s *TestSuite) TestAuthProjectIDDelete() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "s.projectID")
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
 	err = PodDelete(armClient, "namespace", "podname")
@@ -18,11 +19,11 @@ func (s *TestSuite) TestAuthProjectIDDelete() {
 	s.T().Logf("successfully handled invalid projectid to delete pod\n")
 }
 func (s *TestSuite) TestAuthJWTDelete() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, "stoken", s.projectID)
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, auth.InvalidJWT, s.projectID)
 	s.NoError(err)
 
 	err = PodDelete(armClient, "namespace", "podname")
-	s.Equal(err.Error(), "failed to delete pod: <nil>, status: 500")
+	s.Equal(err.Error(), "failed to delete pod: <nil>, status: 401")
 	s.Error(err)
 	s.T().Logf("successfully handled invalid JWT to delete pod\n")
 }

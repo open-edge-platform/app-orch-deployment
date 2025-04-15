@@ -16,7 +16,7 @@ const (
 	retryCount    = 10
 )
 
-var appConfigs = map[string]any{
+var dpConfigs = map[string]any{
 	"nginx": map[string]any{
 		"appNames":             []string{"nginx"},
 		"deployPackage":        "nginx-app",
@@ -43,11 +43,15 @@ var appConfigs = map[string]any{
 	},
 }
 
-func CreateDeployment(admClient *restClient.ClientWithResponses, dpName string, displayName string, retryDelay int) ([]*restClient.App, error) {
-	useDP := appConfigs[dpName].(map[string]any)
+func CreateDeployment(admClient *restClient.ClientWithResponses, dpPackageName string, displayName string, retryDelay int) ([]*restClient.App, error) {
+	if dpConfigs[dpPackageName] == nil {
+		return []*restClient.App{}, fmt.Errorf("deployment package %s not found in configuration", dpPackageName)
+	}
+
+	useDP := dpConfigs[dpPackageName].(map[string]any)
 
 	// Check if virt-extension DP is already running, do not recreate a new one
-	if dpName == "virt-extension" {
+	if dpPackageName == "virt-extension" {
 		deployments, err := getDeploymentPerCluster(admClient)
 		if err != nil {
 			return []*restClient.App{}, fmt.Errorf("failed to get deployments: %v", err)
