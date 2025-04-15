@@ -5,6 +5,15 @@
 import './keycloak.min.js'
 import RFB from './rfb.js'
 
+function deleteAllCookies () {
+  const cookies = document.cookie.split(';')
+  for (const cookie of cookies) {
+    const cookieName = cookie.split('=')[0].trim()
+    document.cookie = `${cookieName}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict`
+  }
+  console.log('All cookies have been deleted.')
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   // Initialize Keycloak
   let domain = window.location.hostname.split('.').slice(1).join('.')
@@ -82,12 +91,17 @@ document.addEventListener('DOMContentLoaded', function () {
     return defaultValue
   }
 
+  keycloak.onAuthLogout = function () {
+    console.log('Logout event triggered. Deleting cookies')
+    deleteAllCookies()
+  }
+
   keycloak.init({
     onLoad: 'login-required'
   }).then(function (authenticated) {
     console.log(authenticated ? 'User is authenticated' : 'User is not authenticated')
 
-    // Check for required query parameters and save them as cookies
+    // Check for required query parameters
     const queryParams = new URLSearchParams(window.location.search)
     expectedParams.forEach((param) => {
       if (!queryParams.has(param)) {
@@ -97,6 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
     })
 
     // Set the token as a cookie. If it is longer than 2k break it up into multiple cookies
+    // We need a cookie since the VNC server can't handle Authorization headers.
     const token = keycloak.token
     const maxCookieLength = 2000
     const numCookies = Math.ceil(token.length / maxCookieLength)

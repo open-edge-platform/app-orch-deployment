@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/gitclient"
@@ -92,6 +93,19 @@ func extractCookieInfo(req *http.Request) (*CookieInfo, error) {
 	ci.service = cookie.Value
 
 	return ci, nil
+}
+
+func sanitizeCookieHeader(cookieHeader string) string {
+	cookieHeader = strings.TrimPrefix(cookieHeader, "[\"")
+	cookieHeader = strings.TrimSuffix(cookieHeader, "\"]")
+	sanitizedParts := make([]string, 0)
+	for _, part := range strings.Split(cookieHeader, ";") {
+		part = strings.TrimSpace(part)
+		if !strings.HasPrefix(part, "app-service-proxy-token") {
+			sanitizedParts = append(sanitizedParts, part)
+		}
+	}
+	return strings.Join(sanitizedParts, "; ")
 }
 
 func NewServer(addr string) (*Server, error) {
@@ -190,6 +204,13 @@ func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
 	originalDirector := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		originalDirector(req)
+		for _, cookie := range req.Cookies() {
+			if strings.HasPrefix(cookie.Name, "app-service-proxy-token") {
+				logrus.Debugf("Resetting cookie: %s", cookie.Name)
+				req.AddCookie(&http.Cookie{Name: cookie.Name, Value: "", MaxAge: -1})
+			}
+		}
+		req.Header.Set("Cookie", sanitizeCookieHeader(req.Header.Get("Cookie")))
 		req.URL.Path = newPath
 		req.Host = a.ccgAddress
 		existingHeader := req.Header.Get("Authorization")

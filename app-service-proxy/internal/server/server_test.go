@@ -237,7 +237,7 @@ var _ = Describe("Server", func() {
 
 	Describe("doProxy Functionality", func() {
 		Context("When URL parsing fails", func() {
-			It("Should respond with a 500 status code", func() {
+			It("Should respond with a 302 status code", func() {
 				recorder = httptest.NewRecorder()
 				request, _ := http.NewRequest("GET", "http://127.0.0.1:8123/anything", nil)
 				// Intentionally setting headers and not setting cookies to cause URL parsing to fail
@@ -248,6 +248,25 @@ var _ = Describe("Server", func() {
 
 				Expect(recorder.Code).To(Equal(http.StatusFound))
 				Expect(recorder.Header().Get("Location")).To(Equal("/app-service-proxy-index.html"))
+			})
+		})
+
+		Context("When URL parsing fails", func() {
+			It("Should get as far as CAPI call with 502 response", func() {
+				recorder = httptest.NewRecorder()
+				request, _ := http.NewRequest("GET", "http://127.0.0.1:8123/anything", nil)
+				// Setting cookies to get through the URL parsing
+				request.Header.Add("X-Forwarded-Host", "")
+				request.Header.Add("X-Forwarded-Proto", "")
+				request.AddCookie(&http.Cookie{Name: "app-service-proxy-project", Value: "p1"})
+				request.AddCookie(&http.Cookie{Name: "app-service-proxy-cluster", Value: "c1"})
+				request.AddCookie(&http.Cookie{Name: "app-service-proxy-namespace", Value: "n1"})
+				request.AddCookie(&http.Cookie{Name: "app-service-proxy-service", Value: "s1"})
+				request.AddCookie(&http.Cookie{Name: "something", Value: "else"})
+
+				testServer.ServicesProxy(recorder, request)
+
+				Expect(recorder.Code).To(Equal(http.StatusBadGateway))
 			})
 		})
 		// Add more contexts for other scenarios...
