@@ -11,27 +11,27 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 )
 
+const (
+	appName              = "nginx"
+	deployPackage        = "nginx-app"
+	deployPackageVersion = "0.1.0"
+	displayName          = "nginx"
+	TestClusterID        = "demo-cluster"
+	profileName          = "testing-default"
+	retryCount           = 10
+	retryDelay           = 10 * time.Second
+)
+
 // const (
-// 	appName              = "nginx"
+// 	appName              = "librespeed-app"
 // 	deployPackage        = "nginx-app"
-// 	deployPackageVersion = "0.1.0"
-// 	displayName          = "nginx"
+// 	deployPackageVersion = "1.0.0"
+// 	displayName          = "vm"
 // 	TestClusterID        = "demo-ruben5"
 // 	profileName          = "testing-default"
 // 	retryCount           = 10
 // 	retryDelay           = 10 * time.Second
 // )
-
-const (
-	appName              = "librespeed-app"
-	deployPackage        = "nginx-app"
-	deployPackageVersion = "1.0.0"
-	displayName          = "vm"
-	TestClusterID        = "demo-ruben5"
-	profileName          = "testing-default"
-	retryCount           = 10
-	retryDelay           = 10 * time.Second
-)
 
 func CreateDeployment(admClient *restClient.ClientWithResponses) ([]*restClient.App, error) {
 	err := deleteAndRetryUntilDeleted(admClient, displayName, retryCount, retryDelay)
