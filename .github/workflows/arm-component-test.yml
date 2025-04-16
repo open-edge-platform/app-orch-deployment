@@ -15,6 +15,11 @@ on:
         required: true
         type: boolean
         default: false
+      emf-branch:
+        description: 'The branch, tag or SHA to checkout EMF'
+        required: true
+        type: string
+        default: "main"
 
 jobs:
   component-test-arm:
@@ -24,5 +29,6 @@ jobs:
     with:
       component: app-resource-manager
       use-enic: true
-      emf-branch: main
+      # emf-branch: ${{ inputs.emf-branch || "main" }}
+      emf-branch: 53e430f45faaee7671fa3c25f6acc3945aba2065
     secrets: inherit
