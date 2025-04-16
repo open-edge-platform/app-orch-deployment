@@ -87,9 +87,6 @@ func getCombinedJWTToken(req *http.Request) (string, error) {
 			logrus.Errorf("Error retrieving %s cookie: %v", tokenPartName, err)
 			return "", err
 		}
-		// Delete the cookie by replacing it with an expired one
-		req.AddCookie(&http.Cookie{Name: tokenPartName, Expires: time.Unix(0, 0), MaxAge: -1})
-
 		tokenParts = append(tokenParts, tokenPartValue.Value)
 	}
 

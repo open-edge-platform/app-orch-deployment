@@ -182,7 +182,7 @@ traefik:
   gatewayNamespace: gateway-system
   secretName: tls-demo
   matchRoute: Host(`app-service-proxy.kind.internal`)
-  matchRouteWs: Host(`app-orch.kind.internal`) && PathPrefix(`/app-service-proxy`)
+  matchRouteSrc: Host(`app-service-proxy.kind.internal`) && PathPrefix(`/app-service-proxy`)
   tlsOption: gateway-tls
 
 ## @section OIDC Parameters

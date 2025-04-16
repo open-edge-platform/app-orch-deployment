@@ -268,7 +268,7 @@ go-test: $(OUT_DIR) $(GO_TEST_DEPS) ## Run go test and calculate code coverage
 
 # Prevent parallel tests from running to avoid issues with deletion and creation of resources
 common-component-test: ## Run component tests
-	$(GOCMD) test -p 1 -timeout 30m -v \
+	$(GOCMD) test -p 1 -timeout 30m -count=1 -v \
 	$(COMP_TEST_COVER)
 
 common-go-fuzz-test: ## GO fuzz tests

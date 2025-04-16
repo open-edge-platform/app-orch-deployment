@@ -2,8 +2,64 @@
  *SPDX-License-Identifier: Apache-2.0
  */
 
- .title {
+.title {
     font-size: 1.5em;
     margin-bottom: 1em;
     font-family: "Gill Sans", "Gill Sans MT", Calibri, "Lucida Sans", "Noto Sans", sans-serif;
+}
+
+iframe {
+    display: block;       /* iframes are inline by default */
+    background: #eee;
+    border: none;         /* Reset default border */
+    height: 100vh;        /* Viewport-relative units */
+    width: 100vw;
+}
+
+body {
+    margin: 0;
+}
+
+dialog {
+    border: none;
+    border-radius: 0.5em;
+    box-shadow: 0 0 1em rgb(0 0 0 / 50%);
+    padding: 1em;
+    width: 80vw;
+    max-width: 600px;
+    font-family: "Gill Sans", "Gill Sans MT", Calibri, "Lucida Sans", "Noto Sans", sans-serif;
+    font-size: 1.2em;
+}
+
+.context-collapsible::after {
+    content: '\02795'; /* Unicode character for "plus" sign (+) */
+    font-size: 13px;
+    color: white;
+    float: right;
+    margin-left: 5px;
+}
+
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+.active, .collapsible:hover {
+    background-color: #ccc;
+}
+
+/* Style the collapsible content. Note: hidden by default */
+.content {
+    padding: 0 18px;
+    display: none;
+    overflow: hidden;
+    background-color: #f1f1f1;
+}
+
+.collapsible::after {
+    content: '\02795'; /* Unicode character for "plus" sign (+) */
+    font-size: 13px;
+    color: white;
+    float: right;
+    margin-left: 5px;
+}
+
+.active::after {
+    content: "\2796"; /* Unicode character for "minus" sign (-) */
 }

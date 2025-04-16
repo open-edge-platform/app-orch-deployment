@@ -1,10 +1,18 @@
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 version = 1
 
 [[annotations]]
-path = ["VERSION", "**.ico", "**.json", "**.svg", "**.png", "**.jpg", "**.jpeg", "build/manifests/**", "build/deps/**",
-        "go.sum", "artifacts/**", "config/**", "docs/**", "integration-testing/**.md", "PROJECT", "api/nbi/VERSION", "deployment/charts/app-deployment-crd/templates/*", "api/spec/*",
-        "api/nbi/v2/spec/**", "api/nbi/v2/go.mod", "api/nbi/v2/VERSION", "api/nbi/v2/go.sum", "api/nbi/v2/deployment/v1/**", "api/nbi/v2/pkg/restClient/**", "internal/catalogclient/mockery/**", "internal/grafana/mockery/**",
-        "internal/catalogclient/mocks/m*.go"]
+path = ["VERSION", "**.json",
+        "**go.sum", "artifacts/**", "PROJECT", "**VERSION", "deployment/charts/app-deployment-crd/templates/*",
+        "api/spec/*", "api/nbi/v2/spec/**", "api/nbi/v2/go.mod", "api/nbi/v2/deployment/v1/**",
+        "api/nbi/v2/pkg/restClient/**",
+        "internal/catalogclient/mockery/**", "internal/grafana/mockery/**",
+        "internal/catalogclient/mocks/m*.go",
+        "config/certmanager/kustom*.yaml",
+        "config/**",
+]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2025 Intel Corporation"
 SPDX-License-Identifier = "Apache-2.0"
