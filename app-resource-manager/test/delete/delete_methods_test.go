@@ -37,9 +37,15 @@ func (s *TestSuite) TestDeleteMethods() {
 			podName := appWorkload.Name
 
 			for method, expectedStatus := range methods {
+				if expectedStatus == 200 {
+					err = GetPodStatus(s.ArmClient, appID, appWorkload.Id.String(), "STATE_RUNNING")
+					s.NoError(err)
+				}
+
 				res, err := MethodPodDelete(method, s.ResourceRESTServerUrl, namespace, podName, s.token, s.projectID)
 				s.NoError(err)
 				s.Equal(expectedStatus, res.StatusCode)
+
 				s.T().Logf("delete pod method: %s (%d)\n", method, res.StatusCode)
 			}
 		}

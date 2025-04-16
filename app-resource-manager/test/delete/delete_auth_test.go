@@ -9,7 +9,7 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
-func (s *TestSuite) TestAuthProjectIDDelete() {
+func (s *TestSuite) TestDeleteAuthProjectID() {
 	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
@@ -18,7 +18,8 @@ func (s *TestSuite) TestAuthProjectIDDelete() {
 	s.Error(err)
 	s.T().Logf("successfully handled invalid projectid to delete pod\n")
 }
-func (s *TestSuite) TestAuthJWTDelete() {
+
+func (s *TestSuite) TestDeleteAuthJWT() {
 	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, auth.InvalidJWT, s.projectID)
 	s.NoError(err)
 

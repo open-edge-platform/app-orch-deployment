@@ -21,10 +21,11 @@ import (
 )
 
 var (
-	deployApps []*admClient.App
-	token      string
-	projectID  string
-	armclient  *armClient.ClientWithResponses
+	deployApps            []*admClient.App
+	token                 string
+	projectID             string
+	resourceRESTServerUrl string
+	armclient             *armClient.ClientWithResponses
 )
 
 const (
@@ -34,7 +35,7 @@ const (
 	AdmPortForwardRemote = "8081"
 	ArmPortForwardRemote = "8082"
 	dpDisplayName        = "nginx-test-list"
-	dpConfigName        = "nginx"
+	dpConfigName         = "nginx"
 )
 
 // TestSuite is the basic test suite
@@ -51,15 +52,13 @@ type TestSuite struct {
 func (s *TestSuite) SetupTest() {
 	s.token = token
 	s.projectID = projectID
-
-	s.ResourceRESTServerUrl = fmt.Sprintf("http://%s:%s", RestAddressPortForward, ArmPortForwardRemote)
-
+	s.ResourceRESTServerUrl = resourceRESTServerUrl
 	s.ArmClient = armclient
 	s.deployApps = deployApps
 	s.NotEmpty(s.deployApps)
 }
 
-func TestTestSuite(t *testing.T) {
+func TestListSuite(t *testing.T) {
 	portForwardCmd, err := utils.BringUpPortForward()
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -76,7 +75,7 @@ func TestTestSuite(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 
-	resourceRESTServerUrl := fmt.Sprintf("http://%s:%s", RestAddressPortForward, ArmPortForwardRemote)
+	resourceRESTServerUrl = fmt.Sprintf("http://%s:%s", RestAddressPortForward, ArmPortForwardRemote)
 	armclient, err = utils.CreateArmClient(resourceRESTServerUrl, token, projectID)
 	if err != nil {
 		t.Fatalf("error: %v", err)

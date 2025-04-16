@@ -5,8 +5,6 @@
 package delete
 
 import (
-	"time"
-
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/list"
 )
 
@@ -17,7 +15,7 @@ func (s *TestSuite) TestDelete() {
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
-		// nginx app workload len should be 1
+		// app workload len should be 1
 		if len(*appWorkloads) != 1 {
 			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
 		}
@@ -25,8 +23,11 @@ func (s *TestSuite) TestDelete() {
 		for _, appWorkload := range *appWorkloads {
 			err = PodDelete(s.ArmClient, *appWorkload.Namespace, appWorkload.Name)
 			s.NoError(err)
+
+			err = WaitPodDelete(s.ArmClient, appID)
+			s.NoError(err)
+
 			s.T().Logf("deleted pod %s\n", appWorkload.Name)
 		}
-		time.Sleep(5 * time.Second) // Wait for deletion
 	}
 }

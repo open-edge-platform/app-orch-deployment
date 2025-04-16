@@ -9,8 +9,8 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
-// TestList tests list endpoints
-func (s *TestSuite) TestAuthProjectIDList() {
+// TestListAuthProjectID tests list with invalid project id
+func (s *TestSuite) TestListAuthProjectID() {
 	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
@@ -30,7 +30,8 @@ func (s *TestSuite) TestAuthProjectIDList() {
 	}
 }
 
-func (s *TestSuite) TestAuthJWTList() {
+// TestListAuthJWT tests list with invalid jwt
+func (s *TestSuite) TestListAuthJWT() {
 	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, auth.InvalidJWT, s.projectID)
 	s.NoError(err)
 
