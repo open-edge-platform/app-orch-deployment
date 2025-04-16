@@ -5,14 +5,14 @@
 package vm
 
 import (
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/list"
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/container"
 )
 
-// TestList tests VM endpoints
-func (s *TestSuite) TestVM() {
+// TestGetVNC tests get vnc endpoint
+func (s *TestSuite) TestGetVNC() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := list.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, err := container.AppWorkloadsList(s.ArmClient, appID)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -29,11 +29,11 @@ func (s *TestSuite) TestVM() {
 	}
 }
 
-// TestStartVM tests start VM endpoint
-func (s *TestSuite) TestStartVM() {
+// TestVMStart tests VM start endpoint
+func (s *TestSuite) TestVMStart() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := list.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, err := container.AppWorkloadsList(s.ArmClient, appID)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -50,27 +50,26 @@ func (s *TestSuite) TestStartVM() {
 				s.NoError(err)
 				s.T().Logf("stop VM pod %s\n", appWorkload.Name)
 
-				err = GetVNCStatus(s.ArmClient, appID, appWorkload.Id.String(), VMStopped)
+				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), VMStopped)
 				s.NoError(err)
 			}
 
-			// Start
 			err = StartVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
 			s.NoError(err)
 			s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
-			err = GetVNCStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
+			err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
 			s.NoError(err)
 
 		}
 	}
 }
 
-// TestStopVM tests stop VM endpoint
-func (s *TestSuite) TestStopVM() {
+// TestVMStop tests VM stop endpoint
+func (s *TestSuite) TestVMStop() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := list.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, err := container.AppWorkloadsList(s.ArmClient, appID)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -87,26 +86,25 @@ func (s *TestSuite) TestStopVM() {
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
-				err = GetVNCStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
+				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
 				s.NoError(err)
 			}
 
-			// Stop
 			err = StopVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
 			s.NoError(err)
 			s.T().Logf("stop VM pod %s\n", appWorkload.Name)
 
-			err = GetVNCStatus(s.ArmClient, appID, appWorkload.Id.String(), VMStopped)
+			err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), VMStopped)
 			s.NoError(err)
 		}
 	}
 }
 
-// TestRestartVM tests restart VM endpoint
-func (s *TestSuite) TestRestartVM() {
+// TestVMRestart tests VM restart endpoint
+func (s *TestSuite) TestVMRestart() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := list.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, err := container.AppWorkloadsList(s.ArmClient, appID)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -123,7 +121,7 @@ func (s *TestSuite) TestRestartVM() {
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
-				err = GetVNCStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
+				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
 				s.NoError(err)
 			}
 
@@ -131,7 +129,7 @@ func (s *TestSuite) TestRestartVM() {
 			s.NoError(err)
 			s.T().Logf("restart VM pod %s\n", appWorkload.Name)
 
-			err = GetVNCStatus(s.ArmClient, appID, appWorkload.Id.String(), currState)
+			err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), currState)
 			s.NoError(err)
 		}
 	}

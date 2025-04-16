@@ -7,7 +7,7 @@ package vm
 import (
 	"net/http"
 
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/list"
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/container"
 )
 
 var getVncMethods = map[string]int{
@@ -42,11 +42,11 @@ var restartVMMethods = map[string]int{
 	http.MethodPost:   405,
 }
 
-// TestVMMethods tests VM methods
-func (s *TestSuite) TestGetVMMethod() {
+// TestGetVNCMethod tests get vnc method
+func (s *TestSuite) TestGetVNCMethod() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := list.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, err := container.AppWorkloadsList(s.ArmClient, appID)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -66,11 +66,11 @@ func (s *TestSuite) TestGetVMMethod() {
 	}
 }
 
-// TestStartVMMethod tests start VM methods
-func (s *TestSuite) TestStartVMMethod() {
+// TestVMStartMethod tests VM start method
+func (s *TestSuite) TestVMStartMethod() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := list.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, err := container.AppWorkloadsList(s.ArmClient, appID)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -87,17 +87,17 @@ func (s *TestSuite) TestStartVMMethod() {
 				s.NoError(err)
 				s.T().Logf("stop VM pod %s\n", appWorkload.Name)
 
-				err = GetVNCStatus(s.ArmClient, appID, appWorkload.Id.String(), VMStopped)
+				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), VMStopped)
 				s.NoError(err)
 			}
 
 			for method, expectedStatus := range startVMMethods {
-				res, err := MethodStartVNC(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id.String())
+				res, err := MethodVMStart(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id.String())
 				s.NoError(err)
 				s.Equal(expectedStatus, res.StatusCode)
 
 				if expectedStatus == 200 {
-					err = GetVNCStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
+					err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
 					s.NoError(err)
 				}
 
@@ -107,11 +107,11 @@ func (s *TestSuite) TestStartVMMethod() {
 	}
 }
 
-// TestStopVMMethod tests stop VM methods
-func (s *TestSuite) TestStopVMMethod() {
+// TestVMStopMethod tests VM stop method
+func (s *TestSuite) TestVMStopMethod() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := list.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, err := container.AppWorkloadsList(s.ArmClient, appID)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -128,17 +128,17 @@ func (s *TestSuite) TestStopVMMethod() {
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
-				err = GetVNCStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
+				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
 				s.NoError(err)
 			}
 
 			for method, expectedStatus := range stopVMMethods {
-				res, err := MethodStopVNC(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id.String())
+				res, err := MethodVMStop(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id.String())
 				s.NoError(err)
 				s.Equal(expectedStatus, res.StatusCode)
 
 				if expectedStatus == 200 {
-					err = GetVNCStatus(s.ArmClient, appID, appWorkload.Id.String(), VMStopped)
+					err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), VMStopped)
 					s.NoError(err)
 				}
 
@@ -148,11 +148,11 @@ func (s *TestSuite) TestStopVMMethod() {
 	}
 }
 
-// TestRestartVMMethod tests restart VM methods
-func (s *TestSuite) TestRestartVMMethod() {
+// TestVMRestartMethod tests VM restart methods
+func (s *TestSuite) TestVMRestartMethod() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := list.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, err := container.AppWorkloadsList(s.ArmClient, appID)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -169,17 +169,17 @@ func (s *TestSuite) TestRestartVMMethod() {
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
-				err = GetVNCStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
+				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
 				s.NoError(err)
 			}
 
 			for method, expectedStatus := range restartVMMethods {
-				res, err := MethodRestartVNC(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id.String())
+				res, err := MethodVMRestart(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id.String())
 				s.NoError(err)
 				s.Equal(expectedStatus, res.StatusCode)
 
 				if expectedStatus == 200 {
-					err = GetVNCStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
+					err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
 					s.NoError(err)
 				}
 

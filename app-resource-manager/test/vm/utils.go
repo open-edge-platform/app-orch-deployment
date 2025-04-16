@@ -13,7 +13,7 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/deploy"
 
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/list"
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/container"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
@@ -63,7 +63,7 @@ func MethodGetVNC(verb, restServerURL, appID, token, projectID, virtMachineID st
 	return res, err
 }
 
-func MethodStartVNC(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
+func MethodVMStart(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
 	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/start", restServerURL, appID, deploy.TestClusterID, virtMachineID)
 	res, err := utils.CallMethod(url, verb, token, projectID)
 	if err != nil {
@@ -73,7 +73,7 @@ func MethodStartVNC(verb, restServerURL, appID, token, projectID, virtMachineID 
 	return res, err
 }
 
-func MethodStopVNC(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
+func MethodVMStop(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
 	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/stop", restServerURL, appID, deploy.TestClusterID, virtMachineID)
 	res, err := utils.CallMethod(url, verb, token, projectID)
 	if err != nil {
@@ -83,7 +83,7 @@ func MethodStopVNC(verb, restServerURL, appID, token, projectID, virtMachineID s
 	return res, err
 }
 
-func MethodRestartVNC(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
+func MethodVMRestart(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
 	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/restart", restServerURL, appID, deploy.TestClusterID, virtMachineID)
 	res, err := utils.CallMethod(url, verb, token, projectID)
 	if err != nil {
@@ -93,7 +93,7 @@ func MethodRestartVNC(verb, restServerURL, appID, token, projectID, virtMachineI
 	return res, err
 }
 
-func GetVNCStatus(armClient *restClient.ClientWithResponses, appID, virtMachineID, desiredState string) error {
+func GetVMStatus(armClient *restClient.ClientWithResponses, appID, virtMachineID, desiredState string) error {
 	var (
 		appName    string
 		currState  string
@@ -102,7 +102,7 @@ func GetVNCStatus(armClient *restClient.ClientWithResponses, appID, virtMachineI
 	)
 
 	for range retryCount {
-		appWorkloads, err := list.AppWorkloadsList(armClient, appID)
+		appWorkloads, err := container.AppWorkloadsList(armClient, appID)
 		if err != nil {
 			return fmt.Errorf("failed to list app workloads: %v", err)
 		}

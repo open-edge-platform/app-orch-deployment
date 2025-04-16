@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package delete
+package container
 
 import (
 	"context"
@@ -12,7 +12,6 @@ import (
 
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/deploy"
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/list"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
@@ -21,13 +20,56 @@ const (
 	retryCount = 10
 )
 
-func PodDelete(armClient *restClient.ClientWithResponses, namespace, podName string) error {
+func AppWorkloadsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppWorkload, error) {
+	resp, err := armClient.AppWorkloadServiceListAppWorkloadsWithResponse(context.TODO(), appID, deploy.TestClusterID)
+	if err != nil || resp.StatusCode() != 200 {
+		return &[]restClient.AppWorkload{}, fmt.Errorf("failed to list app workloads: %v, status: %d", err, resp.StatusCode())
+	}
+
+	return resp.JSON200.AppWorkloads, nil
+}
+
+func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppEndpoint, error) {
+	resp, err := armClient.EndpointsServiceListAppEndpointsWithResponse(context.TODO(), appID, deploy.TestClusterID)
+	if err != nil || resp.StatusCode() != 200 {
+		return &[]restClient.AppEndpoint{}, fmt.Errorf("failed to list app endpoints: %v, status: %d", err, resp.StatusCode())
+	}
+
+	return resp.JSON200.AppEndpoints, nil
+}
+
+func PodDelete(armClient *restClient.ClientWithResponses, namespace, podName, appID string) error {
 	resp, err := armClient.PodServiceDeletePodWithResponse(context.TODO(), deploy.TestClusterID, namespace, podName)
 	if err != nil || resp.StatusCode() != 200 {
 		return fmt.Errorf("failed to delete pod: %v, status: %d", err, resp.StatusCode())
 	}
 
+	err = WaitPodDelete(armClient, appID)
+	if err != nil {
+		return fmt.Errorf("error: %v", err)
+	}
+
 	return nil
+}
+
+func MethodAppWorkloadsList(verb, restServerURL, appID, token, projectID string) (*http.Response, error) {
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/%s/%s", restServerURL, appID, deploy.TestClusterID)
+	res, err := utils.CallMethod(url, verb, token, projectID)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, err
+}
+
+func MethodAppEndpointsList(verb, restServerURL, appID, token, projectID string) (*http.Response, error) {
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/endpoints/%s/%s", restServerURL, appID, deploy.TestClusterID)
+	res, err := utils.CallMethod(url, verb, token, projectID)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, err
 }
 
 func MethodPodDelete(verb, restServerURL, namespace, podName, token, projectID string) (*http.Response, error) {
@@ -47,7 +89,7 @@ func GetPodStatus(armClient *restClient.ClientWithResponses, appID, workloadID, 
 	)
 
 	for range retryCount {
-		appWorkloads, err := list.AppWorkloadsList(armClient, appID)
+		appWorkloads, err := AppWorkloadsList(armClient, appID)
 		if err != nil {
 			return fmt.Errorf("failed to list app workloads: %v", err)
 		}
@@ -73,7 +115,7 @@ func GetPodStatus(armClient *restClient.ClientWithResponses, appID, workloadID, 
 
 func WaitPodDelete(armClient *restClient.ClientWithResponses, appID string) error {
 	for range retryCount {
-		appWorkloads, err := list.AppWorkloadsList(armClient, appID)
+		appWorkloads, err := AppWorkloadsList(armClient, appID)
 		if err != nil {
 			return fmt.Errorf("failed to list app workloads: %v", err)
 		}

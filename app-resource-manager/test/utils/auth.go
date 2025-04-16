@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Package auth contains utilities for keycloak authentication
-package auth
+package utils
 
 import (
 	"context"

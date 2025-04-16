@@ -14,7 +14,6 @@ import (
 
 	admClient "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 	armClient "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/auth"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/deploy"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 	"github.com/stretchr/testify/suite"
@@ -69,12 +68,12 @@ func TestVMSuite(t *testing.T) {
 	}
 	defer utils.TearDownPortForward(portForwardCmd)
 
-	token, err = auth.SetUpAccessToken(KeycloakServer)
+	token, err = utils.SetUpAccessToken(KeycloakServer)
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
 
-	projectID, err = auth.GetProjectID(context.TODO())
+	projectID, err = utils.GetProjectID(context.TODO())
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -87,7 +86,7 @@ func TestVMSuite(t *testing.T) {
 
 	deploymentRESTServerUrl := fmt.Sprintf("http://%s:%s", RestAddressPortForward, AdmPortForwardRemote)
 	admClientInstance, err := admClient.NewClientWithResponses(deploymentRESTServerUrl, admClient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-		auth.AddRestAuthHeader(req, token, projectID)
+		utils.AddRestAuthHeader(req, token, projectID)
 		return nil
 	}))
 	if err != nil {

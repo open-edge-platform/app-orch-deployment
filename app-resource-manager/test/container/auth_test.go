@@ -2,14 +2,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package list
+package container
 
 import (
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/auth"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
-// TestListAuthProjectID tests list with invalid project id
+// TestListAuthProjectID tests list both app workload and endpoint service with invalid project id
 func (s *TestSuite) TestListAuthProjectID() {
 	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
@@ -30,9 +29,9 @@ func (s *TestSuite) TestListAuthProjectID() {
 	}
 }
 
-// TestListAuthJWT tests list with invalid jwt
+// TestListAuthJWT tests list both app workload and endpoint service with invalid jwt
 func (s *TestSuite) TestListAuthJWT() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, auth.InvalidJWT, s.projectID)
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.projectID)
 	s.NoError(err)
 
 	for _, app := range s.deployApps {
@@ -49,4 +48,26 @@ func (s *TestSuite) TestListAuthJWT() {
 		s.Empty(appEndpoints)
 		s.T().Logf("successfully handled invalid JWT to list app endpoints\n")
 	}
+}
+
+// TestDeletePodAuthProjectID tests delete pod with invalid project id
+func (s *TestSuite) TestDeletePodAuthProjectID() {
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
+	s.NoError(err)
+
+	err = PodDelete(armClient, "namespace", "podname", "appID")
+	s.Equal(err.Error(), "failed to delete pod: <nil>, status: 403")
+	s.Error(err)
+	s.T().Logf("successfully handled invalid projectid to delete pod\n")
+}
+
+// TestDeletePodAuthJWT tests delete pod with invalid jwt
+func (s *TestSuite) TestDeletePodAuthJWT() {
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.projectID)
+	s.NoError(err)
+
+	err = PodDelete(armClient, "namespace", "podname", "appID")
+	s.Equal(err.Error(), "failed to delete pod: <nil>, status: 401")
+	s.Error(err)
+	s.T().Logf("successfully handled invalid JWT to delete pod\n")
 }

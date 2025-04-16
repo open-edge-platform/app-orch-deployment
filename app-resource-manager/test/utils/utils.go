@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/auth"
 )
 
 var portForwardCmd = make(map[string]*exec.Cmd)
@@ -65,8 +64,8 @@ func PortForward(scenario string, portForwardCmd map[string]*exec.Cmd) (map[stri
 	return portForwardCmd, err
 }
 
-func KillPortForward(scenrio string, portForwardCmd map[string]*exec.Cmd) error {
-	cmd := portForwardCmd[scenrio]
+func KillPortForward(scenario string, portForwardCmd map[string]*exec.Cmd) error {
+	cmd := portForwardCmd[scenario]
 	if cmd != nil && cmd.Process != nil {
 		return cmd.Process.Kill()
 	}
@@ -87,16 +86,16 @@ func BringUpPortForward() (map[string]*exec.Cmd, error) {
 }
 
 func TearDownPortForward(portForwardCmd map[string]*exec.Cmd) {
-	scenrio := "adm"
-	err := KillPortForward(scenrio, portForwardCmd)
+	scenario := "adm"
+	err := KillPortForward(scenario, portForwardCmd)
 	if err == nil {
-		fmt.Printf("%s port-forward process killed\n", scenrio)
+		fmt.Printf("%s port-forward process killed\n", scenario)
 	}
 
-	scenrio = "arm"
-	err = KillPortForward(scenrio, portForwardCmd)
+	scenario = "arm"
+	err = KillPortForward(scenario, portForwardCmd)
 	if err == nil {
-		fmt.Printf("%s port-forward process killed\n", scenrio)
+		fmt.Printf("%s port-forward process killed\n", scenario)
 	}
 }
 
@@ -106,7 +105,7 @@ func CallMethod(url, verb, token, projectID string) (*http.Response, error) {
 		return nil, err
 	}
 
-	auth.AddRestAuthHeader(req, token, projectID)
+	AddRestAuthHeader(req, token, projectID)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -118,7 +117,7 @@ func CallMethod(url, verb, token, projectID string) (*http.Response, error) {
 
 func CreateArmClient(restServerURL, token, projectID string) (*restClient.ClientWithResponses, error) {
 	armClient, err := restClient.NewClientWithResponses(restServerURL, restClient.WithRequestEditorFn(func(_ context.Context, req *http.Request) error {
-		auth.AddRestAuthHeader(req, token, projectID)
+		AddRestAuthHeader(req, token, projectID)
 		return nil
 	}))
 	if err != nil {

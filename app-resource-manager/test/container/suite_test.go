@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Package basic is a suite of basic functionality tests for the ADM service
-package list
+package container
 
 import (
 	"context"
@@ -14,7 +13,6 @@ import (
 
 	admClient "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 	armClient "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/auth"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/deploy"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 	"github.com/stretchr/testify/suite"
@@ -34,7 +32,7 @@ const (
 
 	AdmPortForwardRemote = "8081"
 	ArmPortForwardRemote = "8082"
-	dpDisplayName        = "nginx-test-list"
+	dpDisplayName        = "nginx-test-container"
 	dpConfigName         = "nginx"
 )
 
@@ -58,19 +56,19 @@ func (s *TestSuite) SetupTest() {
 	s.NotEmpty(s.deployApps)
 }
 
-func TestListSuite(t *testing.T) {
+func TestContainerSuite(t *testing.T) {
 	portForwardCmd, err := utils.BringUpPortForward()
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
 	defer utils.TearDownPortForward(portForwardCmd)
 
-	token, err = auth.SetUpAccessToken(KeycloakServer)
+	token, err = utils.SetUpAccessToken(KeycloakServer)
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
 
-	projectID, err = auth.GetProjectID(context.TODO())
+	projectID, err = utils.GetProjectID(context.TODO())
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -83,7 +81,7 @@ func TestListSuite(t *testing.T) {
 
 	deploymentRESTServerUrl := fmt.Sprintf("http://%s:%s", RestAddressPortForward, AdmPortForwardRemote)
 	admClientInstance, err := admClient.NewClientWithResponses(deploymentRESTServerUrl, admClient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-		auth.AddRestAuthHeader(req, token, projectID)
+		utils.AddRestAuthHeader(req, token, projectID)
 		return nil
 	}))
 	if err != nil {
