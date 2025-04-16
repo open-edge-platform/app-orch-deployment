@@ -8,7 +8,8 @@ package container
 func (s *TestSuite) TestList() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := AppWorkloadsList(s.ArmClient, appID)
+		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -17,9 +18,10 @@ func (s *TestSuite) TestList() {
 			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
 		}
 
-		s.T().Logf("app Workloads len: %+v\n", len(*appWorkloads))
+		s.T().Logf("app workloads len: %+v\n", len(*appWorkloads))
 
-		appEndpoints, err := AppEndpointsList(s.ArmClient, appID)
+		appEndpoints, retCode, err := AppEndpointsList(s.ArmClient, appID)
+		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appEndpoints)
 	}
@@ -29,7 +31,8 @@ func (s *TestSuite) TestList() {
 func (s *TestSuite) TestDeletePod() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := AppWorkloadsList(s.ArmClient, appID)
+		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -39,7 +42,8 @@ func (s *TestSuite) TestDeletePod() {
 		}
 
 		for _, appWorkload := range *appWorkloads {
-			err = PodDelete(s.ArmClient, *appWorkload.Namespace, appWorkload.Name, appID)
+			retCode, err := PodDelete(s.ArmClient, *appWorkload.Namespace, appWorkload.Name, appID)
+			s.Equal(retCode, 200)
 			s.NoError(err)
 
 			s.T().Logf("deleted pod %s\n", appWorkload.Name)

@@ -57,7 +57,8 @@ func (s *TestSuite) TestListMethods() {
 func (s *TestSuite) TestDeletePodMethod() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := AppWorkloadsList(s.ArmClient, appID)
+		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -66,7 +67,7 @@ func (s *TestSuite) TestDeletePodMethod() {
 			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
 		}
 
-		s.T().Logf("app Workloads len: %+v\n", len(*appWorkloads))
+		s.T().Logf("app workloads len: %+v\n", len(*appWorkloads))
 
 		for _, appWorkload := range *appWorkloads {
 			namespace := *appWorkload.Namespace

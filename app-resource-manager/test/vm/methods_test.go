@@ -46,7 +46,8 @@ var restartVMMethods = map[string]int{
 func (s *TestSuite) TestGetVNCMethod() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -70,7 +71,8 @@ func (s *TestSuite) TestGetVNCMethod() {
 func (s *TestSuite) TestVMStartMethod() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -83,7 +85,8 @@ func (s *TestSuite) TestVMStartMethod() {
 			// will get 400 if VM is already running
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			if currState != VMStopped {
-				err = StopVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+				retCode, err = StopVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("stop VM pod %s\n", appWorkload.Name)
 
@@ -111,7 +114,8 @@ func (s *TestSuite) TestVMStartMethod() {
 func (s *TestSuite) TestVMStopMethod() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -124,7 +128,8 @@ func (s *TestSuite) TestVMStopMethod() {
 			// will get 400 if VM is not already running
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			if currState != VMRunning {
-				err = StartVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+				retCode, err = StartVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
@@ -152,7 +157,8 @@ func (s *TestSuite) TestVMStopMethod() {
 func (s *TestSuite) TestVMRestartMethod() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -165,7 +171,8 @@ func (s *TestSuite) TestVMRestartMethod() {
 			// will get 400 if VM is not already running
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			if currState != VMRunning {
-				err = StartVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+				retCode, err := StartVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 

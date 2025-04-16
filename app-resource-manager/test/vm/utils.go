@@ -17,40 +17,52 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
-func StartVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) error {
+func StartVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) (int, error) {
 	resp, err := armClient.VirtualMachineServiceStartVirtualMachineWithResponse(context.TODO(), appID, deploy.TestClusterID, virtMachineID)
 	if err != nil || resp.StatusCode() != 200 {
-		return fmt.Errorf("failed to start virtual machine: %v, status: %d", err, resp.StatusCode())
+		if err != nil {
+			return resp.StatusCode(), fmt.Errorf("%v", err)
+		}
+		return resp.StatusCode(), fmt.Errorf("failed to start virtual machine: %v", string(resp.Body))
 	}
 
-	return nil
+	return resp.StatusCode(), nil
 }
 
-func StopVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) error {
+func StopVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) (int, error) {
 	resp, err := armClient.VirtualMachineServiceStopVirtualMachineWithResponse(context.TODO(), appID, deploy.TestClusterID, virtMachineID)
 	if err != nil || resp.StatusCode() != 200 {
-		return fmt.Errorf("failed to stop virtual machine: %v, status: %d", err, resp.StatusCode())
+		if err != nil {
+			return resp.StatusCode(), fmt.Errorf("%v", err)
+		}
+		return resp.StatusCode(), fmt.Errorf("failed to stop virtual machine: %v", string(resp.Body))
 	}
 
-	return nil
+	return resp.StatusCode(), nil
 }
 
-func RestartVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) error {
+func RestartVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) (int, error) {
 	resp, err := armClient.VirtualMachineServiceRestartVirtualMachineWithResponse(context.TODO(), appID, deploy.TestClusterID, virtMachineID)
 	if err != nil || resp.StatusCode() != 200 {
-		return fmt.Errorf("failed to restart virtual machine: %v, status: %d", err, resp.StatusCode())
+		if err != nil {
+			return resp.StatusCode(), fmt.Errorf("%v", err)
+		}
+		return resp.StatusCode(), fmt.Errorf("failed to restart virtual machine: %v", string(resp.Body))
 	}
 
-	return nil
+	return resp.StatusCode(), nil
 }
 
-func GetVNC(armClient *restClient.ClientWithResponses, appID, virtMachineID string) error {
+func GetVNC(armClient *restClient.ClientWithResponses, appID, virtMachineID string) (int, error) {
 	resp, err := armClient.VirtualMachineServiceGetVNCWithResponse(context.TODO(), appID, deploy.TestClusterID, virtMachineID)
 	if err != nil || resp.StatusCode() != 200 {
-		return fmt.Errorf("failed to get VNC: %v, status: %d", err, resp.StatusCode())
+		if err != nil {
+			return resp.StatusCode(), fmt.Errorf("%v", err)
+		}
+		return resp.StatusCode(), fmt.Errorf("failed to get VNC: %v", string(resp.Body))
 	}
 
-	return nil
+	return resp.StatusCode(), nil
 }
 
 func MethodGetVNC(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
@@ -102,8 +114,8 @@ func GetVMStatus(armClient *restClient.ClientWithResponses, appID, virtMachineID
 	)
 
 	for range retryCount {
-		appWorkloads, err := container.AppWorkloadsList(armClient, appID)
-		if err != nil {
+		appWorkloads, returnCode, err := container.AppWorkloadsList(armClient, appID)
+		if err != nil || returnCode != 200 {
 			return fmt.Errorf("failed to list app workloads: %v", err)
 		}
 
@@ -122,5 +134,5 @@ func GetVMStatus(armClient *restClient.ClientWithResponses, appID, virtMachineID
 		time.Sleep(retryDelay)
 	}
 
-	return nil
+	return fmt.Errorf("VM %s failed to reach desired state %s. Last known state: %s", appName, desiredState, currState)
 }

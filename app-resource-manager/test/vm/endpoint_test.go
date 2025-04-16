@@ -12,7 +12,8 @@ import (
 func (s *TestSuite) TestGetVNC() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -22,7 +23,8 @@ func (s *TestSuite) TestGetVNC() {
 		}
 
 		for _, appWorkload := range *appWorkloads {
-			err = GetVNC(s.ArmClient, appID, appWorkload.Id.String())
+			retCode, err = GetVNC(s.ArmClient, appID, appWorkload.Id.String())
+			s.Equal(retCode, 200)
 			s.NoError(err)
 			s.T().Logf("get VM pod %s\n", appWorkload.Name)
 		}
@@ -33,7 +35,8 @@ func (s *TestSuite) TestGetVNC() {
 func (s *TestSuite) TestVMStart() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -46,7 +49,8 @@ func (s *TestSuite) TestVMStart() {
 			// Stop VM if running
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			if currState != VMStopped {
-				err = StopVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+				retCode, err = StopVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("stop VM pod %s\n", appWorkload.Name)
 
@@ -54,7 +58,8 @@ func (s *TestSuite) TestVMStart() {
 				s.NoError(err)
 			}
 
-			err = StartVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+			retCode, err = StartVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+			s.Equal(retCode, 200)
 			s.NoError(err)
 			s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
@@ -69,7 +74,8 @@ func (s *TestSuite) TestVMStart() {
 func (s *TestSuite) TestVMStop() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -82,7 +88,8 @@ func (s *TestSuite) TestVMStop() {
 			// Start VM if not running
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			if currState != VMRunning {
-				err = StartVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+				retCode, err := StartVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
@@ -90,7 +97,8 @@ func (s *TestSuite) TestVMStop() {
 				s.NoError(err)
 			}
 
-			err = StopVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+			retCode, err := StopVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+			s.Equal(retCode, 200)
 			s.NoError(err)
 			s.T().Logf("stop VM pod %s\n", appWorkload.Name)
 
@@ -104,7 +112,8 @@ func (s *TestSuite) TestVMStop() {
 func (s *TestSuite) TestVMRestart() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -117,7 +126,8 @@ func (s *TestSuite) TestVMRestart() {
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			// Start VM if not running
 			if currState != VMRunning {
-				err = StartVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+				retCode, err := StartVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
@@ -125,7 +135,8 @@ func (s *TestSuite) TestVMRestart() {
 				s.NoError(err)
 			}
 
-			err = RestartVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+			retCode, err := RestartVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+			s.Equal(retCode, 200)
 			s.NoError(err)
 			s.T().Logf("restart VM pod %s\n", appWorkload.Name)
 

@@ -20,36 +20,45 @@ const (
 	retryCount = 10
 )
 
-func AppWorkloadsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppWorkload, error) {
+func AppWorkloadsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppWorkload, int, error) {
 	resp, err := armClient.AppWorkloadServiceListAppWorkloadsWithResponse(context.TODO(), appID, deploy.TestClusterID)
 	if err != nil || resp.StatusCode() != 200 {
-		return &[]restClient.AppWorkload{}, fmt.Errorf("failed to list app workloads: %v, status: %d", err, resp.StatusCode())
+		if err != nil {
+			return &[]restClient.AppWorkload{}, resp.StatusCode(), fmt.Errorf("%v", err)
+		}
+		return &[]restClient.AppWorkload{}, resp.StatusCode(), fmt.Errorf("failed to list app workloads: %v", string(resp.Body))
 	}
 
-	return resp.JSON200.AppWorkloads, nil
+	return resp.JSON200.AppWorkloads, resp.StatusCode(), nil
 }
 
-func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppEndpoint, error) {
+func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppEndpoint, int, error) {
 	resp, err := armClient.EndpointsServiceListAppEndpointsWithResponse(context.TODO(), appID, deploy.TestClusterID)
 	if err != nil || resp.StatusCode() != 200 {
-		return &[]restClient.AppEndpoint{}, fmt.Errorf("failed to list app endpoints: %v, status: %d", err, resp.StatusCode())
+		if err != nil {
+			return &[]restClient.AppEndpoint{}, resp.StatusCode(), fmt.Errorf("%v", err)
+		}
+		return &[]restClient.AppEndpoint{}, resp.StatusCode(), fmt.Errorf("failed to list app endpoints: %v", string(resp.Body))
 	}
 
-	return resp.JSON200.AppEndpoints, nil
+	return resp.JSON200.AppEndpoints, resp.StatusCode(), nil
 }
 
-func PodDelete(armClient *restClient.ClientWithResponses, namespace, podName, appID string) error {
+func PodDelete(armClient *restClient.ClientWithResponses, namespace, podName, appID string) (int, error) {
 	resp, err := armClient.PodServiceDeletePodWithResponse(context.TODO(), deploy.TestClusterID, namespace, podName)
 	if err != nil || resp.StatusCode() != 200 {
-		return fmt.Errorf("failed to delete pod: %v, status: %d", err, resp.StatusCode())
+		if err != nil {
+			return resp.StatusCode(), fmt.Errorf("%v", err)
+		}
+		return resp.StatusCode(), fmt.Errorf("failed to delete pod: %v", string(resp.Body))
 	}
 
 	err = WaitPodDelete(armClient, appID)
 	if err != nil {
-		return fmt.Errorf("error: %v", err)
+		return resp.StatusCode(), fmt.Errorf("error: %v", err)
 	}
 
-	return nil
+	return resp.StatusCode(), nil
 }
 
 func MethodAppWorkloadsList(verb, restServerURL, appID, token, projectID string) (*http.Response, error) {
@@ -89,8 +98,8 @@ func GetPodStatus(armClient *restClient.ClientWithResponses, appID, workloadID, 
 	)
 
 	for range retryCount {
-		appWorkloads, err := AppWorkloadsList(armClient, appID)
-		if err != nil {
+		appWorkloads, returnCode, err := AppWorkloadsList(armClient, appID)
+		if err != nil || returnCode != 200 {
 			return fmt.Errorf("failed to list app workloads: %v", err)
 		}
 
@@ -115,8 +124,8 @@ func GetPodStatus(armClient *restClient.ClientWithResponses, appID, workloadID, 
 
 func WaitPodDelete(armClient *restClient.ClientWithResponses, appID string) error {
 	for range retryCount {
-		appWorkloads, err := AppWorkloadsList(armClient, appID)
-		if err != nil {
+		appWorkloads, returnCode, err := AppWorkloadsList(armClient, appID)
+		if err != nil || returnCode != 200 {
 			return fmt.Errorf("failed to list app workloads: %v", err)
 		}
 
