@@ -70,7 +70,7 @@ endif
 TEST_TARGET ?= .
 # Default TEST_PKG, overwrite to select particular test pakages
 TEST_PKG ?= $(shell go list ./... | grep -v "internal" | tr '\n' ,)
-TEST_COVER := atomic ./...
+TEST_COVER := atomic $(shell go list ./... | grep -v "/test/")
 
 FUZZ_SECONDS ?= 60
 
