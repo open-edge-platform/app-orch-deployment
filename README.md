@@ -72,14 +72,18 @@ make license
 
 ## Community and Support
 
-To learn more about the project, its community, and governance, visit the Edge Orchestrator Community.
-For support, start with Troubleshooting or contact us.
+To learn more about the project, its community, and governance, visit the [Edge Orchestrator Community].
+For support, start with [Troubleshooting] or [Contact us].
 
 ## License
 
-Application Orchestration Deployment is licensed under [Apache 2.0 License](app-deployment-manager/LICENSES/Apache-2.0.txt).
+Application Orchestration Deployment is licensed under [Apache 2.0 License].
 
 [Application Catalog]: https://github.com/open-edge-platform/app-orch-catalog
 [Cluster Manager]: https://github.com/open-edge-platform/cluster-manager
 [Foundational Platform]: https://literate-adventure-7vjeyem.pages.github.io/developer_guide/foundational_platform/foundational_platform_main.html
 [Contributor Guide]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/contributor_guide/index.html
+[Troubleshooting]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/troubleshooting/index.html
+[Contact us]: https://github.com/open-edge-platform
+[Edge Orchestrator Community]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html
+[Apache 2.0 License]: LICENSES/Apache-2.0.txt
