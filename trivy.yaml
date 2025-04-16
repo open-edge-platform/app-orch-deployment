@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+scan:
+  skip-dirs:
+    - app-resource-manager/vendor
+    - app-service-proxy/vendor
+    - app-service-proxy/config
+    - app-service-proxy/deployment
+
+  skip-files:
+    - app-interconnect/deploy/charts/interconnect-manager/templates/clusterrole.yaml
+    - app-interconnect/deploy/charts/app-interconnect-manager/templates/deployment.yaml
+    - app-interconnect/deploy/charts/app-interconnect-manager/templates/clusterrole.yaml
+    - app-resource-manager/deployments/app-resource-manager/templates/deployment.yaml
+    - app-resource-manager/deployments/app-resource-manager/templates/deployment-vnc-proxy.yaml
+    - app-deployment-manager/config/default/manager_auth_proxy_patch.yaml
+    - app-deployment-manager/config/default/manager_config_patch.yaml
+    - app-deployment-manager/config/default/manager_webhook_patch.yaml
+    - app-deployment-manager/config/manager/manager.yaml
+    - app-deployment-manager/config/rbac/role.yaml
+    - app-deployment-manager/config/rbac/deployment_editor_role.yaml
+    - app-deployment-manager/deployment/charts/app-deployment-manager/templates/rbac.yaml
+    - app-deployment-manager/deployment/charts/app-deployment-manager/templates/deployment-gateway.yaml
+    - app-deployment-manager/deployment/charts/app-deployment-manager/templates/deployment-adm.yaml
+    - app-deployment-manager/config/rbac/leader_election_role.yaml
+    - app-service-proxy/deployments/app-service-proxy/templates/role.yaml
+    - app-service-proxy/deployments/app-service-proxy/templates/deployment.yaml
