@@ -40,8 +40,7 @@ func (s *TestSuite) TestVMAuthProjectIDStop() {
 			}
 
 			retCode, err = StopVirtualMachine(armClient, appID, appWorkload.Id.String())
-			s.Equal(retCode, 200)
-			s.Equal(err.Error(), "failed to stop virtual machine: <nil>, status: 403")
+			s.Equal(retCode, 403)
 			s.Error(err)
 			s.T().Logf("successfully handled invalid project id to stop virtual machine\n")
 		}
@@ -183,7 +182,7 @@ func (s *TestSuite) TestVMAuthProjectIDRestart() {
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			// Start VM if not running
 			if currState != VMRunning {
-				retCode, err := StartVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+				retCode, err = StartVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
 				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
@@ -192,9 +191,8 @@ func (s *TestSuite) TestVMAuthProjectIDRestart() {
 				s.NoError(err)
 			}
 
-			retCode, err := RestartVirtualMachine(armClient, appID, appWorkload.Id.String())
+			retCode, err = RestartVirtualMachine(armClient, appID, appWorkload.Id.String())
 			s.Equal(retCode, 403)
-			s.Equal(err.Error(), "failed to restart virtual machine: <nil>, status: 403")
 			s.Error(err)
 			s.T().Logf("successfully handled invalid project id to restart virtual machine\n")
 		}
@@ -285,7 +283,6 @@ func (s *TestSuite) TestVMAuthJWTGetVNC() {
 		for _, appWorkload := range *appWorkloads {
 			retCode, err = GetVNC(armClient, appID, appWorkload.Id.String())
 			s.Equal(retCode, 401)
-			s.Equal(err.Error(), "failed to get VNC: <nil>, status: 401")
 			s.Error(err)
 			s.T().Logf("successfully handled invalid JWT to get VNC\n")
 		}

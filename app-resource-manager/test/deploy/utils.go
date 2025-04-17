@@ -44,29 +44,35 @@ func deploymentExists(deployments []restClient.Deployment, displayName string) b
 	return false
 }
 
-func getDeploymentPerCluster(client *restClient.ClientWithResponses) ([]restClient.DeploymentInstancesCluster, error) {
+func getDeploymentPerCluster(client *restClient.ClientWithResponses) ([]restClient.DeploymentInstancesCluster, int, error) {
 	resp, err := client.DeploymentServiceListDeploymentsPerClusterWithResponse(context.TODO(), TestClusterID, nil)
 	if err != nil || resp.StatusCode() != 200 {
-		return nil, fmt.Errorf("failed to list deployment cluster: %v, status: %d", err, resp.StatusCode())
+		if err != nil {
+			return nil, resp.StatusCode(), fmt.Errorf("%v", err)
+		}
+		return nil, resp.StatusCode(), fmt.Errorf("failed to list deployment cluster: %v", string(resp.Body))
 	}
 
-	return resp.JSON200.DeploymentInstancesCluster, nil
+	return resp.JSON200.DeploymentInstancesCluster, resp.StatusCode(), nil
 }
 
-func getDeployments(client *restClient.ClientWithResponses) ([]restClient.Deployment, error) {
+func getDeployments(client *restClient.ClientWithResponses) ([]restClient.Deployment, int, error) {
 	resp, err := client.DeploymentServiceListDeploymentsWithResponse(context.TODO(), nil)
 	if err != nil || resp.StatusCode() != 200 {
-		return nil, fmt.Errorf("failed to list deployments: %v, status: %d", err, resp.StatusCode())
+		if err != nil {
+			return nil, resp.StatusCode(), fmt.Errorf("%v", err)
+		}
+		return nil, resp.StatusCode(), fmt.Errorf("failed to list deployments: %v", string(resp.Body))
 	}
 
-	return resp.JSON200.Deployments, nil
+	return resp.JSON200.Deployments, resp.StatusCode(), nil
 }
 
 func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName string, status restClient.DeploymentStatusState, retries int, delay time.Duration) (string, error) {
 	var currState string
 	for range retries {
-		deployments, err := getDeployments(client)
-		if err != nil {
+		deployments, retCode, err := getDeployments(client)
+		if err != nil || retCode != 200 {
 			return "", fmt.Errorf("failed to get deployments: %v", err)
 		}
 
@@ -86,15 +92,18 @@ func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName
 }
 
 func getDeployApps(client *restClient.ClientWithResponses, deployID string) ([]*restClient.App, error) {
-	if deployments, err := getDeploymentPerCluster(client); err == nil {
-		for _, d := range deployments {
-			if *d.DeploymentUid == deployID {
-				apps := make([]*restClient.App, len(*d.Apps))
-				for i, app := range *d.Apps {
-					apps[i] = &app
-				}
-				return apps, nil
+	deployments, retCode, err := getDeploymentPerCluster(client)
+	if err != nil || retCode != 200 {
+		return []*restClient.App{}, fmt.Errorf("failed to get deployments: %v", err)
+	}
+
+	for _, d := range deployments {
+		if *d.DeploymentUid == deployID {
+			apps := make([]*restClient.App, len(*d.Apps))
+			for i, app := range *d.Apps {
+				apps[i] = &app
 			}
+			return apps, nil
 		}
 	}
 
@@ -102,13 +111,17 @@ func getDeployApps(client *restClient.ClientWithResponses, deployID string) ([]*
 }
 
 func findDeploymentIDByDisplayName(client *restClient.ClientWithResponses, displayName string) string {
-	if deployments, err := getDeployments(client); err == nil {
-		for _, d := range deployments {
-			if *d.DisplayName == displayName {
-				return *d.DeployId
-			}
+	deployments, retCode, err := getDeployments(client)
+	if err != nil || retCode != 200 {
+		return ""
+	}
+
+	for _, d := range deployments {
+		if *d.DisplayName == displayName {
+			return *d.DeployId
 		}
 	}
+
 	return ""
 }
 
@@ -173,7 +186,12 @@ func deleteAndRetryUntilDeleted(client *restClient.ClientWithResponses, displayN
 
 	// Retry until the deployment is confirmed deleted
 	for range retries {
-		if deployments, err := getDeployments(client); err == nil && !deploymentExists(deployments, displayName) {
+		deployments, retCode, err := getDeployments(client)
+		if err != nil || retCode != 200 {
+			return fmt.Errorf("failed to get deployments: %v", err)
+		}
+
+		if !deploymentExists(deployments, displayName) {
 			return nil
 		}
 		time.Sleep(delay)

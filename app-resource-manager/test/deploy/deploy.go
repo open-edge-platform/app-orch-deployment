@@ -52,9 +52,9 @@ func CreateDeployment(admClient *restClient.ClientWithResponses, dpPackageName s
 
 	// Check if virt-extension DP is already running, do not recreate a new one
 	if dpPackageName == "virt-extension" {
-		deployments, err := getDeploymentPerCluster(admClient)
-		if err != nil {
-			return []*restClient.App{}, fmt.Errorf("failed to get deployments: %v", err)
+		deployments, retCode, err := getDeploymentPerCluster(admClient)
+		if err != nil || retCode != 200 {
+			return []*restClient.App{}, fmt.Errorf("failed to get deployments per cluster: %v, status code: %d", err, retCode)
 		}
 		for _, deployment := range deployments {
 			if *deployment.DeploymentDisplayName == displayName && *deployment.Status.State == "RUNNING" {
