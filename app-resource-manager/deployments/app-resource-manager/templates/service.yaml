@@ -98,6 +98,7 @@ spec:
       kind: Rule
       middlewares:
         - name: {{ include "vnc-proxy.fullname" . }}-websocket-server
+        - name: secure-headers-app-orch
       services:
         - name: {{ include "vnc-proxy.fullname" . }}-websocket-server
           port: {{ .Values.service.webSocketServer.port }}

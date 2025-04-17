@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-FROM golang:1.23.2-bookworm AS build
+FROM golang:1.24.2-bookworm AS build
 
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 

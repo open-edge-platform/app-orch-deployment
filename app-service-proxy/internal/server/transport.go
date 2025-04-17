@@ -62,13 +62,13 @@ type RewritingTransport struct {
 
 // RoundTrip executes a single HTTP transaction and allows for response manipulation
 func (t *RewritingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	// Send the request using the default transport
+	// Send the request using the default transport if no custom transport is set
 	if t.transport == nil {
 		t.transport = http.DefaultTransport
 	}
 	resp, err := t.transport.RoundTrip(req)
 	if err != nil {
-		logrus.Errorf("transport error: %s", req.URL)
+		logrus.Errorf("transport error for URL %s: %v", req.URL, err)
 		return nil, err
 	}
 
@@ -80,7 +80,18 @@ func (t *RewritingTransport) RoundTrip(req *http.Request) (*http.Response, error
 		return resp, nil
 	}
 
-	return t.rewriteResponse(req, resp)
+	resp, err = t.rewriteResponse(req, resp)
+	if err != nil {
+		logrus.Debugf("rewrite response err : %s", err)
+		return &http.Response{
+			StatusCode: http.StatusBadRequest,
+			Status:     http.StatusText(http.StatusBadRequest),
+			Body:       io.NopCloser(strings.NewReader(fmt.Sprintf("Error: %v", err))),
+			Request:    req,
+		}, nil
+	}
+
+	return resp, nil
 }
 
 func rewriteURL(url *url.URL, sourceURL *url.URL, ci *CookieInfo, kubeapiAddr *url.URL) string {
@@ -118,7 +129,11 @@ func processJavaScript(jsContent string, ci *CookieInfo, srcURL, kubeapiAddr str
 	// Grafana : Rewrite appSubUrl in JavaScripts
 
 	appSubURLPattern := `"appSubUrl"\s*:\s*"(.*?)"`
-	appSubURLRe := regexp.MustCompile(appSubURLPattern)
+	appSubURLRe, err := regexp.Compile(appSubURLPattern)
+	if err != nil {
+		logrus.Debugf("Failed to compile regex: %v", err)
+		return jsContent
+	}
 	modifiedJS := appSubURLRe.ReplaceAllStringFunc(jsContent, func(m string) string {
 		// Extract the appSubUrl from the matched pattern
 		url := appSubURLRe.FindStringSubmatch(m)[1]
@@ -138,7 +153,11 @@ func processJavaScript(jsContent string, ci *CookieInfo, srcURL, kubeapiAddr str
 func processCSS(cssContent string, ci *CookieInfo, srcURL, kubeapiAddr string) string {
 	// Updated pattern to handle newlines and whitespace characters
 	pattern := fmt.Sprintf(`url\(\s*['"]?(%s/[^'")\s]+)\s*['"]?\)`, kubeapiAddr)
-	re := regexp.MustCompile(pattern)
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		logrus.Debugf("Failed to compile regex: %v", err)
+		return cssContent
+	}
 	modifiedCSS := re.ReplaceAllStringFunc(cssContent, func(m string) string {
 		matches := re.FindStringSubmatch(m)
 		if len(matches) > 1 {
@@ -237,7 +256,10 @@ func rewriteHTML(reader io.Reader, writer io.Writer, ci *CookieInfo, kubeapiAddr
 func (t *RewritingTransport) rewriteResponse(
 	req *http.Request, resp *http.Response) (*http.Response, error) {
 	origBody := resp.Body
-	defer origBody.Close()
+	defer func() {
+		_, _ = io.Copy(io.Discard, origBody)
+		origBody.Close()
+	}()
 
 	newContent := &bytes.Buffer{}
 	var reader io.Reader = origBody
@@ -280,9 +302,8 @@ func (t *RewritingTransport) rewriteResponse(
 	sourceURL, err := url.Parse(origProto + "://" + origHost)
 	if err != nil {
 		logrus.Errorf("Proxy encountered error in parsing X-Forwarded headers: %v", err)
-		return resp, nil
+		return nil, err
 	}
-
 	logrus.Debugf("sourceURL : %s", sourceURL)
 
 	ci, err := extractCookieInfo(req)
@@ -294,13 +315,14 @@ func (t *RewritingTransport) rewriteResponse(
 	kubeapiAddr, err := url.Parse(origProto + "://" + "kubernetes.default.svc")
 	if err != nil {
 		logrus.Errorf("Error creating kube API URL: %v", err)
+		return nil, err
 	}
 
 	logrus.Debugf("kubeapiAddr : %s", kubeapiAddr)
 	err = rewriteHTML(reader, writer, ci, kubeapiAddr, sourceURL)
 	if err != nil {
 		logrus.Errorf("Failed to rewrite URLs: %v", err)
-		return resp, err
+		return nil, err
 	}
 
 	resp.Body = io.NopCloser(newContent)

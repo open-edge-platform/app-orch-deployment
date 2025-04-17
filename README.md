@@ -1,6 +1,6 @@
-<!---
-  SPDX-FileCopyrightText: (C) 2025 Intel Corporation
-  SPDX-License-Identifier: Apache-2.0
+<!--
+SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+SPDX-License-Identifier: Apache-2.0
 -->
 
 # Application Orchestration Deployment
@@ -9,44 +9,42 @@
 [![ADM Component Test](https://github.com/open-edge-platform/app-orch-deployment/actions/workflows/adm-component-test.yml/badge.svg)](https://github.com/open-edge-platform/app-orch-deployment/actions/workflows/adm-component-test.yml)
 [![ARM Component Test](https://github.com/open-edge-platform/app-orch-deployment/actions/workflows/arm-component-test.yml/badge.svg)](https://github.com/open-edge-platform/app-orch-deployment/actions/workflows/arm-component-test.yml)
 
-
 ## Overview
 
-Application Orchestration Deployment is a collection of cloud native applications (microservices) that facilitate the
+Application Orchestration Deployment is a collection of cloud-native applications (microservices) that facilitate the
 deployment of user applications to clusters on Edge Nodes in the Open Edge Platform. Together with the [Application Catalog],
 these applications constitute the **Application Orchestration** architecture layer.
 
 The applications work with the [Cluster Manager] to provide a powerful and flexible platform for deploying applications
 to the Edge.
 
-The applications are all multi-tenant aware, with each instance able to handle multiple multi-tenancy Projects
+The applications are all multi-tenant aware, with each instance able to handle multiple multi-tenancy projects
 concurrently.
 
 The applications depend on the Edge Orchestrator [Foundational Platform] for many support functions such as API Gateway,
-Authorization, Authentication etc.
+Authorization, Authentication, etc.
 
 The overall architecture of the Application Orchestration environment is explained in the
 Edge Orchestrator [Application Orchestration Developer Guide](https://literate-adventure-7vjeyem.pages.github.io/developer_guide/application_orchestration/application_orchestration_main.html).
 
 ## Get Started
 
-Each of the applications have their own documentation that describes how to get started with them.
+Each of the applications has its own documentation that describes how to get started with them.
 
 - [App Deployment Manager](app-deployment-manager/README.md)
 - [App Resource Manager](app-resource-manager/README.md)
 - [App Interconnect](app-interconnect/README.md)
 - [App Service Proxy](app-service-proxy/README.md)
-- [App Service Proxy Agent](app-service-proxy-agent/README.md)
 
 ## Develop
 
 All the applications are developed in the **Go** language and are built as Docker images. Each application has a `Dockerfile`
 in its `build` folder. The CI integration for this repository will publish container images to the Edge Orchestrator
-Release Service OCI registry upon merge to the `main` branch.
+Release Service OCI registry upon merging to the `main` branch.
 
 Each application has a corresponding Helm chart in its `deployment` folder. The CI integration for this repository will
-publish these Helm charts to the Edge Orchestrator Release Service OCI registry upon merge to `main` branch.
-The applications are deployed to the Edge Orchestrator using these Helm charts, whose lifecycle is in turn managed by
+publish these Helm charts to the Edge Orchestrator Release Service OCI registry upon merging to the `main` branch.
+The applications are deployed to the Edge Orchestrator using these Helm charts, whose lifecycle is managed by
 Argo CD (see [Foundational Platform]).
 
 Some of the applications define their own Kubernetes Custom Resource Definitions (CRDs) and controllers to manage the
@@ -61,8 +59,8 @@ of Edge Node clusters.
 ## Contribute
 
 We welcome contributions from the community! To contribute, please open a pull request to have your changes reviewed
-and merged into the main. We encourage you to add appropriate unit tests and e2e tests if your contribution introduces
-a new feature. See the [CONTRIBUTING.md](CONTRIBUTING.md) file for more information.
+and merged into the `main` branch. We encourage you to add appropriate unit tests and end-to-end tests if
+your contribution introduces a new feature. See [Contributor Guide] for information on how to contribute to the project.
 
 Additionally, ensure the following commands are successful:
 
@@ -74,13 +72,18 @@ make license
 
 ## Community and Support
 
-To learn more about the project, its community, and governance, visit the Edge Orchestrator Community.
-For support, start with Troubleshooting or contact us.
+To learn more about the project, its community, and governance, visit the [Edge Orchestrator Community].
+For support, start with [Troubleshooting] or [Contact us].
 
 ## License
 
-Application Orchestration Deployment is licensed under Apache 2.0.
+Application Orchestration Deployment is licensed under [Apache 2.0 License].
 
 [Application Catalog]: https://github.com/open-edge-platform/app-orch-catalog
 [Cluster Manager]: https://github.com/open-edge-platform/cluster-manager
 [Foundational Platform]: https://literate-adventure-7vjeyem.pages.github.io/developer_guide/foundational_platform/foundational_platform_main.html
+[Contributor Guide]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/contributor_guide/index.html
+[Troubleshooting]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/troubleshooting/index.html
+[Contact us]: https://github.com/open-edge-platform
+[Edge Orchestrator Community]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html
+[Apache 2.0 License]: LICENSES/Apache-2.0.txt

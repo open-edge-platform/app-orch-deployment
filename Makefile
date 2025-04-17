@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 SHELL            := bash -eu -o pipefail
-SUBPROJECTS      := app-resource-manager app-deployment-manager app-interconnect app-service-proxy-agent app-service-proxy
+SUBPROJECTS      := app-resource-manager app-deployment-manager app-interconnect app-service-proxy
 FUZZ_SUBPROJECTS ?= app-resource-manager app-deployment-manager app-service-proxy
 
 .DEFAULT_GOAL := help
@@ -22,6 +22,17 @@ docker-build:
 	@echo "---MAKEFILE BUILD---"
 	for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir docker-build; done
 	@echo "---END MAKEFILE Build---"
+
+docker-list: ## Print name of docker container image
+	@echo "images:"
+	@for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir docker-list; done
+
+helm-build: ## build helm charts
+	@for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir helm-build; done
+
+helm-list: ## List helm charts, tag format, and versions in YAML format
+	@echo "charts:"
+	@for dir in $(SUBPROJECTS); do $(MAKE) -C $$dir helm-list; done
 
 lint: mdlint
 	@# Help: Runs lint stage in all subprojects

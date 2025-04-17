@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-FROM golang:1.23 AS build
+FROM golang:1.24 AS build
 
 ENV APP_ROOT=$GOPATH/src/github.com/open-edge-platform/app-orch-deployment/app-deployment-manager
 ENV CGO_ENABLED=0

@@ -1,7 +1,12 @@
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 version = 1
 
 [[annotations]]
-path = ["VERSION", "go.sum", "**/*.png", "build/_output/**", "internal/skupper/**", "config/crds/*.yaml", "deploy/charts/app-interconnect-manager/crds/*", "artifacts/**"]
+path = [
+    "VERSION", "go.sum", "build/_output/**", "internal/skupper/**", "artifacts/**",
+    "config/**", "deploy/charts/app-interconnect-manager/crds/**"
+]
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2024 Intel Corporation"
+SPDX-FileCopyrightText = "2025 Intel Corporation"
 SPDX-License-Identifier = "Apache-2.0"

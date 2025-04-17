@@ -18,6 +18,8 @@ workspace
 */bin/**
 */build/_output/**
 
+app-deployment-manager/config/
+
 # output from make test
 */cover.out
 */coverage.html

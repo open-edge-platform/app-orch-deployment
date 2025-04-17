@@ -11,6 +11,7 @@ import (
 	"net/http"
 	url2 "net/url"
 	"os"
+	"sync"
 	"testing"
 	"time"
 
@@ -27,16 +28,54 @@ type FuzzTestSuite struct {
 	cancel context.CancelFunc
 	server *server.Server
 	addr   string
+	wg     sync.WaitGroup
 }
 
-func setupFuzzTest(t testing.TB) *FuzzTestSuite {
-	os.Setenv("OIDC_SERVER_URL", "test.com")
-	os.Setenv("OPA_ENABLED", "true")
+func setupDummyHttpServer(t testing.TB) *http.Server {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "text/html") // for HTML rewrites in transport
+		w.Write([]byte("<html><body>Dummy HTTP Server</body></html>"))
+	})
+
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: mux,
+	}
+
+	go func() {
+		if err := server.ListenAndServe(); err != nil {
+			logrus.Warnf("Dummy HTTP server exited: %v", err)
+			t.Error(err)
+		}
+	}()
+
+	time.Sleep(1 * time.Second)
+
+	resp, err := http.Get("http://localhost:8080/app-service-proxy-test")
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	logrus.Warn("Dummy HTTP server started on port 8080")
+
+	return server
+}
+
+func setupFuzzTest(t testing.TB, enableAuth bool) *FuzzTestSuite {
+	os.Setenv("ASP_LOG_LEVEL", "error")
+	if enableAuth {
+		os.Setenv("OIDC_SERVER_URL", "test.com")
+		os.Setenv("OPA_ENABLED", "true")
+	} else {
+		os.Setenv("OIDC_SERVER_URL", "")
+		os.Setenv("OPA_ENABLED", "false")
+	}
 	os.Setenv("OPA_PORT", "1234")
 	os.Setenv("TOKEN_TTL_HOURS", "100")
 	os.Setenv("RATE_LIMITER_QPS", "30")
 	os.Setenv("RATE_LIMITER_BURST", "2000")
-	os.Setenv("CCG_ADDRESS", "cluster-connect-gateway.orch-cluster.svc:8080")
+	os.Setenv("CCG_ADDRESS", "localhost:8080")
 	os.Setenv("GIT_REPO_NAME", "mock-git-repo")
 	os.Setenv("GIT_SERVER", "mock-git-server")
 	os.Setenv("GIT_PROVIDER", "mock-git-provider")
@@ -59,43 +98,69 @@ func setupFuzzTest(t testing.TB) *FuzzTestSuite {
 	admclient.NewClient = NewMockAdmNewClient
 
 	// Start the server in a goroutine
+	s.wg.Add(1)
 	go func() {
-		select {
-		case <-s.ctx.Done():
-			return
-		default:
-			err := s.server.Run()
-			if err != nil {
-				t.Error(err)
-				s.cancel()
-			}
+		defer s.wg.Done()
+		err := s.server.Run()
+		if err != nil {
+			t.Error(err)
+			s.cancel()
 		}
+		logrus.Warnf("ASP server exited: %v", err)
+	}()
+
+	httpServer := setupDummyHttpServer(t)
+
+	// Close servers when the context is done
+	s.wg.Add(1)
+	go func() {
+		defer s.wg.Done()
+		<-s.ctx.Done()
+		logrus.Warnf("Shutting down dummy HTTP server")
+		if err := httpServer.Shutdown(s.ctx); err != nil {
+			t.Error(err)
+		}
+		logrus.Warnf("Shutting down ASP server")
+		s.server.Close()
 	}()
 
 	// Give the server a moment to start up
 	time.Sleep(1 * time.Second)
 
 	// Send a request to the server
-	resp, err := http.Get("http://" + s.addr + "/test")
+	resp, err := http.Get("http://" + s.addr + "/app-service-proxy-test")
 	require.NoError(t, err)
-	require.Equal(t, resp.StatusCode, http.StatusOK)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	logrus.SetLevel(logrus.ErrorLevel)
+	logrus.SetReportCaller(true)
 
 	return s
 }
 
 func FuzzRouter(f *testing.F) {
 	t := &testing.T{}
-	s := setupFuzzTest(t)
+	s := setupFuzzTest(t, false)
 	defer s.cancel()
 	f.Add("test")
 	f.Fuzz(func(t *testing.T, seedData string) {
-		resp, err := http.Get(fmt.Sprintf("http://%s/%s", s.addr, url2.PathEscape(seedData)))
+		url := fmt.Sprintf("http://%s/%s", s.addr, url2.PathEscape(seedData))
+		req, err := http.NewRequest("GET", url, bytes.NewBufferString(""))
+		req.AddCookie(&http.Cookie{Name: "app-service-proxy-project", Value: "project1"})
+		req.AddCookie(&http.Cookie{Name: "app-service-proxy-cluster", Value: "cluster123"})
+		req.AddCookie(&http.Cookie{Name: "app-service-proxy-namespace", Value: "namespace123"})
+		req.AddCookie(&http.Cookie{Name: "app-service-proxy-service", Value: "service123:80"})
+		req.AddCookie(&http.Cookie{Name: "app-service-proxy-tokens", Value: "1"})
+		req.AddCookie(&http.Cookie{Name: "app-service-proxy-token-0", Value: "123456"})
+		req.Header.Add("X-Forwarded-Host", "app-service-proxy.kind.internal")
+		req.Header.Add("X-Forwarded-Proto", "https")
 		require.NoError(t, err)
-		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
-			require.Fail(t, "unexpected response status code", resp.StatusCode)
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		if resp.StatusCode != http.StatusBadRequest && resp.StatusCode != http.StatusUnauthorized && resp.StatusCode != http.StatusOK {
+			t.Errorf("Unexpected status code: %d", resp.StatusCode)
 		}
+
 		_, err = io.Copy(io.Discard, resp.Body)
 		require.NoError(t, err)
 		err = resp.Body.Close()
@@ -117,7 +182,7 @@ func escapeHeaderValue(value string) string {
 
 func FuzzProxyHeaderHost(f *testing.F) {
 	t := &testing.T{}
-	s := setupFuzzTest(t)
+	s := setupFuzzTest(t, true)
 	defer s.cancel()
 	f.Add("app-service-proxy.kind.internal")
 	f.Fuzz(func(t *testing.T, seedData string) {
@@ -127,11 +192,14 @@ func FuzzProxyHeaderHost(f *testing.F) {
 		req.AddCookie(&http.Cookie{Name: "app-service-proxy-cluster", Value: "cluster123"})
 		req.AddCookie(&http.Cookie{Name: "app-service-proxy-namespace", Value: "namespace123"})
 		req.AddCookie(&http.Cookie{Name: "app-service-proxy-service", Value: "service123:80"})
+		req.AddCookie(&http.Cookie{Name: "app-service-proxy-tokens", Value: "1"})
+		req.AddCookie(&http.Cookie{Name: "app-service-proxy-token-0", Value: "123456"})
 		require.NoError(t, err)
 		req.Header.Add("X-Forwarded-Host", escapeHeaderValue(seedData))
+		req.Header.Add("X-Forwarded-Proto", "https")
 		resp, err := http.DefaultClient.Do(req)
 		require.NoError(t, err)
-		require.Equal(t, resp.StatusCode, http.StatusUnauthorized)
+		require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 		_, err = io.Copy(io.Discard, resp.Body)
 		require.NoError(t, err)
 		err = resp.Body.Close()
@@ -141,7 +209,7 @@ func FuzzProxyHeaderHost(f *testing.F) {
 
 func FuzzProxyHeaderProto(f *testing.F) {
 	t := &testing.T{}
-	s := setupFuzzTest(t)
+	s := setupFuzzTest(t, true)
 	defer s.cancel()
 	f.Add("http")
 	f.Fuzz(func(t *testing.T, seedData string) {
@@ -151,11 +219,16 @@ func FuzzProxyHeaderProto(f *testing.F) {
 		req.AddCookie(&http.Cookie{Name: "app-service-proxy-cluster", Value: "cluster123"})
 		req.AddCookie(&http.Cookie{Name: "app-service-proxy-namespace", Value: "namespace123"})
 		req.AddCookie(&http.Cookie{Name: "app-service-proxy-service", Value: "service123:80"})
+		req.AddCookie(&http.Cookie{Name: "app-service-proxy-tokens", Value: "1"})
+		req.AddCookie(&http.Cookie{Name: "app-service-proxy-token-0", Value: "123456"})
 		require.NoError(t, err)
+		req.Header.Add("X-Forwarded-Host", "app-service-proxy.kind.internal")
 		req.Header.Add("X-Forwarded-Proto", escapeHeaderValue(seedData))
+		req.Header.Add("X-Forwarded-Host", "app-service-proxy.kind.internal")
+		req.Header.Add("X-Forwarded-Port", "8080")
 		resp, err := http.DefaultClient.Do(req)
 		require.NoError(t, err)
-		require.Equal(t, resp.StatusCode, http.StatusUnauthorized)
+		require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 		_, err = io.Copy(io.Discard, resp.Body)
 		require.NoError(t, err)
 		err = resp.Body.Close()
@@ -163,7 +236,6 @@ func FuzzProxyHeaderProto(f *testing.F) {
 	})
 }
 
-// Mock ADM Client
 type mockADMClient struct{}
 
 func (c *mockADMClient) GetClusterToken(ctx context.Context, clusterId, namespace, serviceAccount string, expiration *int64) (string, error) {

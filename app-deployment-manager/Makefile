@@ -193,9 +193,19 @@ docker-build-app-deployment-manager: common-docker-build-app-deployment-manager
 docker-build-app-deployment-manager-gateway: ## Build the app-deployment-manager gateway image
 docker-build-app-deployment-manager-gateway: DOCKER_NAME := $(ADM_GATEWAY_NAME)
 docker-build-app-deployment-manager-gateway: DOCKER_BUILD_FLAGS += -f build/Dockerfile.gateway
-docker-build-app-deployment-manager-gateway:  common-docker-build-app-deployment-manager-gateway
+docker-build-app-deployment-manager-gateway: common-docker-build-app-deployment-manager-gateway
 
 docker-push: docker-push-app-deployment-manager docker-push-app-deployment-manager-gateway
+
+docker-list: docker-list-app-deployment-manager docker-list-app-deployment-manager-gateway
+
+docker-list-app-deployment-manager: ## Build the app-deployment-manager controller image
+docker-list-app-deployment-manager: DOCKER_NAME := $(ADM_DOCKER_NAME)
+docker-list-app-deployment-manager: common-docker-list-app-deployment-manager
+
+docker-list-app-deployment-manager-gateway: ## list the app-deployment-manager gateway image
+docker-list-app-deployment-manager-gateway: DOCKER_NAME := $(ADM_GATEWAY_NAME)
+docker-list-app-deployment-manager-gateway: common-docker-list-app-deployment-manager-gateway
 
 ## Tag and push Docker image
 

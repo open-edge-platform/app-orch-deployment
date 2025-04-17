@@ -162,9 +162,7 @@ func TestRoundTrip(t *testing.T) {
 	req.Header.Set("X-Forwarded-Host", "original.example.com")
 
 	// Create an instance of RewritingTransport with the test server as the transport
-	transport := &RewritingTransport{
-		transport: http.DefaultTransport,
-	}
+	transport := &RewritingTransport{}
 
 	// Perform the round trip using the RewritingTransport
 	resp, err := transport.RoundTrip(req)
@@ -336,9 +334,7 @@ func TestRoundTripContentTypes(t *testing.T) {
 			req.AddCookie(&http.Cookie{Name: "app-service-proxy-service", Value: "service123:80"})
 
 			// Create an instance of RewritingTransport with the test server's client as the transport
-			transport := &RewritingTransport{
-				transport: http.DefaultTransport, // Use the default transport directly
-			}
+			transport := &RewritingTransport{}
 
 			// Perform the round trip using the RewritingTransport
 			resp, err := transport.RoundTrip(req)

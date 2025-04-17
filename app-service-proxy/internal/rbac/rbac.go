@@ -35,6 +35,9 @@ const (
 	tokenCookieCount  = tokenCookiePrefix + "s"
 )
 
+var AuthenticateFunc = Authenticate
+var AuthorizeFunc = Authorize
+
 func Getenv(key, fallback string) string {
 	value := os.Getenv(key)
 	if len(value) == 0 {
@@ -84,9 +87,6 @@ func getCombinedJWTToken(req *http.Request) (string, error) {
 			logrus.Errorf("Error retrieving %s cookie: %v", tokenPartName, err)
 			return "", err
 		}
-		// Delete the cookie by replacing it with an expired one
-		req.AddCookie(&http.Cookie{Name: tokenPartName, Expires: time.Unix(0, 0), MaxAge: -1})
-
 		tokenParts = append(tokenParts, tokenPartValue.Value)
 	}
 
