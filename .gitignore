@@ -18,10 +18,15 @@ workspace
 */bin/**
 */build/_output/**
 
+app-deployment-manager/config/
+
 # output from make test
 */cover.out
 */coverage.html
 */coverage.xml
 app-deployment-manager/pkg/utils/tmpdir/
+
+# output from Go fuzz tests
 app-deployment-manager/internal/northbound/fuzztests/testdata/
 app-resource-manager/internal/northbound/services/v2/resource/testdata/
+app-service-proxy/internal/server/fuzztests/testdata/
