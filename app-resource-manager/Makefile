@@ -70,7 +70,7 @@ endif
 TEST_TARGET ?= .
 # Default TEST_PKG, overwrite to select particular test pakages
 TEST_PKG ?= $(shell go list ./... | grep -v "internal" | tr '\n' ,)
-TEST_COVER := atomic ./...
+TEST_COVER := atomic $(shell go list ./... | grep -v "/test/")
 
 FUZZ_SECONDS ?= 60
 
@@ -114,6 +114,11 @@ build: go-build ## Build local binaries
 lint: license helmlint go-lint lint-html lint-css lint-js #hadolint #mdlint ## Run license, helmlint, go-lint lint tools
 
 test: go-test ## Run all unit tests
+
+# todo: re-enable vm tests once vm extension and vm app are ready in catalog
+# COMP_TEST_COVER := atomic $(shell go list ./test/... | grep -v "utils")
+COMP_TEST_COVER := atomic $(shell go list ./test/... | grep -v "vm" | grep -v "utils")
+component-test: common-component-test ## Run component tests
 
 go-fuzz: FUZZ_FUNCS ?= FuzzGetVNC FuzzStartVM FuzzStopVM FuzzRestartVM FuzzDeletePod FuzzListAppEndpoints FuzzListAppWorkloads
 go-fuzz: FUZZ_FUNC_PATH := ./internal/northbound/services/v2/resource
