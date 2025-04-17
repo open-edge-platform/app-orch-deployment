@@ -24,7 +24,6 @@ app-deployment-manager/config/
 */cover.out
 */coverage.html
 */coverage.xml
-app-deployment-manager/config/
 app-deployment-manager/pkg/utils/tmpdir/
 
 # output from Go fuzz tests
