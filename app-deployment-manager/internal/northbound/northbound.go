@@ -67,7 +67,7 @@ type Deployment struct {
 	ParameterTemplateSecrets   map[string]string                                  `yaml:"parameterTemplateSecret"`
 }
 
-// Sets values to create or update Deployment CR.
+// Sets values to create or update Deployment CR. THIS IS A TEST
 func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *deploymentpb.Deployment, dependentDepls map[string]*Deployment, activeProjectID string) (*Deployment, error) {
 	d := &Deployment{}
 
@@ -163,7 +163,7 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 	}
 
 	// fixme: remove hardcode and get value from context of JWT
-	d.Project = "app.edge-orchestrator.intel.com"
+	d.Project = "testapp.edge-orchestrator.intel.com"
 
 	dp, helmApps, defaultProfileName, err := catalogclient.CatalogLookupDPAndHelmApps(ctx, s.catalogClient,
 		d.AppName,
