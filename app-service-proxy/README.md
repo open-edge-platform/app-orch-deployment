@@ -7,7 +7,8 @@ SPDX-License-Identifier: Apache-2.0
 
 Application Service Proxy is an HTTP/HTTPS reverse proxy for application services running on edge clusters.
 Along with the Application Service Agent running on the edge cluster, it provides external access to web applications
-via the central clusters. It also provides basic authentication and authorization based on the HTTP method type.
+via the central clusters. It also provides basic authentication and authorization based on the HTTP method
+type.
 
 ## WebSocket Connection Setup
 
