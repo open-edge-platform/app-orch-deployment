@@ -31,7 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-// These Repository objects are used to test recovery from various errors
+// These Repository objects are used to test recovery from various errors.
 type mockRepository struct {
 	ExistsOnRemoteValue         bool
 	ExistsOnRemoteError         error
