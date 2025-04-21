@@ -2,24 +2,26 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Package basic is a suite of basic functionality tests for the ADM service
-package basic
+package deployment
 
 import (
 	"context"
 	"fmt"
 
+	"testing"
+
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
+	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/deploy"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/utils"
 	"github.com/stretchr/testify/suite"
-
-	"testing"
 )
 
 var (
+	deployID                string
 	token                   string
 	projectID               string
 	deploymentRESTServerUrl string
+	deployApps              []*restClient.App
 	admclient               *restClient.ClientWithResponses
 )
 
@@ -35,18 +37,15 @@ const (
 // TestSuite is the basic test suite
 type TestSuite struct {
 	suite.Suite
-	DeploymentRESTServerUrl string
-	token                   string
-	projectID               string
-	AdmClient               *restClient.ClientWithResponses
+	AdmClient *restClient.ClientWithResponses
 }
 
 // SetupTest sets up for each test
 func (s *TestSuite) SetupTest() {
-	s.token = token
-	s.projectID = projectID
-	s.DeploymentRESTServerUrl = deploymentRESTServerUrl
 	s.AdmClient = admclient
+
+	s.NotEmpty(deployApps)
+	s.NotEmpty(deployID)
 }
 
 func TestDeploymentSuite(t *testing.T) {
@@ -70,6 +69,16 @@ func TestDeploymentSuite(t *testing.T) {
 	admclient, err = utils.CreateAdmClient(deploymentRESTServerUrl, token, projectID)
 	if err != nil {
 		t.Fatalf("error: %v", err)
+	}
+
+	deployApps, err = deploy.CreateDeployment(admclient, dpConfigName, dpDisplayName, 10)
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	deployID = deploy.FindDeploymentIDByDisplayName(admclient, dpDisplayName)
+	if deployID == "" {
+		t.Fatalf("error: %v", fmt.Errorf("deployment %s not found", dpDisplayName))
 	}
 
 	suite.Run(t, new(TestSuite))

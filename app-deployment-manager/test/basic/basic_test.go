@@ -8,11 +8,10 @@ import (
 	"context"
 )
 
-// TestRest tests basics of exercising the REST API of the catalog service.
+// TestBasics tests the basic functionality of the deployment manager
 func (s *TestSuite) TestBasics() {
 	s.T().Parallel()
-	res, err := s.client.DeploymentServiceListDeploymentsWithResponse(context.TODO(), nil)
+	res, err := s.AdmClient.DeploymentServiceListDeploymentsWithResponse(context.TODO(), nil)
 	s.NoError(err)
 	s.Equal(200, res.StatusCode())
-	s.TearDownTest(context.TODO())
 }

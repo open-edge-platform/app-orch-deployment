@@ -81,8 +81,7 @@ func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName
 			if *d.DisplayName == displayName {
 				currState = string(*d.Status.State)
 			}
-			
-			currState = string(*d.Status.State)
+
 			if *d.DisplayName == displayName && currState == string(status) {
 				fmt.Printf("Waiting for deployment %s state %s ---> %s\n", displayName, currState, status)
 				return *d.DeployId, nil
@@ -115,7 +114,7 @@ func getDeployApps(client *restClient.ClientWithResponses, deployID string) ([]*
 	return []*restClient.App{}, fmt.Errorf("did not find deployment id %s", deployID)
 }
 
-func findDeploymentIDByDisplayName(client *restClient.ClientWithResponses, displayName string) string {
+func FindDeploymentIDByDisplayName(client *restClient.ClientWithResponses, displayName string) string {
 	deployments, retCode, err := getDeployments(client)
 	if err != nil || retCode != 200 {
 		return ""
@@ -131,7 +130,7 @@ func findDeploymentIDByDisplayName(client *restClient.ClientWithResponses, displ
 }
 
 func deleteDeploymentByDisplayName(client *restClient.ClientWithResponses, displayName string) error {
-	if deployID := findDeploymentIDByDisplayName(client, displayName); deployID != "" {
+	if deployID := FindDeploymentIDByDisplayName(client, displayName); deployID != "" {
 		err := deleteDeployment(client, deployID)
 		if err != nil {
 			return fmt.Errorf("failed to delete deployment %s: %v", displayName, err)
