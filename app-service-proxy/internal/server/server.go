@@ -196,11 +196,28 @@ func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	logrus.Debugf("target : %s", target)
+	timeout := req.URL.Query().Get("timeout")
+	timeoutVal := 15 * time.Second
+	if timeout != "" {
+		val, err := strconv.Atoi(timeout)
+		if err == nil {
+			timeoutVal = time.Duration(val) * time.Second
+		}
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), timeoutVal)
+	defer cancel()
+	clusterInfraName, err := a.admClient.GetClusterInfraName(ctx, ci.cluster,
+		ci.projectID)
+	if err != nil {
+		logrus.Warnf("Failed to get Capi Infra name %v", err)
+		return
+	}
+
 	// Create proxy and set the Transport rancher/remoteDialer client
 	proxy := httputil.NewSingleHostReverseProxy(target)
 	proxy.Transport = &RewritingTransport{}
 	newPath := fmt.Sprintf("/kubernetes/%s-%s/api/v1/namespaces/%s/services/%s/proxy%s",
-		ci.projectID, ci.cluster, ci.namespace, ci.service, req.URL.Path)
+		ci.projectID, clusterInfraName, ci.namespace, ci.service, req.URL.Path)
 	originalDirector := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		originalDirector(req)
