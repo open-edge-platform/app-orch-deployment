@@ -27,7 +27,6 @@ func parseFlags() flags {
 	flag.IntVar(&f.gwAddr, "gwAddr", 8081, "port that REST service runs on")
 	flag.StringVar(&f.allowedCorsOrigins, "allowedCorsOrigins", "", "Comma separated list of allowed CORS origins")
 	flag.StringVar(&f.basePath, "basePath", "", "The rest server base Path")
-	flag.IntVar(&f.metricsPort, "metricsPort", 8082, "The port the metric endpoint binds to.")
 
 	flag.Parse()
 
@@ -36,8 +35,6 @@ func parseFlags() flags {
 
 func main() {
 	f := parseFlags()
-
-	log.Infof("Serving gRPC-Gateway on port %d", f.gwAddr)
 
 	err := restproxy.Run(f.grpcAddr, f.gwAddr, f.allowedCorsOrigins, f.basePath,
 		"/usr/local/etc/openapi.yaml", f.metricsPort)

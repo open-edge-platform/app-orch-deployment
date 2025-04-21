@@ -16,7 +16,8 @@ var log = dazl.GetPackageLogger()
 
 var (
 	// Custom collector
-	Reg = prometheus.NewRegistry()
+	Reg        = prometheus.NewRegistry()
+	gatewayReg = prometheus.NewRegistry()
 
 	TimestampGauge = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
@@ -53,9 +54,9 @@ var (
 )
 
 // RunMetricsServer starts an HTTP server to expose Prometheus metrics
-func RunMetricsServer(port int) {
+func RunMetricsServer(port int16) {
 	// Set up the HTTP handler for the /metrics endpoint
-	http.Handle("/metrics", promhttp.Handler())
+	http.Handle("/metrics", promhttp.HandlerFor(gatewayReg, promhttp.HandlerOpts{}))
 
 	// Start the HTTP server
 	addr := fmt.Sprintf(":%d", port)
@@ -67,7 +68,7 @@ func RunMetricsServer(port int) {
 
 func init() {
 	// Register custom metrics with prometheus registry
+	log.Infof("metrics server init \n")
 	Reg.MustRegister(DeploymentStatus, DeploymentClusterStatus)
-	prometheus.MustRegister(TimestampGauge)
-	prometheus.MustRegister(TimeDifferenceGauge)
+	gatewayReg.MustRegister(TimestampGauge, TimeDifferenceGauge)
 }

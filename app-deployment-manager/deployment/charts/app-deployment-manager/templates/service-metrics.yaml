@@ -69,10 +69,10 @@ metadata:
   name: {{ template "app-deployment-manager-api.name" . }}-api-metrics
 spec:
   ports:
-    - name: http-metrics
+    - name: api-metrics
       port: {{ .Values.gateway.metrics.port }}
       protocol: TCP
-      targetPort: http-metrics
+      targetPort: api-metrics
   selector:
     {{- include "app-deployment-manager-api.labels" . | nindent 4 }}
 ---
@@ -84,7 +84,7 @@ metadata:
   name: {{ template "app-deployment-manager-api.name" . }}
 spec:
   endpoints:
-  - port: http-metrics
+  - port: api-metrics
     scheme: http
     path: /metrics
   namespaceSelector:
@@ -97,7 +97,6 @@ spec:
       values:
       - "false"
     matchLabels:
-      {{- include "app-deployment-manager.labels" . | nindent 6 }}
       {{- include "app-deployment-manager-api.labels" . | nindent 6 }}
 {{- end }}
 {{- end }}

@@ -546,6 +546,7 @@ func ToInt32Clamped(i int) int32 {
 }
 
 func RecordTimestamp(deployment, part, event string) {
+	log.Infof("record timestamp %s %s %s", deployment, part, event)
 	timestamp := float64(time.Now().Unix())
 	key := part + "_" + event
 

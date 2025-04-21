@@ -27,7 +27,7 @@ adm:
 
   # -- securityContext defines pod's capabilities and permissions in the host.
   securityContext:
-    allowPrivilegeEscalation: false
+    allowPrivilegeEscalation: true
     readOnlyRootFilesystem: true
     capabilities:
       drop:
@@ -61,7 +61,7 @@ adm:
       memory: 128Mi
 
   # Set the verbosity of app-deployment-manager. Range of 0 - 6 with 6 being the most verbose.
-  logLevel: 2
+  logLevel: 6
 
   # Optional additional annotations to add to the controller Deployment
   # deploymentAnnotations: {}
@@ -195,7 +195,7 @@ gateway:
 
   metrics:
     enabled: true
-    port: 8082
+    port: 8080
 
   resources:
     limits:

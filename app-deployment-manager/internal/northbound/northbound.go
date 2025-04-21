@@ -166,6 +166,7 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 
 	d.HelmApps = helmApps
 	utils.RecordTimestamp(d.AppName, "end", "GetDeploymentPackage")
+    utils.CalculateTimeDifference(d.AppName, "start", "GetDeploymentPackage", "end", "GetDeploymentPackage")
 
 	// Validate namespaces
 	if len(dp.Namespaces) > 0 {
@@ -615,7 +616,7 @@ func (s *DeploymentSvc) CreateDeployment(ctx context.Context, in *deploymentpb.C
 	}
 
 	if in.GetDeployment().GetAppName() != "" {
-		utils.RecordTimestamp(in.GetDeployment().GetAppName(), "start", "Create Deployment")
+		utils.RecordTimestamp(in.GetDeployment().GetAppName(), "start", "CreateDeployment")
 	}
 
 	if err := s.protoValidator.Validate(in); err != nil {
@@ -775,7 +776,8 @@ func (s *DeploymentSvc) CreateDeployment(ctx context.Context, in *deploymentpb.C
 	}
 
 	utils.LogActivity(ctx, "create", "ADM", "deployment-name "+d.Name, "deploy-id "+d.DeployID, "deployment-app-version "+d.AppVersion)
-	utils.RecordTimestamp(d.AppName, "end", "Create Deployment")
+	utils.RecordTimestamp(d.AppName, "end", "CreateDeployment")
+    utils.CalculateTimeDifference(d.AppName, "start", "CreateDeployment", "end", "CreateDeployment")
 	return &deploymentpb.CreateDeploymentResponse{DeploymentId: d.DeployID}, nil
 }
 
