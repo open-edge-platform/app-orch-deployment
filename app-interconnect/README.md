@@ -11,7 +11,10 @@
 ## Overview
 
 The Application Interconnect Service is a microservice that provides a set of APIs for managing the interconnectivity 
-between applications running on separate edge nodes.
+between applications running on separate edge clusters. Interconnect uses a third-party component called [Skupper] to
+build a layer 7 application mesh. This L7 mesh allows an application
+deployed on one edge cluster to connect to a service on a different edge cluster as if it were a local service, unaware that
+it resides on a different edge. The L7 mesh uses mutual TLS to secure the connection.
 
 The overall architecture of the Application Orchestration environment is explained in the
 Edge Orchestrator [Application Orchestration Developer Guide](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/app_orch/arch/index.html).
@@ -73,3 +76,4 @@ The Application Orchestration Catalog is licensed under [Apache 2.0 License]
 [Edge Orchestrator Community]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/index.html
 [Apache 2.0 License]: LICENSES/Apache-2.0.txt
 [Developer Guide App Orch Tutorial]: app-orch-tutorials/developer-guide-tutorial/README.md
+[Skupper]: https://skupper.io/
