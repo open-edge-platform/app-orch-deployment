@@ -56,19 +56,65 @@ are available for deployment.
 Some of the applications interact with the [Cluster Manager] and its Cluster API (CAPI) interface to follow the lifecycle
 of Edge Node clusters.
 
+### Dependencies
+
+This code requires the following tools to be installed on your development machine:
+
+- [Docker](https://docs.docker.com/engine/install/) to build containers
+- [Go\* programming language](https://go.dev)
+- [golangci-lint](https://github.com/golangci/golangci-lint)
+- [Python\* programming language version 3.10 or later](https://www.python.org/downloads)
+- [buf](https://github.com/bufbuild/buf)
+- [protoc-gen-doc](https://github.com/pseudomuto/protoc-gen-doc)
+- [protoc-gen-go-grpc](https://pkg.go.dev/google.golang.org/grpc)
+- [protoc-gen-go](https://pkg.go.dev/google.golang.org/protobuf)
+- [KinD](https://kind.sigs.k8s.io/docs/user/quick-start/) based cluster for end-to-end tests
+- [Helm](https://helm.sh/docs/intro/install/) for install helm charts for end-to-end tests
+
+## Build
+
+Below are some of important make targets which developer should be aware about.
+
+Build the component binary as follows:
+
+```bash
+# Build go binary
+make build
+```
+
+Run unit tests as follows:
+
+```bash
+# Run unit tests
+make test
+```
+
+Linter checks are run for each PR and to run linter check locally as follows:
+
+```bash
+make lint
+```
+
+Multiple container images are generated from this repository. Thet are  `app-service-proxy`,
+`app-interconnect-manager`, `adm-gateway`, `adm-controller`, `app-resource-rest-proxy`,
+`app-resource-vnc-proxy` and `app-resource-manager`. Command to generate container images is
+as follows:
+
+```bash
+make docker-build
+```
+
+If developer has done any helm chart changes then helm charts can be build as follows:
+
+```bash
+make helm-build
+```
+
 ## Contribute
 
 We welcome contributions from the community! To contribute, please open a pull request to have your changes reviewed
 and merged into the `main` branch. We encourage you to add appropriate unit tests and end-to-end tests if
 your contribution introduces a new feature. See [Contributor Guide] for information on how to contribute to the project.
-
-Additionally, ensure the following commands are successful:
-
-```shell
-make test
-make lint
-make license
-```
 
 ## Community and Support
 
