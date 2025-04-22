@@ -40,7 +40,6 @@ jobs:
         project_folder: ${{ fromJson(needs.pre-checks.outputs.filtered_projects) }}
     uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@main
     with:
-      run_security_scans: true
       run_version_check: true
       run_dep_version_check: false
       run_build: true
@@ -49,7 +48,6 @@ jobs:
       run_reuse_check: false
       run_validate_clean_folder: false
       run_docker_build: false
-      run_scan_containers: false
       run_artifact: false
       prefix_tag_separator: "/"
       project_folder: ${{ matrix.project_folder }}
