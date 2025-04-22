@@ -82,20 +82,20 @@ Build the component binary as follows:
 make build
 ```
 
-Run unit tests as follows:
+Unit test checks are run for each PR and developer can run the unit tests locally as follows:
 
 ```bash
 # Run unit tests
 make test
 ```
 
-Linter checks are run for each PR and to run linter check locally as follows:
+Linter checks are run for each PR and developer can run linter check locally as follows:
 
 ```bash
 make lint
 ```
 
-Multiple container images are generated from this repository. Thet are  `app-service-proxy`,
+Multiple container images are generated from this repository. They are  `app-service-proxy`,
 `app-interconnect-manager`, `adm-gateway`, `adm-controller`, `app-resource-rest-proxy`,
 `app-resource-vnc-proxy` and `app-resource-manager`. Command to generate container images is
 as follows:
