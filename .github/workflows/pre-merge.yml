@@ -48,7 +48,6 @@ jobs:
       run_reuse_check: false
       run_validate_clean_folder: false
       run_docker_build: false
-      run_scan_containers: false
       run_artifact: false
       prefix_tag_separator: "/"
       project_folder: ${{ matrix.project_folder }}
