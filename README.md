@@ -15,13 +15,13 @@ Application Orchestration Deployment is a collection of cloud-native application
 deployment of user applications to clusters on Edge Nodes in the Open Edge Platform. Together with the [Application Catalog],
 these applications constitute the **Application Orchestration** architecture layer.
 
-The applications work with the [Cluster Manager] to provide a powerful and flexible platform for deploying applications
+Application Orchestration Deployment components work with the [Cluster Manager] to provide a powerful and flexible platform for deploying applications
 to the Edge.
 
-The applications are all multi-tenant aware, with each instance able to handle multiple multi-tenancy projects
+Application Orchestration Deployment components are all multi-tenant aware, with each instance able to handle multiple multi-tenancy projects
 concurrently.
 
-The applications depend on the Edge Orchestrator [Foundational Platform] for many support functions such as API Gateway,
+Application Orchestration Deployment components depend on the Edge Orchestrator [Platform Services] for many support functions such as API Gateway,
 Authorization, Authentication, etc.
 
 The overall architecture of the Application Orchestration environment is explained in the
@@ -45,7 +45,7 @@ Release Service OCI registry upon merging to the `main` branch.
 Each application has a corresponding Helm chart in its `deployment` folder. The CI integration for this repository will
 publish these Helm charts to the Edge Orchestrator Release Service OCI registry upon merging to the `main` branch.
 The applications are deployed to the Edge Orchestrator using these Helm charts, whose lifecycle is managed by
-Argo CD (see [Foundational Platform]).
+Argo CD (see [Platform Services]).
 
 Some of the applications define their own Kubernetes Custom Resource Definitions (CRDs) and controllers to manage the
 lifecycle of the resources they create. These are defined in the `api` directory of the application.
@@ -81,7 +81,7 @@ Application Orchestration Deployment is licensed under [Apache 2.0 License].
 
 [Application Catalog]: https://github.com/open-edge-platform/app-orch-catalog
 [Cluster Manager]: https://github.com/open-edge-platform/cluster-manager
-[Foundational Platform]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/platform/index.html
+[Platform Services]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/platform/index.html
 [Contributor Guide]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/contributor_guide/index.html
 [Troubleshooting]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/troubleshooting/index.html
 [Contact us]: https://github.com/open-edge-platform
