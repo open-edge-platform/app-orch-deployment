@@ -155,6 +155,8 @@ adm:
     agentCheckIn: 32
     # How often Fleet checks git for new updates (secs).
     pollingInterval: 15
+    # Should Fleet delete the CRDs of the apps.
+    deleteCRDResources: true
 
   # Refresh Deployment status every N seconds (default: 0, on every reconcile)
   statusRefreshInterval: 0

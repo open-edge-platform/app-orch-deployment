@@ -319,6 +319,27 @@ var _ = Describe("Test Utils", func() {
 		})
 	})
 
+	Describe("Test DeleteCRDResources", func() {
+		It("successfully set to true when DELETE_CRD_RESOURCES is true", func() {
+			expected := true
+			os.Setenv("DELETE_CRD_RESOURCES", "true")
+			v := DeleteCRDResources()
+			Expect(v).To(Equal(expected))
+		})
+		It("successfully set to false when DELETE_CRD_RESOURCES is false", func() {
+			expected := false
+			os.Setenv("DELETE_CRD_RESOURCES", "false")
+			v := DeleteCRDResources()
+			Expect(v).To(Equal(expected))
+		})
+		It("successfully set to default true when DELETE_CRD_RESOURCES is missing", func() {
+			expected := true
+			os.Unsetenv("DELETE_CRD_RESOURCES")
+			v := DeleteCRDResources()
+			Expect(v).To(Equal(expected))
+		})
+	})
+
 	Describe("Test IsSecretServiceEnabled", func() {
 		It("successfully get flag to check if secret service enabled or not from env vars", func() {
 			expected := true
