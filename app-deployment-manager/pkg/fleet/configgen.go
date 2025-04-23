@@ -133,11 +133,12 @@ type ComparePatch struct {
 }
 
 type Config struct {
-	Name             string
-	Labels           DeployLabels
-	DefaultNamespace string `yaml:"defaultNamespace"`
-	Helm             HelmApp
-	Kustomize        struct {
+	Name               string
+	Labels             DeployLabels
+	DefaultNamespace   string `yaml:"defaultNamespace"`
+	DeleteCRDResources bool   `yaml:"deleteCRDResources"`
+	Helm               HelmApp
+	Kustomize          struct {
 		Dir string
 	} `yaml:"kustomize,omitempty"`
 	DependsOn            []DependsOnItem   `yaml:"dependsOn"`
@@ -258,7 +259,7 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 		}
 
 		if strings.Contains(contents, CredentialString) {
-			err := errors.New("Token string present without Docker credentials")
+			err := errors.New("token string present without Docker credentials")
 			return err
 		}
 
@@ -450,11 +451,14 @@ func newFleetConfig(appName string, appMap map[string]v1beta1.Application, depID
 		chartURL, _ = url.JoinPath(app.HelmApp.Repo, app.HelmApp.Chart)
 	}
 
+	deleteCRDResources := utils.DeleteCRDResources()
+
 	// Create Config with the given application information
 	fleetConf := Config{
-		Name:             bundlename,
-		DefaultNamespace: namespace,
-		NamespaceLabels:  make(map[string]string),
+		Name:               bundlename,
+		DefaultNamespace:   namespace,
+		DeleteCRDResources: deleteCRDResources,
+		NamespaceLabels:    make(map[string]string),
 		Labels: DeployLabels{
 			AppName:              app.Name,
 			BundleType:           BundleTypeApp.String(),
