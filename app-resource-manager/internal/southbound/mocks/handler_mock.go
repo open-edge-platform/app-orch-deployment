@@ -30,7 +30,11 @@ func (_m *MockHandler) AccessVMWithVNC(ctx context.Context, appID string, cluste
 	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) string); ok {
 		r0 = rf(ctx, appID, clusterID, vmID)
 	} else {
-		r0 = ret.Get(0).(string)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(string)
+		} else {
+			r0 = ""
+		}
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, string, string) error); ok {
