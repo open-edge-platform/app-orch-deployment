@@ -113,24 +113,24 @@ common-install-protoc-plugins:
 	@go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@${OAPI_CODEGEN_VERSION}
 	@echo "Installing buf"
 	@go install github.com/bufbuild/buf/cmd/buf@${BUF_VERSION}
-	@echo "Adding Go bin directory to PATH..."
-	@export PATH=$(PATH):$(GOBIN)
+	@echo "*** You need to add "$(GOBIN)" directory to your PATH..."
+	@echo
 	@echo "All plugins installed successfully."
 
 # Define a target to verify the installation of all plugins
 common-verify-protoc-plugins:
 	@echo "Verifying protoc-gen-doc installation..."
-	@command -v protoc-gen-doc >/dev/null 2>&1 && echo "protoc-gen-doc is installed." || echo "protoc-gen-doc is not installed."
+	@command -v protoc-gen-doc >/dev/null 2>&1 && echo "protoc-gen-doc is installed." || echo "---> protoc-gen-doc is not installed."
 	@echo "Verifying protoc-gen-validate installation..."
-	@command -v protoc-gen-validate >/dev/null 2>&1 && echo "protoc-gen-validate is installed." || echo "protoc-gen-validate is not installed."
+	@command -v protoc-gen-validate >/dev/null 2>&1 && echo "protoc-gen-validate is installed." || echo "---> protoc-gen-validate is not installed."
 	@echo "Verifying protoc-gen-go-grpc installation..."
-	@command -v protoc-gen-go-grpc >/dev/null 2>&1 && echo "protoc-gen-go-grpc is installed." || echo "protoc-gen-go-grpc is not installed."
+	@command -v protoc-gen-go-grpc >/dev/null 2>&1 && echo "protoc-gen-go-grpc is installed." || echo "---> protoc-gen-go-grpc is not installed."
 	@echo "Verifying protoc-gen-openapi installation..."
-	@command -v protoc-gen-openapi >/dev/null 2>&1 && echo "protoc-gen-openapi is installed." || echo "protoc-gen-openapi is not installed."
+	@command -v protoc-gen-openapi >/dev/null 2>&1 && echo "protoc-gen-openapi is installed." || echo "---> protoc-gen-openapi is not installed."
 	@echo "Verifying oapi-codegen installation..."
-	@command -v oapi-codegen >/dev/null 2>&1 && echo "oapi-codegen is installed." || echo "oapi-codegen is not installed."
+	@command -v oapi-codegen >/dev/null 2>&1 && echo "oapi-codegen is installed." || echo "---> oapi-codegen is not installed."
 	@echo "Verifying buf installation..."
-	@command -v buf >/dev/null 2>&1 && echo "buf is installed." || echo "buf is not installed."
+	@command -v buf >/dev/null 2>&1 && echo "buf is installed." || echo "---> buf is not installed."
 
 
 #### Docker Targets ####

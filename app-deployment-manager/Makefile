@@ -127,7 +127,7 @@ generate-crds: controller-gen
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 generate-apis: controller-gen
-	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./api/..."
+	$(CONTROLLER_GEN) object:headerFile="controllers/license.go.txt" paths="./api/..."
 
 manifests: generate-apis generate-crds ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 
