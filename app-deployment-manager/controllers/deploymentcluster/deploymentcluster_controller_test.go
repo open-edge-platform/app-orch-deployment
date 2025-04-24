@@ -26,6 +26,7 @@ var _ = Describe("DeploymentCluster controller", func() {
 		namespace = "default"
 
 		deploymentId       = "a563356a-b4df-47bb-b620-aae2d74c5129"
+		activeProjectId    = "a563356a-b4df-47bb-b620-aae2d74c5129"
 		clusterId          = "cluster-12345"
 		depClusterName     = "dc-70d44698-f8e0-54d5-90d7-8c121ed85e15"
 		clusterDisplayName = "My Cluster"
@@ -63,12 +64,13 @@ var _ = Describe("DeploymentCluster controller", func() {
 				Name:      bdName1,
 				Namespace: namespace,
 				Labels: map[string]string{
-					string(v1beta1.AppName):               appName1,
-					string(v1beta1.BundleName):            bundleName1,
-					string(v1beta1.BundleType):            fleet.BundleTypeApp.String(),
-					string(v1beta1.DeploymentID):          deploymentId,
-					string(v1beta1.FleetClusterID):        clusterId,
-					string(v1beta1.FleetClusterNamespace): namespace,
+					string(v1beta1.AppName):                appName1,
+					string(v1beta1.BundleName):             bundleName1,
+					string(v1beta1.BundleType):             fleet.BundleTypeApp.String(),
+					string(v1beta1.DeploymentID):           deploymentId,
+					string(v1beta1.FleetClusterID):         clusterId,
+					string(v1beta1.FleetClusterNamespace):  namespace,
+					string(v1beta1.AppOrchActiveProjectID): activeProjectId,
 				},
 			},
 			Spec: fleetv1alpha1.BundleDeploymentSpec{
