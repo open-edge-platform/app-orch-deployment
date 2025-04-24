@@ -15,17 +15,17 @@ Application Orchestration Deployment is a collection of cloud-native application
 deployment of user applications to clusters on Edge Nodes in the Open Edge Platform. Together with the [Application Catalog],
 these applications constitute the **Application Orchestration** architecture layer.
 
-The applications work with the [Cluster Manager] to provide a powerful and flexible platform for deploying applications
+Application Orchestration Deployment components work with the [Cluster Manager] to provide a powerful and flexible platform for deploying applications
 to the Edge.
 
-The applications are all multi-tenant aware, with each instance able to handle multiple multi-tenancy projects
+Application Orchestration Deployment components are all multi-tenant aware, with each instance able to handle multiple multi-tenancy projects
 concurrently.
 
-The applications depend on the Edge Orchestrator [Foundational Platform] for many support functions such as API Gateway,
+Application Orchestration Deployment components depend on the Edge Orchestrator [Platform Services] for many support functions such as API Gateway,
 Authorization, Authentication, etc.
 
 The overall architecture of the Application Orchestration environment is explained in the
-Edge Orchestrator [Application Orchestration Developer Guide](https://literate-adventure-7vjeyem.pages.github.io/developer_guide/application_orchestration/application_orchestration_main.html).
+Edge Orchestrator [Application Orchestration Developer Guide](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/app_orch/arch/index.html).
 
 ## Get Started
 
@@ -45,7 +45,7 @@ Release Service OCI registry upon merging to the `main` branch.
 Each application has a corresponding Helm chart in its `deployment` folder. The CI integration for this repository will
 publish these Helm charts to the Edge Orchestrator Release Service OCI registry upon merging to the `main` branch.
 The applications are deployed to the Edge Orchestrator using these Helm charts, whose lifecycle is managed by
-Argo CD (see [Foundational Platform]).
+Argo CD (see [Platform Services]).
 
 Some of the applications define their own Kubernetes Custom Resource Definitions (CRDs) and controllers to manage the
 lifecycle of the resources they create. These are defined in the `api` directory of the application.
@@ -56,19 +56,65 @@ are available for deployment.
 Some of the applications interact with the [Cluster Manager] and its Cluster API (CAPI) interface to follow the lifecycle
 of Edge Node clusters.
 
+### Dependencies
+
+This code requires the following tools to be installed on your development machine:
+
+- [Docker](https://docs.docker.com/engine/install/) to build containers
+- [Go\* programming language](https://go.dev)
+- [golangci-lint](https://github.com/golangci/golangci-lint)
+- [Python\* programming language version 3.10 or later](https://www.python.org/downloads)
+- [buf](https://github.com/bufbuild/buf)
+- [protoc-gen-doc](https://github.com/pseudomuto/protoc-gen-doc)
+- [protoc-gen-go-grpc](https://pkg.go.dev/google.golang.org/grpc)
+- [protoc-gen-go](https://pkg.go.dev/google.golang.org/protobuf)
+- [KinD](https://kind.sigs.k8s.io/docs/user/quick-start/) based cluster for end-to-end tests
+- [Helm](https://helm.sh/docs/intro/install/) for install helm charts for end-to-end tests
+
+## Build
+
+Below are some of important make targets which developer should be aware about.
+
+Build the component binary as follows:
+
+```bash
+# Build go binary
+make build
+```
+
+Unit test checks are run for each PR and developer can run the unit tests locally as follows:
+
+```bash
+# Run unit tests
+make test
+```
+
+Linter checks are run for each PR and developer can run linter check locally as follows:
+
+```bash
+make lint
+```
+
+Multiple container images are generated from this repository. They are  `app-service-proxy`,
+`app-interconnect-manager`, `adm-gateway`, `adm-controller`, `app-resource-rest-proxy`,
+`app-resource-vnc-proxy` and `app-resource-manager`. Command to generate container images is
+as follows:
+
+```bash
+make docker-build
+```
+
+If developer has done any helm chart changes then helm charts can be build as follows:
+
+```bash
+make helm-build
+```
+
 ## Contribute
 
 We welcome contributions from the community! To contribute, please open a pull request to have your changes reviewed
 and merged into the `main` branch. We encourage you to add appropriate unit tests and end-to-end tests if
 your contribution introduces a new feature. See [Contributor Guide] for information on how to contribute to the project.
-
-Additionally, ensure the following commands are successful:
-
-```shell
-make test
-make lint
-make license
-```
 
 ## Community and Support
 
@@ -81,7 +127,7 @@ Application Orchestration Deployment is licensed under [Apache 2.0 License].
 
 [Application Catalog]: https://github.com/open-edge-platform/app-orch-catalog
 [Cluster Manager]: https://github.com/open-edge-platform/cluster-manager
-[Foundational Platform]: https://literate-adventure-7vjeyem.pages.github.io/developer_guide/foundational_platform/foundational_platform_main.html
+[Platform Services]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/platform/index.html
 [Contributor Guide]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/contributor_guide/index.html
 [Troubleshooting]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/troubleshooting/index.html
 [Contact us]: https://github.com/open-edge-platform

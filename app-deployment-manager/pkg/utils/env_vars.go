@@ -15,6 +15,8 @@ import (
 )
 
 const (
+	envDeleteCRDsResources = "DELETE_CRD_RESOURCES"
+
 	// default values for git client
 	defaultServiceAccount            = "orch-svc"
 	defaultMount                     = "secret"
@@ -393,4 +395,18 @@ func GetKeycloakServiceEndpoint() string {
 		return ""
 	}
 	return endpoint
+}
+
+// DeleteCRDResources returns true if CRD resources should be deleted
+func DeleteCRDResources() bool {
+	flag, ok := os.LookupEnv(envDeleteCRDsResources)
+	if !ok || flag == "" {
+		return true
+	}
+
+	if flag == "false" {
+		return false
+	}
+
+	return true
 }

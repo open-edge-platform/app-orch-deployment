@@ -184,7 +184,7 @@ go-run: go-build ## Run the deployment manager
 
 clean: common-clean clean-all ## Delete all build artifacts
 
-docker-build: docker-build-app-deployment-manager docker-build-app-deployment-manager-gateway ## Build Docker image of app-deployment-manager Controller and Gatweway
+docker-build: docker-build-app-deployment-manager docker-build-app-deployment-manager-gateway ## Build Docker image of app-deployment-manager Controller and Gateway
 
 docker-build-app-deployment-manager: ## Build the app-deployment-manager controller image
 docker-build-app-deployment-manager: DOCKER_NAME := $(ADM_DOCKER_NAME)
@@ -264,7 +264,7 @@ coder-upgrade-adm:
 	helm upgrade --install -n ${ADM_NS} ma-adm -f $(CODER_DIR)/argocd/applications/configs/app-deployment-manager.yaml  build/_output/$(ADM_HELM_CHART)
 	helm -n ${ADM_NS} ls
 
-coder-redeploy: helm-package use-orch-context coder-clean coder-upgrade-adm ## Redeploy app-deployment-manager Controller, Gateway and the CRDs in the Coder KinD cluster
+coder-redeploy: helm-package use-orch-context coder-clean coder-upgrade-adm ## Redeploy app-deployment-manager Controller and Gateway in the Coder KinD cluster
 coder-redeploy-adm-crd: helm-package use-orch-context coder-clean coder-clean-adm-crd coder-upgrade-adm-crd ## Redeploy app-deployment-manager Controller, Gateway and the CRDs in the Coder KinD cluster
 
 coder-clean-adm-crd:
