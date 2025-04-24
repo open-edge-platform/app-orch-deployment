@@ -107,7 +107,7 @@ func GetPodStatus(armClient *restClient.ClientWithResponses, appID, workloadID, 
 			appName = appWorkload.Name
 			currState = string(*appWorkload.Pod.Status.State)
 
-			if appWorkload.Id.String() == workloadID {
+			if appWorkload.Id == workloadID {
 				if currState == desiredState {
 					fmt.Printf("Waiting for POD %s state %s ---> %s\n", appName, currState, desiredState)
 					return nil
