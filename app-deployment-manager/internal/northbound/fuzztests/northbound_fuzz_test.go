@@ -142,8 +142,6 @@ func setupFuzzTest() *FuzzTestSuite {
 
 func FuzzCreateDeployment(f *testing.F) {
 	s := setupFuzzTest()
-	os.Setenv("API_EXT_ENABLED", "false")
-	os.Setenv("GRAFANA_EXT_ENABLED", "false")
 	os.Setenv("SECRET_SERVICE_ENABLED", "false")
 
 	s.deployInstance = setDeployInstance(&s.deploymentListSrc, "create")
@@ -192,13 +190,13 @@ func FuzzCreateDeployment(f *testing.F) {
 				ApplicationReferences: []*catalog.ApplicationReference{},
 				Profiles: []*catalog.DeploymentProfile{
 					{
-						Name: req.Deployment.DefaultProfileName,
+						Name: req.Deployment.ProfileName,
 						ApplicationProfiles: map[string]string{
-							req.Deployment.AppName: req.Deployment.DefaultProfileName,
+							req.Deployment.AppName: req.Deployment.ProfileName,
 						},
 					},
 				},
-				DefaultProfileName:      req.Deployment.DefaultProfileName,
+				DefaultProfileName:      req.Deployment.ProfileName,
 				ApplicationDependencies: []*catalog.ApplicationDependency{},
 				Extensions:              []*catalog.APIExtension{},
 				Artifacts:               []*catalog.ArtifactReference{},
@@ -742,7 +740,6 @@ func createAppDeployment(req *deploymentpb.CreateDeploymentRequest) *deploymentv
 	}
 
 	dpRef := deploymentv1beta1.DeploymentPackageRef{
-		Publisher:   d.PublisherName,
 		Name:        d.AppName,
 		Version:     d.AppVersion,
 		ProfileName: d.ProfileName,
@@ -884,7 +881,6 @@ func setDeploymentObject(deploymentSrc *deploymentv1beta1.Deployment) {
 	deploymentSrc.Spec.DeploymentPackageRef.Name = "wordpress"
 	deploymentSrc.Spec.DeploymentPackageRef.Version = "0.1.0"
 	deploymentSrc.Spec.DeploymentPackageRef.ProfileName = "default"
-	deploymentSrc.Spec.DeploymentPackageRef.Publisher = "intel"
 	deploymentSrc.Spec.DeploymentType = deploymentv1beta1.AutoScaling
 
 	deploymentSrc.Spec.Applications = make([]deploymentv1beta1.Application, 1)
@@ -994,7 +990,6 @@ func getDeployInstance(deploymentListSrc *deploymentv1beta1.DeploymentList) *dep
 		DisplayName:    deploymentListSrc.Items[0].Spec.DisplayName,
 		AppVersion:     deploymentListSrc.Items[0].Spec.DeploymentPackageRef.Version,
 		ProfileName:    deploymentListSrc.Items[0].Spec.DeploymentPackageRef.ProfileName,
-		PublisherName:  deploymentListSrc.Items[0].Spec.DeploymentPackageRef.Publisher,
 		Status:         status,
 		OverrideValues: OverrideValuesList,
 		TargetClusters: TargetClustersList,
@@ -1022,7 +1017,6 @@ func setDeployInstance(deploymentListSrc *deploymentv1beta1.DeploymentList, scen
 		}
 
 		dpRef := deploymentv1beta1.DeploymentPackageRef{
-			Publisher:   "intel",
 			Name:        "wordpress",
 			Version:     "0.1.0",
 			ProfileName: "default",
@@ -1064,7 +1058,6 @@ func setDeployInstance(deploymentListSrc *deploymentv1beta1.DeploymentList, scen
 		}
 
 		dpRef := deploymentv1beta1.DeploymentPackageRef{
-			Publisher:   "intel",
 			Name:        "wordpress",
 			Version:     "0.1.0",
 			ProfileName: "default",

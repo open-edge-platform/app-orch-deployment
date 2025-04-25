@@ -69,9 +69,6 @@ type Namespace struct {
 }
 
 type DeploymentPackageRef struct {
-	// Publisher of the deployment package
-	Publisher string `json:"publisher,omitempty"`
-
 	// Name of the deployment package
 	Name string `json:"name"`
 

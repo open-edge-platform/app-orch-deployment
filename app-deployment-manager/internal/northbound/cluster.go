@@ -89,8 +89,6 @@ func (s *DeploymentSvc) ListClusters(ctx context.Context, in *deploymentpb.ListC
 		return nil, errors.Status(errors.NewForbidden("cannot list clusters: %v", err)).Err()
 	}
 
-	listOpts := metav1.ListOptions{}
-
 	activeProjectID, err := s.GetActiveProjectID(ctx)
 	if err != nil {
 		msg := fmt.Sprintf("failed to get tenant project ID %s", err.Error())
@@ -99,15 +97,12 @@ func (s *DeploymentSvc) ListClusters(ctx context.Context, in *deploymentpb.ListC
 
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
 
-	// TODO: if activeProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
-	if activeProjectID != "" {
-		labelSelector := metav1.LabelSelector{
-			MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
-		}
+	labelSelector := metav1.LabelSelector{
+		MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
+	}
 
-		listOpts = metav1.ListOptions{
-			LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
-		}
+	listOpts := metav1.ListOptions{
+		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 
 	namespace := activeProjectID
@@ -183,10 +178,7 @@ func (s *DeploymentSvc) GetCluster(ctx context.Context, in *deploymentpb.GetClus
 
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
 
-	// TODO: if tenantProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
-	if activeProjectID != "" {
-		labelSelector.MatchLabels[activeProjectIDKey] = activeProjectID
-	}
+	labelSelector.MatchLabels[activeProjectIDKey] = activeProjectID
 
 	listOpts := metav1.ListOptions{
 		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),

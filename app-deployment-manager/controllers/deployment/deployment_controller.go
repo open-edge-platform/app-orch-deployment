@@ -676,9 +676,10 @@ func (r *Reconciler) reconcileGitRepo(ctx context.Context, d *v1beta1.Deployment
 				gitRepo.Spec.CABundle = []byte(caCert)
 			}
 
-			// TODO: if activeProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
 			if activeProjectID, ok := d.Labels[string(v1beta1.AppOrchActiveProjectID)]; ok {
 				gitRepo.Labels[string(v1beta1.AppOrchActiveProjectID)] = activeProjectID
+			} else {
+				return ctrl.Result{}, fmt.Errorf("GitRepo creation failed (%v)", err)
 			}
 
 			if err := ctrl.SetControllerReference(d, gitRepo, r.Scheme); err != nil {
@@ -686,7 +687,7 @@ func (r *Reconciler) reconcileGitRepo(ctx context.Context, d *v1beta1.Deployment
 			}
 
 			if err := r.Client.Create(ctx, gitRepo); err != nil {
-				return ctrl.Result{}, fmt.Errorf("GitRepo creation failed(%v)", err)
+				return ctrl.Result{}, fmt.Errorf("GitRepo creation failed (%v)", err)
 			}
 
 			// GitRepo object for the application was successful

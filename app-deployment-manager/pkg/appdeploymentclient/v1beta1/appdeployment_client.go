@@ -15,8 +15,6 @@ import (
 // A group's client should implement this interface.
 type AppDeploymentClientInterface interface {
 	Deployments(namespace string) DeploymentInterface
-	APIExtensions(namespace string) APIExtensionInterface
-	GrafanaExtensions(namespace string) GrafanaExtensionInterface
 	Clusters(namespace string) ClusterInterface
 	DeploymentClusters(namespace string) DeploymentClusterInterface
 }
@@ -36,22 +34,6 @@ func (a *AppDeploymentClient) Deployments(namespace string) DeploymentInterface 
 	return &deploymentClient{
 		apporchClient: a.appDeploymentClient,
 		ns:            namespace,
-	}
-}
-
-// APIExtensions returns a apiExtensionsClient
-func (a *AppDeploymentClient) APIExtensions(namespace string) APIExtensionInterface {
-	return &apiExtensionClient{
-		appDeploymentClient: a.appDeploymentClient,
-		ns:                  namespace,
-	}
-}
-
-// GrafanaExtensions returns a apiExtensionsClient
-func (a *AppDeploymentClient) GrafanaExtensions(namespace string) GrafanaExtensionInterface {
-	return &grafanaExtensionClient{
-		appDeploymentClient: a.appDeploymentClient,
-		ns:                  namespace,
 	}
 }
 

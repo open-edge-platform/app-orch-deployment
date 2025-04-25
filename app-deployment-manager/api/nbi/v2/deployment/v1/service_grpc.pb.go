@@ -34,10 +34,6 @@ type DeploymentServiceClient interface {
 	UpdateDeployment(ctx context.Context, in *UpdateDeploymentRequest, opts ...grpc.CallOption) (*UpdateDeploymentResponse, error)
 	// Deletes a deployment object.
 	DeleteDeployment(ctx context.Context, in *DeleteDeploymentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Gets a deployment's APIExtension identified by the name of the APIExtension CR.
-	GetAPIExtension(ctx context.Context, in *GetAPIExtensionRequest, opts ...grpc.CallOption) (*GetAPIExtensionResponse, error)
-	// Gets a list of all UIExtensions.
-	ListUIExtensions(ctx context.Context, in *ListUIExtensionsRequest, opts ...grpc.CallOption) (*ListUIExtensionsResponse, error)
 	// Gets all deployment clusters count status.
 	GetDeploymentsStatus(ctx context.Context, in *GetDeploymentsStatusRequest, opts ...grpc.CallOption) (*GetDeploymentsStatusResponse, error)
 	// Gets a list of all deployment cluster objects.
@@ -107,24 +103,6 @@ func (c *deploymentServiceClient) DeleteDeployment(ctx context.Context, in *Dele
 	return out, nil
 }
 
-func (c *deploymentServiceClient) GetAPIExtension(ctx context.Context, in *GetAPIExtensionRequest, opts ...grpc.CallOption) (*GetAPIExtensionResponse, error) {
-	out := new(GetAPIExtensionResponse)
-	err := c.cc.Invoke(ctx, "/deployment.v1.DeploymentService/GetAPIExtension", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *deploymentServiceClient) ListUIExtensions(ctx context.Context, in *ListUIExtensionsRequest, opts ...grpc.CallOption) (*ListUIExtensionsResponse, error) {
-	out := new(ListUIExtensionsResponse)
-	err := c.cc.Invoke(ctx, "/deployment.v1.DeploymentService/ListUIExtensions", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *deploymentServiceClient) GetDeploymentsStatus(ctx context.Context, in *GetDeploymentsStatusRequest, opts ...grpc.CallOption) (*GetDeploymentsStatusResponse, error) {
 	out := new(GetDeploymentsStatusResponse)
 	err := c.cc.Invoke(ctx, "/deployment.v1.DeploymentService/GetDeploymentsStatus", in, out, opts...)
@@ -167,10 +145,6 @@ type DeploymentServiceServer interface {
 	UpdateDeployment(context.Context, *UpdateDeploymentRequest) (*UpdateDeploymentResponse, error)
 	// Deletes a deployment object.
 	DeleteDeployment(context.Context, *DeleteDeploymentRequest) (*emptypb.Empty, error)
-	// Gets a deployment's APIExtension identified by the name of the APIExtension CR.
-	GetAPIExtension(context.Context, *GetAPIExtensionRequest) (*GetAPIExtensionResponse, error)
-	// Gets a list of all UIExtensions.
-	ListUIExtensions(context.Context, *ListUIExtensionsRequest) (*ListUIExtensionsResponse, error)
 	// Gets all deployment clusters count status.
 	GetDeploymentsStatus(context.Context, *GetDeploymentsStatusRequest) (*GetDeploymentsStatusResponse, error)
 	// Gets a list of all deployment cluster objects.
@@ -199,12 +173,6 @@ func (UnimplementedDeploymentServiceServer) UpdateDeployment(context.Context, *U
 }
 func (UnimplementedDeploymentServiceServer) DeleteDeployment(context.Context, *DeleteDeploymentRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteDeployment not implemented")
-}
-func (UnimplementedDeploymentServiceServer) GetAPIExtension(context.Context, *GetAPIExtensionRequest) (*GetAPIExtensionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAPIExtension not implemented")
-}
-func (UnimplementedDeploymentServiceServer) ListUIExtensions(context.Context, *ListUIExtensionsRequest) (*ListUIExtensionsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListUIExtensions not implemented")
 }
 func (UnimplementedDeploymentServiceServer) GetDeploymentsStatus(context.Context, *GetDeploymentsStatusRequest) (*GetDeploymentsStatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDeploymentsStatus not implemented")
@@ -335,42 +303,6 @@ func _DeploymentService_DeleteDeployment_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DeploymentService_GetAPIExtension_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAPIExtensionRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(DeploymentServiceServer).GetAPIExtension(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/deployment.v1.DeploymentService/GetAPIExtension",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DeploymentServiceServer).GetAPIExtension(ctx, req.(*GetAPIExtensionRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _DeploymentService_ListUIExtensions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListUIExtensionsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(DeploymentServiceServer).ListUIExtensions(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/deployment.v1.DeploymentService/ListUIExtensions",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DeploymentServiceServer).ListUIExtensions(ctx, req.(*ListUIExtensionsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _DeploymentService_GetDeploymentsStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetDeploymentsStatusRequest)
 	if err := dec(in); err != nil {
@@ -455,14 +387,6 @@ var DeploymentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteDeployment",
 			Handler:    _DeploymentService_DeleteDeployment_Handler,
-		},
-		{
-			MethodName: "GetAPIExtension",
-			Handler:    _DeploymentService_GetAPIExtension_Handler,
-		},
-		{
-			MethodName: "ListUIExtensions",
-			Handler:    _DeploymentService_ListUIExtensions_Handler,
 		},
 		{
 			MethodName: "GetDeploymentsStatus",

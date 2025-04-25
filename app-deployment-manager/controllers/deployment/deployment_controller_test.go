@@ -153,9 +153,10 @@ func checkGitRepos(d v1beta1.Deployment, grlist []fleetv1alpha1.GitRepo) {
 var _ = Describe("Deployment controller", func() {
 
 	const (
-		name      = "mydeployment"
-		namespace = "fleet-default"
-		uid       = "216e7223-1932-4df6-a6c7-828c84479726"
+		name            = "mydeployment"
+		namespace       = "fleet-default"
+		uid             = "216e7223-1932-4df6-a6c7-828c84479726"
+		activeProjectId = "a563356a-b4df-47bb-b620-aae2d74c5129"
 	)
 	var (
 		c client.WithWatch
@@ -176,8 +177,11 @@ var _ = Describe("Deployment controller", func() {
 				Kind:       "Deployment",
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:       name,
-				Namespace:  namespace,
+				Name:      name,
+				Namespace: namespace,
+				Labels: map[string]string{
+					string(v1beta1.AppOrchActiveProjectID): activeProjectId,
+				},
 				UID:        uid,
 				Generation: 1,
 				CreationTimestamp: metav1.Time{
@@ -189,7 +193,6 @@ var _ = Describe("Deployment controller", func() {
 				DisplayName: "My Wordpress Blog",
 				Project:     "test-project",
 				DeploymentPackageRef: v1beta1.DeploymentPackageRef{
-					Publisher:   "intel",
 					Name:        "wordpress",
 					Version:     "0.1.0",
 					ProfileName: "default",

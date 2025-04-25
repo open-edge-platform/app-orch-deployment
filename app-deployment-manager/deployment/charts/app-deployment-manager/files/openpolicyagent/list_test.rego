@@ -15,16 +15,3 @@ test_list_deployments_read_role {
 		]},
 	}
 }
-
-# list ui extensions with ao-m2m-rw
-test_list_ui_extensions_read_role {
-	ListUIExtensionsRequest with input as {
-		"request": {"service_name": ["test-ui-ext"]},
-		"metadata": {"realm_access/roles": [
-			"default-roles-master",
-			"offline_access",
-			"ao-m2m-rw",
-			"uma_authorization",
-		]},
-	}
-}

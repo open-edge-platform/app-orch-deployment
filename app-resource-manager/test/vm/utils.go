@@ -122,7 +122,7 @@ func GetVMStatus(armClient *restClient.ClientWithResponses, appID, virtMachineID
 		for _, appWorkload := range *appWorkloads {
 			appName = appWorkload.Name
 			currState = string(*appWorkload.VirtualMachine.Status.State)
-			if appWorkload.Id.String() == virtMachineID {
+			if appWorkload.Id == virtMachineID {
 				if currState == desiredState {
 					fmt.Printf("Waiting for VM %s state %s ---> %s\n", appName, currState, desiredState)
 					return nil

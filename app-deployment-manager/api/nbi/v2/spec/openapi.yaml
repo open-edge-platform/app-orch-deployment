@@ -1,5 +1,5 @@
 # Generated with protoc-gen-openapi
-# https://github.com/kollalabs/protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
 
 openapi: 3.0.3
 info:
@@ -7,32 +7,10 @@ info:
     description: Application Deployment Manager service providing operations for deploying and managing applications.
     version: 2.0.0
 paths:
-    /deployment.orchestrator.apis/v1/apiextensions/{name}:
-        get:
-            tags:
-                - DeploymentService
-            summary: GetAPIExtension
-            description: Gets a deployment's APIExtension identified by the name of the APIExtension CR.
-            operationId: DeploymentService_GetAPIExtension
-            parameters:
-                - name: name
-                  in: path
-                  description: Required. Name of the apiExtension.
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/GetAPIExtensionResponse'
     /deployment.orchestrator.apis/v1/clusters:
         get:
             tags:
                 - ClusterService
-            summary: ListClusters
             description: Gets a list of all cluster objects.
             operationId: ClusterService_ListClusters
             parameters:
@@ -76,7 +54,6 @@ paths:
         get:
             tags:
                 - ClusterService
-            summary: GetCluster
             description: Gets a cluster object.
             operationId: ClusterService_GetCluster
             parameters:
@@ -97,7 +74,6 @@ paths:
         get:
             tags:
                 - DeploymentService
-            summary: ListDeployments
             description: Gets a list of all deployment objects.
             operationId: DeploymentService_ListDeployments
             parameters:
@@ -140,7 +116,6 @@ paths:
         post:
             tags:
                 - DeploymentService
-            summary: CreateDeployment
             description: Creates a deployment object.
             operationId: DeploymentService_CreateDeployment
             requestBody:
@@ -160,7 +135,6 @@ paths:
         get:
             tags:
                 - DeploymentService
-            summary: ListDeploymentsPerCluster
             operationId: DeploymentService_ListDeploymentsPerCluster
             parameters:
                 - name: clusterId
@@ -208,7 +182,6 @@ paths:
         get:
             tags:
                 - DeploymentService
-            summary: GetDeployment
             description: Gets a deployment object.
             operationId: DeploymentService_GetDeployment
             parameters:
@@ -228,7 +201,6 @@ paths:
         put:
             tags:
                 - DeploymentService
-            summary: UpdateDeployment
             description: Updates a deployment object.
             operationId: DeploymentService_UpdateDeployment
             parameters:
@@ -254,7 +226,6 @@ paths:
         delete:
             tags:
                 - DeploymentService
-            summary: DeleteDeployment
             description: Deletes a deployment object.
             operationId: DeploymentService_DeleteDeployment
             parameters:
@@ -281,7 +252,6 @@ paths:
         get:
             tags:
                 - DeploymentService
-            summary: ListDeploymentClusters
             description: Gets a list of all deployment cluster objects.
             operationId: DeploymentService_ListDeploymentClusters
             parameters:
@@ -324,7 +294,6 @@ paths:
         get:
             tags:
                 - DeploymentService
-            summary: GetDeploymentsStatus
             description: Gets all deployment clusters count status.
             operationId: DeploymentService_GetDeploymentsStatus
             parameters:
@@ -342,42 +311,8 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/GetDeploymentsStatusResponse'
-    /deployment.orchestrator.apis/v1/ui_extensions:
-        get:
-            tags:
-                - DeploymentService
-            summary: ListUIExtensions
-            description: Gets a list of all UIExtensions.
-            operationId: DeploymentService_ListUIExtensions
-            parameters:
-                - name: serviceName
-                  in: query
-                  description: Optional. A string array that filters service names to be displayed. Service names separated by a comma.
-                  schema:
-                    type: array
-                    items:
-                        type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListUIExtensionsResponse'
 components:
     schemas:
-        APIExtension:
-            type: object
-            properties:
-                name:
-                    readOnly: true
-                    type: string
-                    description: Name of the API Extension.
-                token:
-                    readOnly: true
-                    type: string
-                    description: Token for secure websocket connection between api-proxy and api-agent.
-            description: Details of API extension
         App:
             type: object
             properties:
@@ -466,9 +401,6 @@ components:
                 profileName:
                     type: string
                     description: The selected profile name to be used for the base Helm values of the different applications in the deployment package
-                publisherName:
-                    type: string
-                    description: DEPRECATED - will remove in v2. Publisher of the deployment package.
                 createTime:
                     readOnly: true
                     type: string
@@ -496,10 +428,6 @@ components:
                     items:
                         $ref: '#/components/schemas/App'
                     description: Application details.
-                defaultProfileName:
-                    readOnly: true
-                    type: string
-                    description: DEPRECATED - will remove in v2. Name of the default DeploymentProfile to use when deploying this DeploymentPackage. If no profileName is provided, use defaultProfileName from deployment package.
                 deploymentType:
                     type: string
                     description: The deployment type for the target cluster deployment can be either auto-scaling or targeted. In Auto-scaling type, the application will be automatically deployed on all the clusters which match the Target cluster label. In Targeted type, the user has to select among pre created clusters to deploy the application.
@@ -558,14 +486,6 @@ components:
                 summary:
                     $ref: '#/components/schemas/Summary'
             description: Status has details of the deployment.
-        GetAPIExtensionResponse:
-            required:
-                - apiExtension
-            type: object
-            properties:
-                apiExtension:
-                    $ref: '#/components/schemas/APIExtension'
-            description: Response message for GetAPIExtension method.
         GetClusterResponse:
             type: object
             properties:
@@ -675,17 +595,6 @@ components:
                     type: integer
                     format: int32
             description: Response message for the ListDeployments method.
-        ListUIExtensionsResponse:
-            required:
-                - uiExtensions
-            type: object
-            properties:
-                uiExtensions:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/UIExtension'
-                    description: A list of UIExtensions.
-            description: Response message for the ListUIExtensions method.
         OverrideValues:
             required:
                 - appName
@@ -753,35 +662,6 @@ components:
                     type: string
                     description: Cluster id to match the target cluster when targeted deployment.
             description: Set target clusters based on labels.
-        UIExtension:
-            required:
-                - serviceName
-                - description
-                - label
-                - fileName
-                - appName
-                - moduleName
-            type: object
-            properties:
-                serviceName:
-                    type: string
-                    description: The name of the API Extension endpoint.
-                description:
-                    type: string
-                    description: Description states the purpose of the dashboard that this UIExtension represents.
-                label:
-                    type: string
-                    description: Label represents a dashboard in the main UI.
-                fileName:
-                    type: string
-                    description: The name of the main file to load this specific UI extension.
-                appName:
-                    type: string
-                    description: The name of the application corresponding to this UI extension.
-                moduleName:
-                    type: string
-                    description: The application module to be loaded.
-            description: Details of UI Extension.
         UpdateDeploymentResponse:
             required:
                 - deployment

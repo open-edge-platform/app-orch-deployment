@@ -287,38 +287,6 @@ var _ = Describe("Test Utils", func() {
 		})
 	})
 
-	Describe("Test GetAPIExtEnabled", func() {
-		It("successfully get API_EXT_ENABLED from env vars", func() {
-			expected := "test-api-ext-enabled"
-			os.Setenv("API_EXT_ENABLED", expected)
-			v, err := GetAPIExtEnabled()
-			Expect(err).ToNot(HaveOccurred())
-			Expect(v).To(Equal(expected))
-		})
-
-		It("fails due to env missing", func() {
-			os.Unsetenv("API_EXT_ENABLED")
-			_, err := GetAPIExtEnabled()
-			Expect(err).To(HaveOccurred())
-		})
-	})
-
-	Describe("Test GetGrafanaExtEnabled", func() {
-		It("successfully get GRAFANA_EXT_ENABLED from env vars", func() {
-			expected := "test-grafana-ext-enabled"
-			os.Setenv("GRAFANA_EXT_ENABLED", expected)
-			v, err := GetGrafanaExtEnabled()
-			Expect(err).ToNot(HaveOccurred())
-			Expect(v).To(Equal(expected))
-		})
-
-		It("fails due to env missing", func() {
-			os.Unsetenv("GRAFANA_EXT_ENABLED")
-			_, err := GetGrafanaExtEnabled()
-			Expect(err).To(HaveOccurred())
-		})
-	})
-
 	Describe("Test DeleteCRDResources", func() {
 		It("successfully set to true when DELETE_CRD_RESOURCES is true", func() {
 			expected := true

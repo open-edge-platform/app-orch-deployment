@@ -167,29 +167,8 @@ adm:
   config: {}
   defaultNamespace: "orch-apps"
 
-  grafanaExtension:
-    enabled: false
-
   capi:
     enabled: false
-  # API extension configurations.
-  apiExtension:
-    enabled: false
-    apiGroupDomain: orchestrator-extension.apis
-    ingress:
-      kind: traefik
-    apiProxy:
-      url: wss://service-proxy.orchestrator.intel.com
-      # API proxy namespace is valid only when using traefik as ingress kind
-      # To use nginx, api-proxy needs to be deployed in the same namespace where Deployment CR is created.
-      namespace: orch-app-system
-      service: api-proxy
-      port: 8123
-    apiAgent:
-      chart: oci://registry-rs.edgeorchestration.intel.com/edge-orch/app/charts/api-agent
-      version: 0.1.46
-      namespace: orch-app-system
-      helmSecretName: "intel-reg-secret"
 
   metrics:
     enabled: true

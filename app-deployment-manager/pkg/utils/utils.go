@@ -140,8 +140,7 @@ func WriteFile(basedir string, filename string, data []byte) error {
 }
 
 func GetAppRef(d *v1beta1.Deployment) string {
-	return fmt.Sprintf("%s-%s-%s",
-		d.Spec.DeploymentPackageRef.Publisher,
+	return fmt.Sprintf("%s-%s",
 		d.Spec.DeploymentPackageRef.Name,
 		d.Spec.DeploymentPackageRef.Version)
 }

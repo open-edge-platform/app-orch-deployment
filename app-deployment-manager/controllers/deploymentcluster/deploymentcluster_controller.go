@@ -359,9 +359,10 @@ func (r *Reconciler) createDeploymentCluster(ctx context.Context, req ctrl.Reque
 			if dci.Name == req.Name {
 				dc := newDeploymentCluster(req, dci)
 
-				// TODO: if tenantProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
 				if activeProjectID, ok := bd.Labels[string(v1beta1.AppOrchActiveProjectID)]; ok {
 					dc.Labels[string(v1beta1.AppOrchActiveProjectID)] = activeProjectID
+				} else {
+					return fmt.Errorf("cannot create DeploymentCluster %s: active project ID label not found in BundleDeployment %s", dc.Name, bd.Name)
 				}
 
 				log.Info(fmt.Sprintf("Created DeploymentCluster %s", dc.Name))

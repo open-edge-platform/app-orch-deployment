@@ -55,36 +55,6 @@ spec:
         {{- if .Values.adm.logLevel }}
         - --zap-log-level={{ .Values.adm.logLevel }}
         {{- end }}
-        {{- with .Values.adm.apiExtension.apiGroupDomain }}
-        - --api-group-domain={{ . }}
-        {{- end }}
-        {{- with .Values.adm.apiExtension.ingress.kind }}
-        - --ingress-kind={{ . }}
-        {{- end }}
-        {{- with .Values.adm.apiExtension.apiProxy.url }}
-        - --api-proxy-url={{ . }}
-        {{- end }}
-        {{- with .Values.adm.apiExtension.apiProxy.namespace }}
-        - --api-proxy-namespace={{ . }}
-        {{- end }}
-        {{- with .Values.adm.apiExtension.apiProxy.service }}
-        - --api-proxy-service={{ . }}
-        {{- end }}
-        {{- with .Values.adm.apiExtension.apiProxy.port }}
-        - --api-proxy-port={{ . }}
-        {{- end }}
-        {{- with .Values.adm.apiExtension.apiAgent.chartRepo }}
-        - --api-agent-chart-repo={{ . }}
-        {{- end }}
-        {{- with .Values.adm.apiExtension.apiAgent.chart }}
-        - --api-agent-chart={{ . }}
-        {{- end }}
-        {{- with .Values.adm.apiExtension.apiAgent.version }}
-        - --api-agent-chart-version={{ . }}
-        {{- end }}
-        {{- with .Values.adm.apiExtension.apiAgent.namespace }}
-        - --api-agent-namespace={{ . }}
-        {{- end }}
         {{- with .Values.adm.extraArgs }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -243,10 +213,6 @@ spec:
         - name: CATALOG_SERVICE_ADDRESS
           value: {{ . }}
         {{- end }}
-        {{- with .Values.adm.apiExtension.apiAgent.helmSecretName }}
-        - name: API_AGENT_HELM_SECRET_NAME
-          value: {{ . }}
-        {{- end }}
         {{- with .Values.adm.giteaDeleteRepoOnTerminate }}
         - name: GITEA_DELETE_REPO_ON_TERMINATE
           value: "{{ . }}"
@@ -272,12 +238,8 @@ spec:
           value: {{ .Values.adm.redeployAfterUpdate | quote }}
         - name: USE_M2M_TOKEN
           value: {{  .Values.adm.useM2MToken | quote }}
-        - name: API_EXT_ENABLED
-          value: {{ .Values.adm.apiExtension.enabled | quote }}
         - name: CAPI_ENABLED
           value: {{ .Values.adm.capi.enabled | quote }}
-        - name: GRAFANA_EXT_ENABLED
-          value: {{ .Values.adm.grafanaExtension.enabled | quote }}
         {{- with .Values.adm.fleet.pollingInterval }}
         - name: FLEET_GIT_POLLING_INTERVAL
           value: "{{ . }}"

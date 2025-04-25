@@ -79,8 +79,9 @@ TEST_COVER := atomic ./...
 
 FUZZ_SECONDS ?= 60
 
-EXCLUDE_PKGS_TEST := grep -v ./pkg/api | grep -v ./api | grep -v ./pkg/utils/ratelimiter | grep -v ./internal/ingresshandler \
-	| grep -v ./internal/grafana/mockery | grep -v ./internal/catalogclient/mockery | grep -v ./internal/catalogclient/mocks
+EXCLUDE_PKGS_TEST := grep -v ./pkg/api | grep -v ./api | grep -v ./pkg/utils/ratelimiter | grep -v ./test \
+	| grep -v ./internal/grafana/mockery | grep -v ./internal/catalogclient/mockery | grep -v ./internal/catalogclient/mocks \
+	| grep -v ./pkg/fleet/mocks
 
 PKG_LIST := ./cmd/... ./controllers/... ./webhooks/... ./pkg/... ./internal/...
 
@@ -101,15 +102,13 @@ GOEXTRAFLAGS += $(COMMON_GOEXTRAFLAGS)
 
 APIPKG_DIR ?= pkg/api
 
-install-protoc-plugins: common-install-protoc-plugins ## Install protoc plugins
+install-protoc-plugins: common-install-protoc-plugins ## Install protoc, buf and protobuf tools
 
 verify-protoc-plugins: common-verify-protoc-plugins  ## Verify protoc plugins
 
-# TODO - add buf lint
-
-proto-generate: buf-generate
-
-buf-generate: common-buf-generate ## Generate protobuf code
+OPENAPI_SPEC_FILE ?= ./api/nbi/v2/spec/openapi.yaml
+REST_CLIENT_DIR ?= ./api/nbi/v2/pkg/restClient
+proto-generate: common-buf-update common-buf-generate common-openapi-spec-validate common-rest-client-gen common-buf-lint ## Generate protobuf code
 
 buf-lint-fix: common-buf-lint-fix ## Lint and format protobuf files
 
@@ -117,17 +116,18 @@ buf-update: common-buf-update ## Update buf modules
 
 buf-lint: common-buf-lint ## Lint and format protobuf files
 
+rest-client-gen: common-rest-client-gen ## Generate REST client code
+
 #### Development Targets ####
 
-controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
-$(CONTROLLER_GEN): $(LOCALBIN)
-	test -s $(LOCALBIN)/controller-gen || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
+controller-gen: ## Download controller-gen locally if necessary.
+	test -s $(CONTROLLER_GEN) || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
 
 generate-crds: controller-gen
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 generate-apis: controller-gen
-	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./api/..."
+	$(CONTROLLER_GEN) object:headerFile="controllers/license.go.txt" paths="./api/..."
 
 manifests: generate-apis generate-crds ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 
@@ -153,7 +153,7 @@ test: manifests fmt vet envtest opa-test ## Run tests
 	go install github.com/AlekSi/gocov-xml@${GOLANG_GOCOV_XML_VERSION}
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" \
 		go test -gcflags="-l" -race -coverpkg=$$(go list ./... | ${EXCLUDE_PKGS_TEST} | tr '\n' ,) -coverprofile cover.out \
-		-covermode atomic `go list ${PKG_LIST} | grep -v "/mocks" | grep -v "/mockery" | grep -v "/test/" | ${EXCLUDE_PKGS_TEST}`
+		-covermode atomic `go list ${PKG_LIST} | grep -v "/mocks" | grep -v "/mockery" | ${EXCLUDE_PKGS_TEST}`
 	${GOBIN}/gocov convert cover.out | ${GOBIN}/gocov-xml > coverage.xml
 	go tool cover -html=cover.out -o coverage.html
 
@@ -271,11 +271,9 @@ coder-clean-adm-crd:
 	kubectl patch application -n dev root-app --type=merge -p '{"spec":{"syncPolicy":{"automated":{"selfHeal":false}}}}'
 	kubectl delete application -n dev app-deployment-manager --ignore-not-found=true
 	kubectl delete application -n dev app-deployment-crd --ignore-not-found=true
-	kubectl delete crd apiextensions.app.edge-orchestrator.intel.com --ignore-not-found=true
 	kubectl delete crd clusters.app.edge-orchestrator.intel.com --ignore-not-found=true
 	kubectl delete crd deploymentclusters.app.edge-orchestrator.intel.com --ignore-not-found=true
 	kubectl delete crd deployments.app.edge-orchestrator.intel.com --ignore-not-found=true
-	kubectl delete crd grafanaextensions.app.edge-orchestrator.intel.com --ignore-not-found=true
 
 coder-upgrade-adm-crd:
 	helm upgrade --install -n ${ADM_NS} ma-adm-crd -f $(CODER_DIR)/argocd/applications/configs/app-deployment-manager.yaml  build/_output/$(ADM_CRD_HELM_CHART)

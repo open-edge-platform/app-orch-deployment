@@ -32,9 +32,8 @@ func (s *DeploymentSvc) GetActiveProjectID(ctx context.Context) (string, error) 
 		return "", errors.NewInvalid("multiple ActiveProjectIDs are set - it should be one")
 	}
 
-	// TODO: will be removed once fully MT is integrated, as activeProjectID is mandatory field for the future but not now
 	if len(activeProjectIDs) == 0 {
-		return "", nil
+		return "", errors.NewInvalid("activeprojectid is not set")
 	}
 
 	return activeProjectIDs[0], nil

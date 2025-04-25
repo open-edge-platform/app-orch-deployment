@@ -132,7 +132,7 @@ type PodMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m PodMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
+	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -233,7 +233,7 @@ type PodStatusMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m PodStatusMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
+	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -387,7 +387,7 @@ type ContainerMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ContainerMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
+	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -617,7 +617,7 @@ type ContainerStatusMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ContainerStatusMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
+	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -721,7 +721,7 @@ type ContainerStateWaitingMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ContainerStateWaitingMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
+	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -823,7 +823,7 @@ type ContainerStateRunningMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ContainerStateRunningMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
+	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -931,7 +931,7 @@ type ContainerStateTerminatedMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ContainerStateTerminatedMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
+	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

@@ -41,7 +41,6 @@ type Deployment struct {
 	DisplayName                string                                             `yaml:"displayName"`
 	AppVersion                 string                                             `yaml:"appVersion"`
 	ProfileName                string                                             `yaml:"profileName"`
-	PublisherName              string                                             `yaml:"publisherName"`
 	DeployID                   string                                             `yaml:"deployId"`
 	DeploymentType             string                                             `yaml:"deploymentType"`
 	Project                    string                                             `yaml:"project"`
@@ -76,9 +75,6 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 	d.ProfileName = in.GetProfileName()
 	d.ServiceExports = in.GetServiceExports()
 	d.NetworkName = in.GetNetworkName()
-	// PublisherName was removed in Catalog v0.10.0, for backward compatibility, setting as optional
-	// will remove field publisher in CRD and field publisherName in API in v2
-	d.PublisherName = in.GetPublisherName()
 	d.OverrideValues = in.GetOverrideValues()
 	d.TargetClusters = in.GetTargetClusters()
 	d.AllAppTargetClusters = in.GetAllAppTargetClusters()
@@ -114,10 +110,7 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 			val.Labels = make(map[string]string, 0)
 		}
 
-		// TODO: if activeProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
-		if activeProjectID != "" {
-			val.Labels[deploymentv1beta1.ClusterOrchKeyProjectID] = d.ActiveProjectID
-		}
+		val.Labels[deploymentv1beta1.ClusterOrchKeyProjectID] = d.ActiveProjectID
 	}
 
 	if d.AllAppTargetClusters != nil {
@@ -138,10 +131,7 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 			d.AllAppTargetClusters.Labels = make(map[string]string, 0)
 		}
 
-		// TODO: if activeProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
-		if activeProjectID != "" {
-			d.AllAppTargetClusters.Labels[deploymentv1beta1.ClusterOrchKeyProjectID] = d.ActiveProjectID
-		}
+		d.AllAppTargetClusters.Labels[deploymentv1beta1.ClusterOrchKeyProjectID] = d.ActiveProjectID
 	}
 
 	allOverrideKeys := make(map[string][]string)
@@ -219,6 +209,7 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 
 	d.ForbidsMultipleDeployments = dp.ForbidsMultipleDeployments
 
+	// Set the namespace as the project ID
 	d.Namespace = d.ActiveProjectID
 
 	if scenario == "create" {
@@ -446,7 +437,6 @@ func (c *DeploymentInstance) createDeploymentObject(ctx context.Context, s *Depl
 		AppName:        c.deployment.Spec.DeploymentPackageRef.Name,
 		AppVersion:     c.deployment.Spec.DeploymentPackageRef.Version,
 		ProfileName:    c.deployment.Spec.DeploymentPackageRef.ProfileName,
-		PublisherName:  c.deployment.Spec.DeploymentPackageRef.Publisher,
 		DeploymentType: string(c.deployment.Spec.DeploymentType),
 		CreateTime:     createTimePbUnix,
 		DeployId:       string(c.deployment.ObjectMeta.UID),
@@ -473,7 +463,6 @@ func (s *DeploymentSvc) GetDeploymentsStatus(ctx context.Context, in *deployment
 	}
 
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
-	listOpts := metav1.ListOptions{}
 
 	activeProjectID, err := s.GetActiveProjectID(ctx)
 	if err != nil {
@@ -481,15 +470,12 @@ func (s *DeploymentSvc) GetDeploymentsStatus(ctx context.Context, in *deployment
 		return nil, errors.Status(errors.NewUnavailable(msg)).Err()
 	}
 
-	// TODO: if activeProjectID is empty return errored in the future - tenant project ID can be empty now but it should be mandatory for the future.
-	if activeProjectID != "" {
-		labelSelector := metav1.LabelSelector{
-			MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
-		}
+	labelSelector := metav1.LabelSelector{
+		MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
+	}
 
-		listOpts = metav1.ListOptions{
-			LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
-		}
+	listOpts := metav1.ListOptions{
+		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 
 	namespace := activeProjectID
@@ -637,7 +623,6 @@ func (s *DeploymentSvc) CreateDeployment(ctx context.Context, in *deploymentpb.C
 		return nil, errors.Status(errors.NewForbidden("cannot create deployment: %v", err)).Err()
 	}
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
-	listOpts := metav1.ListOptions{}
 
 	activeProjectID, err := s.GetActiveProjectID(ctx)
 	if err != nil {
@@ -645,15 +630,12 @@ func (s *DeploymentSvc) CreateDeployment(ctx context.Context, in *deploymentpb.C
 		return nil, errors.Status(errors.NewUnavailable(msg)).Err()
 	}
 
-	// TODO: if activeProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
-	if activeProjectID != "" {
-		labelSelector := metav1.LabelSelector{
-			MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
-		}
+	labelSelector := metav1.LabelSelector{
+		MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
+	}
 
-		listOpts = metav1.ListOptions{
-			LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
-		}
+	listOpts := metav1.ListOptions{
+		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 
 	ctx, cancel, err := utils.AddToOutgoingContext(ctx, s.vaultAuthClient, activeProjectID, true)
@@ -786,18 +768,6 @@ func (s *DeploymentSvc) CreateDeployment(ctx context.Context, in *deploymentpb.C
 		return nil, errors.Status(err).Err()
 	}
 
-	err = createAPIExtCrs(ctx, s, d)
-	if err != nil {
-		log.Warnf("cannot create api extension: %v", err)
-		return nil, errors.Status(err).Err()
-	}
-
-	err = createGrafanaExtCrs(ctx, s, d)
-	if err != nil {
-		log.Warnf("cannot create grafana extension: %v", err)
-		return nil, errors.Status(err).Err()
-	}
-
 	utils.LogActivity(ctx, "create", "ADM", "deployment-name "+d.Name, "deploy-id "+d.DeployID, "deployment-app-version "+d.AppVersion)
 	return &deploymentpb.CreateDeploymentResponse{DeploymentId: d.DeployID}, nil
 }
@@ -822,7 +792,6 @@ func (s *DeploymentSvc) GetDeployment(ctx context.Context, in *deploymentpb.GetD
 
 	UID := in.DeplId
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
-	listOpts := metav1.ListOptions{}
 
 	activeProjectID, err := s.GetActiveProjectID(ctx)
 	if err != nil {
@@ -830,15 +799,12 @@ func (s *DeploymentSvc) GetDeployment(ctx context.Context, in *deploymentpb.GetD
 		return nil, errors.Status(errors.NewUnavailable(msg)).Err()
 	}
 
-	// TODO: if activeProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
-	if activeProjectID != "" {
-		labelSelector := metav1.LabelSelector{
-			MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
-		}
+	labelSelector := metav1.LabelSelector{
+		MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
+	}
 
-		listOpts = metav1.ListOptions{
-			LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
-		}
+	listOpts := metav1.ListOptions{
+		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 
 	namespace := activeProjectID
@@ -855,13 +821,11 @@ func (s *DeploymentSvc) GetDeployment(ctx context.Context, in *deploymentpb.GetD
 	name := deployment.ObjectMeta.Name
 	var c DeploymentInstance
 
-	labelSelector := metav1.LabelSelector{
+	labelSelector = metav1.LabelSelector{
 		MatchLabels: map[string]string{string(deploymentv1beta1.DeploymentID): UID},
 	}
 
-	if activeProjectID != "" {
-		labelSelector.MatchLabels[string(deploymentv1beta1.AppOrchActiveProjectID)] = activeProjectID
-	}
+	labelSelector.MatchLabels[string(deploymentv1beta1.AppOrchActiveProjectID)] = activeProjectID
 
 	listOpts = metav1.ListOptions{
 		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
@@ -912,19 +876,14 @@ func (s *DeploymentSvc) ListDeploymentsPerCluster(ctx context.Context, in *deplo
 	}
 
 	namespace := activeProjectID
-	listOpts := metav1.ListOptions{}
-	labelSelector := metav1.LabelSelector{}
 
-	// TODO: if activeProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
-	if activeProjectID != "" {
-		// Filter deployments with only project id
-		labelSelector = metav1.LabelSelector{
-			MatchLabels: map[string]string{string(deploymentv1beta1.AppOrchActiveProjectID): activeProjectID},
-		}
+	// Filter deployments with only project id
+	labelSelector := metav1.LabelSelector{
+		MatchLabels: map[string]string{string(deploymentv1beta1.AppOrchActiveProjectID): activeProjectID},
+	}
 
-		listOpts = metav1.ListOptions{
-			LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
-		}
+	listOpts := metav1.ListOptions{
+		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 
 	deployments, err := s.crClient.Deployments(namespace).List(ctx, listOpts)
@@ -1057,7 +1016,6 @@ func (s *DeploymentSvc) ListDeployments(ctx context.Context, in *deploymentpb.Li
 	}
 
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
-	listOpts := metav1.ListOptions{}
 
 	activeProjectID, err := s.GetActiveProjectID(ctx)
 	if err != nil {
@@ -1065,15 +1023,12 @@ func (s *DeploymentSvc) ListDeployments(ctx context.Context, in *deploymentpb.Li
 		return nil, errors.Status(errors.NewUnavailable(msg)).Err()
 	}
 
-	// TODO: if activeProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
-	if activeProjectID != "" {
-		labelSelector := metav1.LabelSelector{
-			MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
-		}
+	labelSelector := metav1.LabelSelector{
+		MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
+	}
 
-		listOpts = metav1.ListOptions{
-			LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
-		}
+	listOpts := metav1.ListOptions{
+		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 
 	namespace := activeProjectID
@@ -1136,7 +1091,6 @@ func (s *DeploymentSvc) DeleteDeployment(ctx context.Context, in *deploymentpb.D
 	d.DeployID = in.DeplId
 
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
-	listOpts := metav1.ListOptions{}
 
 	activeProjectID, err := s.GetActiveProjectID(ctx)
 	if err != nil {
@@ -1144,15 +1098,12 @@ func (s *DeploymentSvc) DeleteDeployment(ctx context.Context, in *deploymentpb.D
 		return nil, errors.Status(errors.NewUnavailable(msg)).Err()
 	}
 
-	// TODO: if activeProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
-	if activeProjectID != "" {
-		labelSelector := metav1.LabelSelector{
-			MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
-		}
+	labelSelector := metav1.LabelSelector{
+		MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
+	}
 
-		listOpts = metav1.ListOptions{
-			LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
-		}
+	listOpts := metav1.ListOptions{
+		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 
 	d.Namespace = activeProjectID
@@ -1193,32 +1144,15 @@ func (s *DeploymentSvc) DeleteDeployment(ctx context.Context, in *deploymentpb.D
 			utils.LogActivity(ctx, "delete", "ADM", fmt.Sprintf("%v", err))
 		}
 
-		err = deleteAPIExtCrs(ctx, s.crClient, d)
-		if err != nil {
-			log.Warnf("cannot delete api extension: %v", err)
-			return nil, errors.Status(err).Err()
-		}
-
-		err = deleteGrafanaExtCrs(ctx, s.crClient, s.k8sClient, d)
-		if err != nil {
-			log.Warnf("cannot delete grafana extension: %v", err)
-			return nil, errors.Status(err).Err()
-		}
-
 		utils.LogActivity(ctx, "delete", "ADM", "deployment-name "+d.Name, "deploy-id "+d.DeployID, "delete-type "+in.DeleteType.String())
 	} else {
 		// case 3
-		listOpts = metav1.ListOptions{}
+		labelSelector = metav1.LabelSelector{
+			MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
+		}
 
-		// TODO: if tenantProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
-		if activeProjectID != "" {
-			labelSelector := metav1.LabelSelector{
-				MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
-			}
-
-			listOpts = metav1.ListOptions{
-				LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
-			}
+		listOpts = metav1.ListOptions{
+			LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 		}
 
 		// do dependency graph traversal, collect all target deployments, verify if there is any parent deployment CR outside of dependency graph
@@ -1288,8 +1222,6 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 		return nil, errors.Status(errors.NewForbidden("cannot update deployment: %v", err)).Err()
 	}
 
-	listOpts := metav1.ListOptions{}
-
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
 	activeProjectID, err := s.GetActiveProjectID(ctx)
 	if err != nil {
@@ -1297,15 +1229,12 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 		return nil, errors.Status(errors.NewUnavailable(msg)).Err()
 	}
 
-	// TODO: if activeProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
-	if activeProjectID != "" {
-		labelSelector := metav1.LabelSelector{
-			MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
-		}
+	labelSelector := metav1.LabelSelector{
+		MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
+	}
 
-		listOpts = metav1.ListOptions{
-			LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
-		}
+	listOpts := metav1.ListOptions{
+		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 
 	ctx, cancel, err := utils.AddToOutgoingContext(ctx, s.vaultAuthClient, activeProjectID, true)
@@ -1365,11 +1294,11 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 	newDepDeplMap := make(map[string]string)
 
 	for _, childDepl := range deployment.Spec.ChildDeploymentList {
-		childDeplMap[fmt.Sprintf("%s/%s", childDepl.DeploymentPackageRef.Publisher, childDepl.DeploymentPackageRef.Name)] = fmt.Sprintf("%s/%s", childDepl.DeploymentPackageRef.Version, childDepl.DeploymentPackageRef.ProfileName)
+		childDeplMap[childDepl.DeploymentPackageRef.Name] = fmt.Sprintf("%s/%s", childDepl.DeploymentPackageRef.Version, childDepl.DeploymentPackageRef.ProfileName)
 	}
 
 	for _, reqDepl := range d.RequiredDeploymentPackage {
-		newDepDeplMap[fmt.Sprintf("%s/%s", reqDepl.Publisher, reqDepl.Name)] = fmt.Sprintf("%s/%s", reqDepl.Version, reqDepl.ProfileName)
+		newDepDeplMap[reqDepl.Name] = fmt.Sprintf("%s/%s", reqDepl.Version, reqDepl.ProfileName)
 	}
 
 	if !reflect.DeepEqual(childDeplMap, newDepDeplMap) {
@@ -1377,18 +1306,6 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 	}
 
 	// case 3
-	err = deleteAPIExtCrs(ctx, s.crClient, d)
-	if err != nil {
-		log.Warnf("cannot update deployment: %v", err)
-		return nil, errors.Status(err).Err()
-	}
-
-	err = deleteGrafanaExtCrs(ctx, s.crClient, s.k8sClient, d)
-	if err != nil {
-		log.Warnf("cannot update deployment: %v", err)
-		return nil, errors.Status(err).Err()
-	}
-
 	err = deleteSecrets(ctx, s.k8sClient, deployment)
 	if err != nil {
 		log.Warnf("cannot update deployment: %v", err)
@@ -1415,18 +1332,6 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 	if err != nil {
 		log.Warnf("cannot update deployment: %v", err)
 		return nil, errors.Status(k8serrors.K8sToTypedError(err)).Err()
-	}
-
-	err = createAPIExtCrs(ctx, s, d)
-	if err != nil {
-		log.Warnf("cannot update deployment: %v", err)
-		return nil, errors.Status(err).Err()
-	}
-
-	err = createGrafanaExtCrs(ctx, s, d)
-	if err != nil {
-		log.Warnf("cannot update deployment: %v", err)
-		return nil, errors.Status(err).Err()
 	}
 
 	// Need to update Owner Reference to clean up secrets. Cannot add required details during secret creation
@@ -1495,24 +1400,20 @@ func (s *DeploymentSvc) ListDeploymentClusters(ctx context.Context, in *deployme
 		return nil, errors.Status(errors.NewForbidden("cannot get deployment clusters: %v", err)).Err()
 	}
 
-	listOpts := metav1.ListOptions{}
-
 	activeProjectID, err := s.GetActiveProjectID(ctx)
 	if err != nil {
 		msg := fmt.Sprintf("failed to get tenant project ID %s", err.Error())
 		return nil, errors.Status(errors.NewUnavailable(msg)).Err()
 	}
 
-	// TODO: if tenantProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
-	if activeProjectID != "" {
-		labelSelector := metav1.LabelSelector{
-			MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
-		}
 
-		listOpts = metav1.ListOptions{
-			LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
-		}
+	labelSelector := metav1.LabelSelector{
+		MatchLabels: map[string]string{activeProjectIDKey: activeProjectID},
+	}
+
+	listOpts := metav1.ListOptions{
+		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	}
 
 	UID := in.DeplId
@@ -1530,13 +1431,11 @@ func (s *DeploymentSvc) ListDeploymentClusters(ctx context.Context, in *deployme
 
 	name := deployment.ObjectMeta.Name
 
-	labelSelector := metav1.LabelSelector{
+	labelSelector = metav1.LabelSelector{
 		MatchLabels: map[string]string{string(deploymentv1beta1.DeploymentID): UID},
 	}
 
-	if activeProjectID != "" {
-		labelSelector.MatchLabels[activeProjectIDKey] = activeProjectID
-	}
+	labelSelector.MatchLabels[activeProjectIDKey] = activeProjectID
 
 	listOpts = metav1.ListOptions{
 		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),

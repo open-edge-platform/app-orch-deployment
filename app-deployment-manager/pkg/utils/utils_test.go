@@ -300,13 +300,12 @@ var _ = Describe("Test Utils", func() {
 	Describe("Test GetAppRef", func() {
 		It("successfully return app ref", func() {
 			d := &v1beta1.Deployment{}
-			d.Spec.DeploymentPackageRef.Publisher = "test-publisher"
 			d.Spec.DeploymentPackageRef.Name = "test-name"
 			d.Spec.DeploymentPackageRef.Version = "test-version"
 
 			v := GetAppRef(d)
 
-			Expect(v).To(Equal("test-publisher-test-name-test-version"))
+			Expect(v).To(Equal("test-name-test-version"))
 		})
 	})
 

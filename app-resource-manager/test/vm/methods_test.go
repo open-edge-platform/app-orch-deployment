@@ -58,7 +58,7 @@ func (s *TestSuite) TestGetVNCMethod() {
 
 		for _, appWorkload := range *appWorkloads {
 			for method, expectedStatus := range getVncMethods {
-				res, err := MethodGetVNC(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id.String())
+				res, err := MethodGetVNC(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id)
 				s.NoError(err)
 				s.Equal(expectedStatus, res.StatusCode)
 				s.T().Logf("get VNC method: %s (%d)\n", method, res.StatusCode)
@@ -85,22 +85,22 @@ func (s *TestSuite) TestVMStartMethod() {
 			// will get 400 if VM is already running
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			if currState != VMStopped {
-				retCode, err = StopVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+				retCode, err = StopVirtualMachine(s.ArmClient, appID, appWorkload.Id)
 				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("stop VM pod %s\n", appWorkload.Name)
 
-				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), VMStopped)
+				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMStopped)
 				s.NoError(err)
 			}
 
 			for method, expectedStatus := range startVMMethods {
-				res, err := MethodVMStart(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id.String())
+				res, err := MethodVMStart(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id)
 				s.NoError(err)
 				s.Equal(expectedStatus, res.StatusCode)
 
 				if expectedStatus == 200 {
-					err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
+					err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
 					s.NoError(err)
 				}
 
@@ -128,22 +128,22 @@ func (s *TestSuite) TestVMStopMethod() {
 			// will get 400 if VM is not already running
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			if currState != VMRunning {
-				retCode, err = StartVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+				retCode, err = StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
 				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
-				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
+				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
 				s.NoError(err)
 			}
 
 			for method, expectedStatus := range stopVMMethods {
-				res, err := MethodVMStop(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id.String())
+				res, err := MethodVMStop(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id)
 				s.NoError(err)
 				s.Equal(expectedStatus, res.StatusCode)
 
 				if expectedStatus == 200 {
-					err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), VMStopped)
+					err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMStopped)
 					s.NoError(err)
 				}
 
@@ -171,22 +171,22 @@ func (s *TestSuite) TestVMRestartMethod() {
 			// will get 400 if VM is not already running
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			if currState != VMRunning {
-				retCode, err := StartVirtualMachine(s.ArmClient, appID, appWorkload.Id.String())
+				retCode, err := StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
 				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
-				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
+				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
 				s.NoError(err)
 			}
 
 			for method, expectedStatus := range restartVMMethods {
-				res, err := MethodVMRestart(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id.String())
+				res, err := MethodVMRestart(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id)
 				s.NoError(err)
 				s.Equal(expectedStatus, res.StatusCode)
 
 				if expectedStatus == 200 {
-					err = GetVMStatus(s.ArmClient, appID, appWorkload.Id.String(), VMRunning)
+					err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
 					s.NoError(err)
 				}
 

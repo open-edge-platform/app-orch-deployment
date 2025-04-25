@@ -59,19 +59,6 @@ test_get_deployments_status_read_role {
 	}
 }
 
-# get api extension with app-deploymenet-manager-read-role
-test_get_api_extension_read_role {
-	GetAPIExtensionRequest with input as {
-		"request": {"name": "test-apiext"},
-		"metadata": {"realm_access/roles": [
-			"default-roles-master",
-			"offline_access",
-			"ao-m2m-rw",
-			"uma_authorization",
-		]},
-	}
-}
-
 # ao-m2m-rw
 test_get_cluster_read_role {
 	GetClusterRequest with input as {

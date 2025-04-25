@@ -75,7 +75,7 @@ func (s *TestSuite) TestDeletePodMethod() {
 
 			for method, expectedStatus := range deleteMethods {
 				if expectedStatus == 200 {
-					err = GetPodStatus(s.ArmClient, appID, appWorkload.Id.String(), "STATE_RUNNING")
+					err = GetPodStatus(s.ArmClient, appID, appWorkload.Id, "STATE_RUNNING")
 					s.NoError(err)
 				}
 

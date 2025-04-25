@@ -168,7 +168,6 @@ func (r *Reconciler) synchronizeWithFleetCluster(c *v1beta1.Cluster, fc *fleetv1
 	maps.Copy(labels, fc.GetLabels())
 	c.ObjectMeta.Labels = labels
 
-	// TODO: if activeProjectID is empty return error in the future - tenant project ID can be empty now but it should be mandatory for the future.
 	if activeProjectID, ok := c.ObjectMeta.Labels[v1beta1.ClusterOrchKeyProjectID]; ok {
 		c.ObjectMeta.Labels[string(v1beta1.AppOrchActiveProjectID)] = activeProjectID
 	}

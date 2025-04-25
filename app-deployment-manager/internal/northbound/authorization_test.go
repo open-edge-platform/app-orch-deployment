@@ -11,7 +11,6 @@ import (
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/northbound/mocks"
 	typederror "github.com/open-edge-platform/orch-library/go/pkg/errors"
-	// "fmt"
 
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/metadata"
