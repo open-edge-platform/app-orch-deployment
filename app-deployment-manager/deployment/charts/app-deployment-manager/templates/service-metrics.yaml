@@ -48,6 +48,9 @@ spec:
   - port: http-status
     scheme: http
     path: /status
+  - port: http-metrics
+    scheme: http
+    path: /timing
   namespaceSelector:
     matchNames:
     - {{ .Release.Namespace }}
@@ -86,7 +89,7 @@ spec:
   endpoints:
   - port: api-metrics
     scheme: http
-    path: /metrics
+    path: /timing
   namespaceSelector:
     matchNames:
     - {{ .Release.Namespace }}

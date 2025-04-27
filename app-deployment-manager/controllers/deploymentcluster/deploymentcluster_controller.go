@@ -251,6 +251,15 @@ func updateStatusMetrics(ctx context.Context, r *Reconciler, dc *v1beta1.Deploym
 		for i, val := range metricValue {
 			ctrlmetrics.DeploymentClusterStatus.WithLabelValues(projectID, dc.Spec.DeploymentID, displayName, dc.Spec.ClusterID, dc.Status.Name, i).Set(val)
 		}
+
+		dcForDeployment := "dc" + dc.Spec.ClusterID
+		utils.RecordTimestamp(projectID, dc.Spec.DeploymentID, "start", dcForDeployment)
+		utils.CalculateTimeDifference(projectID, dc.Spec.DeploymentID, "start", "CreateDeployment", "start", dcForDeployment)
+		dcStatusChange := dcForDeployment + "status_change"
+		utils.RecordTimestamp(projectID, dc.Spec.DeploymentID, string(dc.Status.Status.State), dcStatusChange)
+		if metricValue[string(v1beta1.Running)] == 1 {
+			utils.CalculateTimeDifference(projectID, dc.Spec.DeploymentID, "start", "CreateDeployment", string(v1beta1.Running), dcStatusChange)
+		}
 	}
 }
 

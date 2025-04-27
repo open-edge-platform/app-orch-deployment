@@ -16,15 +16,15 @@ var log = dazl.GetPackageLogger()
 
 var (
 	// Custom collector
-	Reg        = prometheus.NewRegistry()
-	gatewayReg = prometheus.NewRegistry()
+	Reg       = prometheus.NewRegistry()
+	TimingReg = prometheus.NewRegistry()
 
 	TimestampGauge = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "code_execution_timestamp",
 			Help: "Timestamp of code execution in different parts of the code",
 		},
-		[]string{"deployment", "part", "event"},
+		[]string{"projectID", "deploymentID", "part", "event"},
 	)
 
 	TimeDifferenceGauge = prometheus.NewGaugeVec(
@@ -32,7 +32,7 @@ var (
 			Name: "code_execution_time_difference",
 			Help: "Time difference between first and last timestamp",
 		},
-		[]string{"deployment"},
+		[]string{"projectID", "deploymentID", "firstKey", "lastKey"},
 	)
 
 	// Map to store timestamps for each deployment
@@ -56,7 +56,7 @@ var (
 // RunMetricsServer starts an HTTP server to expose Prometheus metrics
 func RunMetricsServer(port int16) {
 	// Set up the HTTP handler for the /metrics endpoint
-	http.Handle("/metrics", promhttp.HandlerFor(gatewayReg, promhttp.HandlerOpts{}))
+	http.Handle("/timing", promhttp.HandlerFor(TimingReg, promhttp.HandlerOpts{}))
 
 	// Start the HTTP server
 	addr := fmt.Sprintf(":%d", port)
@@ -70,5 +70,5 @@ func init() {
 	// Register custom metrics with prometheus registry
 	log.Infof("metrics server init \n")
 	Reg.MustRegister(DeploymentStatus, DeploymentClusterStatus)
-	gatewayReg.MustRegister(TimestampGauge, TimeDifferenceGauge)
+	TimingReg.MustRegister(TimestampGauge, TimeDifferenceGauge)
 }

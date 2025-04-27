@@ -545,29 +545,35 @@ func ToInt32Clamped(i int) int32 {
 	return int32(i)
 }
 
-func RecordTimestamp(deployment, part, event string) {
-	log.Infof("record timestamp %s %s %s", deployment, part, event)
+func RecordTimestamp(projectID, deploymentID, part, event string) {
+	log.Infof("record timestamp %s %s %s %s", projectID, deploymentID, part, event)
 	timestamp := float64(time.Now().Unix())
 	key := part + "_" + event
 
 	// Initialize the map for the deployment if it doesn't exist
-	if _, exists := metrics.Timestamps[deployment]; !exists {
-		metrics.Timestamps[deployment] = make(map[string]float64)
+	if _, exists := metrics.Timestamps[deploymentID]; !exists {
+		metrics.Timestamps[deploymentID] = make(map[string]float64)
 	}
 
-	metrics.Timestamps[deployment][key] = timestamp
-	metrics.TimestampGauge.WithLabelValues(deployment, part, event).Set(timestamp)
+	metrics.Timestamps[deploymentID][key] = timestamp
+	metrics.TimestampGauge.WithLabelValues(projectID, deploymentID, part, event).Set(timestamp)
 }
 
-func CalculateTimeDifference(deployment, firstPart, firstEvent, lastPart, lastEvent string) {
+func DeleteTimestampMetrics(projectID, deploymentID string) {
+	log.Infof("delete timestamp %s %s", projectID, deploymentID)
+	delete(metrics.Timestamps, deploymentID)
+}
+
+func CalculateTimeDifference(projectID, deploymentID, firstPart, firstEvent, lastPart, lastEvent string) {
 	firstKey := firstPart + "_" + firstEvent
 	lastKey := lastPart + "_" + lastEvent
 
-	firstTimestamp, firstExists := metrics.Timestamps[deployment][firstKey]
-	lastTimestamp, lastExists := metrics.Timestamps[deployment][lastKey]
+	firstTimestamp, firstExists := metrics.Timestamps[deploymentID][firstKey]
+	lastTimestamp, lastExists := metrics.Timestamps[deploymentID][lastKey]
 
 	if firstExists && lastExists {
 		timeDifference := lastTimestamp - firstTimestamp
-		metrics.TimeDifferenceGauge.WithLabelValues(deployment).Set(timeDifference)
+		metrics.TimeDifferenceGauge.WithLabelValues(projectID, deploymentID,
+			firstKey, lastKey).Set(timeDifference)
 	}
 }
