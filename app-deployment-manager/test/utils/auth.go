@@ -48,28 +48,28 @@ func SetUpAccessToken(server string) (string, error) {
 		url,
 		strings.NewReader(data.Encode()))
 	if err != nil {
-		return "", fmt.Errorf("error from keycloak: %v", err)
+		return "", fmt.Errorf("error from keycloak: %w", err)
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := c.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("error from keycloak: %v", err)
+		return "", fmt.Errorf("error from keycloak: %w", err)
 	}
 	if resp == nil {
-		return "", fmt.Errorf("no response from keycloak: %v", err)
+		return "", fmt.Errorf("no response from keycloak: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	rawTokenData, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("error reading response body: %v", err)
+		return "", fmt.Errorf("error reading response body: %w", err)
 	}
 
 	tokenData := map[string]any{}
 	err = json.Unmarshal(rawTokenData, &tokenData)
 	if err != nil {
-		return "", fmt.Errorf("error unmarshalling token data: %v", err)
+		return "", fmt.Errorf("error unmarshalling token data: %w", err)
 	}
 
 	accessToken := tokenData["access_token"].(string)
@@ -88,11 +88,11 @@ func GetProjectID(ctx context.Context) (string, error) {
 	config := ctrl.GetConfigOrDie()
 	nexusClient, err := nexus_client.NewForConfig(config)
 	if err != nil {
-		return "", fmt.Errorf("\nerror retrieving the project (%s). Error: %w", SampleProject, err)
+		return "", fmt.Errorf("\nerror retrieving the project (%s): %w", SampleProject, err)
 	}
 	configNode := nexusClient.TenancyMultiTenancy().Config()
 	if configNode == nil {
-		return "", fmt.Errorf("\nerror retrieving the project (%s). Error: %w", SampleProject, err)
+		return "", fmt.Errorf("\nerror retrieving the project (%s): %w", SampleProject, err)
 	}
 
 	org := configNode.Orgs(SampleOrg)
@@ -103,13 +103,13 @@ func GetProjectID(ctx context.Context) (string, error) {
 
 	folder := org.Folders("default")
 	if folder == nil {
-		return "", fmt.Errorf("\nerror retrieving the project (%s). Error: %w", SampleProject, err)
+		return "", fmt.Errorf("\nerror retrieving the project (%s): %w", SampleProject, err)
 	}
 
 	project := folder.Projects(SampleProject)
 	projectStatus, err := project.GetProjectStatus(ctx)
 	if projectStatus == nil || err != nil {
-		return "", fmt.Errorf("\nerror retrieving the project (%s). Error: %w", SampleProject, err)
+		return "", fmt.Errorf("\nerror retrieving the project (%s): %w", SampleProject, err)
 	}
 
 	return projectStatus.UID, nil

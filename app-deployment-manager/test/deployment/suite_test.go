@@ -41,35 +41,35 @@ type TestSuite struct {
 func (s *TestSuite) SetupTest() {
 	s.AdmClient = admclient
 
-	// s.NotEmpty(deployID)
+	s.NotEmpty(deployID)
 }
 
 func TestDeploymentSuite(t *testing.T) {
 	portForwardCmd, err := utils.BringUpPortForward()
 	if err != nil {
-		t.Fatalf("error: %v", err)
+		t.Fatalf("failed to bring up port forward: %v", err)
 	}
 	defer utils.TearDownPortForward(portForwardCmd)
 
 	token, err = utils.SetUpAccessToken(KeycloakServer)
 	if err != nil {
-		t.Fatalf("error: %v", err)
+		t.Fatalf("failed to setup access token: %v", err)
 	}
 
 	projectID, err = utils.GetProjectID(context.TODO())
 	if err != nil {
-		t.Fatalf("error: %v", err)
+		t.Fatalf("failed to get project id: %v", err)
 	}
 
 	deploymentRESTServerUrl = fmt.Sprintf("http://%s:%s", RestAddressPortForward, AdmPortForwardRemote)
-	admclient, err = utils.CreateAdmClient(deploymentRESTServerUrl, token, projectID)
+	admclient, err = utils.CreateClient(deploymentRESTServerUrl, token, projectID)
 	if err != nil {
-		t.Fatalf("error: %v", err)
+		t.Fatalf("failed to create client: %v", err)
 	}
 
 	deployID, _, err = utils.StartDeployment(admclient, dpConfigName, "targeted", 10)
 	if err != nil {
-		t.Fatalf("error: %v", err)
+		t.Fatalf("failed to start deployment: %v", err)
 	}
 
 	suite.Run(t, new(TestSuite))

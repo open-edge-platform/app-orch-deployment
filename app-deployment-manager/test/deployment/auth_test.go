@@ -10,7 +10,7 @@ import (
 
 // TestListDeploymentsAuthProjectID tests the list deployments method with invalid project ID
 func (s *TestSuite) TestListDeploymentsAuthProjectID() {
-	admClient, err := utils.CreateAdmClient(deploymentRESTServerUrl, token, "invalidprojectid")
+	admClient, err := utils.CreateClient(deploymentRESTServerUrl, token, "invalidprojectid")
 	s.NoError(err)
 
 	deployments, retCode, err := DeploymentsList(admClient)
@@ -25,7 +25,7 @@ func (s *TestSuite) TestListDeploymentsAuthProjectID() {
 
 // TestGetDeploymentAuthProjectID tests the get deployment method with invalid project ID
 func (s *TestSuite) TestGetDeploymentAuthProjectID() {
-	admClient, err := utils.CreateAdmClient(deploymentRESTServerUrl, token, "invalidprojectid")
+	admClient, err := utils.CreateClient(deploymentRESTServerUrl, token, "invalidprojectid")
 	s.NoError(err)
 
 	deployment, retCode, err := utils.GetDeployment(admClient, deployID)

@@ -19,9 +19,7 @@ var portForwardCmd = make(map[string]*exec.Cmd)
 const (
 	PortForwardServiceNamespace = "orch-app"
 	AdmPortForwardService       = "svc/app-deployment-api-rest-proxy"
-	ArmPortForwardService       = "svc/app-resource-manager-rest-proxy"
 	AdmPortForwardLocal         = "8081"
-	ArmPortForwardLocal         = "8081"
 	PortForwardAddress          = "0.0.0.0"
 	AdmPortForwardRemote        = "8081"
 )
@@ -98,7 +96,7 @@ func CallMethod(url, verb, token, projectID string) (*http.Response, error) {
 	return res, err
 }
 
-func CreateAdmClient(restServerURL, token, projectID string) (*restClient.ClientWithResponses, error) {
+func CreateClient(restServerURL, token, projectID string) (*restClient.ClientWithResponses, error) {
 	armClient, err := restClient.NewClientWithResponses(restServerURL, restClient.WithRequestEditorFn(func(_ context.Context, req *http.Request) error {
 		AddRestAuthHeader(req, token, projectID)
 		return nil
