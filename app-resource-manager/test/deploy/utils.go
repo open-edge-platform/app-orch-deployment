@@ -81,8 +81,7 @@ func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName
 			if *d.DisplayName == displayName {
 				currState = string(*d.Status.State)
 			}
-			
-			currState = string(*d.Status.State)
+
 			if *d.DisplayName == displayName && currState == string(status) {
 				fmt.Printf("Waiting for deployment %s state %s ---> %s\n", displayName, currState, status)
 				return *d.DeployId, nil
