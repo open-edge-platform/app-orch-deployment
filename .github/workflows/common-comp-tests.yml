@@ -21,7 +21,7 @@ on:
         required: true
         description: "Branch in edge-manageability-framework to checkout"
         type: string
-        default: '3.0-pass-integration'
+        default: main
 
 jobs:
   component-test:
