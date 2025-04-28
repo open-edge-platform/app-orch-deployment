@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/deploy"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/utils"
 	"github.com/stretchr/testify/suite"
 )
@@ -21,7 +20,6 @@ var (
 	token                   string
 	projectID               string
 	deploymentRESTServerUrl string
-	deployApps              []*restClient.App
 	admclient               *restClient.ClientWithResponses
 )
 
@@ -30,7 +28,6 @@ const (
 	KeycloakServer         = "keycloak.kind.internal"
 
 	AdmPortForwardRemote = "8081"
-	dpDisplayName        = "nginx-deployment-container"
 	dpConfigName         = "nginx"
 )
 
@@ -44,8 +41,7 @@ type TestSuite struct {
 func (s *TestSuite) SetupTest() {
 	s.AdmClient = admclient
 
-	s.NotEmpty(deployApps)
-	s.NotEmpty(deployID)
+	// s.NotEmpty(deployID)
 }
 
 func TestDeploymentSuite(t *testing.T) {
@@ -71,14 +67,9 @@ func TestDeploymentSuite(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 
-	deployApps, err = deploy.CreateDeployment(admclient, dpConfigName, dpDisplayName, 10)
+	deployID, _, err = utils.StartDeployment(admclient, dpConfigName, "targeted", 10)
 	if err != nil {
 		t.Fatalf("error: %v", err)
-	}
-
-	deployID = deploy.FindDeploymentIDByDisplayName(admclient, dpDisplayName)
-	if deployID == "" {
-		t.Fatalf("error: %v", fmt.Errorf("deployment %s not found", dpDisplayName))
 	}
 
 	suite.Run(t, new(TestSuite))

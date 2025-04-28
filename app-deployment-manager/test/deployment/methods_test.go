@@ -6,9 +6,9 @@ package deployment
 
 import (
 	"fmt"
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/deploy"
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/utils"
 	"net/http"
+
+	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/utils"
 )
 
 var listDeploymentsMethods = map[string]int{
@@ -64,7 +64,7 @@ func (s *TestSuite) TestListDeploymentsMethod() {
 
 // TestListDeploymentsPerClusterMethod tests the list deployments per cluster method
 func (s *TestSuite) TestListDeploymentsPerClusterMethod() {
-	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/clusters/%s", deploymentRESTServerUrl, deploy.TestClusterID)
+	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/clusters/%s", deploymentRESTServerUrl, utils.TestClusterID)
 	for method, expectedStatus := range listDeploymentsPerClusterMethods {
 		res, err := utils.CallMethod(url, method, token, projectID)
 		s.NoError(err)
@@ -81,14 +81,18 @@ func (s *TestSuite) TestGetDeleteDeploymentMethod() {
 		s.NoError(err)
 		s.Equal(expectedStatus, res.StatusCode)
 		if method == http.MethodDelete {
-			_, err = deploy.CreateDeployment(admclient, dpConfigName, dpDisplayName, 10)
+			var retCode int
+
+			// Update new deployID for following tests
+			deployID, retCode, err = utils.StartDeployment(admclient, dpConfigName, "targeted", 10)
+			s.Equal(retCode, 200)
 			s.NoError(err)
 
-			deployID = deploy.FindDeploymentIDByDisplayName(admclient, dpDisplayName)
-			s.NoError(err)
+			// Update URL with new deployID for the next iteration
+			url = fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s", deploymentRESTServerUrl, deployID)
 		}
 
-		s.T().Logf("get deployment method: %s (%d)\n", method, res.StatusCode)
+		s.T().Logf("delete deployment method: %s (%d)\n", method, res.StatusCode)
 	}
 }
 

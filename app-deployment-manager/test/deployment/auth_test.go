@@ -17,16 +17,23 @@ func (s *TestSuite) TestListDeploymentsAuthProjectID() {
 	s.Equal(retCode, 403)
 	s.Error(err)
 	s.Empty(deployments)
-	s.T().Logf("successfully handled invalid projectid to list deployments\n")
+
+	if !s.T().Failed() {
+		s.T().Logf("successfully handled invalid projectid to list deployments\n")
+	}
 }
 
 // TestGetDeploymentAuthProjectID tests the get deployment method with invalid project ID
 func (s *TestSuite) TestGetDeploymentAuthProjectID() {
 	admClient, err := utils.CreateAdmClient(deploymentRESTServerUrl, token, "invalidprojectid")
 	s.NoError(err)
-	deployment, retCode, err := GetDeployment(admClient, deployID)
+
+	deployment, retCode, err := utils.GetDeployment(admClient, deployID)
 	s.Equal(retCode, 403)
 	s.Error(err)
 	s.Empty(deployment)
-	s.T().Logf("successfully handled invalid projectid to get deployment\n")
+
+	if !s.T().Failed() {
+		s.T().Logf("successfully handled invalid projectid to get deployment\n")
+	}
 }
