@@ -13,6 +13,23 @@ on:
       - 'app-service-proxy/**'
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: read
+  attestations: read
+  checks: read
+  deployments: read
+  discussions: read
+  issues: read
+  models: read
+  packages: read
+  pages: read
+  pull-requests: read
+  repository-projects: read
+  statuses: read
+  security-events: write
+  id-token: write
+
 jobs:
   post-merge-pipeline:
     uses: open-edge-platform/orch-ci/.github/workflows/post-merge.yml@main
