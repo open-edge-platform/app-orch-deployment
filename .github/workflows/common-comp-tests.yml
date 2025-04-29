@@ -22,6 +22,8 @@ on:
         description: "Branch in edge-manageability-framework to checkout"
         type: string
         default: main
+permissions:
+  contents: read
 
 jobs:
   component-test:

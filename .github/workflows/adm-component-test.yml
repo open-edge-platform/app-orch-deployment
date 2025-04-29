@@ -20,7 +20,8 @@ on:
         required: true
         type: string
         default: '53e430f45faaee7671fa3c25f6acc3945aba2065'
-
+permissions:
+  contents: read
 
 jobs:
   component-test-adm:
