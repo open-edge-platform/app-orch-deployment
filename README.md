@@ -8,6 +8,8 @@ SPDX-License-Identifier: Apache-2.0
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![ADM Component Test](https://github.com/open-edge-platform/app-orch-deployment/actions/workflows/adm-component-test.yml/badge.svg)](https://github.com/open-edge-platform/app-orch-deployment/actions/workflows/adm-component-test.yml)
 [![ARM Component Test](https://github.com/open-edge-platform/app-orch-deployment/actions/workflows/arm-component-test.yml/badge.svg)](https://github.com/open-edge-platform/app-orch-deployment/actions/workflows/arm-component-test.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/open-edge-platform/app-orch-deployment/badge)](https://scorecard.dev/viewer/?uri=github.com/open-edge-platform/app-orch-deployment)
+
 
 ## Overview
 
