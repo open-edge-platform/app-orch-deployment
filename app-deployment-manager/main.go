@@ -8,10 +8,9 @@ import (
 	"context"
 	"flag"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/controllers/capi"
-	"os"
-
 	"github.com/open-edge-platform/orch-library/go/dazl"
 	_ "github.com/open-edge-platform/orch-library/go/dazl/zap"
+	"os"
 
 	ctrllogger "github.com/open-edge-platform/orch-library/go/pkg/logging/k8s"
 	corev1 "k8s.io/api/core/v1"
@@ -78,7 +77,7 @@ func main() {
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
 
-	ctrl.SetLogger(ctrllogger.NewControllerPackageLogger().WithCallDepth(2))
+	ctrl.SetLogger(ctrllogger.NewControllerPackageLogger().WithCallDepth(1))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
