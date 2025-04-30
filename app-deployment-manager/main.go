@@ -77,7 +77,7 @@ func main() {
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
 
-	ctrl.SetLogger(ctrllogger.NewControllerPackageLogger().WithCallDepth(1))
+	ctrl.SetLogger(ctrllogger.NewControllerPackageLogger().WithCallDepth(3))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
