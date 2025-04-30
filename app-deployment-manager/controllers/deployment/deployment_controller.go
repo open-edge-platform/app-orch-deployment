@@ -7,6 +7,7 @@ package deployment
 import (
 	"context"
 	"fmt"
+	"github.com/open-edge-platform/orch-library/go/dazl"
 	"k8s.io/apimachinery/pkg/types"
 	"os"
 	"path/filepath"
@@ -32,7 +33,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	cutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/v1beta1"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/catalogclient"
@@ -70,6 +70,8 @@ const (
 	readyWait            = 10 // Seconds
 	noTargetClustersWait = 5 * time.Minute
 )
+
+var log = dazl.GetPackageLogger()
 
 var (
 	Clock clock.Clock = clock.RealClock{}
@@ -182,7 +184,6 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) (err error) {
 }
 
 func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrlRes ctrl.Result, reterr error) {
-	log := log.FromContext(ctx)
 
 	d := &v1beta1.Deployment{}
 	if err := r.Get(ctx, req.NamespacedName, d); err != nil {
@@ -315,12 +316,10 @@ func (r *Reconciler) handleFinalizerDependency(ctx context.Context, d *v1beta1.D
 		return ctrl.Result{}, nil
 	}
 
-	log := log.FromContext(ctx)
-
 	// skip if there is no children
 	if len(d.Spec.ChildDeploymentList) == 0 {
 		cutil.RemoveFinalizer(d, v1beta1.FinalizerDependency)
-		log.V(2).Info("Removing finalizer", "finalizer", v1beta1.FinalizerDependency)
+		log.Debug("Removing finalizer", "finalizer", v1beta1.FinalizerDependency)
 		return ctrl.Result{}, nil
 	}
 
@@ -361,12 +360,11 @@ func (r *Reconciler) handleFinalizerDependency(ctx context.Context, d *v1beta1.D
 	}
 
 	cutil.RemoveFinalizer(d, v1beta1.FinalizerDependency)
-	log.V(2).Info("Removing finalizer", "finalizer", v1beta1.FinalizerDependency)
+	log.Debug("Removing finalizer", "finalizer", v1beta1.FinalizerDependency)
 	return ctrl.Result{}, nil
 }
 
 func (r *Reconciler) handleFinalizerGitRemote(ctx context.Context, d *v1beta1.Deployment) (ctrl.Result, error) {
-	log := log.FromContext(ctx)
 
 	if !cutil.ContainsFinalizer(d, v1beta1.FinalizerGitRemote) {
 		return ctrl.Result{}, nil
@@ -384,13 +382,12 @@ func (r *Reconciler) handleFinalizerGitRemote(ctx context.Context, d *v1beta1.De
 	}
 
 	cutil.RemoveFinalizer(d, v1beta1.FinalizerGitRemote)
-	log.V(2).Info("Removing finalizer", "finalizer", v1beta1.FinalizerGitRemote)
+	log.Debug("Removing finalizer", "finalizer", v1beta1.FinalizerGitRemote)
 
 	return ctrl.Result{}, nil
 }
 
 func (r *Reconciler) handleFinalizerCatalog(ctx context.Context, d *v1beta1.Deployment) (ctrl.Result, error) {
-	log := log.FromContext(ctx)
 
 	if !cutil.ContainsFinalizer(d, v1beta1.FinalizerCatalog) {
 		return ctrl.Result{}, nil
@@ -403,23 +400,22 @@ func (r *Reconciler) handleFinalizerCatalog(ctx context.Context, d *v1beta1.Depl
 
 	if err != nil {
 		if strings.Contains(err.Error(), "failed to unset isDeployed") && strings.Contains(err.Error(), "rpc error: code = NotFound") {
-			log.V(2).Info("Failed to retrieve the deployment package from catalog; normally deleted by Catalog when deleting project - delete deployment anyway", "CatalogErr", err)
+			log.Debug("Failed to retrieve the deployment package from catalog; normally deleted by Catalog when deleting project - delete deployment anyway", "CatalogErr", err)
 			cutil.RemoveFinalizer(d, v1beta1.FinalizerCatalog)
-			log.V(2).Info("Removing finalizer", "finalizer", v1beta1.FinalizerCatalog)
+			log.Debug("Removing finalizer", "finalizer", v1beta1.FinalizerCatalog)
 		} else {
 			log.Error(err, "failed for processing catalog finalizer")
 			return ctrl.Result{}, err
 		}
 	} else {
 		cutil.RemoveFinalizer(d, v1beta1.FinalizerCatalog)
-		log.V(2).Info("Removing finalizer", "finalizer", v1beta1.FinalizerCatalog)
+		log.Debug("Removing finalizer", "finalizer", v1beta1.FinalizerCatalog)
 	}
 
 	return ctrl.Result{}, nil
 }
 
 func (r *Reconciler) reconcileDependency(ctx context.Context, d *v1beta1.Deployment) (ctrl.Result, error) {
-	log := log.FromContext(ctx)
 
 	// skip if there is no children
 	if len(d.Spec.ChildDeploymentList) == 0 {
@@ -558,7 +554,6 @@ func (r *Reconciler) reconcileRepository(_ context.Context, d *v1beta1.Deploymen
 }
 
 func (r *Reconciler) gitURLHasChanged(ctx context.Context, d *v1beta1.Deployment) (changed bool, err error) {
-	log := log.FromContext(ctx)
 
 	gitRepoURL, err := gitclient.GetRemoteURLWithCreds(d.GetId())
 	if err != nil {
@@ -704,7 +699,6 @@ func (r *Reconciler) reconcileGitRepo(ctx context.Context, d *v1beta1.Deployment
 
 	// Delete any GitRepos remaining in the grmap since they don't correspond to existing apps
 	for name, gitRepo := range grmap {
-		log := log.FromContext(ctx)
 		log.Info(fmt.Sprintf("Deleting orphaned GitRepo %s", name))
 		if err := r.Client.Delete(ctx, gitRepo); err != nil {
 			log.Error(err, "Failed to delete GitRepo")
