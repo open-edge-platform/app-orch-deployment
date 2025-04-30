@@ -21,7 +21,7 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils/ratelimiter"
 	"github.com/open-edge-platform/orch-library/go/dazl"
 	fleetv1alpha1 "github.com/rancher/fleet/pkg/apis/fleet.cattle.io/v1alpha1"
-	"github.com/rancher/wrangler/pkg/genericcondition"
+	"github.com/rancher/wrangler/v3/pkg/genericcondition"
 	"google.golang.org/grpc/metadata"
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
