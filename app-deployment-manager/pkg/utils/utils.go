@@ -239,7 +239,7 @@ func GetAppName(bd *fleetv1alpha1.BundleDeployment) string {
 
 func GetDeploymentGeneration(bd *fleetv1alpha1.BundleDeployment) int64 {
 	// Try to get from label first
-	if genStr, ok := bd.Labels["deployment-generation"]; ok {
+	if genStr, ok := bd.Labels["deploymentGeneration"]; ok {
 		fmt.Println("Test deployment generation", genStr)
 		if gen, err := strconv.ParseInt(genStr, 10, 64); err == nil {
 			return gen
