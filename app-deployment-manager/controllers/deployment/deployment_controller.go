@@ -1111,13 +1111,13 @@ func fetchGitReposByOwner(ctx context.Context, c client.Client, ownerName string
 	var gitRepoList fleetv1alpha1.GitRepoList
 	log := log.FromContext(ctx)
 	log.Info(fmt.Sprintf("Test inside fetch gitrepos: %s %s", ownerName, namespace))
-	err := c.List(ctx, &gitRepoList, client.InNamespace(namespace))
+	/*err := c.List(ctx, &gitRepoList, client.InNamespace(namespace))
 	log.Info(fmt.Sprintf("Test %s", err.Error()))
 	if err != nil {
 		log.Error(err, "Error fetching gitrepos")
 		return nil, fmt.Errorf("error fetching gitrepos: %w", err)
 	}
-	log.Info("Test inside fetch gitrepos", len(gitRepoList.Items))
+	log.Info("Test inside fetch gitrepos", len(gitRepoList.Items))*/
 
 	var filteredGitRepos []fleetv1alpha1.GitRepo
 	for _, gitRepo := range gitRepoList.Items {
