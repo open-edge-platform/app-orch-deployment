@@ -199,6 +199,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrlRes c
 
 	defer func() {
 		// Always update the status after each reconciliation
+		log.Info("Test Update status")
 		if err := r.updateStatus(ctx, d); err != nil {
 			reterr = kerrors.NewAggregate([]error{reterr, err})
 		}
