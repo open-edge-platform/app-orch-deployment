@@ -567,9 +567,11 @@ func (r *Reconciler) gitURLHasChanged(ctx context.Context, d *v1beta1.Deployment
 
 	// Fetch the Deployment's GitRepos
 	var childGitRepos fleetv1alpha1.GitRepoList
+	log.Info(fmt.Sprintf("Test before fetching child git repos for deployment %s", d.Name))
 	if err := r.List(ctx, &childGitRepos, client.InNamespace(d.Namespace), client.MatchingFields{ownerKey: d.Name}); err != nil {
 		return false, err
 	}
+	log.Info(fmt.Sprintf("Test after fetching child git repos for deployment %s", d.Name))
 
 	for i := range childGitRepos.Items {
 		gr := &childGitRepos.Items[i]
