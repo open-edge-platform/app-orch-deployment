@@ -727,11 +727,15 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 		return nil
 	}
 
+	log.Info("Test before fetching gitrepos")
 	// Fetch the Deployment's GitRepos
 	var childGitRepos fleetv1alpha1.GitRepoList
 	if err := r.List(ctx, &childGitRepos, client.InNamespace(d.Namespace), client.MatchingFields{ownerKey: d.Name}); err != nil {
+		log.Error(err, "Test Failed to list GitRepos")
 		return err
 	}
+
+	log.Info("Test after fetching gitrepos", childGitRepos)
 
 	// Fetch the Deployment's DeploymentClusters
 	var deploymentClusters v1beta1.DeploymentClusterList
