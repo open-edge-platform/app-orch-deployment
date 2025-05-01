@@ -724,14 +724,11 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 		return nil
 	}
 
-	log := log.FromContext(ctx)
-	log.Info(fmt.Sprintf("Test before fetching child git repos for deployment %s", d.Name))
 	// Fetch the Deployment's GitRepos
 	var childGitRepos fleetv1alpha1.GitRepoList
 	if err := r.List(ctx, &childGitRepos, client.InNamespace(d.Namespace), client.MatchingFields{ownerKey: d.Name}); err != nil {
 		return err
 	}
-	log.Info(fmt.Sprintf("Test after fetching child git repos for deployment %s %d", d.Name, len(childGitRepos.Items)))
 
 	// Fetch the Deployment's DeploymentClusters
 	var deploymentClusters v1beta1.DeploymentClusterList
@@ -1006,7 +1003,6 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 		Down:    0,
 		Unknown: 0,
 	}
-	fmt.Println("Test len dclist", len(dclist))
 	for _, dc := range dclist {
 		fmt.Println("Test dc status", dc.Name, dc.Status.Status.State)
 		switch dc.Status.Status.State {
@@ -1023,13 +1019,10 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 			ready := true
 			for _, app := range dc.Status.Apps {
 				fmt.Println("Test dc status running app", d.Generation, app.DeploymentGeneration)
-				if app.Status.State != v1beta1.Running {
-					ready = false
-				}
-				/*if d.Generation != app.DeploymentGeneration {
+				if d.Generation != app.DeploymentGeneration {
 					fmt.Println("Test set ready to false")
 					ready = false
-				}*/
+				}
 			}
 
 			// Wait a few seconds before deciding the DC is actually Ready

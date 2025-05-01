@@ -487,6 +487,7 @@ func initializeStatus(dc *v1beta1.DeploymentCluster) {
 func addDeploymentClusterApp(bd *fleetv1alpha1.BundleDeployment, dc *v1beta1.DeploymentCluster) {
 	var state v1beta1.StateType
 
+	fmt.Println("Test addDeploymentClusterApp: ", utils.GetDeploymentGeneration(bd))
 	switch utils.GetState(bd) {
 	case v1beta1.Running:
 		state = v1beta1.Running
