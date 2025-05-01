@@ -237,6 +237,7 @@ func GetAppName(bd *fleetv1alpha1.BundleDeployment) string {
 }
 
 func GetDeploymentGeneration(bd *fleetv1alpha1.BundleDeployment) int64 {
+	fmt.Println("Test GetDeploymentGeneration", bd.Spec.Options.Helm)
 	if bd.Spec.Options.Helm != nil && bd.Spec.Options.Helm.Values != nil {
 		values := bd.Spec.Options.Helm.Values.Data
 		result, err := jsonpath.Get(values, `$.global.fleet.deploymentGeneration`)
