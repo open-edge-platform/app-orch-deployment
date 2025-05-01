@@ -50,42 +50,69 @@ var methodResponses = map[string]map[string]int{
 	},
 }
 
-// TestListDeploymentsMethod tests the list deployments method
-func (s *TestSuite) TestListDeploymentsMethod() {
-	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments", deploymentRESTServerUrl)
-	testEndpointMethods(s, url, methodResponses["deployments"], "list deployments")
-}
+// TestAPIMethods validates HTTP methods for various API endpoints
+func (s *TestSuite) TestAPIMethods() {
+	testCases := []struct {
+		name        string
+		url         string
+		methodMap   map[string]int
+		description string
+		setup       func() string // Optional setup function, returns dynamic ID if needed
+	}{
+		{
+			name:        "ListDeployments",
+			url:         fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments", deploymentRESTServerUrl),
+			methodMap:   methodResponses["deployments"],
+			description: "list deployments",
+		},
+		{
+			name:        "ListDeploymentsPerCluster",
+			url:         fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/clusters/%s", deploymentRESTServerUrl, utils.TestClusterID),
+			methodMap:   methodResponses["deploymentsPerCluster"],
+			description: "list deployments per cluster",
+		},
+		{
+			name:        "GetAndDeleteDeployment",
+			url:         fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s", deploymentRESTServerUrl, "%s"),
+			methodMap:   methodResponses["deploymentById"],
+			description: "get and delete deployment",
+			setup: func() string {
+				deployID, retCode, err := utils.StartDeployment(admclient, dpConfigName, "targeted", 10)
+				s.Equal(retCode, http.StatusOK)
+				s.NoError(err)
+				return deployID
+			},
+		},
+		{
+			name:        "GetDeploymentsStatus",
+			url:         fmt.Sprintf("%s/deployment.orchestrator.apis/v1/summary/deployments_status", deploymentRESTServerUrl),
+			methodMap:   methodResponses["deploymentsStatus"],
+			description: "get deployments status",
+		},
+		{
+			name:        "ListDeploymentClusters",
+			url:         fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s/clusters", deploymentRESTServerUrl, "%s"),
+			methodMap:   methodResponses["deploymentClusters"],
+			description: "list deployment clusters",
+			setup: func() string {
+				deployID, retCode, err := utils.StartDeployment(admclient, dpConfigName, "targeted", 10)
+				s.Equal(retCode, http.StatusOK)
+				s.NoError(err)
+				return deployID
+			},
+		},
+	}
 
-// TestListDeploymentsPerClusterMethod tests the list deployments per cluster method
-func (s *TestSuite) TestListDeploymentsPerClusterMethod() {
-	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/clusters/%s",
-		deploymentRESTServerUrl, utils.TestClusterID)
-	testEndpointMethods(s, url, methodResponses["deploymentsPerCluster"], "list deployments per cluster")
-}
-
-// TestGetDeleteDeploymentMethod tests the get and delete deployment method
-func (s *TestSuite) TestGetDeleteDeploymentMethod() {
-	deployID, retCode, err := utils.StartDeployment(admclient, dpConfigName, "targeted", 10)
-	s.Equal(retCode, http.StatusOK)
-	s.NoError(err)
-	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s", deploymentRESTServerUrl, deployID)
-	testEndpointMethods(s, url, methodResponses["deploymentById"], "get and delete deployment")
-}
-
-// TestGetDeploymentsStatusMethod tests the get deployments status method
-func (s *TestSuite) TestGetDeploymentsStatusMethod() {
-	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/summary/deployments_status", deploymentRESTServerUrl)
-	testEndpointMethods(s, url, methodResponses["deploymentsStatus"], "get deployments status")
-}
-
-// TestListDeploymentClustersMethod tests the list deployment clusters method
-func (s *TestSuite) TestListDeploymentClustersMethod() {
-	deployID, retCode, err := utils.StartDeployment(admclient, dpConfigName, "targeted", 10)
-	s.Equal(retCode, http.StatusOK)
-	s.NoError(err)
-	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s/clusters",
-		deploymentRESTServerUrl, deployID)
-	testEndpointMethods(s, url, methodResponses["deploymentClusters"], "list deployment clusters")
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			url := tc.url
+			if tc.setup != nil {
+				dynamicID := tc.setup()
+				url = fmt.Sprintf(tc.url, dynamicID)
+			}
+			testEndpointMethods(s, url, tc.methodMap, tc.description)
+		})
+	}
 }
 
 // Helper function to test HTTP methods on an endpoint
