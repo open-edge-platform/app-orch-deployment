@@ -240,6 +240,7 @@ func GetDeploymentGeneration(bd *fleetv1alpha1.BundleDeployment) int64 {
 	if bd.Spec.Options.Helm != nil && bd.Spec.Options.Helm.Values != nil {
 		values := bd.Spec.Options.Helm.Values.Data
 		result, err := jsonpath.Get(values, `$.global.fleet.deploymentGeneration`)
+		fmt.Println("Test deployment generation", result, err)
 		if err == nil && len(result) == 1 {
 			// jsonpath will return an int result
 			if gen, ok := result[0].(int); ok {
