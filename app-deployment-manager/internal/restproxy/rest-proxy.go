@@ -44,7 +44,7 @@ func isHeaderAllowed(s string) (string, bool) {
 	return s, false
 }
 
-func Run(grpcAddr string, gwAddr int, allowedCorsOrigins string, basePath string, openapiSpecFilePath string, metricsPort int) error {
+func Run(grpcAddr string, gwAddr int, allowedCorsOrigins string, basePath string, openapiSpecFilePath string) error {
 	log.Infof("Serving gRPC-Gateway on port %d", gwAddr)
 
 	gin.DefaultWriter = ginlogger.NewWriter(log)

@@ -16,7 +16,6 @@ var log = dazl.GetPackageLogger()
 type flags struct {
 	grpcAddr           string
 	gwAddr             int
-	metricsPort        int
 	allowedCorsOrigins string
 	basePath           string
 }
@@ -36,8 +35,7 @@ func parseFlags() flags {
 func main() {
 	f := parseFlags()
 
-	err := restproxy.Run(f.grpcAddr, f.gwAddr, f.allowedCorsOrigins, f.basePath,
-		"/usr/local/etc/openapi.yaml", f.metricsPort)
+	err := restproxy.Run(f.grpcAddr, f.gwAddr, f.allowedCorsOrigins, f.basePath, "/usr/local/etc/openapi.yaml")
 	if err != nil {
 		log.Fatalf("Failed to run gateway server %v", err)
 	}
