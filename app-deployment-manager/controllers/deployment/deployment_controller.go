@@ -720,6 +720,8 @@ func (r *Reconciler) reconcileGitRepo(ctx context.Context, d *v1beta1.Deployment
 
 func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) error {
 	// If the deployment is deleted, do set the state to terminating and return
+	log := log.FromContext(ctx)
+	log.Info("Test inside update status")
 	if !d.ObjectMeta.DeletionTimestamp.IsZero() {
 		d.Status.State = v1beta1.Terminating
 		return nil
@@ -739,7 +741,7 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 	if err := r.List(ctx, &deploymentClusters, client.MatchingLabels(labels)); err != nil {
 		return err
 	}
-
+	log.Info("Test list of deployment clusters", deploymentClusters)
 	// Fleet v0.8 does not report errors in the GitJob pod that downloads Git repos and Helm charts
 	// See this issue: https://github.com/rancher/fleet/issues/2065
 	// Extract error messages from the GitJob pods ourselves and store in GitRepo
