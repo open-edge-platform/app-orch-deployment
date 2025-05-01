@@ -1,48 +1,56 @@
-// SPDX-FileCopyrightText: 2025-present Intel Corporation
-//
-// SPDX-License-Identifier: Apache-2.0
-
 package deployment
 
 import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/utils"
+	"net/http"
+)
+
+const (
+	// DeploymentTypeTargeted represents the targeted deployment type
+	DeploymentTypeTargeted = "targeted"
+	// DeploymentTypeAutoScaling represents the auto-scaling deployment type
+	DeploymentTypeAutoScaling = "auto-scaling"
+
+	// AppWordpress represents the WordPress application name
+	AppWordpress = "wordpress"
+	// AppNginx represents the Nginx application name
+	AppNginx = "nginx"
+
+	// DeploymentTimeout represents the timeout in seconds for deployment operations
+	DeploymentTimeout = 10
 )
 
 func (s *TestSuite) TestCreateTargetedDeployment() {
-	_, retCode, err := utils.StartDeployment(s.AdmClient, "wordpress", "targeted", 10)
-	s.Equal(retCode, 200)
-	s.NoError(err, "Failed to create 'wordpress-targeted' deployment")
-
-	deployID, retCode, err = utils.StartDeployment(s.AdmClient, "nginx", "targeted", 10)
-	s.Equal(retCode, 200)
-	s.NoError(err, "Failed to create 'nginx-targeted' deployment")
-
+	for _, app := range []string{AppWordpress, AppNginx} {
+		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeTargeted, DeploymentTimeout)
+		s.Equal(http.StatusOK, code)
+		s.NoError(err, "Failed to create '"+app+"-"+DeploymentTypeTargeted+"' deployment")
+	}
 }
 
 func (s *TestSuite) TestCreateAutoScaleDeployment() {
-	_, retCode, err := utils.StartDeployment(s.AdmClient, "wordpress", "auto-scaling", 10)
-	s.Equal(retCode, 200)
-	s.NoError(err, "Failed to create 'wordpress-auto-scaling' deployment")
-
-	deployID, retCode, err = utils.StartDeployment(s.AdmClient, "nginx", "auto-scaling", 10)
-	s.Equal(retCode, 200)
-	s.NoError(err, "Failed to create 'nginx-auto-scaling' deployment")
+	for _, app := range []string{AppWordpress, AppNginx} {
+		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeAutoScaling, DeploymentTimeout)
+		s.Equal(http.StatusOK, code)
+		s.NoError(err, "Failed to create '"+app+"-"+DeploymentTypeAutoScaling+"' deployment")
+	}
 }
 
 func (s *TestSuite) TestCreateDiffDataDeployment() {
-	// Make a copy of the original deployment configurations
-	// to restore them after the test
 	originalDpConfigs := CopyOriginalDpConfig(utils.DpConfigs)
+	defer func() { utils.DpConfigs = CopyOriginalDpConfig(originalDpConfigs) }()
 
-	defer func() {
-		utils.DpConfigs = CopyOriginalDpConfig(originalDpConfigs)
-	}()
+	overrideValues := []map[string]any{
+		{
+			"appName":         AppNginx,
+			"targetNamespace": "",
+			"targetValues":    map[string]any{"service": map[string]any{"type": "NodePort"}},
+		},
+	}
+	err := ResetThenChangeDpConfig(AppWordpress, "overrideValues", overrideValues, originalDpConfigs)
+	s.NoError(err, "Failed to reset and change deployment configuration")
 
-	// test with overrideValues
-	serviceTypeNodePort := map[string]any{"service": map[string]any{"type": "NodePort"}}
-	ResetThenChangeDpConfig("wordpress", "overrideValues", []map[string]any{{"appName": "nginx", "targetNamespace": "", "targetValues": serviceTypeNodePort}}, originalDpConfigs)
-
-	_, retCode, err := utils.StartDeployment(s.AdmClient, "wordpress", "targeted", 10)
-	s.Equal(retCode, 200)
-	s.NoError(err, "Failed to create 'wordpress-targeted' deployment")
+	_, code, err := utils.StartDeployment(s.AdmClient, AppWordpress, DeploymentTypeTargeted, DeploymentTimeout)
+	s.Equal(http.StatusOK, code)
+	s.NoError(err, "Failed to create '"+AppWordpress+"-"+DeploymentTypeTargeted+"' deployment")
 }

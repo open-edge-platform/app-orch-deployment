@@ -17,7 +17,8 @@ func (s *TestSuite) TestNegativeCreateDeployment() {
 		utils.DpConfigs = CopyOriginalDpConfig(originalDpConfigs)
 	}()
 
-	ResetThenChangeDpConfig("nginx", "clusterId", "", originalDpConfigs)
+	err := ResetThenChangeDpConfig("nginx", "clusterId", "", originalDpConfigs)
+	s.NoError(err, "failed to reset clusterId in deployment config")
 
 	deployID, retCode, err := utils.StartDeployment(s.AdmClient, "nginx", "targeted", 10)
 	s.Equal(retCode, 400)
@@ -28,7 +29,8 @@ func (s *TestSuite) TestNegativeCreateDeployment() {
 		s.T().Logf("successfully handled missing targetClusters.clusterId when creating targeted deployment\n")
 	}
 
-	ResetThenChangeDpConfig("nginx", "appNames", []string{""}, originalDpConfigs)
+	err = ResetThenChangeDpConfig("nginx", "appNames", []string{""}, originalDpConfigs)
+	s.NoError(err, "failed to reset appNames in deployment config")
 
 	deployID, retCode, err = utils.StartDeployment(s.AdmClient, "nginx", "targeted", 10)
 	s.Equal(retCode, 400)
@@ -40,7 +42,8 @@ func (s *TestSuite) TestNegativeCreateDeployment() {
 		s.T().Logf("successfully handled missing targetClusters.appName when creating deployment\n")
 	}
 
-	ResetThenChangeDpConfig("nginx", "labels", map[string]string{}, originalDpConfigs)
+	err = ResetThenChangeDpConfig("nginx", "labels", map[string]string{}, originalDpConfigs)
+	s.NoError(err, "failed to reset labels in deployment config")
 
 	deployID, retCode, err = utils.StartDeployment(s.AdmClient, "nginx", "auto-scaling", 10)
 	s.Equal(retCode, 400)
@@ -52,7 +55,8 @@ func (s *TestSuite) TestNegativeCreateDeployment() {
 		s.T().Logf("successfully handled missing targetClusters.labels when creating auto-scaling deployment\n")
 	}
 
-	ResetThenChangeDpConfig("nginx", "overrideValues", []map[string]any{{"appName": "nginx", "targetNamespace": "", "targetValues": nil}}, originalDpConfigs)
+	err = ResetThenChangeDpConfig("nginx", "overrideValues", []map[string]any{{"appName": "nginx", "targetNamespace": "", "targetValues": nil}}, originalDpConfigs)
+	s.NoError(err, "failed to reset overrideValues in deployment config")
 
 	deployID, retCode, err = utils.StartDeployment(s.AdmClient, "nginx", "auto-scaling", 10)
 	s.Equal(retCode, 400)

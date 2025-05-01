@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"maps"
+	"net/http"
 	"time"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
@@ -74,7 +75,7 @@ func ptr[T any](v T) *T {
 }
 
 func StartDeployment(admClient *restClient.ClientWithResponses, dpPackageName, deploymentType string, retryDelay int) (string, int, error) {
-	retCode := 200
+	retCode := http.StatusOK
 	if DpConfigs[dpPackageName] == nil {
 		return "", retCode, fmt.Errorf("deployment package %s not found in configuration", dpPackageName)
 	}

@@ -6,6 +6,7 @@ package deployment
 
 import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/utils"
+	"net/http"
 )
 
 // TestListDeploymentsAuthProjectID tests the list deployments method with invalid project ID
@@ -14,7 +15,7 @@ func (s *TestSuite) TestListDeploymentsAuthProjectID() {
 	s.NoError(err)
 
 	deployments, retCode, err := DeploymentsList(admClient)
-	s.Equal(retCode, 403)
+	s.Equal(retCode, http.StatusForbidden)
 	s.Error(err)
 	s.Empty(deployments)
 
@@ -29,7 +30,7 @@ func (s *TestSuite) TestGetDeploymentAuthProjectID() {
 	s.NoError(err)
 
 	deployment, retCode, err := utils.GetDeployment(admClient, deployID)
-	s.Equal(retCode, 403)
+	s.Equal(retCode, http.StatusForbidden)
 	s.Error(err)
 	s.Empty(deployment)
 

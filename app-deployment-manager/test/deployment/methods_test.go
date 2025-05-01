@@ -12,43 +12,43 @@ import (
 )
 
 var listDeploymentsMethods = map[string]int{
-	http.MethodGet:    200,
-	http.MethodDelete: 405,
-	http.MethodPatch:  405,
-	http.MethodPut:    405,
-	http.MethodPost:   400, // 400 is returned when the request body is empty since the post method is used to create deployment
+	http.MethodGet:    http.StatusOK,
+	http.MethodDelete: http.StatusMethodNotAllowed,
+	http.MethodPatch:  http.StatusMethodNotAllowed,
+	http.MethodPut:    http.StatusMethodNotAllowed,
+	http.MethodPost:   http.StatusBadRequest, // 400 is returned when the request body is empty since the post method is used to create deployment
 }
 
 var listDeploymentsPerClusterMethods = map[string]int{
-	http.MethodGet:    200,
-	http.MethodDelete: 405,
-	http.MethodPatch:  405,
-	http.MethodPut:    405,
-	http.MethodPost:   405,
+	http.MethodGet:    http.StatusOK,
+	http.MethodDelete: http.StatusMethodNotAllowed,
+	http.MethodPatch:  http.StatusMethodNotAllowed,
+	http.MethodPut:    http.StatusMethodNotAllowed,
+	http.MethodPost:   http.StatusMethodNotAllowed,
 }
 
 var getDeleteDeploymentMethods = map[string]int{
-	http.MethodGet:    200,
-	http.MethodDelete: 200,
-	http.MethodPatch:  405,
-	http.MethodPut:    400,
-	http.MethodPost:   405,
+	http.MethodGet:    http.StatusOK,
+	http.MethodDelete: http.StatusOK,
+	http.MethodPatch:  http.StatusMethodNotAllowed,
+	http.MethodPut:    http.StatusBadRequest,
+	http.MethodPost:   http.StatusMethodNotAllowed,
 }
 
 var getDeploymentsStatusMethods = map[string]int{
-	http.MethodGet:    200,
-	http.MethodDelete: 405,
-	http.MethodPatch:  405,
-	http.MethodPut:    405,
-	http.MethodPost:   405,
+	http.MethodGet:    http.StatusOK,
+	http.MethodDelete: http.StatusMethodNotAllowed,
+	http.MethodPatch:  http.StatusMethodNotAllowed,
+	http.MethodPut:    http.StatusMethodNotAllowed,
+	http.MethodPost:   http.StatusMethodNotAllowed,
 }
 
 var listDeploymentClustersMethods = map[string]int{
-	http.MethodGet:    200,
-	http.MethodDelete: 405,
-	http.MethodPatch:  405,
-	http.MethodPut:    405,
-	http.MethodPost:   405,
+	http.MethodGet:    http.StatusOK,
+	http.MethodDelete: http.StatusMethodNotAllowed,
+	http.MethodPatch:  http.StatusMethodNotAllowed,
+	http.MethodPut:    http.StatusMethodNotAllowed,
+	http.MethodPost:   http.StatusMethodNotAllowed,
 }
 
 // TestListDeploymentsMethod tests the list deployments method
