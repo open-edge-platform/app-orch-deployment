@@ -89,6 +89,18 @@ var (
 			Path: "/spec/configPatches",
 		},
 	}
+	IgnoreDeploymentOp = []Operation{
+		{
+			Op:   "remove",
+			Path: "/spec/template/spec",
+		},
+	}
+	IgnoreJobOp = []Operation{
+		{
+			Op:   "remove",
+			Path: "/spec/template/spec",
+		},
+	}
 )
 
 func (b BundleType) String() string {
@@ -544,6 +556,24 @@ func newFleetConfig(appName string, appMap map[string]v1beta1.Application, depID
 				Name:       res.Name,
 				Namespace:  ns,
 				Operations: IgnoreEnvoyOp,
+			}
+			fleetConf.Diff.ComparePatches = append(fleetConf.Diff.ComparePatches, patch)
+		case "Deployment":
+			patch := ComparePatch{
+				Kind:       res.Kind,
+				APIVersion: "apps/v1",
+				Name:       res.Name,
+				Namespace:  ns,
+				Operations: IgnoreDeploymentOp,
+			}
+			fleetConf.Diff.ComparePatches = append(fleetConf.Diff.ComparePatches, patch)
+		case "Job":
+			patch := ComparePatch{
+				Kind:       res.Kind,
+				APIVersion: "batch/v1",
+				Name:       res.Name,
+				Namespace:  ns,
+				Operations: IgnoreJobOp,
 			}
 			fleetConf.Diff.ComparePatches = append(fleetConf.Diff.ComparePatches, patch)
 		default:
