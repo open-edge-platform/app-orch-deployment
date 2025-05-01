@@ -567,11 +567,9 @@ func (r *Reconciler) gitURLHasChanged(ctx context.Context, d *v1beta1.Deployment
 
 	// Fetch the Deployment's GitRepos
 	var childGitRepos fleetv1alpha1.GitRepoList
-	log.Info(fmt.Sprintf("Test before fetching child git repos for deployment %s", d.Name))
 	if err := r.List(ctx, &childGitRepos, client.InNamespace(d.Namespace), client.MatchingFields{ownerKey: d.Name}); err != nil {
 		return false, err
 	}
-	log.Info(fmt.Sprintf("Test after fetching child git repos for deployment %s %d", d.Name, len(childGitRepos.Items)))
 
 	for i := range childGitRepos.Items {
 		gr := &childGitRepos.Items[i]
@@ -726,17 +724,21 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 		return nil
 	}
 
+	log := log.FromContext(ctx)
+	log.Info(fmt.Sprintf("Test before fetching child git repos for deployment %s", d.Name))
 	// Fetch the Deployment's GitRepos
 	var childGitRepos fleetv1alpha1.GitRepoList
 	if err := r.List(ctx, &childGitRepos, client.InNamespace(d.Namespace), client.MatchingFields{ownerKey: d.Name}); err != nil {
 		return err
 	}
+	log.Info(fmt.Sprintf("Test after fetching child git repos for deployment %s %d", d.Name, len(childGitRepos.Items)))
 
 	// Fetch the Deployment's DeploymentClusters
 	var deploymentClusters v1beta1.DeploymentClusterList
 	labels := map[string]string{
 		string(v1beta1.DeploymentID): d.GetId(),
 	}
+
 	if err := r.List(ctx, &deploymentClusters, client.MatchingLabels(labels)); err != nil {
 		return err
 	}
