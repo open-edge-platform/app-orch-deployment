@@ -794,7 +794,6 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 			return nil
 		}
 	}
-
 	r.updateDeploymentStatus(ctx, d, childGitRepos.Items, deploymentClusters.Items)
 	return nil
 }
@@ -968,7 +967,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 	r.requeueStatus = false
 	log := log.FromContext(ctx)
 
-	log.Info("Test Inside update deployment status")
+	log.Info("Test Inside update deployment status, len deploymebt clusters", len(dclist))
 
 	// Walk GitRepos for the Deployment to extract any error conditions
 	for i := range grlist {
@@ -989,6 +988,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, gitrepo.Status.Display.Message))
 		}
 	}
+	log.Info("Test before in progres check")
 
 	// Check deployment ready condition to extract error message
 	if d.Status.DeployInProgress {
