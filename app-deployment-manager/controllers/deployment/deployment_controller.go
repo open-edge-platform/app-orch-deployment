@@ -727,7 +727,7 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 		return nil
 	}
 
-	log.Info(fmt.Sprintf("Test before fetching gitrepos: here %v", d))
+	log.Info(fmt.Sprintf("Test before fetching gitrepos: here %s %s", d.Namespace, d.Name))
 
 	// Fetch the Deployment's GitRepos
 
@@ -1110,8 +1110,9 @@ func getAppNameForGitRepo(gitrepo *fleetv1alpha1.GitRepo, depID string) string {
 func fetchGitReposByOwner(ctx context.Context, c client.Client, ownerName string, namespace string) ([]fleetv1alpha1.GitRepo, error) {
 	var gitRepoList fleetv1alpha1.GitRepoList
 	log := log.FromContext(ctx)
-	log.Info("Test inside fetch gitrepos:", ownerName, namespace)
+	log.Info(fmt.Sprintf("Test inside fetch gitrepos: %s %s", ownerName, namespace))
 	err := c.List(ctx, &gitRepoList, client.InNamespace(namespace))
+	log.Info(fmt.Sprintf("Test %s", err.Error()))
 	if err != nil {
 		log.Error(err, "Error fetching gitrepos")
 		return nil, fmt.Errorf("error fetching gitrepos: %w", err)
