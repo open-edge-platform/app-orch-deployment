@@ -735,7 +735,7 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 		return err
 	}
 
-	log.Info("Test after fetching gitrepos", childGitRepos)
+	log.Info("Test after fetching gitrepos", len(childGitRepos.Items))
 
 	// Fetch the Deployment's DeploymentClusters
 	var deploymentClusters v1beta1.DeploymentClusterList
