@@ -5,11 +5,8 @@
 package metrics
 
 import (
-	"github.com/open-edge-platform/orch-library/go/dazl"
 	"github.com/prometheus/client_golang/prometheus"
 )
-
-var log = dazl.GetPackageLogger()
 
 var (
 	// Custom collector
@@ -32,6 +29,5 @@ var (
 
 func init() {
 	// Register custom metrics with prometheus registry
-	log.Infof("metrics server init \n")
 	Reg.MustRegister(DeploymentStatus, DeploymentClusterStatus)
 }

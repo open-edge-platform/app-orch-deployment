@@ -15,17 +15,15 @@ func main() {
 	keyPath := flag.String("keyPath", "", "path to client private key")
 	certPath := flag.String("certPath", "", "path to client certificate")
 	kubeconfig := flag.String("kubeconfig", "", "path to kubeconfig")
-	metricsPort := flag.Int("metricsPort", 8082, "The port the metric endpoint binds to.")
 	flag.Parse()
 
 	ready := make(chan bool)
 	cfg := manager.Config{
-		CAPath:      *caPath,
-		KeyPath:     *keyPath,
-		CertPath:    *certPath,
-		GRPCPort:    8080,
-		MetricsPort: int16(*metricsPort),
-		Kubeconfig:  *kubeconfig,
+		CAPath:     *caPath,
+		KeyPath:    *keyPath,
+		CertPath:   *certPath,
+		GRPCPort:   8080,
+		Kubeconfig: *kubeconfig,
 	}
 
 	mgr := manager.NewManager(cfg)

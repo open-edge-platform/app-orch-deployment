@@ -39,12 +39,11 @@ const (
 
 // Config is a manager configuration
 type Config struct {
-	CAPath      string
-	KeyPath     string
-	CertPath    string
-	GRPCPort    int16
-	MetricsPort int16
-	Kubeconfig  string
+	CAPath     string
+	KeyPath    string
+	CertPath   string
+	GRPCPort   int16
+	Kubeconfig string
 }
 
 type Manager struct {
