@@ -795,7 +795,7 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 		}
 	}
 
-	r.updateDeploymentStatus(d, childGitRepos.Items, deploymentClusters.Items)
+	r.updateDeploymentStatus(ctx, d, childGitRepos.Items, deploymentClusters.Items)
 	return nil
 }
 
@@ -960,12 +960,15 @@ func updateStatusMetrics(d *v1beta1.Deployment, deleteMetrics bool) {
 	}
 }
 
-func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []fleetv1alpha1.GitRepo, dclist []v1beta1.DeploymentCluster) {
+func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Deployment, grlist []fleetv1alpha1.GitRepo, dclist []v1beta1.DeploymentCluster) {
 	var newState v1beta1.StateType
 	stalledApps := false
 	apps := 0
 	message := ""
 	r.requeueStatus = false
+	log := log.FromContext(ctx)
+
+	log.Info("Test Inside update deployment status")
 
 	// Walk GitRepos for the Deployment to extract any error conditions
 	for i := range grlist {
@@ -1004,6 +1007,7 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 		Unknown: 0,
 	}
 	for _, dc := range dclist {
+		log.Info("Test Inside update deployment status for each deployment cluster", dc.Status.Status.State)
 		switch dc.Status.Status.State {
 		case v1beta1.Unknown:
 			clustercounts.Unknown++
