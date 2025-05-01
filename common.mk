@@ -24,7 +24,7 @@ SHELL := bash -eu -o pipefail
 
 ## GO variables ##
 GOARCH	:= $(shell go env GOARCH)
-GOCMD   := GOPRIVATE="github.com/open-edge-platform/*" go
+GOCMD   := go
 OAPI_CODEGEN_VERSION ?= v2.2.0
 LOCALBIN ?= $(shell pwd)/bin
 BUF_VERSION ?= v1.52.1

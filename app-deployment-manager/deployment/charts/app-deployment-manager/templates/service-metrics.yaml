@@ -34,6 +34,21 @@ spec:
   selector:
     {{- include "app-deployment-manager.labels" . | nindent 4 }}
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "app-deployment-manager.labels" . | nindent 4 }}
+  name: {{ template "app-deployment-manager.name" . }}-status
+spec:
+  ports:
+    - name: http-measure
+      port: {{ .Values.adm.metrics.port }}
+      protocol: TCP
+      targetPort: http-metrics
+  selector:
+    {{- include "app-deployment-manager.labels" . | nindent 4 }}
+---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -48,9 +63,9 @@ spec:
   - port: http-status
     scheme: http
     path: /status
-  - port: http-metrics
+  - port: http-measure
     scheme: http
-    path: /timing
+    path: /measure
   namespaceSelector:
     matchNames:
     - {{ .Release.Namespace }}
@@ -62,44 +77,4 @@ spec:
       - "false"
     matchLabels:
       {{- include "app-deployment-manager.labels" . | nindent 6 }}
----
-{{- if .Values.gateway.metrics.enabled }}
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    {{- include "app-deployment-manager-api.labels" . | nindent 4 }}
-  name: {{ template "app-deployment-manager-api.name" . }}-api-metrics
-spec:
-  ports:
-    - name: api-metrics
-      port: {{ .Values.gateway.metrics.port }}
-      protocol: TCP
-      targetPort: api-metrics
-  selector:
-    {{- include "app-deployment-manager-api.labels" . | nindent 4 }}
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  labels:
-    {{- include "app-deployment-manager-api.labels" . | nindent 4 }}
-  name: {{ template "app-deployment-manager-api.name" . }}
-spec:
-  endpoints:
-  - port: api-metrics
-    scheme: http
-    path: /timing
-  namespaceSelector:
-    matchNames:
-    - {{ .Release.Namespace }}
-  selector:
-    matchExpressions:
-    - key: prometheus.io/service-monitor
-      operator: NotIn
-      values:
-      - "false"
-    matchLabels:
-      {{- include "app-deployment-manager-api.labels" . | nindent 6 }}
-{{- end }}
 {{- end }}

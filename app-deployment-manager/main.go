@@ -38,6 +38,7 @@ import (
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/metrics"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils"
+	orchLibMetrics "github.com/open-edge-platform/orch-library/go/pkg/metrics"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 )
@@ -174,14 +175,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := mgr.AddMetricsServerExtraHandler("/timing", promhttp.HandlerFor(
-		metrics.TimingReg,
+	if err := mgr.AddMetricsServerExtraHandler("/measure", promhttp.HandlerFor(
+		orchLibMetrics.MeasurementReg,
 		promhttp.HandlerOpts{},
 	)); err != nil {
 		setupLog.Error(err, "unable to set up extra metrics handler")
 		os.Exit(1)
 	}
-
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")

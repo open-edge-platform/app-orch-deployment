@@ -769,7 +769,6 @@ func (s *DeploymentSvc) CreateDeployment(ctx context.Context, in *deploymentpb.C
 	}
 
 	utils.LogActivity(ctx, "create", "ADM", "deployment-name "+d.Name, "deploy-id "+d.DeployID, "deployment-app-version "+d.AppVersion)
-	utils.RecordTimestamp(activeProjectID, d.DeployID, "start", "CreateDeployment")
 	return &deploymentpb.CreateDeploymentResponse{DeploymentId: d.DeployID}, nil
 }
 

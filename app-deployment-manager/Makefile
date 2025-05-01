@@ -174,6 +174,7 @@ go-build: go-build-app-deployment-manager go-build-rest-proxy
 
 go-build-app-deployment-manager: ## Build the app-deployment-manager binary
 go-build-app-deployment-manager: common-go-build-app-deployment-manager
+	$(GOCMD) build $(GOEXTRAFLAGS) -o $(BIN_DIR)/manager main.go
 
 
 go-build-rest-proxy: ## Build the rest-proxy binary

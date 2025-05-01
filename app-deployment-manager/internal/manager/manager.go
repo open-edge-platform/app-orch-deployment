@@ -7,7 +7,6 @@ package manager
 import (
 	"fmt"
 	"github.com/bufbuild/protovalidate-go"
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/metrics"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/tenant"
 	fleet2 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/fleet"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/k8sclient"
@@ -62,13 +61,6 @@ func (m *Manager) Run() {
 	if err := m.Start(); err != nil {
 		log.Fatalw("Unable to start manager", dazl.Error(err))
 	}
-}
-
-func runMetrics(metricPort int16) {
-	log.Infof("Starting metrics server on %d\n", metricPort)
-
-	// Run metrics service
-	metrics.RunMetricsServer(metricPort)
 }
 
 // Start starts the NB gRPC server
@@ -182,7 +174,6 @@ func (m *Manager) Start() error {
 		return err
 	}
 
-	go runMetrics(m.Config.MetricsPort)
 	doneCh := make(chan error)
 	go func() {
 		err := s.Serve(func(_ string) {
