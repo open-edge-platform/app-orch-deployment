@@ -35,6 +35,8 @@ func parseFlags() flags {
 func main() {
 	f := parseFlags()
 
+	log.Infof("Serving gRPC-Gateway on port %d", f.gwAddr)
+
 	err := restproxy.Run(f.grpcAddr, f.gwAddr, f.allowedCorsOrigins, f.basePath, "/usr/local/etc/openapi.yaml")
 	if err != nil {
 		log.Fatalf("Failed to run gateway server %v", err)
