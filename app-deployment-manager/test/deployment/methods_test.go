@@ -65,24 +65,11 @@ func (s *TestSuite) TestListDeploymentsPerClusterMethod() {
 
 // TestGetDeleteDeploymentMethod tests the get and delete deployment method
 func (s *TestSuite) TestGetDeleteDeploymentMethod() {
+	deployID, retCode, err := utils.StartDeployment(admclient, dpConfigName, "targeted", 10)
+	s.Equal(retCode, http.StatusOK)
+	s.NoError(err)
 	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s", deploymentRESTServerUrl, deployID)
-
-	for method, expectedStatus := range methodResponses["deploymentById"] {
-		res, err := utils.CallMethod(url, method, token, projectID)
-		s.NoError(err)
-		s.Equal(expectedStatus, res.StatusCode)
-
-		// Handle special case for DELETE - create new deployment for subsequent tests
-		if method == http.MethodDelete {
-			var retCode int
-			deployID, retCode, err = utils.StartDeployment(admclient, dpConfigName, "targeted", 10)
-			s.Equal(retCode, 200)
-			s.NoError(err)
-			url = fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s", deploymentRESTServerUrl, deployID)
-		}
-
-		s.T().Logf("delete deployment method: %s (%d)\n", method, res.StatusCode)
-	}
+	testEndpointMethods(s, url, methodResponses["deploymentById"], "get and delete deployment")
 }
 
 // TestGetDeploymentsStatusMethod tests the get deployments status method
@@ -93,6 +80,9 @@ func (s *TestSuite) TestGetDeploymentsStatusMethod() {
 
 // TestListDeploymentClustersMethod tests the list deployment clusters method
 func (s *TestSuite) TestListDeploymentClustersMethod() {
+	deployID, retCode, err := utils.StartDeployment(admclient, dpConfigName, "targeted", 10)
+	s.Equal(retCode, http.StatusOK)
+	s.NoError(err)
 	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s/clusters",
 		deploymentRESTServerUrl, deployID)
 	testEndpointMethods(s, url, methodResponses["deploymentClusters"], "list deployment clusters")

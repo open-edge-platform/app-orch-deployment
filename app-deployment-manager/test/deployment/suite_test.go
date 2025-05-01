@@ -16,7 +16,6 @@ import (
 )
 
 var (
-	deployID                string
 	token                   string
 	projectID               string
 	deploymentRESTServerUrl string
@@ -41,7 +40,6 @@ type TestSuite struct {
 func (s *TestSuite) SetupTest() {
 	s.AdmClient = admclient
 
-	s.NotEmpty(deployID)
 }
 
 func TestDeploymentSuite(t *testing.T) {
@@ -65,11 +63,6 @@ func TestDeploymentSuite(t *testing.T) {
 	admclient, err = utils.CreateClient(deploymentRESTServerUrl, token, projectID)
 	if err != nil {
 		t.Fatalf("failed to create client: %v", err)
-	}
-
-	deployID, _, err = utils.StartDeployment(admclient, dpConfigName, "targeted", 10)
-	if err != nil {
-		t.Fatalf("failed to start deployment: %v", err)
 	}
 
 	suite.Run(t, new(TestSuite))
