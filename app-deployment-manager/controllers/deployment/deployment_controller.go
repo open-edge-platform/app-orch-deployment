@@ -729,13 +729,13 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 
 	log.Info("Test before fetching gitrepos")
 	// Fetch the Deployment's GitRepos
-	var childGitRepos fleetv1alpha1.GitRepoList
-	if err := r.List(ctx, &childGitRepos, client.InNamespace(d.Namespace), client.MatchingFields{ownerKey: d.Name}); err != nil {
-		log.Info("Test error fetching gitrepos", err)
+
+	childGitRepos, err := fetchGitReposByOwner(ctx, r.Client, d.Name, d.Namespace)
+	if err != nil {
 		return err
 	}
 
-	log.Info("Test after fetching gitrepos", len(childGitRepos.Items))
+	log.Info("Test after fetching gitrepos", len(childGitRepos))
 
 	// Fetch the Deployment's DeploymentClusters
 	var deploymentClusters v1beta1.DeploymentClusterList
@@ -753,9 +753,8 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 		// store status per gitrepo
 		condMapAllGitRepos := make(map[string]*metav1.Condition)
 
-		for i := range childGitRepos.Items {
-			gitRepo := &childGitRepos.Items[i]
-			if err := r.updateWithGitJobStatus(ctx, d, gitRepo, condMapAllGitRepos); err != nil {
+		for _, gitRepo := range childGitRepos {
+			if err := r.updateWithGitJobStatus(ctx, d, &gitRepo, condMapAllGitRepos); err != nil {
 				return err
 			}
 		}
@@ -780,7 +779,7 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 				metav1.ConditionFalse,
 				reasonFailed,
 				fmt.Errorf("%+v", msgs))
-		} else if len(childGitRepos.Items) == len(condMapAllGitRepos) {
+		} else if len(childGitRepos) == len(condMapAllGitRepos) {
 			// case2
 			d.Status.Conditions = utils.UpdateStatusCondition(d.Status.Conditions,
 				typeNotStalled,
@@ -800,7 +799,7 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 			return nil
 		}
 	}
-	r.updateDeploymentStatus(ctx, d, childGitRepos.Items, deploymentClusters.Items)
+	r.updateDeploymentStatus(ctx, d, childGitRepos, deploymentClusters.Items)
 	return nil
 }
 
@@ -1104,4 +1103,23 @@ func getGitRepoName(appName string, depID string) string {
 func getAppNameForGitRepo(gitrepo *fleetv1alpha1.GitRepo, depID string) string {
 	suffix := fmt.Sprintf("-%s", depID)
 	return strings.TrimSuffix(gitrepo.Name, suffix)
+}
+
+func fetchGitReposByOwner(ctx context.Context, c client.Client, ownerName string, namespace string) ([]fleetv1alpha1.GitRepo, error) {
+	var gitRepoList fleetv1alpha1.GitRepoList
+	if err := c.List(ctx, &gitRepoList, client.InNamespace(namespace)); err != nil {
+		return nil, fmt.Errorf("error fetching gitrepos: %w", err)
+	}
+
+	var filteredGitRepos []fleetv1alpha1.GitRepo
+	for _, gitRepo := range gitRepoList.Items {
+		for _, ownerRef := range gitRepo.OwnerReferences {
+			if ownerRef.Name == ownerName {
+				filteredGitRepos = append(filteredGitRepos, gitRepo)
+				break
+			}
+		}
+	}
+
+	return filteredGitRepos, nil
 }
