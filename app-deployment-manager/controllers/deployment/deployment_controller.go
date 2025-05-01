@@ -732,6 +732,7 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 
 	childGitRepos, err := fetchGitReposByOwner(ctx, r.Client, d.Name, d.Namespace)
 	if err != nil {
+		log.Error(err, "Failed to fetch GitRepos")
 		return err
 	}
 
@@ -1107,9 +1108,15 @@ func getAppNameForGitRepo(gitrepo *fleetv1alpha1.GitRepo, depID string) string {
 
 func fetchGitReposByOwner(ctx context.Context, c client.Client, ownerName string, namespace string) ([]fleetv1alpha1.GitRepo, error) {
 	var gitRepoList fleetv1alpha1.GitRepoList
-	if err := c.List(ctx, &gitRepoList, client.InNamespace(namespace)); err != nil {
+	log := log.FromContext(ctx)
+	log.Info("Test inside fetch gitrepos", ownerName, namespace)
+	err := c.List(ctx, &gitRepoList, client.InNamespace(namespace))
+
+	if err != nil {
+		log.Error(err, "Error fetching gitrepos")
 		return nil, fmt.Errorf("error fetching gitrepos: %w", err)
 	}
+	log.Info("Test inside fetch gitrepos", len(gitRepoList.Items))
 
 	var filteredGitRepos []fleetv1alpha1.GitRepo
 	for _, gitRepo := range gitRepoList.Items {
