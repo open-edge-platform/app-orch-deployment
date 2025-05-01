@@ -727,7 +727,8 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 		return nil
 	}
 
-	log.Info("Test before fetching gitrepos")
+	log.Info("Test before fetching gitrepos: here", d)
+
 	// Fetch the Deployment's GitRepos
 	log.Info("Test deployment:", d)
 
