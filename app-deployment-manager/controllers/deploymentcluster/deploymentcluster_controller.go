@@ -278,6 +278,7 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func (r *Reconciler) triggerReconcileBD(_ context.Context, o client.Object) []reconcile.Request {
 	requests := []reconcile.Request{}
+	fmt.Println("Test triggerReconcileBD")
 	bd, ok := o.(*fleetv1alpha1.BundleDeployment)
 	if !ok {
 		return requests
@@ -298,6 +299,7 @@ func (r *Reconciler) triggerReconcileBD(_ context.Context, o client.Object) []re
 			},
 		}
 	}
+	fmt.Println("Test triggerReconcileBD: ", dci.Name, bd.Name, err)
 	return requests
 }
 
