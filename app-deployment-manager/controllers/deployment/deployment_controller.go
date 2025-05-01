@@ -1006,7 +1006,9 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 		Down:    0,
 		Unknown: 0,
 	}
+	fmt.Println("Test len dclist", len(dclist))
 	for _, dc := range dclist {
+		fmt.Println("Test dc status", dc.Name, dc.Status.Status.State)
 		switch dc.Status.Status.State {
 		case v1beta1.Unknown:
 			clustercounts.Unknown++
