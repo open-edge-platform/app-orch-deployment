@@ -727,10 +727,9 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 		return nil
 	}
 
-	log.Info("Test before fetching gitrepos: here", d)
+	log.Info(fmt.Sprintf("Test before fetching gitrepos: here %v", d))
 
 	// Fetch the Deployment's GitRepos
-	log.Info("Test deployment:", d)
 
 	childGitRepos, err := fetchGitReposByOwner(ctx, r.Client, d.Name, d.Namespace)
 	if err != nil {
@@ -738,7 +737,7 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 		return err
 	}
 
-	log.Info("Test after fetching gitrepos", len(childGitRepos))
+	log.Info(fmt.Sprintf("Test after fetching gitrepos %d", len(childGitRepos)))
 
 	// Fetch the Deployment's DeploymentClusters
 	var deploymentClusters v1beta1.DeploymentClusterList
