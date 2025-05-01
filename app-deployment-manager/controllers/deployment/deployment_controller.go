@@ -571,7 +571,7 @@ func (r *Reconciler) gitURLHasChanged(ctx context.Context, d *v1beta1.Deployment
 	if err := r.List(ctx, &childGitRepos, client.InNamespace(d.Namespace), client.MatchingFields{ownerKey: d.Name}); err != nil {
 		return false, err
 	}
-	log.Info(fmt.Sprintf("Test after fetching child git repos for deployment %s", d.Name))
+	log.Info(fmt.Sprintf("Test after fetching child git repos for deployment %s %d", d.Name, len(childGitRepos.Items)))
 
 	for i := range childGitRepos.Items {
 		gr := &childGitRepos.Items[i]
