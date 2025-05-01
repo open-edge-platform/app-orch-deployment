@@ -217,7 +217,7 @@ func updateStatusMetrics(ctx context.Context, r *Reconciler, dc *v1beta1.Deploym
 
 	// Fetch the Deployment object using DeploymentID
 	deploymentID := dc.Spec.DeploymentID
-	displayName, err := getDisplayName(ctx, projectID, deploymentID, r, dc)
+	displayName, err := getDisplayName(ctx, projectID, deploymentID, r)
 	if err != nil {
 		log.Error(err, "Couldnt get displayName for deployment")
 	}
@@ -332,7 +332,7 @@ func (r *Reconciler) triggerReconcileCluster(ctx context.Context, o client.Objec
 	return requests
 }
 
-func getDisplayName(ctx context.Context, projectID, deploymentID string, r *Reconciler, dc *v1beta1.DeploymentCluster) (string, error) {
+func getDisplayName(ctx context.Context, projectID, deploymentID string, r *Reconciler) (string, error) {
 	deploymentList := &v1beta1.DeploymentList{}
 	log := log.FromContext(ctx)
 
@@ -385,7 +385,7 @@ func (r *Reconciler) createDeploymentCluster(ctx context.Context, req ctrl.Reque
 				log.Info(fmt.Sprintf("Created DeploymentCluster %s", dc.Name))
 				projectID := dc.Labels[string(v1beta1.AppOrchActiveProjectID)]
 
-				displayName, err := getDisplayName(ctx, projectID, dc.Spec.DeploymentID, r, dc)
+				displayName, err := getDisplayName(ctx, projectID, dc.Spec.DeploymentID, r)
 				if err != nil {
 					log.Error(err, "Couldnt get displayName for deployment")
 				}
