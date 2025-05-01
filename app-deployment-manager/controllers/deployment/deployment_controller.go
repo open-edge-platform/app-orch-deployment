@@ -199,7 +199,6 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrlRes c
 
 	defer func() {
 		// Always update the status after each reconciliation
-		log.Info("Test Update status")
 		if err := r.updateStatus(ctx, d); err != nil {
 			reterr = kerrors.NewAggregate([]error{reterr, err})
 		}
@@ -720,24 +719,16 @@ func (r *Reconciler) reconcileGitRepo(ctx context.Context, d *v1beta1.Deployment
 
 func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) error {
 	// If the deployment is deleted, do set the state to terminating and return
-	log := log.FromContext(ctx)
-	log.Info("Test inside update status")
 	if !d.ObjectMeta.DeletionTimestamp.IsZero() {
 		d.Status.State = v1beta1.Terminating
 		return nil
 	}
 
-	log.Info(fmt.Sprintf("Test before fetching gitrepos: here %s %s", d.Namespace, d.Name))
-
 	// Fetch the Deployment's GitRepos
-
-	childGitRepos, err := fetchGitReposByOwner(ctx, r.Client, d.Name, d.Namespace)
-	if err != nil {
-		log.Error(err, "Failed to fetch GitRepos")
+	var childGitRepos fleetv1alpha1.GitRepoList
+	if err := r.List(ctx, &childGitRepos, client.InNamespace(d.Namespace), client.MatchingFields{ownerKey: d.Name}); err != nil {
 		return err
 	}
-
-	log.Info(fmt.Sprintf("Test after fetching gitrepos %d", len(childGitRepos)))
 
 	// Fetch the Deployment's DeploymentClusters
 	var deploymentClusters v1beta1.DeploymentClusterList
@@ -747,7 +738,7 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 	if err := r.List(ctx, &deploymentClusters, client.MatchingLabels(labels)); err != nil {
 		return err
 	}
-	log.Info("Test list of deployment clusters", deploymentClusters)
+
 	// Fleet v0.8 does not report errors in the GitJob pod that downloads Git repos and Helm charts
 	// See this issue: https://github.com/rancher/fleet/issues/2065
 	// Extract error messages from the GitJob pods ourselves and store in GitRepo
@@ -755,8 +746,9 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 		// store status per gitrepo
 		condMapAllGitRepos := make(map[string]*metav1.Condition)
 
-		for _, gitRepo := range childGitRepos {
-			if err := r.updateWithGitJobStatus(ctx, d, &gitRepo, condMapAllGitRepos); err != nil {
+		for i := range childGitRepos.Items {
+			gitRepo := &childGitRepos.Items[i]
+			if err := r.updateWithGitJobStatus(ctx, d, gitRepo, condMapAllGitRepos); err != nil {
 				return err
 			}
 		}
@@ -781,7 +773,7 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 				metav1.ConditionFalse,
 				reasonFailed,
 				fmt.Errorf("%+v", msgs))
-		} else if len(childGitRepos) == len(condMapAllGitRepos) {
+		} else if len(childGitRepos.Items) == len(condMapAllGitRepos) {
 			// case2
 			d.Status.Conditions = utils.UpdateStatusCondition(d.Status.Conditions,
 				typeNotStalled,
@@ -801,7 +793,8 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 			return nil
 		}
 	}
-	r.updateDeploymentStatus(ctx, d, childGitRepos, deploymentClusters.Items)
+
+	r.updateDeploymentStatus(d, childGitRepos.Items, deploymentClusters.Items)
 	return nil
 }
 
@@ -966,15 +959,12 @@ func updateStatusMetrics(d *v1beta1.Deployment, deleteMetrics bool) {
 	}
 }
 
-func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Deployment, grlist []fleetv1alpha1.GitRepo, dclist []v1beta1.DeploymentCluster) {
+func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []fleetv1alpha1.GitRepo, dclist []v1beta1.DeploymentCluster) {
 	var newState v1beta1.StateType
 	stalledApps := false
 	apps := 0
 	message := ""
 	r.requeueStatus = false
-	log := log.FromContext(ctx)
-
-	log.Info("Test Inside update deployment status, len deploymebt clusters", len(dclist))
 
 	// Walk GitRepos for the Deployment to extract any error conditions
 	for i := range grlist {
@@ -995,7 +985,6 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, gitrepo.Status.Display.Message))
 		}
 	}
-	log.Info("Test before in progres check")
 
 	// Check deployment ready condition to extract error message
 	if d.Status.DeployInProgress {
@@ -1014,7 +1003,6 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		Unknown: 0,
 	}
 	for _, dc := range dclist {
-		log.Info("Test Inside update deployment status for each deployment cluster", dc.Status.Status.State)
 		switch dc.Status.Status.State {
 		case v1beta1.Unknown:
 			clustercounts.Unknown++
@@ -1105,29 +1093,4 @@ func getGitRepoName(appName string, depID string) string {
 func getAppNameForGitRepo(gitrepo *fleetv1alpha1.GitRepo, depID string) string {
 	suffix := fmt.Sprintf("-%s", depID)
 	return strings.TrimSuffix(gitrepo.Name, suffix)
-}
-
-func fetchGitReposByOwner(ctx context.Context, c client.Client, ownerName string, namespace string) ([]fleetv1alpha1.GitRepo, error) {
-	var gitRepoList fleetv1alpha1.GitRepoList
-	log := log.FromContext(ctx)
-	log.Info(fmt.Sprintf("Test inside fetch gitrepos: %s %s", ownerName, namespace))
-	/*err := c.List(ctx, &gitRepoList, client.InNamespace(namespace))
-	log.Info(fmt.Sprintf("Test %s", err.Error()))
-	if err != nil {
-		log.Error(err, "Error fetching gitrepos")
-		return nil, fmt.Errorf("error fetching gitrepos: %w", err)
-	}
-	log.Info("Test inside fetch gitrepos", len(gitRepoList.Items))*/
-
-	var filteredGitRepos []fleetv1alpha1.GitRepo
-	for _, gitRepo := range gitRepoList.Items {
-		for _, ownerRef := range gitRepo.OwnerReferences {
-			if ownerRef.Name == ownerName {
-				filteredGitRepos = append(filteredGitRepos, gitRepo)
-				break
-			}
-		}
-	}
-
-	return filteredGitRepos, nil
 }
