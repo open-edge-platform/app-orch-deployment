@@ -11,83 +11,109 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/utils"
 )
 
-var methodStatusMap = map[string]map[string]int{
-	"listDeployments": {
-		http.MethodGet:    http.StatusOK,
-		http.MethodDelete: http.StatusMethodNotAllowed,
-		http.MethodPatch:  http.StatusMethodNotAllowed,
-		http.MethodPut:    http.StatusMethodNotAllowed,
-		http.MethodPost:   http.StatusBadRequest,
-	},
-	"listDeploymentsPerCluster": {
-		http.MethodGet:    http.StatusOK,
-		http.MethodDelete: http.StatusMethodNotAllowed,
-		http.MethodPatch:  http.StatusMethodNotAllowed,
-		http.MethodPut:    http.StatusMethodNotAllowed,
-		http.MethodPost:   http.StatusMethodNotAllowed,
-	},
-	"getDeleteDeployment": {
-		http.MethodGet:    http.StatusOK,
-		http.MethodDelete: http.StatusOK,
-		http.MethodPatch:  http.StatusMethodNotAllowed,
-		http.MethodPut:    http.StatusBadRequest,
-		http.MethodPost:   http.StatusMethodNotAllowed,
-	},
-	"getDeploymentsStatus": {
-		http.MethodGet:    http.StatusOK,
-		http.MethodDelete: http.StatusMethodNotAllowed,
-		http.MethodPatch:  http.StatusMethodNotAllowed,
-		http.MethodPut:    http.StatusMethodNotAllowed,
-		http.MethodPost:   http.StatusMethodNotAllowed,
-	},
-	"listDeploymentClusters": {
-		http.MethodGet:    http.StatusOK,
-		http.MethodDelete: http.StatusMethodNotAllowed,
-		http.MethodPatch:  http.StatusMethodNotAllowed,
-		http.MethodPut:    http.StatusMethodNotAllowed,
-		http.MethodPost:   http.StatusMethodNotAllowed,
-	},
+var listDeploymentsMethods = map[string]int{
+	http.MethodGet:    http.StatusOK,
+	http.MethodDelete: http.StatusMethodNotAllowed,
+	http.MethodPatch:  http.StatusMethodNotAllowed,
+	http.MethodPut:    http.StatusMethodNotAllowed,
+	http.MethodPost:   http.StatusBadRequest, // 400 is returned when the request body is empty since the post method is used to create deployment
 }
 
-func (s *TestSuite) testMethod(url string, methodMap map[string]int, updateDeployID bool) {
-	for method, expectedStatus := range methodMap {
+var listDeploymentsPerClusterMethods = map[string]int{
+	http.MethodGet:    http.StatusOK,
+	http.MethodDelete: http.StatusMethodNotAllowed,
+	http.MethodPatch:  http.StatusMethodNotAllowed,
+	http.MethodPut:    http.StatusMethodNotAllowed,
+	http.MethodPost:   http.StatusMethodNotAllowed,
+}
+
+var getDeleteDeploymentMethods = map[string]int{
+	http.MethodGet:    http.StatusOK,
+	http.MethodDelete: http.StatusOK,
+	http.MethodPatch:  http.StatusMethodNotAllowed,
+	http.MethodPut:    http.StatusBadRequest,
+	http.MethodPost:   http.StatusMethodNotAllowed,
+}
+
+var getDeploymentsStatusMethods = map[string]int{
+	http.MethodGet:    http.StatusOK,
+	http.MethodDelete: http.StatusMethodNotAllowed,
+	http.MethodPatch:  http.StatusMethodNotAllowed,
+	http.MethodPut:    http.StatusMethodNotAllowed,
+	http.MethodPost:   http.StatusMethodNotAllowed,
+}
+
+var listDeploymentClustersMethods = map[string]int{
+	http.MethodGet:    http.StatusOK,
+	http.MethodDelete: http.StatusMethodNotAllowed,
+	http.MethodPatch:  http.StatusMethodNotAllowed,
+	http.MethodPut:    http.StatusMethodNotAllowed,
+	http.MethodPost:   http.StatusMethodNotAllowed,
+}
+
+// TestListDeploymentsMethod tests the list deployments method
+func (s *TestSuite) TestListDeploymentsMethod() {
+	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments", deploymentRESTServerUrl)
+	for method, expectedStatus := range listDeploymentsMethods {
 		res, err := utils.CallMethod(url, method, token, projectID)
 		s.NoError(err)
 		s.Equal(expectedStatus, res.StatusCode)
-
-		if updateDeployID && method == http.MethodDelete {
-			var retCode int
-			deployID, retCode, err = utils.StartDeployment(admclient, dpConfigName, "targeted", 10)
-			s.Equal(retCode, 200)
-			s.NoError(err)
-			url = fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s", deploymentRESTServerUrl, deployID)
-		}
-
-		s.T().Logf("%s method: %s (%d)\n", url, method, res.StatusCode)
+		s.T().Logf("list deployments method: %s (%d)\n", method, res.StatusCode)
 	}
 }
 
-func (s *TestSuite) TestListDeploymentsMethod() {
-	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments", deploymentRESTServerUrl)
-	s.testMethod(url, methodStatusMap["listDeployments"], false)
-}
-
+// TestListDeploymentsPerClusterMethod tests the list deployments per cluster method
 func (s *TestSuite) TestListDeploymentsPerClusterMethod() {
 	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/clusters/%s", deploymentRESTServerUrl, utils.TestClusterID)
-	s.testMethod(url, methodStatusMap["listDeploymentsPerCluster"], false)
+	for method, expectedStatus := range listDeploymentsPerClusterMethods {
+		res, err := utils.CallMethod(url, method, token, projectID)
+		s.NoError(err)
+		s.Equal(expectedStatus, res.StatusCode)
+		s.T().Logf("list deployments per cluster method: %s (%d)\n", method, res.StatusCode)
+	}
 }
 
+// TestGetDeleteDeploymentMethod tests the get and delete deployment method
 func (s *TestSuite) TestGetDeleteDeploymentMethod() {
 	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s", deploymentRESTServerUrl, deployID)
-	s.testMethod(url, methodStatusMap["getDeleteDeployment"], true)
+	for method, expectedStatus := range getDeleteDeploymentMethods {
+		res, err := utils.CallMethod(url, method, token, projectID)
+		s.NoError(err)
+		s.Equal(expectedStatus, res.StatusCode)
+		if method == http.MethodDelete {
+			var retCode int
+
+			// Update new deployID for following tests
+			deployID, retCode, err = utils.StartDeployment(admclient, dpConfigName, "targeted", 10)
+			s.Equal(retCode, 200)
+			s.NoError(err)
+
+			// Update URL with new deployID for the next iteration
+			url = fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s", deploymentRESTServerUrl, deployID)
+		}
+
+		s.T().Logf("delete deployment method: %s (%d)\n", method, res.StatusCode)
+	}
 }
 
+// TestGetDeploymentsStatusMethod tests the get deployments status method
 func (s *TestSuite) TestGetDeploymentsStatusMethod() {
 	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/summary/deployments_status", deploymentRESTServerUrl)
-	s.testMethod(url, methodStatusMap["getDeploymentsStatus"], false)
+	for method, expectedStatus := range getDeploymentsStatusMethods {
+		res, err := utils.CallMethod(url, method, token, projectID)
+		s.NoError(err)
+		s.Equal(expectedStatus, res.StatusCode)
+		s.T().Logf("get deployments status method: %s (%d)\n", method, res.StatusCode)
+	}
 }
 
+// TestListDeploymentClustersMethod tests the list deployment clusters method
 func (s *TestSuite) TestListDeploymentClustersMethod() {
 	url := fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s/clusters", deploymentRESTServerUrl, deployID)
-	s.testMethod(url, methodStatusMap["listDeploymentClusters"], false)
+	for method, expectedStatus := range listDeploymentClustersMethods {
+		res, err := utils.CallMethod(url, method, token, projectID)
+		s.NoError(err)
+		s.Equal(expectedStatus, res.StatusCode)
+		s.T().Logf("list deployment clusters method: %s (%d)\n", method, res.StatusCode)
+	}
 }
