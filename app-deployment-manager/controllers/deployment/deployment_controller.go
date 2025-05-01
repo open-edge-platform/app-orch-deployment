@@ -1023,10 +1023,13 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 			ready := true
 			for _, app := range dc.Status.Apps {
 				fmt.Println("Test dc status running app", d.Generation, app.DeploymentGeneration)
-				if d.Generation != app.DeploymentGeneration {
-					fmt.Println("Test set ready to false")
+				if app.Status.State != v1beta1.Running {
 					ready = false
 				}
+				/*if d.Generation != app.DeploymentGeneration {
+					fmt.Println("Test set ready to false")
+					ready = false
+				}*/
 			}
 
 			// Wait a few seconds before deciding the DC is actually Ready
