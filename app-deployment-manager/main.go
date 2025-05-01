@@ -10,10 +10,9 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/controllers/capi"
 	"github.com/open-edge-platform/orch-library/go/dazl"
 	_ "github.com/open-edge-platform/orch-library/go/dazl/zap"
-	"os"
-
 	ctrllogger "github.com/open-edge-platform/orch-library/go/pkg/logging/k8s"
 	corev1 "k8s.io/api/core/v1"
+	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -77,7 +76,7 @@ func main() {
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
 
-	ctrl.SetLogger(ctrllogger.NewControllerPackageLogger().WithCallDepth(2))
+	ctrl.SetLogger(ctrllogger.NewControllerPackageLogger())
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
