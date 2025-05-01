@@ -107,7 +107,6 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	condstatus := v1.ConditionFalse
 	reason := "BundleDeploymentsNotReady"
 	log := log.FromContext(ctx)
-	log.Info("Test Reconciling DeploymentCluster")
 	dc := &v1beta1.DeploymentCluster{}
 	if err := r.Client.Get(ctx, req.NamespacedName, dc); err != nil {
 		if apierrors.IsNotFound(err) {
@@ -159,7 +158,6 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	for i := range bdlist.Items {
 		bd := &bdlist.Items[i]
 		dci, err := deploymentClusterInfo(bd)
-		fmt.Println("Test deploymentClusterInfo: ", dci.Name, req.Name, err)
 		if err == nil && dci.Name == req.Name {
 			addDeploymentClusterApp(bd, dc)
 		}
@@ -278,7 +276,6 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func (r *Reconciler) triggerReconcileBD(_ context.Context, o client.Object) []reconcile.Request {
 	requests := []reconcile.Request{}
-	fmt.Println("Test triggerReconcileBD")
 	bd, ok := o.(*fleetv1alpha1.BundleDeployment)
 	if !ok {
 		return requests
@@ -299,7 +296,6 @@ func (r *Reconciler) triggerReconcileBD(_ context.Context, o client.Object) []re
 			},
 		}
 	}
-	fmt.Println("Test triggerReconcileBD: ", dci.Name, bd.Name, err)
 	return requests
 }
 
@@ -491,7 +487,6 @@ func initializeStatus(dc *v1beta1.DeploymentCluster) {
 func addDeploymentClusterApp(bd *fleetv1alpha1.BundleDeployment, dc *v1beta1.DeploymentCluster) {
 	var state v1beta1.StateType
 
-	fmt.Println("Test addDeploymentClusterApp: ", utils.GetDeploymentGeneration(bd))
 	switch utils.GetState(bd) {
 	case v1beta1.Running:
 		state = v1beta1.Running

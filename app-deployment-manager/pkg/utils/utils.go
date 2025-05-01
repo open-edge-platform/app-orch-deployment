@@ -10,7 +10,6 @@ import (
 	"math"
 	"os"
 	"path/filepath"
-	"sigs.k8s.io/cli-utils/pkg/jsonpath"
 	"strconv"
 	"strings"
 	"sync"
@@ -238,46 +237,13 @@ func GetAppName(bd *fleetv1alpha1.BundleDeployment) string {
 }
 
 func GetDeploymentGeneration(bd *fleetv1alpha1.BundleDeployment) int64 {
-	// Try to get from label first
 	if genStr, ok := bd.Labels["deploymentGeneration"]; ok {
-		fmt.Println("Test deployment generation", genStr)
 		if gen, err := strconv.ParseInt(genStr, 10, 64); err == nil {
 			return gen
 		}
 	}
-
-	// Fall back to the existing approach if label is not present
-
-	if bd.Spec.Options.Helm != nil && bd.Spec.Options.Helm.Values != nil {
-		values := bd.Spec.Options.Helm.Values.Data
-		result, err := jsonpath.Get(values, `$.global.fleet.deploymentGeneration`)
-		fmt.Println("Test deployment generation", result, err)
-		if err == nil && len(result) == 1 {
-			// jsonpath will return an int result
-			if gen, ok := result[0].(int); ok {
-				return int64(gen)
-			}
-		}
-	}
-
 	return 0
 }
-
-/*func GetDeploymentGeneration(bd *fleetv1alpha1.BundleDeployment) int64 {
-	fmt.Println("Test GetDeploymentGeneration", bd.Spec.Options.Helm)
-	if bd.Spec.Options.Helm != nil && bd.Spec.Options.Helm.Values != nil {
-		values := bd.Spec.Options.Helm.Values.Data
-		result, err := jsonpath.Get(values, `$.global.fleet.deploymentGeneration`)
-		fmt.Println("Test deployment generation", result, err)
-		if err == nil && len(result) == 1 {
-			// jsonpath will return an int result
-			if gen, ok := result[0].(int); ok {
-				return int64(gen)
-			}
-		}
-	}
-	return 0
-}*/
 
 func AppendMessage(orig string, next string) string {
 	if orig == "" {

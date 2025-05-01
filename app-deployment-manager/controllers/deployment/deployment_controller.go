@@ -1004,7 +1004,6 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 		Unknown: 0,
 	}
 	for _, dc := range dclist {
-		fmt.Println("Test dc status", dc.Name, dc.Status.Status.State)
 		switch dc.Status.Status.State {
 		case v1beta1.Unknown:
 			clustercounts.Unknown++
@@ -1015,12 +1014,9 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 				message = utils.AppendMessage(message, dc.Status.Status.Message)
 			}
 		case v1beta1.Running:
-			fmt.Println("Test dc status running")
 			ready := true
 			for _, app := range dc.Status.Apps {
-				fmt.Println("Test dc status running app", d.Generation, app.DeploymentGeneration)
 				if d.Generation != app.DeploymentGeneration {
-					fmt.Println("Test set ready to false")
 					ready = false
 				}
 			}
@@ -1035,7 +1031,6 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 			}
 
 			if ready {
-				fmt.Println("Test set clustercounts running")
 				clustercounts.Running++
 			} else {
 				clustercounts.Down++
