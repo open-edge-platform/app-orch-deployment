@@ -12,41 +12,46 @@ import (
 )
 
 // HTTP method expected responses for different API endpoints
-var methodResponses = map[string]map[string]int{
+type MethodResponse struct {
+	Method       string
+	ExpectedCode int
+}
+
+var methodResponses = map[string][]MethodResponse{
 	"deployments": {
-		http.MethodGet:    http.StatusOK,
-		http.MethodDelete: http.StatusMethodNotAllowed,
-		http.MethodPatch:  http.StatusMethodNotAllowed,
-		http.MethodPut:    http.StatusMethodNotAllowed,
-		http.MethodPost:   http.StatusBadRequest, // 400 when body is empty
+		{http.MethodGet, http.StatusOK},
+		{http.MethodDelete, http.StatusMethodNotAllowed},
+		{http.MethodPatch, http.StatusMethodNotAllowed},
+		{http.MethodPut, http.StatusMethodNotAllowed},
+		{http.MethodPost, http.StatusBadRequest}, // 400 when body is empty
 	},
 	"deploymentsPerCluster": {
-		http.MethodGet:    http.StatusOK,
-		http.MethodDelete: http.StatusMethodNotAllowed,
-		http.MethodPatch:  http.StatusMethodNotAllowed,
-		http.MethodPut:    http.StatusMethodNotAllowed,
-		http.MethodPost:   http.StatusMethodNotAllowed,
+		{http.MethodGet, http.StatusOK},
+		{http.MethodDelete, http.StatusMethodNotAllowed},
+		{http.MethodPatch, http.StatusMethodNotAllowed},
+		{http.MethodPut, http.StatusMethodNotAllowed},
+		{http.MethodPost, http.StatusMethodNotAllowed},
 	},
 	"deploymentById": {
-		http.MethodGet:    http.StatusOK,
-		http.MethodDelete: http.StatusOK,
-		http.MethodPatch:  http.StatusMethodNotAllowed,
-		http.MethodPut:    http.StatusBadRequest,
-		http.MethodPost:   http.StatusMethodNotAllowed,
+		{http.MethodGet, http.StatusOK},
+		{http.MethodDelete, http.StatusOK},
+		{http.MethodPatch, http.StatusMethodNotAllowed},
+		{http.MethodPut, http.StatusBadRequest},
+		{http.MethodPost, http.StatusMethodNotAllowed},
 	},
 	"deploymentsStatus": {
-		http.MethodGet:    http.StatusOK,
-		http.MethodDelete: http.StatusMethodNotAllowed,
-		http.MethodPatch:  http.StatusMethodNotAllowed,
-		http.MethodPut:    http.StatusMethodNotAllowed,
-		http.MethodPost:   http.StatusMethodNotAllowed,
+		{http.MethodGet, http.StatusOK},
+		{http.MethodDelete, http.StatusMethodNotAllowed},
+		{http.MethodPatch, http.StatusMethodNotAllowed},
+		{http.MethodPut, http.StatusMethodNotAllowed},
+		{http.MethodPost, http.StatusMethodNotAllowed},
 	},
 	"deploymentClusters": {
-		http.MethodGet:    http.StatusOK,
-		http.MethodDelete: http.StatusMethodNotAllowed,
-		http.MethodPatch:  http.StatusMethodNotAllowed,
-		http.MethodPut:    http.StatusMethodNotAllowed,
-		http.MethodPost:   http.StatusMethodNotAllowed,
+		{http.MethodGet, http.StatusOK},
+		{http.MethodDelete, http.StatusMethodNotAllowed},
+		{http.MethodPatch, http.StatusMethodNotAllowed},
+		{http.MethodPut, http.StatusMethodNotAllowed},
+		{http.MethodPost, http.StatusMethodNotAllowed},
 	},
 }
 
@@ -55,7 +60,7 @@ func (s *TestSuite) TestAPIMethods() {
 	testCases := []struct {
 		name        string
 		url         string
-		methodMap   map[string]int
+		methodMap   []MethodResponse
 		description string
 		setup       func() string // Optional setup function, returns dynamic ID if needed
 	}{
@@ -116,11 +121,11 @@ func (s *TestSuite) TestAPIMethods() {
 }
 
 // Helper function to test HTTP methods on an endpoint
-func testEndpointMethods(s *TestSuite, url string, methodMap map[string]int, description string) {
-	for method, expectedStatus := range methodMap {
-		res, err := utils.CallMethod(url, method, token, projectID)
+func testEndpointMethods(s *TestSuite, url string, methodResponses []MethodResponse, description string) {
+	for _, mr := range methodResponses {
+		res, err := utils.CallMethod(url, mr.Method, token, projectID)
 		s.NoError(err)
-		s.Equal(expectedStatus, res.StatusCode)
-		s.T().Logf("%s method: %s (%d)\n", description, method, res.StatusCode)
+		s.Equal(mr.ExpectedCode, res.StatusCode)
+		s.T().Logf("%s method: %s (%d)\n", description, mr.Method, res.StatusCode)
 	}
 }
