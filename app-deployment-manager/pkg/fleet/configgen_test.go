@@ -764,6 +764,24 @@ var _ = Describe("Fleet config generator", func() {
 						Kind:      "EnvoyFilter",
 						Namespace: "istio-ns",
 					},
+					{
+						Name:      "deployment1",
+						Kind:      "Deployment",
+						Namespace: "test-ns",
+					},
+					{
+						Name: "deployment2",
+						Kind: "Deployment",
+					},
+					{
+						Name:      "job1",
+						Kind:      "Job",
+						Namespace: "test-ns",
+					},
+					{
+						Name: "job22",
+						Kind: "Job",
+					},
 				}
 
 				basedir := "/tmp/fleet0"
