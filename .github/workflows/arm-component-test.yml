@@ -19,7 +19,7 @@ on:
         description: 'The branch, tag or SHA to checkout EMF'
         required: true
         type: string
-        default: '53e430f45faaee7671fa3c25f6acc3945aba2065'
+        default: '6ffcb3096d89cd7522602d47fee96763d742aca5'
 
 jobs:
   component-test-arm:
@@ -29,5 +29,5 @@ jobs:
     with:
       component: app-resource-manager
       use-enic: true
-      emf-branch: ${{ inputs.emf-branch || '53e430f45faaee7671fa3c25f6acc3945aba2065' }}
+      emf-branch: ${{ inputs.emf-branch || '6ffcb3096d89cd7522602d47fee96763d742aca5' }}
     secrets: inherit
