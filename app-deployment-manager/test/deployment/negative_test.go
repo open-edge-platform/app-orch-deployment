@@ -6,6 +6,7 @@ package deployment
 
 import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/utils"
+	"net/http"
 )
 
 func (s *TestSuite) TestNegativeCreateDeployment() {
@@ -29,7 +30,7 @@ func (s *TestSuite) TestNegativeCreateDeployment() {
 		s.NoError(err, "failed to reset "+test.configKey+" in deployment config")
 
 		deployID, retCode, err := utils.StartDeployment(s.AdmClient, "nginx", test.deployment, 10)
-		s.Equal(retCode, 400)
+		s.Equal(retCode, http.StatusBadRequest)
 		s.Error(err)
 		s.Contains(err.Error(), test.expectedErr)
 		s.Empty(deployID)
