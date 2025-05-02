@@ -42,6 +42,7 @@ import (
 	lc "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/logchecker"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils"
 	"github.com/open-edge-platform/orch-library/go/pkg/auth"
+	orchLibMetrics "github.com/open-edge-platform/orch-library/go/pkg/metrics"
 )
 
 const (
@@ -476,6 +477,8 @@ func (r *Reconciler) reconcileDependency(ctx context.Context, d *v1beta1.Deploym
 func (r *Reconciler) reconcileState(_ context.Context, d *v1beta1.Deployment) (ctrl.Result, error) {
 	// Update state to Deploying or Updating
 	if d.Status.State == "" || d.Generation == 1 {
+		projectID := d.Labels[string(v1beta1.AppOrchActiveProjectID)]
+		orchLibMetrics.RecordTimestamp(projectID, d.GetId(), d.Spec.DisplayName, "start", "CreateDeployment")
 		d.Status.State = v1beta1.Deploying
 	} else {
 		d.Status.State = v1beta1.Updating
@@ -692,6 +695,10 @@ func (r *Reconciler) reconcileGitRepo(ctx context.Context, d *v1beta1.Deployment
 
 			// GitRepo object for the application was successful
 			r.recorder.Eventf(d, corev1.EventTypeNormal, "Reconciling", "Completed creating GitRepo %s", gitRepoName)
+
+			projectID := d.Labels[string(v1beta1.AppOrchActiveProjectID)]
+			orchLibMetrics.RecordTimestamp(projectID, d.GetId(), d.Spec.DisplayName, "start", "CreateGitRepo")
+			orchLibMetrics.CalculateTimeDifference(projectID, d.GetId(), d.Spec.DisplayName, "start", "CreateDeployment", "start", "CreateGitRepo")
 		}
 	}
 
@@ -938,6 +945,8 @@ func updateStatusMetrics(d *v1beta1.Deployment, deleteMetrics bool) {
 		for i := range metricValue {
 			ctrlmetrics.DeploymentStatus.DeleteLabelValues(projectID, d.GetId(), displayName, i)
 		}
+
+		orchLibMetrics.DeleteTimestampMetrics(projectID, d.GetId())
 	} else {
 		// Only one status will be 1 and rest are 0
 		metricValue[string(d.Status.State)] = 1
@@ -946,6 +955,7 @@ func updateStatusMetrics(d *v1beta1.Deployment, deleteMetrics bool) {
 		for i, val := range metricValue {
 			ctrlmetrics.DeploymentStatus.WithLabelValues(projectID, d.GetId(), displayName, i).Set(val)
 		}
+
 	}
 }
 
@@ -1062,6 +1072,11 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 	default:
 		newState = v1beta1.Running
 		d.Status.DeployInProgress = false
+		projectID := d.Labels[string(v1beta1.AppOrchActiveProjectID)]
+		orchLibMetrics.RecordTimestamp(projectID, d.GetId(), d.Spec.DisplayName, string(newState), "status-change")
+		if newState == v1beta1.Running {
+			orchLibMetrics.CalculateTimeDifference(projectID, d.GetId(), d.Spec.DisplayName, "start", "CreateDeployment", string(v1beta1.Running), "status-change")
+		}
 	}
 
 	d.Status.Display = fmt.Sprintf("Clusters: %v/%v/%v/%v, Apps: %v", clustercounts.Total, clustercounts.Running,

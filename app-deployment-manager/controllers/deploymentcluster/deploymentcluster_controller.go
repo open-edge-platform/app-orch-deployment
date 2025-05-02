@@ -29,6 +29,7 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/v1beta1"
 	ctrlmetrics "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/metrics"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils"
+	orchLibMetrics "github.com/open-edge-platform/orch-library/go/pkg/metrics"
 )
 
 var (
@@ -216,27 +217,10 @@ func updateStatusMetrics(ctx context.Context, r *Reconciler, dc *v1beta1.Deploym
 
 	// Fetch the Deployment object using DeploymentID
 	deploymentID := dc.Spec.DeploymentID
-	deploymentList := &v1beta1.DeploymentList{}
-
-	if err := r.Client.List(ctx, deploymentList, client.MatchingLabels{string(v1beta1.AppOrchActiveProjectID): projectID}); err != nil {
-		log.Error(err, "Failed to list Deployments")
-		return
+	displayName, err := getDisplayName(ctx, projectID, deploymentID, r)
+	if err != nil {
+		log.Error(err, "Couldnt get displayName for deployment")
 	}
-
-	var deployment *v1beta1.Deployment
-	for _, d := range deploymentList.Items {
-		if d.ObjectMeta.UID == types.UID(deploymentID) {
-			deployment = &d
-			break
-		}
-	}
-
-	if deployment == nil {
-		log.Error(nil, "Deployment not found", "DeploymentID", deploymentID)
-		return
-	}
-
-	displayName := deployment.Spec.DisplayName
 
 	if deleteMetrics {
 		// Delete current deployment metrics only
@@ -251,6 +235,13 @@ func updateStatusMetrics(ctx context.Context, r *Reconciler, dc *v1beta1.Deploym
 		for i, val := range metricValue {
 			ctrlmetrics.DeploymentClusterStatus.WithLabelValues(projectID, dc.Spec.DeploymentID, displayName, dc.Spec.ClusterID, dc.Status.Name, i).Set(val)
 		}
+
+		dcStatusChange := "dc-" + dc.Spec.ClusterID + "-status-change"
+		orchLibMetrics.RecordTimestamp(projectID, dc.Spec.DeploymentID, displayName, string(dc.Status.Status.State), dcStatusChange)
+		if metricValue[string(v1beta1.Running)] == 1 {
+			orchLibMetrics.CalculateTimeDifference(projectID, dc.Spec.DeploymentID, displayName, "start", "CreateDeployment", string(v1beta1.Running), dcStatusChange)
+		}
+
 	}
 }
 
@@ -341,6 +332,32 @@ func (r *Reconciler) triggerReconcileCluster(ctx context.Context, o client.Objec
 	return requests
 }
 
+func getDisplayName(ctx context.Context, projectID, deploymentID string, r *Reconciler) (string, error) {
+	deploymentList := &v1beta1.DeploymentList{}
+	log := log.FromContext(ctx)
+
+	if err := r.Client.List(ctx, deploymentList, client.MatchingLabels{string(v1beta1.AppOrchActiveProjectID): projectID}); err != nil {
+		log.Error(err, "Failed to list Deployments")
+		return "", err
+	}
+
+	var deployment *v1beta1.Deployment
+	for _, d := range deploymentList.Items {
+		if d.ObjectMeta.UID == types.UID(deploymentID) {
+			deployment = &d
+			break
+		}
+	}
+
+	if deployment == nil {
+		log.Error(nil, "Deployment not found", "DeploymentID", deploymentID)
+		return "", errors.New("Deployment not found")
+	}
+
+	displayName := deployment.Spec.DisplayName
+	return displayName, nil
+}
+
 func (r *Reconciler) createDeploymentCluster(ctx context.Context, req ctrl.Request) error {
 	log := log.FromContext(ctx)
 
@@ -366,6 +383,16 @@ func (r *Reconciler) createDeploymentCluster(ctx context.Context, req ctrl.Reque
 				}
 
 				log.Info(fmt.Sprintf("Created DeploymentCluster %s", dc.Name))
+				projectID := dc.Labels[string(v1beta1.AppOrchActiveProjectID)]
+
+				displayName, err := getDisplayName(ctx, projectID, dc.Spec.DeploymentID, r)
+				if err != nil {
+					log.Error(err, "Couldnt get displayName for deployment")
+				}
+				dcForDeployment := "dc-" + dc.Spec.ClusterID
+				orchLibMetrics.RecordTimestamp(projectID, dc.Spec.DeploymentID, displayName, "start", dcForDeployment)
+				orchLibMetrics.CalculateTimeDifference(projectID, dc.Spec.DeploymentID, displayName, "start", "CreateDeployment", "start", dcForDeployment)
+
 				return r.Client.Create(ctx, dc)
 			}
 		}
