@@ -107,8 +107,8 @@ func (s *TestSuite) TestAPIMethods() {
 		s.Run(tc.name, func() {
 			url := tc.url
 			if tc.setup != nil {
-				dynamicID := tc.setup()
-				url = fmt.Sprintf(tc.url, dynamicID)
+				deployID := tc.setup()
+				url = fmt.Sprintf(tc.url, deployID)
 			}
 			testEndpointMethods(s, url, tc.methodMap, tc.description)
 		})
