@@ -3,62 +3,80 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Package auth contains utilities for keycloak authentication
-package auth
+package utils
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 
 	nexus_client "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/nexus-client"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/url"
-	ctrl "sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"strings"
-	"testing"
 )
+
+const InvalidJWT = "eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9.ey" +
+	"JzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRt" +
+	"aW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.J5W09-rNx0pt5_HBiy" +
+	"dR-vOluS6oD-RpYNa8PVWwMcBDQSXiw6-EPW8iSsalXPspGj3ouQjA" +
+	"nOP_4-zrlUUlvUIt2T79XyNeiKuooyIFvka3Y5NnGiOUBHWvWcWp4R" +
+	"cQFMBrZkHtJM23sB5D7Wxjx0-HFeNk-Y3UJgeJVhg5NaWXypLkC4y0" +
+	"ADrUBfGAxhvGdRdULZivfvzuVtv6AzW6NRuEE6DM9xpoWX_4here-y" +
+	"vLS2YPiBTZ8xbB3axdM99LhES-n52lVkiX5AWg2JJkEROZzLMpaacA" +
+	"_xlbUz_zbIaOaoqk8gB5oO7kI6sZej3QAdGigQy-hXiRnW_L98d4GQ"
 
 const (
 	SampleOrg     = "sample-org"
 	SampleProject = "sample-project"
+	kcPass        = "ChangeMeOn1stLogin!"
 )
 
-func SetUpAccessToken(t *testing.T, server string) string {
+func SetUpAccessToken(server string) (string, error) {
 	c := &http.Client{
 		Transport: &http.Transport{},
 	}
 	data := url.Values{}
 	data.Set("client_id", "system-client")
 	data.Set("username", fmt.Sprintf("%s-edge-mgr", SampleProject))
-	data.Set("password", "ChangeMeOn1stLogin!")
+	data.Set("password", kcPass)
 	data.Set("grant_type", "password")
 	url := "https://" + server + "/realms/master/protocol/openid-connect/token"
 	req, err := http.NewRequest(http.MethodPost,
 		url,
 		strings.NewReader(data.Encode()))
-	assert.NoError(t, err)
+	if err != nil {
+		return "", fmt.Errorf("error from keycloak: %w", err)
+	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := c.Do(req)
-	assert.NoError(t, err)
+	if err != nil {
+		return "", fmt.Errorf("error from keycloak: %w", err)
+	}
 	if resp == nil {
-		fmt.Fprintf(os.Stderr, "No response from keycloak: %s\n", url)
-		return ""
+		return "", fmt.Errorf("no response from keycloak: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
-	assert.Equal(t, resp.StatusCode, http.StatusOK)
+
 	rawTokenData, err := io.ReadAll(resp.Body)
-	assert.NoError(t, err)
-	tokenData := map[string]interface{}{}
+	if err != nil {
+		return "", fmt.Errorf("error reading response body: %w", err)
+	}
+
+	tokenData := map[string]any{}
 	err = json.Unmarshal(rawTokenData, &tokenData)
-	assert.NoError(t, err)
+	if err != nil {
+		return "", fmt.Errorf("error unmarshalling token data: %w", err)
+	}
 
 	accessToken := tokenData["access_token"].(string)
-	assert.NotContains(t, accessToken, `named cookie not present`)
-	return accessToken
+	if accessToken == "" {
+		return "", fmt.Errorf("access token is empty")
+	}
+	return accessToken, nil
 }
 
 func AddRestAuthHeader(req *http.Request, token string, projectID string) {
@@ -70,11 +88,11 @@ func GetProjectID(ctx context.Context) (string, error) {
 	config := ctrl.GetConfigOrDie()
 	nexusClient, err := nexus_client.NewForConfig(config)
 	if err != nil {
-		return "", fmt.Errorf("\nerror retrieving the project (%s). Error: %w", SampleProject, err)
+		return "", fmt.Errorf("\nerror retrieving the project (%s): %w", SampleProject, err)
 	}
 	configNode := nexusClient.TenancyMultiTenancy().Config()
 	if configNode == nil {
-		return "", fmt.Errorf("\nerror retrieving the project (%s). Error: %w", SampleProject, err)
+		return "", fmt.Errorf("\nerror retrieving the project (%s): %w", SampleProject, err)
 	}
 
 	org := configNode.Orgs(SampleOrg)
@@ -85,13 +103,13 @@ func GetProjectID(ctx context.Context) (string, error) {
 
 	folder := org.Folders("default")
 	if folder == nil {
-		return "", fmt.Errorf("\nerror retrieving the project (%s). Error: %w", SampleProject, err)
+		return "", fmt.Errorf("\nerror retrieving the project (%s): %w", SampleProject, err)
 	}
 
 	project := folder.Projects(SampleProject)
 	projectStatus, err := project.GetProjectStatus(ctx)
 	if projectStatus == nil || err != nil {
-		return "", fmt.Errorf("\nerror retrieving the project (%s). Error: %w", SampleProject, err)
+		return "", fmt.Errorf("\nerror retrieving the project (%s): %w", SampleProject, err)
 	}
 
 	return projectStatus.UID, nil

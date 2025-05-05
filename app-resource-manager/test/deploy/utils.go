@@ -69,7 +69,7 @@ func getDeployments(client *restClient.ClientWithResponses) ([]restClient.Deploy
 }
 
 func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName string, status restClient.DeploymentStatusState, retries int, delay time.Duration) (string, error) {
-	var currState string
+	currState := "UNKNOWN"
 	for range retries {
 		deployments, retCode, err := getDeployments(client)
 		if err != nil || retCode != 200 {
@@ -77,7 +77,11 @@ func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName
 		}
 
 		for _, d := range deployments {
-			currState = string(*d.Status.State)
+			// In case there's several deployments only use the one with the same display name
+			if *d.DisplayName == displayName {
+				currState = string(*d.Status.State)
+			}
+
 			if *d.DisplayName == displayName && currState == string(status) {
 				fmt.Printf("Waiting for deployment %s state %s ---> %s\n", displayName, currState, status)
 				return *d.DeployId, nil

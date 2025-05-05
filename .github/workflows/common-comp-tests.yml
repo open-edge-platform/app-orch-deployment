@@ -157,6 +157,37 @@ jobs:
             argo-diag.txt
             argocd-applications.yaml
 
+      - name: Get ENiC diagnostic information
+        if: ${{ failure() }}
+        id: get-enic-diag-info
+        run: |
+          kubectl -n orch-cluster get pods -o wide -A > orch-cluster-list.log
+          kubectl logs -n orch-cluster -l app=cluster-manager-cm -c cluster-manager --tail=-1 > cluster-manager.log || echo "No current logs for cluster-manager"
+          kubectl logs -n orch-cluster -l app=cluster-manager-cm -c cluster-manager --previous --tail=-1 > cluster-manager-previous.log || echo "No previous logs for cluster-manager"
+          kubectl logs -n orch-cluster -l app.kubernetes.io/name=cluster-connect-gateway --tail=-1 > cluster-connect-gateway.log || echo "No current logs for cluster-connect-gateway"
+          kubectl logs -n orch-cluster -l app.kubernetes.io/name=cluster-connect-gateway --previous --tail=-1 > cluster-connect-gateway-previous.log || echo "No previous logs for cluster-connect-gateway"
+          kubectl logs -n orch-cluster -l app=intel-infra-provider-manager -c intel-infra-provider-manager --tail=-1 > intel-infra-provider-manager.log || echo "No current logs for intel-infra-provider-manager"
+          kubectl logs -n orch-cluster -l app=intel-infra-provider-manager -c intel-infra-provider-manager --previous --tail=-1 > intel-infra-provider-manager-previous.log || echo "No previous logs for intel-infra-provider-manager"
+          kubectl logs -n orch-cluster -l app=southbound-api -c intel-infra-provider-southbound --tail=-1 > intel-infra-provider-southbound.log || echo "No current logs for intel-infra-provider-southbound"
+          kubectl logs -n orch-cluster -l app=southbound-api -c intel-infra-provider-southbound --previous --tail=-1 > intel-infra-provider-southbound-previous.log || echo "No previous logs for intel-infra-provider-southbound"
+          kubectl logs -n enic -l app=enic -c edge-node --tail=-1 > enic.log || echo "No current logs for enic"
+
+      - name: Upload ENiC diagnostic artifacts
+        if: ${{ failure() && steps.get-enic-diag-info.conclusion == 'success' }}
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: pods-logs
+          path: |
+            orch-cluster-list.log
+            cluster-manager.log
+            cluster-manager-previous.log
+            cluster-connect-gateway.log
+            cluster-connect-gateway-previous.log
+            intel-infra-provider-manager.log
+            intel-infra-provider-manager-previous.log
+            intel-infra-provider-southbound.log
+            intel-infra-provider-southbound-previous.log
+
       - name: Get Pods diagnostic information
         if: ${{ failure() }}
         id: get-pods-diag-info
