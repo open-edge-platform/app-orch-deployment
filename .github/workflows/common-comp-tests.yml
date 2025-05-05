@@ -42,7 +42,6 @@ jobs:
         uses: actions/checkout@v4.2.1
         with:
           repository: open-edge-platform/edge-manageability-framework
-          persist-credentials: false
           token: ${{ secrets.SYS_ORCH_GITHUB }}
           ref: ${{ inputs.emf-branch}}
 
@@ -52,7 +51,6 @@ jobs:
       - name: Set up git credentials
         run: |
           echo "GOPRIVATE=github.com/open-edge-platform" >> $GITHUB_ENV
-          export GH_TOKEN="${{ env.GH_TOKEN }}"
           git config --global url."https://${GH_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
       - name: Setup asdf and install dependencies
