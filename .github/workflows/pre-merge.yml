@@ -51,7 +51,6 @@ jobs:
       run_artifact: false
       prefix_tag_separator: "/"
       project_folder: ${{ matrix.project_folder }}
-    secrets: inherit
   final-check:
       runs-on: ubuntu-latest
       if: ${{ always() }}
