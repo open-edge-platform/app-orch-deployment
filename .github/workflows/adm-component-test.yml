@@ -20,7 +20,8 @@ on:
         required: true
         type: string
         default: 'set-sub-domain'
-
+permissions:
+  contents: read
 
 jobs:
   component-test-adm:

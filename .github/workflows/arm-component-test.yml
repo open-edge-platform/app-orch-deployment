@@ -20,7 +20,8 @@ on:
         required: true
         type: string
         default: 'main'
-
+permissions:
+  contents: read
 
 jobs:
   component-test-arm:
