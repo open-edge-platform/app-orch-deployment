@@ -33,10 +33,12 @@ jobs:
       DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
       DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
       GH_TOKEN: ${{ secrets.SYS_ORCH_GITHUB }}
+      COMPONENT: ${{ inputs.component }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.1
         with:
+          persist-credentials: false
           repository: open-edge-platform/edge-manageability-framework
           token: ${{ env.GH_TOKEN }}
           ref: ${{ inputs.emf-branch}}
@@ -50,12 +52,13 @@ jobs:
           git config --global url."https://${{ env.GH_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
       - name: Setup asdf and install dependencies
-        uses: open-edge-platform/orch-utils/.github/actions/setup-asdf@main
+        uses: open-edge-platform/orch-utils/.github/actions/setup-asdf@ef4477dd6974c58a987f646eff1bc81c485c9c9a
 
       - name: Checkout app-orch-deployment repository
         uses: actions/checkout@v4
         with:
           repository: open-edge-platform/app-orch-deployment
+          persist-credentials: false
           path: app-orch-deployment
           token: ${{ env.GH_TOKEN }}
 
@@ -100,8 +103,8 @@ jobs:
           mage router:stop router:start || true
           echo "Router restarted"
 
-      - name: Describe ${{ inputs.component }}
-        run: kubectl describe application -n dev ${{ inputs.component }}
+      - name: Describe $COMPONENT
+        run: kubectl describe application -n dev $COMPONENT
 
       - name: Setup Test environment
         run: |
@@ -129,17 +132,19 @@ jobs:
           mage app:upload
           echo "Deployment packages uploaded to catalog!"
 
-      - name: Redeploy and Rebuild ${{ inputs.component }}
-        working-directory: app-orch-deployment/${{ inputs.component }}
+      - name: Redeploy and Rebuild Component
+        working-directory: app-orch-deployment/$COMPONENT
         run: |
+          echo "Redeploying and rebuilding component $COMPONENT"
           make coder-redeploy
           make coder-rebuild
 
-      - name: Run ${{ inputs.component }} Component Tests
-        working-directory: app-orch-deployment/${{ inputs.component }}
+      - name: Run Component Tests
+        working-directory: app-orch-deployment/$COMPONENT
         run: |
+          echo "Running component tests for $COMPONENT"
           make component-test
-          echo "${{ inputs.component }} component tests done!"
+          echo "$COMPONENT component tests done!"
 
       - name: Get Argo diagnostic information
         if: ${{ failure() }}
