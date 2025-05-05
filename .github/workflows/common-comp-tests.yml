@@ -38,6 +38,10 @@ jobs:
       GH_TOKEN: ${{ secrets.SYS_ORCH_GITHUB }}
       COMPONENT: ${{ inputs.component }}
     steps:
+      - name: Print emf-branch
+        run:
+          echo "emf-branch: ${{ inputs.emf-branch }}"
+
       - name: Checkout code
         uses: actions/checkout@v4.2.1
         with:
