@@ -40,7 +40,7 @@ jobs:
         with:
           persist-credentials: false
           repository: open-edge-platform/edge-manageability-framework
-          token: ${{ env.GH_TOKEN }}
+          token: ${{ secrets.SYS_ORCH_GITHUB }}
           ref: ${{ inputs.emf-branch}}
 
       - name: Fetch all branches
