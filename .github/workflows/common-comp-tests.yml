@@ -22,10 +22,7 @@ on:
         description: "Branch in edge-manageability-framework to checkout"
         type: string
         default: main
-permissions:
-  contents: read
-  security-events: write
-  id-token: write
+
 
 jobs:
   component-test:
