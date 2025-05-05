@@ -11,6 +11,9 @@ on:
       - release-*
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   pre-checks:
     runs-on: ${{ github.repository_owner == 'intel' && 'intel-ubuntu-latest' || 'ubuntu-latest' }}
@@ -18,18 +21,20 @@ jobs:
       filtered_projects: ${{ steps.filter-changes.outputs.filtered_projects }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: "Verify Branch Name"
-        uses: open-edge-platform/orch-ci/verify-branch-name@main
+        uses: open-edge-platform/orch-ci/verify-branch-name@31986a986cab0a87721ecb694388029e94e55ff7 # v0.1.8
       - name: "Discover Changed Subfolders"
         id: discover-changes
-        uses: open-edge-platform/orch-ci/discover-changed-subfolders@main
+        uses: open-edge-platform/orch-ci/discover-changed-subfolders@31986a986cab0a87721ecb694388029e94e55ff7 # v0.1.8
       - name: "Filter Out Unwanted Changed Subfolders"
         id: filter-changes
+        env:
+          CHANGED_PROJECTS: ${{ steps.discover-changes.outputs.changed_projects }}
         run: |
           folders_to_remove='[".github",".reuse","LICENSES"]'
-          
-          changed_projects='${{ steps.discover-changes.outputs.changed_projects }}'
-          filtered_projects=$(echo "$changed_projects" | jq -cr --argjson folders_to_remove "$folders_to_remove" 'map(select(. as $item | $folders_to_remove | index($item) | not))')
+          filtered_projects=$(echo "$CHANGED_PROJECTS" | jq -cr --argjson folders_to_remove "$folders_to_remove" 'map(select(. as $item | $folders_to_remove | index($item) | not))')
           echo "filtered_projects=$filtered_projects" >> $GITHUB_OUTPUT
   pre-merge-pipeline:
     needs: pre-checks
@@ -38,7 +43,7 @@ jobs:
       fail-fast: false
       matrix:
         project_folder: ${{ fromJson(needs.pre-checks.outputs.filtered_projects) }}
-    uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@main
+    uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@31986a986cab0a87721ecb694388029e94e55ff7 # v0.1.8
     with:
       run_version_check: true
       run_dep_version_check: false
@@ -51,21 +56,20 @@ jobs:
       run_artifact: false
       prefix_tag_separator: "/"
       project_folder: ${{ matrix.project_folder }}
-    secrets: inherit
   final-check:
       runs-on: ubuntu-latest
       if: ${{ always() }}
       needs: [pre-merge-pipeline]
       steps:
         - name: Final Status Check
+          env:
+            PRE_MERGE_PIPELINE_RESULT: ${{ needs.pre-merge-pipeline.result }}
           run: |
-            pre_merge_pipeline_result="${{ needs.pre-merge-pipeline.result }}"
+            echo "Pre-merge pipeline result: $PRE_MERGE_PIPELINE_RESULT"
             
-            echo "Pre-merge pipeline result: $pre_merge_pipeline_result"
-  
-            if [ "$pre_merge_pipeline_result" == "success" ] || [ "$pre_merge_pipeline_result" == "skipped" ]; then
+            if [ "$PRE_MERGE_PIPELINE_RESULT" == "success" ] || [ "$PRE_MERGE_PIPELINE_RESULT" == "skipped" ]; then
               echo "Pre-merge check passed successfully."
             else
               echo "Pre-merge checks failed. PR can't get merged"
               exit 1
-            fi
+            fi  
