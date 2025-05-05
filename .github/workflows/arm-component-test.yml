@@ -32,3 +32,4 @@ jobs:
       component: app-resource-manager
       use-enic: true
       emf-branch: ${{ inputs.emf-branch || 'main' }}
+    secrets: inherit
