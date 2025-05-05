@@ -3,6 +3,7 @@ SPDX-FileCopyrightText: (C) 2025 Intel Corporation
 SPDX-License-Identifier: Apache-2.0
 -->
 
+
 # Application Deployment Manager
 
 Application Deployment Manager is focused on providing a friendly, high-level interface on top of the GitOps-based deployment tool [Rancher Fleet] and [CAPI] (k8s Cluster API) for cluster management. Application Deployment Manager provides a simple REST API for creating and managing the lifecycle of Deployments. Internally it uses [k8s Operator pattern] and [k8s CRDs] to automate generating Fleet resources, pushing them to Git repositories, and creating the Fleet Custom Resources necessary to bootstrap GitOps for a Deployment.

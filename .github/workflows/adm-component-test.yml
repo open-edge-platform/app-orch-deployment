@@ -31,4 +31,3 @@ jobs:
       component: app-deployment-manager
       use-enic: true
       emf-branch: ${{ inputs.emf-branch || 'main' }}
-    secrets: inherit
