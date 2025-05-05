@@ -63,7 +63,7 @@ jobs:
           repository: open-edge-platform/app-orch-deployment
           persist-credentials: false
           path: app-orch-deployment
-          token: ${{ env.GH_TOKEN }}
+          token: ${{ secrets.SYS_ORCH_GITHUB }}
 
       - name: Get current git hash of the app-orch-deployment PR
         id: get-git-hash-app-orch-deployment
