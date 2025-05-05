@@ -39,7 +39,7 @@ kind: Service
 metadata:
   labels:
     {{- include "app-deployment-manager.labels" . | nindent 4 }}
-  name: {{ template "app-deployment-manager.name" . }}-status
+  name: {{ template "app-deployment-manager.name" . }}-measure
 spec:
   ports:
     - name: http-measure
