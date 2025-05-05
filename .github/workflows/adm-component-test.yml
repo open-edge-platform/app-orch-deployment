@@ -32,3 +32,8 @@ jobs:
       component: app-deployment-manager
       use-enic: true
       emf-branch: ${{ inputs.emf-branch || 'set-sub-domain' }}
+    secrets:
+      SYS_ORCH_GITHUB: ${{ secrets.SYS_ORCH_GITHUB }}
+      DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
+      DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
+      ORCH_DEFAULT_PASSWORD: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
