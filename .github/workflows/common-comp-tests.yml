@@ -38,14 +38,11 @@ jobs:
       GH_TOKEN: ${{ secrets.SYS_ORCH_GITHUB }}
       COMPONENT: ${{ inputs.component }}
     steps:
-      - name: Print emf-branch
-        run:
-          echo "emf-branch: ${{ inputs.emf-branch }}"
-
       - name: Checkout code
         uses: actions/checkout@v4.2.1
         with:
           repository: open-edge-platform/edge-manageability-framework
+          persist-credentials: false
           token: ${{ secrets.SYS_ORCH_GITHUB }}
           ref: ${{ inputs.emf-branch}}
 
