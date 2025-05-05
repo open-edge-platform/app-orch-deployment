@@ -13,25 +13,14 @@ on:
       - 'app-service-proxy/**'
   workflow_dispatch:
 
-permissions:
-  contents: read
-  actions: read
-  attestations: read
-  checks: read
-  deployments: read
-  discussions: read
-  issues: read
-  models: read
-  packages: read
-  pages: read
-  pull-requests: read
-  repository-projects: read
-  statuses: read
-  security-events: write
-  id-token: write
+permissions: {}
 
 jobs:
   post-merge-pipeline:
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
     uses: open-edge-platform/orch-ci/.github/workflows/post-merge.yml@31986a986cab0a87721ecb694388029e94e55ff7 # v0.1.8
     with:
       run_version_check: true
