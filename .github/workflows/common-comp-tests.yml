@@ -65,7 +65,9 @@ jobs:
       - name: Get current git hash of the app-orch-deployment PR
         id: get-git-hash-app-orch-deployment
         working-directory: app-orch-deployment
-        run: echo "GIT_HASH_CHARTS=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_ENV"
+        env:
+          GIT_HASH: ${{ github.event.pull_request.head.sha }}
+        run: echo "GIT_HASH_CHARTS=${GIT_HASH}" >> "$GITHUB_ENV"
 
       - name: Get current git hash of the edge-manageability-framework PR
         id: get-git-hash-deploy
