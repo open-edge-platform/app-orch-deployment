@@ -181,6 +181,18 @@ jobs:
           kubectl logs -n orch-cluster -l app=southbound-api -c intel-infra-provider-southbound --tail=-1 > intel-infra-provider-southbound.log || echo "No current logs for intel-infra-provider-southbound"
           kubectl logs -n orch-cluster -l app=southbound-api -c intel-infra-provider-southbound --previous --tail=-1 > intel-infra-provider-southbound-previous.log || echo "No previous logs for intel-infra-provider-southbound"
           kubectl logs -n enic -l app=enic -c edge-node --tail=-1 > enic.log || echo "No current logs for enic"
+          kubectl logs -n orch-app -l app=app-interconnect-manager -c app-interconnect-manager --tail=-1 > app-interconnect-manager.log || echo "No current logs for app-interconnect-manager"
+          kubectl logs -n orch-app -l app=app-deployment-api -c app-deployment-api --tail=-1 > app-deployment-api.log || echo "No current logs for app-deployment-api"
+          kubectl logs -n orch-app -l app=app-deployment-api -c app-deployment-api-rest-proxy --tail=-1 > app-deployment-api-rest-proxy.log || echo "No current logs for app-deployment-api-rest-proxy"
+          kubectl logs -n orch-app -l app=ma-adm-app-deployment-manager -c controller --tail=-1 > ma-adm-app-deployment-manager.log || echo "No current logs for ma-adm-app-deployment-manager"
+          kubectl logs -n orch-app -l app=app-deployment-manager -c controller --tail=-1 > app-deployment-manager.log || echo "No current logs for app-deployment-manager"
+          kubectl logs -n orch-app -l app=app-orch-tenant-controller -c config-provisioner --tail=-1 > app-orch-tenant-controller.log || echo "No current logs for app-orch-tenant-controller"
+          kubectl logs -n orch-app -l app=app-resource-manager -c app-resource-manager --tail=-1 > app-resource-manager.log || echo "No current logs for app-resource-manager"
+          kubectl logs -n orch-app -l app=app-resource-manager -c app-resource-manager-rest-proxy --tail=-1 > app-resource-manager-rest-proxy.log || echo "No current logs for app-resource-manager-rest-proxy"
+          kubectl logs -n orch-app -l app=app-orch-catalog -c app-orch-catalog-server --tail=-1 > app-orch-catalog-server.log || echo "No current logs for app-orch-catalog-server"
+          kubectl logs -n orch-app -l app=app-orch-catalog -c app-orch-catalog-rest-proxy --tail=-1 > app-orch-catalog-rest-proxy.log || echo "No current logs for app-orch-catalog-rest-proxy"
+          kubectl logs -n orch-app -l app=app-service-proxy -c app-service-proxy --tail=-1 > app-service-proxy.log || echo "No current logs for app-service-proxy"
+          kubectl logs -n orch-app -l app=vnc-proxy-app-resource-manager -c vncproxy --tail=-1 > vnc-proxy-app-resource-manager.log || echo "No current logs for vnc-proxy-app-resource-manager"
 
       - name: Upload ENiC diagnostic artifacts
         if: ${{ failure() && steps.get-enic-diag-info.conclusion == 'success' }}
