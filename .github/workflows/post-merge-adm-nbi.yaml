@@ -34,3 +34,5 @@ jobs:
       run_helm_push: false
       prefix_tag_separator: "/"
       project_folder: "app-deployment-manager/api/nbi"
+    secrets:
+      inherit
