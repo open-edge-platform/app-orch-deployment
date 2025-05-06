@@ -34,3 +34,5 @@ jobs:
       run_artifact: false
       prefix_tag_separator: "/"
       project_folder: "app-resource-manager"
+    secrets:
+      inherit

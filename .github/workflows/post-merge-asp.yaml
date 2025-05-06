@@ -34,3 +34,5 @@ jobs:
       run_helm_push: true
       prefix_tag_separator: "/"
       project_folder: "app-service-proxy"
+    secrets:
+      inherit
