@@ -19,7 +19,7 @@ on:
         description: 'The branch, tag or SHA to checkout EMF'
         required: true
         type: string
-        default: 'main'
+        default: 'fix_deploy_edge_cluster'
 permissions:
   contents: read
 
@@ -31,5 +31,5 @@ jobs:
     with:
       component: app-deployment-manager
       use-enic: true
-      emf-branch: ${{ inputs.emf-branch || 'main' }}
+      emf-branch: ${{ inputs.emf-branch || 'fix_deploy_edge_cluster' }}
     secrets: inherit
