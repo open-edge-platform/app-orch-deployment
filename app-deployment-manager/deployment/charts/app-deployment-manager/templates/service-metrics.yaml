@@ -34,21 +34,6 @@ spec:
   selector:
     {{- include "app-deployment-manager.labels" . | nindent 4 }}
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    {{- include "app-deployment-manager.labels" . | nindent 4 }}
-  name: {{ template "app-deployment-manager.name" . }}-status
-spec:
-  ports:
-    - name: http-measure
-      port: {{ .Values.adm.metrics.port }}
-      protocol: TCP
-      targetPort: http-metrics
-  selector:
-    {{- include "app-deployment-manager.labels" . | nindent 4 }}
----
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -63,7 +48,7 @@ spec:
   - port: http-status
     scheme: http
     path: /status
-  - port: http-measure
+  - port: http-metrics
     scheme: http
     path: /measure
   namespaceSelector:
