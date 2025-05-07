@@ -36,7 +36,7 @@ jobs:
       DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
       DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
       GH_TOKEN: ${{ secrets.SYS_ORCH_GITHUB }}
-      COMPONENT: ${{ inputs.component }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.1
@@ -108,8 +108,8 @@ jobs:
           mage router:stop router:start || true
           echo "Router restarted"
 
-      - name: Describe ${{ env.COMPONENT }} application # zizmor: ignore[template-injection]
-        run: kubectl describe application -n dev ${{ env.COMPONENT }} || true
+      - name: Describe ${{ inputs.component }} application # zizmor: ignore[template-injection]
+        run: kubectl describe application -n dev ${{ inputs.component }} || true
 
       - name: Setup Test environment
         run: |
@@ -138,18 +138,18 @@ jobs:
           echo "Deployment packages uploaded to catalog!"
 
       - name: Redeploy and Rebuild Component
-        working-directory: app-orch-deployment/${{ env.COMPONENT }} # zizmor: ignore[template-injection]
+        working-directory: app-orch-deployment/${{ inputs.component }} # zizmor: ignore[template-injection]
         run: |
-          echo "Redeploying and rebuilding component ${{ env.COMPONENT }}"
+          echo "Redeploying and rebuilding component ${{ inputs.component }}"
           make coder-redeploy
           make coder-rebuild
 
       - name: Run Component Tests
-        working-directory: app-orch-deployment/${{ env.COMPONENT }} # zizmor: ignore[template-injection]
+        working-directory: app-orch-deployment/${{ inputs.component }} # zizmor: ignore[template-injection]
         run: |
-          echo "Running component tests for ${{ env.COMPONENT }}"
+          echo "Running component tests for ${{ inputs.component }}"
           make component-test
-          echo "${{ env.COMPONENT }} component tests done!"
+          echo "${{ inputs.component }} component tests done!"
 
       - name: Get Argo diagnostic information
         if: ${{ failure() }}
