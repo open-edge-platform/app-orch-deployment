@@ -19,7 +19,7 @@ on:
         description: 'The branch, tag or SHA to checkout EMF'
         required: true
         type: string
-        default: 'fix_deploy_edge_cluster'
+        default: '39c68d470051ab5e3ade750ebb11044718d76e10'
 permissions:
   contents: read
 
@@ -31,5 +31,5 @@ jobs:
     with:
       component: app-deployment-manager
       use-enic: true
-      emf-branch: ${{ inputs.emf-branch || 'fix_deploy_edge_cluster' }}
+      emf-branch: ${{ inputs.emf-branch || '39c68d470051ab5e3ade750ebb11044718d76e10' }}
     secrets: inherit # zizmor: ignore[secrets-inherit]
