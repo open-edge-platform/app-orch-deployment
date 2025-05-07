@@ -1,0 +1,10 @@
+go 1.24.0
+
+use (
+	./app-deployment-manager
+	./app-deployment-manager/api/nbi/v2
+	./app-interconnect
+	./app-resource-manager
+	./app-resource-manager/api/nbi/v2
+	./app-service-proxy
+)
