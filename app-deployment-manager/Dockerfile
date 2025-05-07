@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Build the manager binary
-FROM golang:1.24.2 AS builder
+FROM golang:1.24.2@sha256:d9db32125db0c3a680cfb7a1afcaefb89c898a075ec148fdc2f0f646cc2ed509 AS builder
 ARG TARGETOS
 ARG TARGETARCH
 ENV CGO_ENABLED=0
@@ -37,7 +37,7 @@ RUN GOOS=${TARGETOS:-linux} GOARCH=amd64 go build \
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot
+FROM gcr.io/distroless/static:nonroot@sha256:c0f429e16b13e583da7e5a6ec20dd656d325d88e6819cafe0adb0828976529dc
 # Use image below for development
 #FROM gcr.io/distroless/static:debug
 

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Build the app-service-proxy binary
-FROM golang:1.24.2-bookworm AS build
+FROM golang:1.24.2-bookworm@sha256:79390b5e5af9ee6e7b1173ee3eac7fadf6751a545297672916b59bfa0ecf6f71 AS build
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
 ARG MAKE_TARGET=go-build
@@ -37,7 +37,7 @@ RUN CGO_ENABLED=0 \
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 # FIXME: Use debug image for development
 # From: https://github.com/GoogleContainerTools/distroless
-FROM gcr.io/distroless/static-debian12:nonroot AS app-service-proxy
+FROM gcr.io/distroless/static-debian12:nonroot@sha256:c0f429e16b13e583da7e5a6ec20dd656d325d88e6819cafe0adb0828976529dc AS app-service-proxy
 
 # Run as non-root user
 USER nonroot
