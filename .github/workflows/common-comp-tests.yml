@@ -108,7 +108,7 @@ jobs:
           mage router:stop router:start || true
           echo "Router restarted"
 
-      - name: Describe ${{ env.COMPONENT }} application
+      - name: Describe ${{ env.COMPONENT }} application # zizmor: ignore[template-injection]
         run: kubectl describe application -n dev ${{ env.COMPONENT }} || true
 
       - name: Setup Test environment
@@ -138,14 +138,14 @@ jobs:
           echo "Deployment packages uploaded to catalog!"
 
       - name: Redeploy and Rebuild Component
-        working-directory: app-orch-deployment/${{ env.COMPONENT }}
+        working-directory: app-orch-deployment/${{ env.COMPONENT }} # zizmor: ignore[template-injection]
         run: |
           echo "Redeploying and rebuilding component ${{ env.COMPONENT }}"
           make coder-redeploy
           make coder-rebuild
 
       - name: Run Component Tests
-        working-directory: app-orch-deployment/${{ env.COMPONENT }}
+        working-directory: app-orch-deployment/${{ env.COMPONENT }} # zizmor: ignore[template-injection]
         run: |
           echo "Running component tests for ${{ env.COMPONENT }}"
           make component-test
