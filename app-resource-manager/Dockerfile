@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-FROM golang:1.24.2-bookworm AS build
+FROM golang:1.24.2-bookworm@sha256:79390b5e5af9ee6e7b1173ee3eac7fadf6751a545297672916b59bfa0ecf6f71 AS build
 
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
@@ -34,7 +34,7 @@ RUN CGO_ENABLED=0 \
     make ${MAKE_TARGET}
 
 # From: https://github.com/GoogleContainerTools/distroless
-FROM gcr.io/distroless/static-debian12:nonroot AS app-resource-manager
+FROM gcr.io/distroless/static-debian12:nonroot@sha256:c0f429e16b13e583da7e5a6ec20dd656d325d88e6819cafe0adb0828976529dc AS app-resource-manager
 
 # Run as non-root user
 USER nonroot
@@ -56,7 +56,7 @@ COPY --from=build --chown=nonroot:nonroot \
 ENTRYPOINT ["app-resource-manager"]
 
 # From: https://github.com/GoogleContainerTools/distroless
-FROM gcr.io/distroless/static-debian12:nonroot AS vnc-proxy
+FROM gcr.io/distroless/static-debian12:nonroot@sha256:c0f429e16b13e583da7e5a6ec20dd656d325d88e6819cafe0adb0828976529dc AS vnc-proxy
 
 # Run as non-root user
 USER nonroot
@@ -80,7 +80,7 @@ COPY vnc-proxy-web-ui /usr/local/html/vnc-proxy-web-ui/
 ENTRYPOINT ["vnc-proxy"]
 
 # From: https://github.com/GoogleContainerTools/distroless
-FROM gcr.io/distroless/static-debian12:nonroot AS rest-proxy
+FROM gcr.io/distroless/static-debian12:nonroot@sha256:c0f429e16b13e583da7e5a6ec20dd656d325d88e6819cafe0adb0828976529dc AS rest-proxy
 
 # Run as non-root user
 USER nonroot
