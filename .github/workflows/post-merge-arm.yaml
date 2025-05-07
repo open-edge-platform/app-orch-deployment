@@ -35,4 +35,4 @@ jobs:
       prefix_tag_separator: "/"
       project_folder: "app-resource-manager"
     secrets:
-      inherit
+      inherit # zizmor: ignore[secrets-inherit]

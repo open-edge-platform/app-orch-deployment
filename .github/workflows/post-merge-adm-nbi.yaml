@@ -35,4 +35,4 @@ jobs:
       prefix_tag_separator: "/"
       project_folder: "app-deployment-manager/api/nbi/v2"
     secrets:
-      inherit
+      inherit # zizmor: ignore[secrets-inherit]

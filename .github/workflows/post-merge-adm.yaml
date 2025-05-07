@@ -35,4 +35,4 @@ jobs:
       prefix_tag_separator: "/"
       project_folder: "app-deployment-manager"
     secrets:
-      inherit
+      inherit # zizmor: ignore[secrets-inherit]

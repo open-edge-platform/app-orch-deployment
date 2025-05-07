@@ -32,4 +32,4 @@ jobs:
       component: app-deployment-manager
       use-enic: true
       emf-branch: ${{ inputs.emf-branch || 'fix_deploy_edge_cluster' }}
-    secrets: inherit
+    secrets: inherit # zizmor: ignore[secrets-inherit]
