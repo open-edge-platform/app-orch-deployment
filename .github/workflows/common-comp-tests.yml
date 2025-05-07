@@ -108,8 +108,8 @@ jobs:
           mage router:stop router:start || true
           echo "Router restarted"
 
-      - name: Describe $COMPONENT
-        run: kubectl describe application -n dev $COMPONENT
+      - name: Describe ${{ env.COMPONENT }} application
+        run: kubectl describe application -n dev ${{ env.COMPONENT }} || true
 
       - name: Setup Test environment
         run: |
@@ -138,18 +138,18 @@ jobs:
           echo "Deployment packages uploaded to catalog!"
 
       - name: Redeploy and Rebuild Component
-        working-directory: app-orch-deployment/$COMPONENT
+        working-directory: app-orch-deployment/${{ env.COMPONENT }}
         run: |
-          echo "Redeploying and rebuilding component $COMPONENT"
+          echo "Redeploying and rebuilding component ${{ env.COMPONENT }}"
           make coder-redeploy
           make coder-rebuild
 
       - name: Run Component Tests
-        working-directory: app-orch-deployment/$COMPONENT
+        working-directory: app-orch-deployment/${{ env.COMPONENT }}
         run: |
-          echo "Running component tests for $COMPONENT"
+          echo "Running component tests for ${{ env.COMPONENT }}"
           make component-test
-          echo "$COMPONENT component tests done!"
+          echo "${{ env.COMPONENT }} component tests done!"
 
       - name: Get Argo diagnostic information
         if: ${{ failure() }}
