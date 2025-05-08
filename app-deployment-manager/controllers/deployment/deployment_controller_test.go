@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	fleetv1alpha1 "github.com/rancher/fleet/pkg/apis/fleet.cattle.io/v1alpha1"
-	"github.com/rancher/wrangler/pkg/genericcondition"
+	"github.com/rancher/wrangler/v3/pkg/genericcondition"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -1115,11 +1115,13 @@ var _ = Describe("Deployment controller", func() {
 					ForceSyncGeneration: generation,
 				},
 				Status: fleetv1alpha1.GitRepoStatus{
-					Conditions: []genericcondition.GenericCondition{
-						{
-							Type:    "Ready",
-							Status:  v1.ConditionFalse,
-							Message: "Unable to continue",
+					StatusBase: fleetv1alpha1.StatusBase{
+						Conditions: []genericcondition.GenericCondition{
+							{
+								Type:    "Ready",
+								Status:  v1.ConditionFalse,
+								Message: "Unable to continue",
+							},
 						},
 					},
 				},
@@ -1246,15 +1248,17 @@ var _ = Describe("Deployment controller", func() {
 					ForceSyncGeneration: generation,
 				},
 				Status: fleetv1alpha1.GitRepoStatus{
-					Conditions: []genericcondition.GenericCondition{
-						{
-							Type:   "Ready",
-							Status: v1.ConditionFalse,
-						},
-						{
-							Type:    "Stalled",
-							Status:  v1.ConditionTrue,
-							Message: "App is stalled",
+					StatusBase: fleetv1alpha1.StatusBase{
+						Conditions: []genericcondition.GenericCondition{
+							{
+								Type:   "Ready",
+								Status: v1.ConditionFalse,
+							},
+							{
+								Type:    "Stalled",
+								Status:  v1.ConditionTrue,
+								Message: "App is stalled",
+							},
 						},
 					},
 				},

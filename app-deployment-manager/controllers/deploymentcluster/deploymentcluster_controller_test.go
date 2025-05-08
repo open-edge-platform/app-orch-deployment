@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	fleetv1alpha1 "github.com/rancher/fleet/pkg/apis/fleet.cattle.io/v1alpha1"
-	"github.com/rancher/wrangler/pkg/genericcondition"
+	"github.com/rancher/wrangler/v3/pkg/genericcondition"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -144,12 +144,8 @@ var _ = Describe("DeploymentCluster controller", func() {
 				BundleSummary:  v1beta1.BundleSummary{},
 				ResourceCounts: v1beta1.ResourceCounts{},
 				FleetAgentStatus: v1beta1.FleetAgentStatus{
-					LastSeen:          metav1.Now(),
-					Namespace:         namespace,
-					NonReadyNodes:     "",
-					ReadyNodes:        "",
-					NonReadyNodeNames: []string{},
-					ReadyNodeNames:    []string{},
+					LastSeen:  metav1.Now(),
+					Namespace: namespace,
 				},
 				ClusterDisplay: v1beta1.ClusterDisplay{},
 			},

@@ -62,7 +62,7 @@ var _ = Describe("Cluster Controller", func() {
 				Ready:        testClusterCR1BundleSummaryValues,
 				DesiredReady: testClusterCR1BundleSummaryValues,
 			},
-			ResourceCounts: fleetv1alpha1.GitRepoResourceCounts{
+			ResourceCounts: fleetv1alpha1.ResourceCounts{
 				Ready:        testClusterCR1BundleResourceCounts,
 				DesiredReady: testClusterCR1BundleResourceCounts,
 				WaitApplied:  testClusterCR1BundleResourceCounts,

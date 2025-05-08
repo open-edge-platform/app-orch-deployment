@@ -23,7 +23,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	fleetv1alpha1 "github.com/rancher/fleet/pkg/apis/fleet.cattle.io/v1alpha1"
-	"github.com/rancher/wrangler/pkg/genericcondition"
+	"github.com/rancher/wrangler/v3/pkg/genericcondition"
 	"github.com/stretchr/testify/assert"
 	"github.com/undefinedlabs/go-mpatch"
 	"google.golang.org/grpc/metadata"
