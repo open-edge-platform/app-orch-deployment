@@ -33,4 +33,4 @@ jobs:
       component: app-deployment-manager
       use-enic: true
       emf-branch: ${{ inputs.emf-branch || '39c68d470051ab5e3ade750ebb11044718d76e10' }}
-    secrets: inherit
+    secrets: inherit # zizmor: ignore[secrets-inherit]
