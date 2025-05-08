@@ -23,6 +23,7 @@ on:
 permissions:
   contents: read
 
+
 jobs:
   component-test-adm:
     if: ${{ inputs.run-adm || github.event_name == 'schedule' || github.event.label.name == 'run-adm-component-tests' }}

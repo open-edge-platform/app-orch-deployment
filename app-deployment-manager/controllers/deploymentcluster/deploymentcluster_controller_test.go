@@ -5,14 +5,13 @@
 package deploymentcluster
 
 import (
-	"encoding/json"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/fleet"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	fleetv1alpha1 "github.com/rancher/fleet/pkg/apis/fleet.cattle.io/v1alpha1"
-	"github.com/rancher/wrangler/pkg/genericcondition"
+	"github.com/rancher/wrangler/v3/pkg/genericcondition"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -43,8 +42,6 @@ var _ = Describe("DeploymentCluster controller", func() {
 		timeout  = time.Second * 10
 		duration = time.Second * 10
 		interval = time.Millisecond * 250
-
-		jsonValues = `{"global":{"fleet":{"deploymentGeneration": 1}}}`
 	)
 
 	var (
@@ -56,7 +53,6 @@ var _ = Describe("DeploymentCluster controller", func() {
 
 	BeforeEach(func() {
 		var jsonmap map[string]any
-		Expect(json.Unmarshal([]byte(jsonValues), &jsonmap)).To(Succeed())
 
 		bd1 = &fleetv1alpha1.BundleDeployment{
 			TypeMeta: metav1.TypeMeta{},
@@ -71,6 +67,7 @@ var _ = Describe("DeploymentCluster controller", func() {
 					string(v1beta1.FleetClusterID):         clusterId,
 					string(v1beta1.FleetClusterNamespace):  namespace,
 					string(v1beta1.AppOrchActiveProjectID): activeProjectId,
+					string(v1beta1.DeploymentGeneration):   "1",
 				},
 			},
 			Spec: fleetv1alpha1.BundleDeploymentSpec{
@@ -105,6 +102,7 @@ var _ = Describe("DeploymentCluster controller", func() {
 					string(v1beta1.DeploymentID):          deploymentId,
 					string(v1beta1.FleetClusterID):        clusterId,
 					string(v1beta1.FleetClusterNamespace): namespace,
+					string(v1beta1.DeploymentGeneration):  "1",
 				},
 			},
 			Spec: fleetv1alpha1.BundleDeploymentSpec{
@@ -144,12 +142,8 @@ var _ = Describe("DeploymentCluster controller", func() {
 				BundleSummary:  v1beta1.BundleSummary{},
 				ResourceCounts: v1beta1.ResourceCounts{},
 				FleetAgentStatus: v1beta1.FleetAgentStatus{
-					LastSeen:          metav1.Now(),
-					Namespace:         namespace,
-					NonReadyNodes:     "",
-					ReadyNodes:        "",
-					NonReadyNodeNames: []string{},
-					ReadyNodeNames:    []string{},
+					LastSeen:  metav1.Now(),
+					Namespace: namespace,
 				},
 				ClusterDisplay: v1beta1.ClusterDisplay{},
 			},

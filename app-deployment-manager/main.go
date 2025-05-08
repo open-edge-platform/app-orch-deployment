@@ -8,13 +8,11 @@ import (
 	"context"
 	"flag"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/controllers/capi"
-	"os"
-
 	"github.com/open-edge-platform/orch-library/go/dazl"
 	_ "github.com/open-edge-platform/orch-library/go/dazl/zap"
-
 	ctrllogger "github.com/open-edge-platform/orch-library/go/pkg/logging/k8s"
 	corev1 "k8s.io/api/core/v1"
+	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.

@@ -10,6 +10,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -21,7 +22,7 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils/ratelimiter"
 	"github.com/open-edge-platform/orch-library/go/dazl"
 	fleetv1alpha1 "github.com/rancher/fleet/pkg/apis/fleet.cattle.io/v1alpha1"
-	"github.com/rancher/wrangler/pkg/genericcondition"
+	"github.com/rancher/wrangler/v3/pkg/genericcondition"
 	"google.golang.org/grpc/metadata"
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -32,7 +33,6 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/utils/clock"
-	"sigs.k8s.io/cli-utils/pkg/jsonpath"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/v1beta1"
@@ -237,15 +237,12 @@ func GetAppName(bd *fleetv1alpha1.BundleDeployment) string {
 }
 
 func GetDeploymentGeneration(bd *fleetv1alpha1.BundleDeployment) int64 {
-	if bd.Spec.Options.Helm != nil && bd.Spec.Options.Helm.Values != nil {
-		values := bd.Spec.Options.Helm.Values.Data
-		result, err := jsonpath.Get(values, `$.global.fleet.deploymentGeneration`)
-		if err == nil && len(result) == 1 {
-			// jsonpath will return an int result
-			if gen, ok := result[0].(int); ok {
-				return int64(gen)
-			}
+	if genStr, ok := bd.Labels["deploymentGeneration"]; ok {
+		gen, err := strconv.ParseInt(genStr, 10, 64)
+		if err == nil {
+			return gen
 		}
+		log.Error("failed to parse deploymentGeneration: %v", err)
 	}
 	return 0
 }

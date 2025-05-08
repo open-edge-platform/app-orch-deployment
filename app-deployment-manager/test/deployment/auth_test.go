@@ -28,7 +28,7 @@ func (s *TestSuite) TestListDeploymentsAuthProjectID() {
 func (s *TestSuite) TestGetDeploymentAuthProjectID() {
 	admClient, err := utils.CreateClient(deploymentRESTServerUrl, token, "invalidprojectid")
 	s.NoError(err)
-	
+
 	deployID, retCode, err := utils.StartDeployment(admclient, dpConfigName, "targeted", 10)
 	s.Equal(retCode, http.StatusOK)
 	s.NoError(err)

@@ -88,12 +88,8 @@ type ResourceCounts struct {
 }
 
 type FleetAgentStatus struct {
-	LastSeen          metav1.Time `json:"lastSeen,omitempty"`
-	Namespace         string      `json:"namespace,omitempty"`
-	NonReadyNodes     string      `json:"nonReadyNodes,omitempty"`
-	ReadyNodes        string      `json:"readyNodes,omitempty"`
-	NonReadyNodeNames []string    `json:"nonReadyNodeNames,omitempty"`
-	ReadyNodeNames    []string    `json:"readyNodeNames,omitempty"`
+	LastSeen  metav1.Time `json:"lastSeen,omitempty"`
+	Namespace string      `json:"namespace,omitempty"`
 }
 
 type ClusterDisplay struct {
@@ -160,7 +156,7 @@ func (c *ClusterStatus) deepCopyBundleSummary(src fleetv1alpha1.BundleSummary) B
 	}
 }
 
-func (c *ClusterStatus) deepCopyResourceCounts(src fleetv1alpha1.GitRepoResourceCounts) ResourceCounts {
+func (c *ClusterStatus) deepCopyResourceCounts(src fleetv1alpha1.ResourceCounts) ResourceCounts {
 	return ResourceCounts{
 		Ready:        fmt.Sprintf("%d", src.Ready),
 		DesiredReady: fmt.Sprintf("%d", src.DesiredReady),
@@ -174,26 +170,16 @@ func (c *ClusterStatus) deepCopyResourceCounts(src fleetv1alpha1.GitRepoResource
 }
 
 func (c *ClusterStatus) deepCopyAgentStatus(src fleetv1alpha1.AgentStatus) FleetAgentStatus {
-	nonReadyNodeNames := make([]string, 0)
-	nonReadyNodeNames = append(nonReadyNodeNames, src.NonReadyNodeNames...)
-	readyNodeNames := make([]string, 0)
-	readyNodeNames = append(readyNodeNames, src.ReadyNodeNames...)
 
 	return FleetAgentStatus{
-		LastSeen:          src.LastSeen,
-		Namespace:         src.Namespace,
-		NonReadyNodes:     fmt.Sprintf("%d", src.NonReadyNodes),
-		ReadyNodes:        fmt.Sprintf("%d", src.ReadyNodes),
-		NonReadyNodeNames: nonReadyNodeNames,
-		ReadyNodeNames:    readyNodeNames,
+		LastSeen:  src.LastSeen,
+		Namespace: src.Namespace,
 	}
 }
 
 func (c *ClusterStatus) deepCopyClusterDisplay(src fleetv1alpha1.ClusterDisplay) ClusterDisplay {
 	result := ClusterDisplay{
 		ReadyBundles: src.ReadyBundles,
-		ReadyNodes:   src.ReadyNodes,
-		SampleNode:   src.SampleNode,
 		State:        src.State,
 	}
 

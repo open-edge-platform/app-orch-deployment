@@ -36,6 +36,7 @@ const (
 	LabelAppName          LabelType = "app.edge-orchestrator.intel.com/app-name"
 	LabelBundleName       LabelType = "app.edge-orchestrator.intel.com/bundle-name"
 	LabelBundleType       LabelType = "app.edge-orchestrator.intel.com/bundle-type"
+	DeploymentGeneration  LabelType = "deploymentGeneration"
 
 	ClusterName   LabelType = "edge-orchestrator.intel.com/clustername"
 	CapiInfraName LabelType = "edge-orchestrator.intel.com/capiInfraName"

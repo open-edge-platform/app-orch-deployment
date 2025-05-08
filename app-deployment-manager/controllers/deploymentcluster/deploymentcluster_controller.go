@@ -103,10 +103,10 @@ type ClusterInfo struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
 func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+
 	condstatus := v1.ConditionFalse
 	reason := "BundleDeploymentsNotReady"
 	log := log.FromContext(ctx)
-
 	dc := &v1beta1.DeploymentCluster{}
 	if err := r.Client.Get(ctx, req.NamespacedName, dc); err != nil {
 		if apierrors.IsNotFound(err) {

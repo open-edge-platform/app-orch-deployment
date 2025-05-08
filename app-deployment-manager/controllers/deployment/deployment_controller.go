@@ -735,6 +735,7 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 	labels := map[string]string{
 		string(v1beta1.DeploymentID): d.GetId(),
 	}
+
 	if err := r.List(ctx, &deploymentClusters, client.MatchingLabels(labels)); err != nil {
 		return err
 	}
