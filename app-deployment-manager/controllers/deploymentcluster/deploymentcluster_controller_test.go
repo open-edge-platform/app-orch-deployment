@@ -5,7 +5,6 @@
 package deploymentcluster
 
 import (
-	"encoding/json"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/fleet"
 	"time"
 
@@ -43,8 +42,6 @@ var _ = Describe("DeploymentCluster controller", func() {
 		timeout  = time.Second * 10
 		duration = time.Second * 10
 		interval = time.Millisecond * 250
-
-		jsonValues = `{"global":{"fleet":{"deploymentGeneration": 1}}}`
 	)
 
 	var (
@@ -56,7 +53,6 @@ var _ = Describe("DeploymentCluster controller", func() {
 
 	BeforeEach(func() {
 		var jsonmap map[string]any
-		Expect(json.Unmarshal([]byte(jsonValues), &jsonmap)).To(Succeed())
 
 		bd1 = &fleetv1alpha1.BundleDeployment{
 			TypeMeta: metav1.TypeMeta{},
@@ -71,6 +67,7 @@ var _ = Describe("DeploymentCluster controller", func() {
 					string(v1beta1.FleetClusterID):         clusterId,
 					string(v1beta1.FleetClusterNamespace):  namespace,
 					string(v1beta1.AppOrchActiveProjectID): activeProjectId,
+					string(v1beta1.DeploymentGeneration):   "1",
 				},
 			},
 			Spec: fleetv1alpha1.BundleDeploymentSpec{
@@ -105,6 +102,7 @@ var _ = Describe("DeploymentCluster controller", func() {
 					string(v1beta1.DeploymentID):          deploymentId,
 					string(v1beta1.FleetClusterID):        clusterId,
 					string(v1beta1.FleetClusterNamespace): namespace,
+					string(v1beta1.DeploymentGeneration):  "1",
 				},
 			},
 			Spec: fleetv1alpha1.BundleDeploymentSpec{
