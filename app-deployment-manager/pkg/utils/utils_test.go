@@ -5,7 +5,6 @@ package utils
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -245,22 +244,14 @@ var _ = Describe("Test Utils", func() {
 	})
 
 	Describe("Test GetDeploymentGeneration", func() {
-		var jsonmap map[string]any
 		var expected int64
-
-		jsonValues := `{"global":{"fleet":{"deploymentGeneration": 1}}}`
-		Expect(json.Unmarshal([]byte(jsonValues), &jsonmap)).To(Succeed())
 
 		It("Returns the deployment generation when value is present", func() {
 			expected = 1
 			v := GetDeploymentGeneration(&fleetv1alpha1.BundleDeployment{
-				Spec: fleetv1alpha1.BundleDeploymentSpec{
-					Options: fleetv1alpha1.BundleDeploymentOptions{
-						Helm: &fleetv1alpha1.HelmOptions{
-							Values: &fleetv1alpha1.GenericMap{
-								Data: jsonmap,
-							},
-						},
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"deploymentGeneration": "1",
 					},
 				},
 			})
