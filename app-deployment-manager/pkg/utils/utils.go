@@ -238,11 +238,11 @@ func GetAppName(bd *fleetv1alpha1.BundleDeployment) string {
 
 func GetDeploymentGeneration(bd *fleetv1alpha1.BundleDeployment) int64 {
 	if genStr, ok := bd.Labels["deploymentGeneration"]; ok {
-		if gen, err := strconv.ParseInt(genStr, 10, 64); err == nil {
+		gen, err := strconv.ParseInt(genStr, 10, 64)
+		if err == nil {
 			return gen
-		} else {
-			log.Error("failed to parse deploymentGeneration: %v", err)
 		}
+		log.Error("failed to parse deploymentGeneration: %v", err)
 	}
 	return 0
 }
