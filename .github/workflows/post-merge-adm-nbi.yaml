@@ -32,7 +32,7 @@ jobs:
       run_artifact: false
       run_helm_build: false
       run_helm_push: false
-      prefix_tag_separator: "/"
-      project_folder: "app-deployment-manager/api/nbi/v2"
+      prefix_tag_separator: "/v"
+      project_folder: "app-deployment-manager/api/nbi"
     secrets:
       inherit # zizmor: ignore[secrets-inherit]
