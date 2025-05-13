@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
-
 	"testing"
 
 	admClient "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
@@ -27,11 +27,6 @@ var (
 	armclient             *armClient.ClientWithResponses
 )
 
-const (
-	dpDisplayName = "nginx-test-container"
-	dpConfigName  = "nginx"
-)
-
 // TestSuite is the basic test suite
 type TestSuite struct {
 	suite.Suite
@@ -39,61 +34,69 @@ type TestSuite struct {
 	token                 string
 	projectID             string
 	deployApps            []*admClient.App
-	ArmClient             *armClient.ClientWithResponses
+	armClient             *armClient.ClientWithResponses
+	admClient             *admClient.ClientWithResponses
+	KeycloakServer        string
+	orchDomain            string
+	portForwardCmd        map[string]*exec.Cmd
 }
 
-// SetupTest sets up for each test
-func (s *TestSuite) SetupTest() {
-	s.token = token
-	s.projectID = projectID
-	s.ResourceRESTServerUrl = resourceRESTServerUrl
-	s.ArmClient = armclient
-	s.deployApps = deployApps
-	s.NotEmpty(s.deployApps)
-}
-
-func TestContainerSuite(t *testing.T) {
-	portForwardCmd, err := utils.StartPortForwarding()
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-	defer utils.TearDownPortForward(portForwardCmd)
+// SetupSuite sets up the test suite once before all tests
+func (s *TestSuite) SetupSuite() {
 	autoCert, err := strconv.ParseBool(os.Getenv("AUTO_CERT"))
-	orchDomain := os.Getenv("ORCH_DOMAIN")
-	if err != nil || !autoCert || orchDomain == "" {
-		orchDomain = "kind.internal"
+	s.orchDomain = os.Getenv("ORCH_DOMAIN")
+	if err != nil || !autoCert || s.orchDomain == "" {
+		s.orchDomain = "kind.internal"
 	}
-	keycloakServer := fmt.Sprintf("keycloak.%s", orchDomain)
+	s.KeycloakServer = fmt.Sprintf("keycloak.%s", s.orchDomain)
 
-	token, err = utils.SetUpAccessToken(keycloakServer, fmt.Sprintf("%s-edge-mgr", utils.SampleProject), utils.DefaultPass)
+	s.token, err = utils.SetUpAccessToken(s.KeycloakServer, fmt.Sprintf("%s-edge-mgr", utils.SampleProject), utils.DefaultPass)
 	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-
-	projectID, err = utils.GetProjectID(context.TODO())
-	if err != nil {
-		t.Fatalf("error: %v", err)
+		s.T().Fatalf("error: %v", err)
 	}
 
-	resourceRESTServerUrl = fmt.Sprintf("http://%s:%s", utils.RestAddressPortForward, utils.ArmPortForwardRemote)
-	armclient, err = utils.CreateArmClient(resourceRESTServerUrl, token, projectID)
+	s.projectID, err = utils.GetProjectID(context.TODO())
 	if err != nil {
-		t.Fatalf("error: %v", err)
+		s.T().Fatalf("error: %v", err)
+	}
+	s.portForwardCmd, err = utils.StartPortForwarding()
+	if err != nil {
+		s.T().Fatalf("error: %v", err)
+	}
+
+	s.ResourceRESTServerUrl = fmt.Sprintf("http://%s:%s", utils.RestAddressPortForward, utils.ArmPortForwardRemote)
+	s.armClient, err = utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, s.projectID)
+	if err != nil {
+		s.T().Fatalf("error: %v", err)
 	}
 
 	deploymentRESTServerUrl := fmt.Sprintf("http://%s:%s", utils.RestAddressPortForward, utils.AdmPortForwardRemote)
-	admClientInstance, err := admClient.NewClientWithResponses(deploymentRESTServerUrl, admClient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-		utils.AddRestAuthHeader(req, token, projectID)
+	s.admClient, err = admClient.NewClientWithResponses(deploymentRESTServerUrl, admClient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
+		utils.AddRestAuthHeader(req, s.token, s.projectID)
 		return nil
 	}))
 	if err != nil {
-		t.Fatalf("error: %v", err)
+		s.T().Fatalf("error: %v", err)
 	}
 
-	deployApps, err = utils.CreateDeployment(admClientInstance, dpConfigName, dpDisplayName, 10)
+	s.deployApps, err = utils.CreateDeployment(s.admClient, utils.NginxAppName, utils.NginxAppName, 10)
 	if err != nil {
-		t.Fatalf("error: %v", err)
+		s.T().Fatalf("error: %v", err)
 	}
 
+	s.NotEmpty(s.deployApps)
+}
+
+// SetupTest can be used for per-test setup if needed
+func (s *TestSuite) SetupTest() {
+	// Leave empty or add per-test setup logic here
+}
+
+// TearDownSuite cleans up after the entire test suite
+func (s *TestSuite) TearDownSuite() {
+	utils.TearDownPortForward(s.portForwardCmd)
+}
+
+func TestContainerSuite(t *testing.T) {
 	suite.Run(t, new(TestSuite))
 }

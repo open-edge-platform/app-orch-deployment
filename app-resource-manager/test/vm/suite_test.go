@@ -22,12 +22,8 @@ import (
 )
 
 const (
-	VMRunning         = string(armClient.VirtualMachineStatusStateSTATERUNNING)
-	VMStopped         = string(armClient.VirtualMachineStatusStateSTATESTOPPED)
-	dpDisplayName     = "cirros-container-disk-demo"
-	vmExtDisplayName  = "virt-extension"
-	dpConfigName      = "cirros-container-disk"
-	vmExtDPConfigName = "virt-extension"
+	VMRunning = string(armClient.VirtualMachineStatusStateSTATERUNNING)
+	VMStopped = string(armClient.VirtualMachineStatusStateSTATESTOPPED)
 )
 
 // TestSuite is the basic test suite
@@ -87,12 +83,12 @@ func (s *TestSuite) SetupSuite() {
 		s.T().Fatalf("error: %v", err)
 	}
 
-	_, err = utils.CreateDeployment(s.admClient, vmExtDPConfigName, vmExtDisplayName, 30)
+	_, err = utils.CreateDeployment(s.admClient, utils.VirtualizationExtensionAppName, utils.VirtualizationExtensionAppName, 30)
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
 
-	s.deployApps, err = utils.CreateDeployment(s.admClient, dpConfigName, dpDisplayName, 10)
+	s.deployApps, err = utils.CreateDeployment(s.admClient, utils.CirrosAppName, utils.CirrosAppName, 10)
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
@@ -107,9 +103,9 @@ func (s *TestSuite) SetupTest() {
 
 // TearDownSuite cleans up after the entire test suite
 func (s *TestSuite) TearDownSuite() {
-	err := utils.DeleteAndRetryUntilDeleted(s.admClient, dpDisplayName, 10, 10*time.Second)
+	err := utils.DeleteAndRetryUntilDeleted(s.admClient, utils.CirrosAppName, 10, 10*time.Second)
 	s.NoError(err)
-	err = utils.DeleteAndRetryUntilDeleted(s.admClient, vmExtDisplayName, 10, 10*time.Second)
+	err = utils.DeleteAndRetryUntilDeleted(s.admClient, utils.VirtualizationExtensionAppName, 10, 10*time.Second)
 	s.NoError(err)
 	utils.TearDownPortForward(s.portForwardCmd)
 

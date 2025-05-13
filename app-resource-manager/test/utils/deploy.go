@@ -12,30 +12,34 @@ import (
 )
 
 const (
-	TestClusterID = "demo-cluster"
-	retryCount    = 10
+	TestClusterID                  = "demo-cluster"
+	retryCount                     = 10
+	NginxAppName                   = "nginx"
+	CirrosAppName                  = "cirros-container-disk"
+	WordpressAppName               = "wordpress"
+	VirtualizationExtensionAppName = "virtualization-extension"
 )
 
 var dpConfigs = map[string]any{
-	"nginx": map[string]any{
+	NginxAppName: map[string]any{
 		"appNames":             []string{"nginx"},
 		"deployPackage":        "nginx-app",
 		"deployPackageVersion": "0.1.0",
 		"profileName":          "testing-default",
 	},
-	"cirros-container-disk": map[string]any{
+	CirrosAppName: map[string]any{
 		"appNames":             []string{"cirros-container-disk"},
 		"deployPackage":        "cirros-container-disk",
 		"deployPackageVersion": "0.1.0",
 		"profileName":          "default",
 	},
-	"virt-extension": map[string]any{
+	VirtualizationExtensionAppName: map[string]any{
 		"appNames":             []string{"kubevirt", "cdi", "kube-helper"},
 		"deployPackage":        "virtualization",
 		"deployPackageVersion": "0.3.7",
 		"profileName":          "with-software-emulation-profile-nosm",
 	},
-	"wordpress": map[string]any{
+	WordpressAppName: map[string]any{
 		"appNames":             []string{"wordpress"},
 		"deployPackage":        "wordpress",
 		"deployPackageVersion": "0.1.1",
