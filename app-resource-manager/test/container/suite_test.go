@@ -13,7 +13,6 @@ import (
 
 	admClient "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 	armClient "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/deploy"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 	"github.com/stretchr/testify/suite"
 )
@@ -63,7 +62,7 @@ func TestContainerSuite(t *testing.T) {
 	}
 	defer utils.TearDownPortForward(portForwardCmd)
 
-	token, err = utils.SetUpAccessToken(KeycloakServer)
+	token, err = utils.SetUpAccessToken(KeycloakServer, fmt.Sprintf("%s-edge-mgr", utils.SampleProject), utils.DefaultPass)
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -88,7 +87,7 @@ func TestContainerSuite(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 
-	deployApps, err = deploy.CreateDeployment(admClientInstance, dpConfigName, dpDisplayName, 10)
+	deployApps, err = utils.CreateDeployment(admClientInstance, dpConfigName, dpDisplayName, 10)
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}

@@ -4,8 +4,8 @@
 
 package container
 
-// TestList tests both app workload and service endpoints
-func (s *TestSuite) TestList() {
+// TestListWorkloads tests listing app workloads
+func (s *TestSuite) TestListWorkloads() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
 		appWorkloads, retCode, err := AppWorkloadsList(s.ArmClient, appID)
@@ -14,12 +14,16 @@ func (s *TestSuite) TestList() {
 		s.NotEmpty(appWorkloads)
 
 		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
+		s.Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		s.T().Logf("app workloads len: %+v\n", len(*appWorkloads))
+	}
+}
 
+// TestListEndpoints tests listing app endpoints
+func (s *TestSuite) TestListEndpoints() {
+	for _, app := range s.deployApps {
+		appID := *app.Id
 		appEndpoints, retCode, err := AppEndpointsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
@@ -37,9 +41,7 @@ func (s *TestSuite) TestDeletePod() {
 		s.NotEmpty(appWorkloads)
 
 		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
+		s.Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		for _, appWorkload := range *appWorkloads {
 			retCode, err := PodDelete(s.ArmClient, *appWorkload.Namespace, appWorkload.Name, appID)

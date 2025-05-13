@@ -31,17 +31,17 @@ const InvalidJWT = "eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9.ey" +
 const (
 	SampleOrg     = "sample-org"
 	SampleProject = "sample-project"
-	kcPass        = "ChangeMeOn1stLogin!"
+	DefaultPass   = "ChangeMeOn1stLogin!"
 )
 
-func SetUpAccessToken(server string) (string, error) {
+func SetUpAccessToken(server string, username string, password string) (string, error) {
 	c := &http.Client{
 		Transport: &http.Transport{},
 	}
 	data := url.Values{}
 	data.Set("client_id", "system-client")
-	data.Set("username", fmt.Sprintf("%s-edge-mgr", SampleProject))
-	data.Set("password", kcPass)
+	data.Set("username", username)
+	data.Set("password", password)
 	data.Set("grant_type", "password")
 	url := "https://" + server + "/realms/master/protocol/openid-connect/token"
 	req, err := http.NewRequest(http.MethodPost,
