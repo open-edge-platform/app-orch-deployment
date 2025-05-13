@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"testing"
 	"time"
@@ -40,6 +41,7 @@ type TestSuite struct {
 	admClient             *admClient.ClientWithResponses
 	KeycloakServer        string
 	orchDomain            string
+	portForwardCmd        map[string]*exec.Cmd
 }
 
 // SetupSuite sets up the test suite once before all tests
@@ -57,6 +59,10 @@ func (s *TestSuite) SetupSuite() {
 	}
 
 	s.projectID, err = utils.GetProjectID(context.TODO())
+	if err != nil {
+		s.T().Fatalf("error: %v", err)
+	}
+	s.portForwardCmd, err = utils.StartPortForwarding()
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
@@ -105,15 +111,10 @@ func (s *TestSuite) TearDownSuite() {
 	s.NoError(err)
 	err = utils.DeleteAndRetryUntilDeleted(s.admClient, vmExtDisplayName, 10, 10*time.Second)
 	s.NoError(err)
+	utils.TearDownPortForward(s.portForwardCmd)
 
 }
 
 func TestVMSuite(t *testing.T) {
-	portForwardCmd, err := utils.StartPortForwarding()
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-	defer utils.TearDownPortForward(portForwardCmd)
-
 	suite.Run(t, new(TestSuite))
 }

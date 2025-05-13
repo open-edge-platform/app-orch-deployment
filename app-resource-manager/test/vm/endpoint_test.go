@@ -39,9 +39,7 @@ func (s *TestSuite) TestVMStart() {
 		s.NotEmpty(appWorkloads)
 
 		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
+		s.Assert().Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		for _, appWorkload := range *appWorkloads {
 			// Stop VM if running
@@ -116,9 +114,7 @@ func (s *TestSuite) TestVMRestart() {
 		s.NotEmpty(appWorkloads)
 
 		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
+		s.Assert().Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		for _, appWorkload := range *appWorkloads {
 			currState := string(*appWorkload.VirtualMachine.Status.State)

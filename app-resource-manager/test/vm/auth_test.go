@@ -174,9 +174,7 @@ func (s *TestSuite) TestVMAuthInvalidProjectIDRestart() {
 		s.NotEmpty(appWorkloads)
 
 		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
+		s.Assert().Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		for _, appWorkload := range *appWorkloads {
 			currState := string(*appWorkload.VirtualMachine.Status.State)
@@ -212,9 +210,7 @@ func (s *TestSuite) TestVMAuthInvalidJWTRestart() {
 		s.NotEmpty(appWorkloads)
 
 		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
+		s.Assert().Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		for _, appWorkload := range *appWorkloads {
 			currState := string(*appWorkload.VirtualMachine.Status.State)
@@ -250,9 +246,7 @@ func (s *TestSuite) TestVMAuthInvalidProjectIDGetVNC() {
 		s.NotEmpty(appWorkloads)
 
 		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
+		s.Assert().Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		for _, appWorkload := range *appWorkloads {
 			retCode, err = GetVNC(armClient, appID, appWorkload.Id)
@@ -276,9 +270,7 @@ func (s *TestSuite) TestVMAuthInvalidJWTGetVNC() {
 		s.NotEmpty(appWorkloads)
 
 		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
+		s.Assert().Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		for _, appWorkload := range *appWorkloads {
 			retCode, err = GetVNC(armClient, appID, appWorkload.Id)
