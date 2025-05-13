@@ -1,4 +1,4 @@
-// SPDX-LicenseCopyrightText: 2025-present Intel Corporation
+// SPDX-FileCopyrightText: 2025-present Intel Corporation
 //
 // SPDX-License-Identifier: Apache-2.0
 

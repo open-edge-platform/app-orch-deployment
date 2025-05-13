@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025-present Intel Corporation
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package utils
 
 import (
@@ -32,20 +36,20 @@ func CloneRepository(repoURL, branch string) (string, error) {
 func CloneCirrosVM() (string, error) {
 	repoURL := "https://github.com/open-edge-platform/app-orch-catalog.git"
 	branch := "main"
-	
+
 	tempDir, err := CloneRepository(repoURL, branch)
 	if err != nil {
 		return "", err
 	}
-	
+
 	// The specific path to the cirros-vm directory within the cloned repository
 	cirrosVMPath := filepath.Join(tempDir, "app-orch-tutorials", "cirros-vm")
-	
+
 	// Verify that the directory exists
 	if _, err := os.Stat(cirrosVMPath); os.IsNotExist(err) {
 		os.RemoveAll(tempDir) // Clean up
 		return "", fmt.Errorf("cirros-vm directory not found in cloned repository")
 	}
-	
+
 	return cirrosVMPath, nil
 }
