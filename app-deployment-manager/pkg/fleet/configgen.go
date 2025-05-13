@@ -285,11 +285,13 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 		if strings.Contains(contents, PreHookString) {
 			hasPreHook = true
 		}
-
+		log.Warnf("Application %s. Check ImageRegistry: %s", app.Name, app.HelmApp.ImageRegistry)
 		if app.HelmApp.ImageRegistry != "" {
+			log.Warnf("Replace: %s Found %t", ImageRegistryURL, strings.Contains(contents, ImageRegistryURL))
 			contents = strings.Replace(contents, ImageRegistryURL, app.HelmApp.ImageRegistry, -1)
 		}
 
+		log.Warnf("Application %s. Check RegistryProjectName", app.Name)
 		if strings.Contains(contents, RegistryProjectName) {
 			projectID, err := getRegistryProjectName(d, kc)
 			if err != nil {
@@ -815,10 +817,13 @@ func WriteExtraValues(basedir string, filename string, e *ExtraValues) error {
 }
 
 func getRegistryProjectName(d *v1beta1.Deployment, kc client.Client) (string, error) {
+	log.Infof("Try to get name from nexus project %s", d.Name)
+
 	projectID := d.Labels[string(v1beta1.AppOrchActiveProjectID)]
 	if projectID == "" {
 		return "", fmt.Errorf("project-id not found in deployment labels")
 	}
+	log.Infof("Look for project-id in Nexus %s", projectID)
 
 	cfg, err := rest.InClusterConfig()
 	if err != nil {
@@ -844,7 +849,7 @@ func getRegistryProjectName(d *v1beta1.Deployment, kc client.Client) (string, er
 
 			return fmt.Sprintf("catalog-apps-%s-%s", orgName, projectName), nil
 		} else {
-			log.Debugf("Found project %v", project)
+			log.Warnf("Found project %v", project)
 		}
 	}
 
