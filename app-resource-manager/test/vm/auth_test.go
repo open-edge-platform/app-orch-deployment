@@ -16,7 +16,7 @@ func (s *TestSuite) TestVMAuthInvalidProjectIDStop() {
 
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -30,12 +30,12 @@ func (s *TestSuite) TestVMAuthInvalidProjectIDStop() {
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			// Start VM if not running
 			if currState != VMRunning {
-				retCode, err := StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
+				retCode, err := StartVirtualMachine(s.armClient, appID, appWorkload.Id)
 				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
-				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
+				err = GetVMStatus(s.armClient, appID, appWorkload.Id, VMRunning)
 				s.NoError(err)
 			}
 
@@ -54,7 +54,7 @@ func (s *TestSuite) TestVMAuthInvalidJWTStop() {
 
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -68,12 +68,12 @@ func (s *TestSuite) TestVMAuthInvalidJWTStop() {
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			// Start VM if not running
 			if currState != VMRunning {
-				retCode, err := StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
+				retCode, err := StartVirtualMachine(s.armClient, appID, appWorkload.Id)
 				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
-				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
+				err = GetVMStatus(s.armClient, appID, appWorkload.Id, VMRunning)
 				s.NoError(err)
 			}
 
@@ -92,7 +92,7 @@ func (s *TestSuite) TestVMAuthInvalidProjectIDStart() {
 
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -106,12 +106,12 @@ func (s *TestSuite) TestVMAuthInvalidProjectIDStart() {
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			// Stop VM if running
 			if currState != VMStopped {
-				retCode, err := StopVirtualMachine(s.ArmClient, appID, appWorkload.Id)
+				retCode, err := StopVirtualMachine(s.armClient, appID, appWorkload.Id)
 				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("stop VM pod %s\n", appWorkload.Name)
 
-				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMStopped)
+				err = GetVMStatus(s.armClient, appID, appWorkload.Id, VMStopped)
 				s.NoError(err)
 			}
 
@@ -130,7 +130,7 @@ func (s *TestSuite) TestVMAuthInvalidJWTStart() {
 
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -144,12 +144,12 @@ func (s *TestSuite) TestVMAuthInvalidJWTStart() {
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			// Stop VM if not running
 			if currState != VMStopped {
-				retCode, err := StopVirtualMachine(s.ArmClient, appID, appWorkload.Id)
+				retCode, err := StopVirtualMachine(s.armClient, appID, appWorkload.Id)
 				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
-				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMStopped)
+				err = GetVMStatus(s.armClient, appID, appWorkload.Id, VMStopped)
 				s.NoError(err)
 			}
 
@@ -168,7 +168,7 @@ func (s *TestSuite) TestVMAuthInvalidProjectIDRestart() {
 
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -182,12 +182,12 @@ func (s *TestSuite) TestVMAuthInvalidProjectIDRestart() {
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			// Start VM if not running
 			if currState != VMRunning {
-				retCode, err = StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
+				retCode, err = StartVirtualMachine(s.armClient, appID, appWorkload.Id)
 				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
-				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
+				err = GetVMStatus(s.armClient, appID, appWorkload.Id, VMRunning)
 				s.NoError(err)
 			}
 
@@ -206,7 +206,7 @@ func (s *TestSuite) TestVMAuthInvalidJWTRestart() {
 
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -220,12 +220,12 @@ func (s *TestSuite) TestVMAuthInvalidJWTRestart() {
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			// Start VM if not running
 			if currState != VMRunning {
-				retCode, err = StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
+				retCode, err = StartVirtualMachine(s.armClient, appID, appWorkload.Id)
 				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
-				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
+				err = GetVMStatus(s.armClient, appID, appWorkload.Id, VMRunning)
 				s.NoError(err)
 			}
 
@@ -244,7 +244,7 @@ func (s *TestSuite) TestVMAuthInvalidProjectIDGetVNC() {
 
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -270,7 +270,7 @@ func (s *TestSuite) TestVMAuthInvalidJWTGetVNC() {
 
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)

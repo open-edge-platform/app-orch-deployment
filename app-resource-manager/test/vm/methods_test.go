@@ -49,7 +49,7 @@ func (s *TestSuite) testVMMethod(appID string, appWorkloadID string, methods map
 		s.Equal(expectedStatus, res.StatusCode)
 
 		if expectedStatus == 200 && desiredState != "" {
-			err = GetVMStatus(s.ArmClient, appID, appWorkloadID, desiredState)
+			err = GetVMStatus(s.armClient, appID, appWorkloadID, desiredState)
 			s.NoError(err)
 		}
 
@@ -63,14 +63,14 @@ func (s *TestSuite) prepareVMForState(appID string, appWorkloadID string, curren
 		var err error
 
 		if targetState == VMRunning {
-			retCode, err = StartVirtualMachine(s.ArmClient, appID, appWorkloadID)
+			retCode, err = StartVirtualMachine(s.armClient, appID, appWorkloadID)
 		} else if targetState == VMStopped {
-			retCode, err = StopVirtualMachine(s.ArmClient, appID, appWorkloadID)
+			retCode, err = StopVirtualMachine(s.armClient, appID, appWorkloadID)
 		}
 
 		s.Equal(retCode, 200)
 		s.NoError(err)
-		err = GetVMStatus(s.ArmClient, appID, appWorkloadID, targetState)
+		err = GetVMStatus(s.armClient, appID, appWorkloadID, targetState)
 		s.NoError(err)
 	}
 }
@@ -78,7 +78,7 @@ func (s *TestSuite) prepareVMForState(appID string, appWorkloadID string, curren
 func (s *TestSuite) TestGetVNCResponseCodeValidation() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -92,7 +92,7 @@ func (s *TestSuite) TestGetVNCResponseCodeValidation() {
 func (s *TestSuite) TestStartVMResponseCodeValidation() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -108,7 +108,7 @@ func (s *TestSuite) TestStartVMResponseCodeValidation() {
 func (s *TestSuite) TestStopVMResponseCodeValidation() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -124,7 +124,7 @@ func (s *TestSuite) TestStopVMResponseCodeValidation() {
 func (s *TestSuite) TestRestartVMResponseCodeValidation() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
