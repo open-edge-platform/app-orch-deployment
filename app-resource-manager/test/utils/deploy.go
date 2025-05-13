@@ -23,7 +23,7 @@ var dpConfigs = map[string]any{
 		"deployPackageVersion": "0.1.0",
 		"profileName":          "testing-default",
 	},
-	"vm": map[string]any{
+	"cirros-container-disk": map[string]any{
 		"appNames":             []string{"cirros-container-disk"},
 		"deployPackage":        "cirros-container-disk",
 		"deployPackageVersion": "0.1.0",
