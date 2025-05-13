@@ -8,6 +8,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
@@ -133,4 +135,22 @@ func GetVMStatus(armClient *restClient.ClientWithResponses, appID, virtMachineID
 	}
 
 	return fmt.Errorf("VM %s failed to reach desired state %s. Last known state: %s", appName, desiredState, currState)
+}
+
+// uploadCirrosVM clones the cirros-vm repository and loads it into the catalog
+func uploadCirrosVM() error {
+	// Clone the repository and get the path to cirros-vm
+	cirrosVMPath, err := utils.CloneCirrosVM()
+	if err != nil {
+		return fmt.Errorf("failed to clone cirros-vm repository: %w", err)
+	}
+	defer os.RemoveAll(filepath.Dir(filepath.Dir(cirrosVMPath))) // Clean up the temporary directory after upload
+
+	// Upload the cirros-vm to the catalog
+	err = utils.Upload([]string{cirrosVMPath})
+	if err != nil {
+		return fmt.Errorf("failed to upload cirros-vm: %w", err)
+	}
+
+	return nil
 }

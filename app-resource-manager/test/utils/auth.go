@@ -18,22 +18,6 @@ import (
 	"strings"
 )
 
-const InvalidJWT = "eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9.ey" +
-	"JzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRt" +
-	"aW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.J5W09-rNx0pt5_HBiy" +
-	"dR-vOluS6oD-RpYNa8PVWwMcBDQSXiw6-EPW8iSsalXPspGj3ouQjA" +
-	"nOP_4-zrlUUlvUIt2T79XyNeiKuooyIFvka3Y5NnGiOUBHWvWcWp4R" +
-	"cQFMBrZkHtJM23sB5D7Wxjx0-HFeNk-Y3UJgeJVhg5NaWXypLkC4y0" +
-	"ADrUBfGAxhvGdRdULZivfvzuVtv6AzW6NRuEE6DM9xpoWX_4here-y" +
-	"vLS2YPiBTZ8xbB3axdM99LhES-n52lVkiX5AWg2JJkEROZzLMpaacA" +
-	"_xlbUz_zbIaOaoqk8gB5oO7kI6sZej3QAdGigQy-hXiRnW_L98d4GQ"
-
-const (
-	SampleOrg     = "sample-org"
-	SampleProject = "sample-project"
-	DefaultPass   = "ChangeMeOn1stLogin!"
-)
-
 func SetUpAccessToken(server string, username string, password string) (string, error) {
 	c := &http.Client{
 		Transport: &http.Transport{},

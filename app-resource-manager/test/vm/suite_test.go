@@ -78,7 +78,7 @@ func (s *TestSuite) SetupSuite() {
 		s.T().Fatalf("error: %v", err)
 	}
 
-	err = utils.UploadCirrosVM()
+	err = uploadCirrosVM()
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}

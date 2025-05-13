@@ -11,42 +11,6 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 )
 
-const (
-	TestClusterID                  = "demo-cluster"
-	retryCount                     = 10
-	NginxAppName                   = "nginx"
-	CirrosAppName                  = "cirros-container-disk"
-	WordpressAppName               = "wordpress"
-	VirtualizationExtensionAppName = "virtualization-extension"
-)
-
-var dpConfigs = map[string]any{
-	NginxAppName: map[string]any{
-		"appNames":             []string{"nginx"},
-		"deployPackage":        "nginx-app",
-		"deployPackageVersion": "0.1.0",
-		"profileName":          "testing-default",
-	},
-	CirrosAppName: map[string]any{
-		"appNames":             []string{"cirros-container-disk"},
-		"deployPackage":        "cirros-container-disk",
-		"deployPackageVersion": "0.1.0",
-		"profileName":          "default",
-	},
-	VirtualizationExtensionAppName: map[string]any{
-		"appNames":             []string{"kubevirt", "cdi", "kube-helper"},
-		"deployPackage":        "virtualization",
-		"deployPackageVersion": "0.3.7",
-		"profileName":          "with-software-emulation-profile-nosm",
-	},
-	WordpressAppName: map[string]any{
-		"appNames":             []string{"wordpress"},
-		"deployPackage":        "wordpress",
-		"deployPackageVersion": "0.1.1",
-		"profileName":          "testing",
-	},
-}
-
 func CreateDeployment(admClient *restClient.ClientWithResponses, dpPackageName string, displayName string, retryDelay int) ([]*restClient.App, error) {
 	if dpConfigs[dpPackageName] == nil {
 		return []*restClient.App{}, fmt.Errorf("deployment package %s not found in configuration", dpPackageName)
