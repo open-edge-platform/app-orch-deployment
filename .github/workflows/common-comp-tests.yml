@@ -158,7 +158,6 @@ jobs:
             echo "Chrome is not installed."
             echo "installed=false" >> $GITHUB_ENV
           fi
-
       - name: Install Chrome
         if: env.installed == 'false'
         run: |

@@ -5,6 +5,7 @@
 package servicelink
 
 import (
+<<<<<<< HEAD
  "io/ioutil"
  "net/http"
 )
