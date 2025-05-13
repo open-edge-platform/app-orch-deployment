@@ -146,8 +146,8 @@ jobs:
         working-directory: app-orch-deployment/${{ inputs.component }} # zizmor: ignore[template-injection]
         run: |
           echo "Redeploying and rebuilding component ${{ inputs.component }}"
-          make coder-redeploy
           make coder-rebuild
+          make coder-redeploy
 
       - name: Run Component Tests
         working-directory: app-orch-deployment/${{ inputs.component }} # zizmor: ignore[template-injection]
