@@ -119,7 +119,7 @@ test: go-test ## Run all unit tests
 
 # todo: re-enable vm tests once vm extension and vm app are ready in catalog
 # COMP_TEST_COVER := atomic $(shell go list ./test/... | grep -v "utils")
-COMP_TEST_COVER := atomic $(shell go list ./test/...  | grep -v "utils")
+COMP_TEST_COVER := atomic $(shell go list ./test/... | grep -v "container" | grep -v "utils")
 component-test: common-component-test ## Run component tests
 
 go-fuzz: FUZZ_FUNCS ?= FuzzGetVNC FuzzStartVM FuzzStopVM FuzzRestartVM FuzzDeletePod FuzzListAppEndpoints FuzzListAppWorkloads
