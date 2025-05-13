@@ -9,8 +9,8 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
-// TestVMAuthProjectIDStop tests VM stop with invalid project id
-func (s *TestSuite) TestVMAuthProjectIDStop() {
+// TestVMAuthInvalidProjectIDStop tests VM stop with invalid project id
+func (s *TestSuite) TestVMAuthInvalidProjectIDStop() {
 	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
@@ -47,8 +47,8 @@ func (s *TestSuite) TestVMAuthProjectIDStop() {
 	}
 }
 
-// TestVMAuthJWTStop tests VM stop with invalid jwt
-func (s *TestSuite) TestVMAuthJWTStop() {
+// TestVMAuthInvalidJWTStop tests VM stop with invalid jwt
+func (s *TestSuite) TestVMAuthInvalidJWTStop() {
 	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.projectID)
 	s.NoError(err)
 
@@ -85,8 +85,8 @@ func (s *TestSuite) TestVMAuthJWTStop() {
 	}
 }
 
-// TestVMAuthProjectIDStart tests VM start with invalid project id
-func (s *TestSuite) TestVMAuthProjectIDStart() {
+// TestVMAuthInvalidProjectIDStart tests VM start with invalid project id
+func (s *TestSuite) TestVMAuthInvalidProjectIDStart() {
 	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
@@ -123,8 +123,8 @@ func (s *TestSuite) TestVMAuthProjectIDStart() {
 	}
 }
 
-// TestVMAuthJWTStart tests VM start with invalid jwt
-func (s *TestSuite) TestVMAuthJWTStart() {
+// TestVMAuthInvalidJWTStart tests VM start with invalid jwt
+func (s *TestSuite) TestVMAuthInvalidJWTStart() {
 	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.projectID)
 	s.NoError(err)
 
@@ -161,8 +161,8 @@ func (s *TestSuite) TestVMAuthJWTStart() {
 	}
 }
 
-// TestVMAuthProjectIDRestart tests VM restart with invalid project id
-func (s *TestSuite) TestVMAuthProjectIDRestart() {
+// TestVMAuthInvalidProjectIDRestart tests VM restart with invalid project id
+func (s *TestSuite) TestVMAuthInvalidProjectIDRestart() {
 	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
@@ -199,8 +199,8 @@ func (s *TestSuite) TestVMAuthProjectIDRestart() {
 	}
 }
 
-// TestVMAuthJWTRestart tests VM restart with invalid jwt
-func (s *TestSuite) TestVMAuthJWTRestart() {
+// TestVMAuthInvalidJWTRestart tests VM restart with invalid jwt
+func (s *TestSuite) TestVMAuthInvalidJWTRestart() {
 	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.projectID)
 	s.NoError(err)
 
@@ -237,8 +237,8 @@ func (s *TestSuite) TestVMAuthJWTRestart() {
 	}
 }
 
-// TestVMAuthProjectIDGetVNC tests get vnc with invalid project id
-func (s *TestSuite) TestVMAuthProjectIDGetVNC() {
+// TestVMAuthInvalidProjectIDGetVNC tests get vnc with invalid project id
+func (s *TestSuite) TestVMAuthInvalidProjectIDGetVNC() {
 	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
@@ -263,8 +263,8 @@ func (s *TestSuite) TestVMAuthProjectIDGetVNC() {
 	}
 }
 
-// TestVMAuthJWTGetVNC tests get vnc with invalid jwt
-func (s *TestSuite) TestVMAuthJWTGetVNC() {
+// TestVMAuthInvalidJWTGetVNC tests get vnc with invalid jwt
+func (s *TestSuite) TestVMAuthInvalidJWTGetVNC() {
 	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.projectID)
 	s.NoError(err)
 
