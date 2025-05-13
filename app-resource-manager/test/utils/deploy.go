@@ -32,7 +32,7 @@ var dpConfigs = map[string]any{
 	"virt-extension": map[string]any{
 		"appNames":             []string{"kubevirt", "cdi", "kube-helper"},
 		"deployPackage":        "virtualization",
-		"deployPackageVersion": "0.3.6",
+		"deployPackageVersion": "0.3.7",
 		"profileName":          "with-software-emulation-profile-nosm",
 	},
 	"wordpress": map[string]any{

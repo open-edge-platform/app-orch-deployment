@@ -32,9 +32,9 @@ const (
 	VMRunning         = string(armClient.VirtualMachineStatusStateSTATERUNNING)
 	VMStopped         = string(armClient.VirtualMachineStatusStateSTATESTOPPED)
 	dpDisplayName     = "cirros-container-disk-demo"
-	vmExtDisplayName  = "virtualization"
+	vmExtDisplayName  = "virt-extension"
 	dpConfigName      = "cirros-container-disk"
-	vmExtDPConfigName = "virtualization"
+	vmExtDPConfigName = "virt-extension"
 )
 
 // TestSuite is the basic test suite
