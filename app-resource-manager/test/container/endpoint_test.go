@@ -4,12 +4,14 @@
 
 package container
 
+import "net/http"
+
 // TestListWorkloads tests listing app workloads
 func (s *TestSuite) TestListWorkloads() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
 		appWorkloads, retCode, err := AppWorkloadsList(s.armClient, appID)
-		s.Equal(retCode, 200)
+		s.Equal(retCode, http.StatusOK)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -25,7 +27,7 @@ func (s *TestSuite) TestListEndpoints() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
 		appEndpoints, retCode, err := AppEndpointsList(s.armClient, appID)
-		s.Equal(retCode, 200)
+		s.Equal(retCode, http.StatusOK)
 		s.NoError(err)
 		s.NotEmpty(appEndpoints)
 	}
@@ -36,7 +38,7 @@ func (s *TestSuite) TestDeletePod() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
 		appWorkloads, retCode, err := AppWorkloadsList(s.armClient, appID)
-		s.Equal(retCode, 200)
+		s.Equal(retCode, http.StatusOK)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -45,7 +47,7 @@ func (s *TestSuite) TestDeletePod() {
 
 		for _, appWorkload := range *appWorkloads {
 			retCode, err := PodDelete(s.armClient, *appWorkload.Namespace, appWorkload.Name, appID)
-			s.Equal(retCode, 200)
+			s.Equal(retCode, http.StatusOK)
 			s.NoError(err)
 
 			s.T().Logf("deleted pod %s\n", appWorkload.Name)

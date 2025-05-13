@@ -9,27 +9,27 @@ import (
 )
 
 var appWorkloadsMethods = map[string]int{
-	http.MethodPut:    405,
-	http.MethodGet:    200,
-	http.MethodDelete: 405,
-	http.MethodPatch:  405,
-	http.MethodPost:   405,
+	http.MethodPut:    http.StatusMethodNotAllowed,
+	http.MethodGet:    http.StatusOK,
+	http.MethodDelete: http.StatusMethodNotAllowed,
+	http.MethodPatch:  http.StatusMethodNotAllowed,
+	http.MethodPost:   http.StatusMethodNotAllowed,
 }
 
 var appEndpointsMethods = map[string]int{
-	http.MethodPut:    405,
-	http.MethodGet:    200,
-	http.MethodDelete: 405,
-	http.MethodPatch:  405,
-	http.MethodPost:   405,
+	http.MethodPut:    http.StatusMethodNotAllowed,
+	http.MethodGet:    http.StatusOK,
+	http.MethodDelete: http.StatusMethodNotAllowed,
+	http.MethodPatch:  http.StatusMethodNotAllowed,
+	http.MethodPost:   http.StatusMethodNotAllowed,
 }
 
 var deleteMethods = map[string]int{
-	http.MethodPut:    200,
-	http.MethodGet:    405,
-	http.MethodDelete: 405,
-	http.MethodPatch:  405,
-	http.MethodPost:   405,
+	http.MethodPut:    http.StatusOK,
+	http.MethodGet:    http.StatusMethodNotAllowed,
+	http.MethodDelete: http.StatusMethodNotAllowed,
+	http.MethodPatch:  http.StatusMethodNotAllowed,
+	http.MethodPost:   http.StatusMethodNotAllowed,
 }
 
 // TestListMethods tests both app workload and endpoint service with different HTTP methods
