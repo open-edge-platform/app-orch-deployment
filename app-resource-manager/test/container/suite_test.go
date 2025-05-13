@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"strconv"
 	"testing"
+	"time"
 
 	admClient "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 	armClient "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
@@ -71,10 +72,16 @@ func (s *TestSuite) SetupSuite() {
 		s.T().Fatalf("error: %v", err)
 	}
 
-	s.deployApps, err = utils.CreateDeployment(s.admClient, utils.NginxAppName, utils.NginxAppName, 10)
+	nginxApps, err := utils.CreateDeployment(s.admClient, utils.NginxAppName, utils.NginxAppName, 10)
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
+	s.deployApps = append(s.deployApps, nginxApps...)
+	wordpressApps, err := utils.CreateDeployment(s.admClient, utils.WordpressAppName, utils.WordpressAppName, 10)
+	if err != nil {
+		s.T().Fatalf("error: %v", err)
+	}
+	s.deployApps = append(s.deployApps, wordpressApps...)
 
 	s.NotEmpty(s.deployApps)
 }
@@ -86,6 +93,11 @@ func (s *TestSuite) SetupTest() {
 
 // TearDownSuite cleans up after the entire test suite
 func (s *TestSuite) TearDownSuite() {
+	err := utils.DeleteAndRetryUntilDeleted(s.admClient, utils.NginxAppName, 10, 10*time.Second)
+	s.NoError(err)
+	err = utils.DeleteAndRetryUntilDeleted(s.admClient, utils.WordpressAppName, 10, 10*time.Second)
+	s.NoError(err)
+
 	utils.TearDownPortForward(s.portForwardCmd)
 }
 

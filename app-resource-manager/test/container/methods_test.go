@@ -62,10 +62,8 @@ func (s *TestSuite) TestDeletePodMethod() {
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
-		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
+		// app workload len should be 2
+		s.Equal(2, len(*appWorkloads), "invalid app workloads len: %+v expected len 2", len(*appWorkloads))
 
 		s.T().Logf("app workloads len: %+v\n", len(*appWorkloads))
 
