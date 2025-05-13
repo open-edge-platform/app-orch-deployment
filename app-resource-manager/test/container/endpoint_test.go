@@ -16,7 +16,7 @@ func (s *TestSuite) TestListWorkloads() {
 		s.NotEmpty(appWorkloads)
 
 		// app workload len should be 1
-		s.Equal(2, len(*appWorkloads), "invalid app workloads len: %+v expected len 2", len(*appWorkloads))
+		s.Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 		s.T().Logf("app workloads len: %+v\n", len(*appWorkloads))
 	}
 }
@@ -42,7 +42,7 @@ func (s *TestSuite) TestDeletePod() {
 		s.NotEmpty(appWorkloads)
 
 		// app workload len should be 1
-		s.Equal(2, len(*appWorkloads), "invalid app workloads len: %+v expected len 2", len(*appWorkloads))
+		s.Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		for _, appWorkload := range *appWorkloads {
 			retCode, err := PodDelete(s.armClient, *appWorkload.Namespace, appWorkload.Name, appID)

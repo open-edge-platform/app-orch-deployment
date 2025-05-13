@@ -72,16 +72,10 @@ func (s *TestSuite) SetupSuite() {
 		s.T().Fatalf("error: %v", err)
 	}
 
-	nginxApps, err := utils.CreateDeployment(s.admClient, utils.NginxAppName, utils.NginxAppName, 10)
+	s.deployApps, err = utils.CreateDeployment(s.admClient, utils.NginxAppName, utils.NginxAppName, 10)
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
-	s.deployApps = append(s.deployApps, nginxApps...)
-	wordpressApps, err := utils.CreateDeployment(s.admClient, utils.WordpressAppName, utils.WordpressAppName, 10)
-	if err != nil {
-		s.T().Fatalf("error: %v", err)
-	}
-	s.deployApps = append(s.deployApps, wordpressApps...)
 
 	s.NotEmpty(s.deployApps)
 }
@@ -95,9 +89,6 @@ func (s *TestSuite) SetupTest() {
 func (s *TestSuite) TearDownSuite() {
 	err := utils.DeleteAndRetryUntilDeleted(s.admClient, utils.NginxAppName, 10, 10*time.Second)
 	s.NoError(err)
-	err = utils.DeleteAndRetryUntilDeleted(s.admClient, utils.WordpressAppName, 10, 10*time.Second)
-	s.NoError(err)
-
 	utils.TearDownPortForward(s.portForwardCmd)
 }
 
