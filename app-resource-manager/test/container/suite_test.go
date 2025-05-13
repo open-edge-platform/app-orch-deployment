@@ -19,14 +19,6 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-var (
-	deployApps            []*admClient.App
-	token                 string
-	projectID             string
-	resourceRESTServerUrl string
-	armclient             *armClient.ClientWithResponses
-)
-
 // TestSuite is the basic test suite
 type TestSuite struct {
 	suite.Suite
