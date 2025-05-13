@@ -137,8 +137,8 @@ func GetVMStatus(armClient *restClient.ClientWithResponses, appID, virtMachineID
 	return fmt.Errorf("VM %s failed to reach desired state %s. Last known state: %s", appName, desiredState, currState)
 }
 
-// uploadCirrosVM clones the cirros-vm repository and loads it into the catalog
-func uploadCirrosVM() error {
+// UploadCirrosVM clones the cirros-vm repository and loads it into the catalog
+func UploadCirrosVM() error {
 	// Clone the repository and get the path to cirros-vm
 	cirrosVMPath, err := utils.CloneCirrosVM()
 	if err != nil {
