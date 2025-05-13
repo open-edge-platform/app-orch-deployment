@@ -18,9 +18,7 @@ func (s *TestSuite) TestGetVNC() {
 		s.NotEmpty(appWorkloads)
 
 		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
+		s.Assert().Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		for _, appWorkload := range *appWorkloads {
 			retCode, err = GetVNC(s.ArmClient, appID, appWorkload.Id)

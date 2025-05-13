@@ -182,7 +182,7 @@ func createTargetedDeployment(client *restClient.ClientWithResponses, params Cre
 	return nil
 }
 
-func deleteAndRetryUntilDeleted(client *restClient.ClientWithResponses, displayName string, retries int, delay time.Duration) error {
+func DeleteAndRetryUntilDeleted(client *restClient.ClientWithResponses, displayName string, retries int, delay time.Duration) error {
 	// Attempt to delete the deployment
 	if err := deleteDeploymentByDisplayName(client, displayName); err != nil {
 		return fmt.Errorf("initial deletion failed: %v", err)

@@ -64,7 +64,7 @@ func CreateDeployment(admClient *restClient.ClientWithResponses, dpPackageName s
 		}
 	}
 
-	err := deleteAndRetryUntilDeleted(admClient, displayName, retryCount, time.Duration(retryDelay)*time.Second)
+	err := DeleteAndRetryUntilDeleted(admClient, displayName, retryCount, time.Duration(retryDelay)*time.Second)
 	if err != nil {
 		return []*restClient.App{}, err
 	}

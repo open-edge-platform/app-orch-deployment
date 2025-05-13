@@ -42,8 +42,40 @@ var restartVMMethods = map[string]int{
 	http.MethodPost:   405,
 }
 
-// TestGetVNCMethod tests get vnc method
-func (s *TestSuite) TestGetVNCMethod() {
+func (s *TestSuite) testVMMethod(appID string, appWorkloadID string, methods map[string]int, methodFunc func(string, string, string, string, string, string) (*http.Response, error), desiredState string) {
+	for method, expectedStatus := range methods {
+		res, err := methodFunc(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkloadID)
+		s.NoError(err)
+		s.Equal(expectedStatus, res.StatusCode)
+
+		if expectedStatus == 200 && desiredState != "" {
+			err = GetVMStatus(s.ArmClient, appID, appWorkloadID, desiredState)
+			s.NoError(err)
+		}
+
+		s.T().Logf("method: %s (%d)\n", method, res.StatusCode)
+	}
+}
+
+func (s *TestSuite) prepareVMForState(appID string, appWorkloadID string, currentState string, targetState string) {
+	if currentState != targetState {
+		var retCode int
+		var err error
+
+		if targetState == VMRunning {
+			retCode, err = StartVirtualMachine(s.ArmClient, appID, appWorkloadID)
+		} else if targetState == VMStopped {
+			retCode, err = StopVirtualMachine(s.ArmClient, appID, appWorkloadID)
+		}
+
+		s.Equal(retCode, 200)
+		s.NoError(err)
+		err = GetVMStatus(s.ArmClient, appID, appWorkloadID, targetState)
+		s.NoError(err)
+	}
+}
+
+func (s *TestSuite) TestGetVNCResponseCodeValidation() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
 		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
@@ -51,24 +83,13 @@ func (s *TestSuite) TestGetVNCMethod() {
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
-		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
-
 		for _, appWorkload := range *appWorkloads {
-			for method, expectedStatus := range getVncMethods {
-				res, err := MethodGetVNC(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id)
-				s.NoError(err)
-				s.Equal(expectedStatus, res.StatusCode)
-				s.T().Logf("get VNC method: %s (%d)\n", method, res.StatusCode)
-			}
+			s.testVMMethod(appID, appWorkload.Id, getVncMethods, MethodGetVNC, "")
 		}
 	}
 }
 
-// TestVMStartMethod tests VM start method
-func (s *TestSuite) TestVMStartMethod() {
+func (s *TestSuite) TestStartVMResponseCodeValidation() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
 		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
@@ -76,42 +97,15 @@ func (s *TestSuite) TestVMStartMethod() {
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
-		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
-
 		for _, appWorkload := range *appWorkloads {
-			// will get 400 if VM is already running
 			currState := string(*appWorkload.VirtualMachine.Status.State)
-			if currState != VMStopped {
-				retCode, err = StopVirtualMachine(s.ArmClient, appID, appWorkload.Id)
-				s.Equal(retCode, 200)
-				s.NoError(err)
-				s.T().Logf("stop VM pod %s\n", appWorkload.Name)
-
-				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMStopped)
-				s.NoError(err)
-			}
-
-			for method, expectedStatus := range startVMMethods {
-				res, err := MethodVMStart(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id)
-				s.NoError(err)
-				s.Equal(expectedStatus, res.StatusCode)
-
-				if expectedStatus == 200 {
-					err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
-					s.NoError(err)
-				}
-
-				s.T().Logf("start VM method: %s (%d)\n", method, res.StatusCode)
-			}
+			s.prepareVMForState(appID, appWorkload.Id, currState, VMStopped)
+			s.testVMMethod(appID, appWorkload.Id, startVMMethods, MethodVMStart, VMRunning)
 		}
 	}
 }
 
-// TestVMStopMethod tests VM stop method
-func (s *TestSuite) TestVMStopMethod() {
+func (s *TestSuite) TestStopVMResponseCodeValidation() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
 		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
@@ -119,42 +113,15 @@ func (s *TestSuite) TestVMStopMethod() {
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
-		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
-
 		for _, appWorkload := range *appWorkloads {
-			// will get 400 if VM is not already running
 			currState := string(*appWorkload.VirtualMachine.Status.State)
-			if currState != VMRunning {
-				retCode, err = StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
-				s.Equal(retCode, 200)
-				s.NoError(err)
-				s.T().Logf("start VM pod %s\n", appWorkload.Name)
-
-				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
-				s.NoError(err)
-			}
-
-			for method, expectedStatus := range stopVMMethods {
-				res, err := MethodVMStop(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id)
-				s.NoError(err)
-				s.Equal(expectedStatus, res.StatusCode)
-
-				if expectedStatus == 200 {
-					err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMStopped)
-					s.NoError(err)
-				}
-
-				s.T().Logf("stop VM method: %s (%d)\n", method, res.StatusCode)
-			}
+			s.prepareVMForState(appID, appWorkload.Id, currState, VMRunning)
+			s.testVMMethod(appID, appWorkload.Id, stopVMMethods, MethodVMStop, VMStopped)
 		}
 	}
 }
 
-// TestVMRestartMethod tests VM restart methods
-func (s *TestSuite) TestVMRestartMethod() {
+func (s *TestSuite) TestRestartVMResponseCodeValidation() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
 		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
@@ -162,36 +129,10 @@ func (s *TestSuite) TestVMRestartMethod() {
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
-		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
-
 		for _, appWorkload := range *appWorkloads {
-			// will get 400 if VM is not already running
 			currState := string(*appWorkload.VirtualMachine.Status.State)
-			if currState != VMRunning {
-				retCode, err := StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
-				s.Equal(retCode, 200)
-				s.NoError(err)
-				s.T().Logf("start VM pod %s\n", appWorkload.Name)
-
-				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
-				s.NoError(err)
-			}
-
-			for method, expectedStatus := range restartVMMethods {
-				res, err := MethodVMRestart(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id)
-				s.NoError(err)
-				s.Equal(expectedStatus, res.StatusCode)
-
-				if expectedStatus == 200 {
-					err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
-					s.NoError(err)
-				}
-
-				s.T().Logf("restart VM method: %s (%d)\n", method, res.StatusCode)
-			}
+			s.prepareVMForState(appID, appWorkload.Id, currState, VMRunning)
+			s.testVMMethod(appID, appWorkload.Id, restartVMMethods, MethodVMRestart, VMRunning)
 		}
 	}
 }
