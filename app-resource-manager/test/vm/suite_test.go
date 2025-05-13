@@ -29,16 +29,12 @@ var (
 )
 
 const (
-	RestAddressPortForward = "127.0.0.1"
-
-	AdmPortForwardRemote = "8081"
-	ArmPortForwardRemote = "8082"
-	VMRunning            = string(armClient.VirtualMachineStatusStateSTATERUNNING)
-	VMStopped            = string(armClient.VirtualMachineStatusStateSTATESTOPPED)
-	dpDisplayName        = "vm-test-vm"
-	vmExtDisplayName     = "virt-extension"
-	dpConfigName         = "vm"
-	vmExtDPConfigName    = "virt-extension"
+	VMRunning         = string(armClient.VirtualMachineStatusStateSTATERUNNING)
+	VMStopped         = string(armClient.VirtualMachineStatusStateSTATESTOPPED)
+	dpDisplayName     = "cirros-container-disk-demo"
+	vmExtDisplayName  = "virt-extension"
+	dpConfigName      = "cirros-container-disk"
+	vmExtDPConfigName = "virt-extension"
 )
 
 // TestSuite is the basic test suite
@@ -71,7 +67,7 @@ func (s *TestSuite) SetupTest() {
 }
 
 func TestVMSuite(t *testing.T) {
-	portForwardCmd, err := utils.BringUpPortForward()
+	portForwardCmd, err := utils.StartPortForwarding()
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -93,13 +89,13 @@ func TestVMSuite(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 
-	resourceRESTServerUrl = fmt.Sprintf("http://%s:%s", RestAddressPortForward, ArmPortForwardRemote)
+	resourceRESTServerUrl = fmt.Sprintf("http://%s:%s", utils.RestAddressPortForward, utils.ArmPortForwardRemote)
 	armclient, err = utils.CreateArmClient(resourceRESTServerUrl, token, projectID)
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
 
-	deploymentRESTServerUrl := fmt.Sprintf("http://%s:%s", RestAddressPortForward, AdmPortForwardRemote)
+	deploymentRESTServerUrl := fmt.Sprintf("http://%s:%s", utils.RestAddressPortForward, utils.AdmPortForwardRemote)
 	admClientInstance, err := admClient.NewClientWithResponses(deploymentRESTServerUrl, admClient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
 		utils.AddRestAuthHeader(req, token, projectID)
 		return nil

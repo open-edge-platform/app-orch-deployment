@@ -8,6 +8,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"strconv"
 
 	"testing"
 
@@ -26,13 +28,8 @@ var (
 )
 
 const (
-	RestAddressPortForward = "127.0.0.1"
-	KeycloakServer         = "keycloak.kind.internal"
-
-	AdmPortForwardRemote = "8081"
-	ArmPortForwardRemote = "8082"
-	dpDisplayName        = "nginx-test-container"
-	dpConfigName         = "nginx"
+	dpDisplayName = "nginx-test-container"
+	dpConfigName  = "nginx"
 )
 
 // TestSuite is the basic test suite
@@ -56,13 +53,19 @@ func (s *TestSuite) SetupTest() {
 }
 
 func TestContainerSuite(t *testing.T) {
-	portForwardCmd, err := utils.BringUpPortForward()
+	portForwardCmd, err := utils.StartPortForwarding()
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
 	defer utils.TearDownPortForward(portForwardCmd)
+	autoCert, err := strconv.ParseBool(os.Getenv("AUTO_CERT"))
+	orchDomain := os.Getenv("ORCH_DOMAIN")
+	if err != nil || !autoCert || orchDomain == "" {
+		orchDomain = "kind.internal"
+	}
+	keycloakServer := fmt.Sprintf("keycloak.%s", orchDomain)
 
-	token, err = utils.SetUpAccessToken(KeycloakServer, fmt.Sprintf("%s-edge-mgr", utils.SampleProject), utils.DefaultPass)
+	token, err = utils.SetUpAccessToken(keycloakServer, fmt.Sprintf("%s-edge-mgr", utils.SampleProject), utils.DefaultPass)
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -72,13 +75,13 @@ func TestContainerSuite(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 
-	resourceRESTServerUrl = fmt.Sprintf("http://%s:%s", RestAddressPortForward, ArmPortForwardRemote)
+	resourceRESTServerUrl = fmt.Sprintf("http://%s:%s", utils.RestAddressPortForward, utils.ArmPortForwardRemote)
 	armclient, err = utils.CreateArmClient(resourceRESTServerUrl, token, projectID)
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
 
-	deploymentRESTServerUrl := fmt.Sprintf("http://%s:%s", RestAddressPortForward, AdmPortForwardRemote)
+	deploymentRESTServerUrl := fmt.Sprintf("http://%s:%s", utils.RestAddressPortForward, utils.AdmPortForwardRemote)
 	admClientInstance, err := admClient.NewClientWithResponses(deploymentRESTServerUrl, admClient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
 		utils.AddRestAuthHeader(req, token, projectID)
 		return nil
