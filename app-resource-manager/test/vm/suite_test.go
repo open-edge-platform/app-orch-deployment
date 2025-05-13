@@ -103,6 +103,10 @@ func TestVMSuite(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
+	err = utils.UploadCirrosVM()
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
 
 	_, err = utils.CreateDeployment(admClientInstance, vmExtDPConfigName, vmExtDisplayName, 30)
 	if err != nil {
