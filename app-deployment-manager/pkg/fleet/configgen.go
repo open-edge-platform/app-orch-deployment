@@ -843,13 +843,17 @@ func getRegistryProjectName(d *v1beta1.Deployment, kc client.Client) (string, er
 		return "", err
 	}
 	for _, project := range projects {
-		if project.ObjectMeta.GetUID() == types.UID(projectID) {
+		if project.GetUID() == types.UID(projectID) {
+			log.Warnf("Found project %s", projectID)
+
 			orgName := project.Labels["orgs.org.edge-orchestrator.intel.com"]
+			log.Warnf("Found org %s", orgName)
 			projectName := project.Labels["nexus/display_name"]
+			log.Warnf("Found project name %s", projectName)
 
 			return fmt.Sprintf("catalog-apps-%s-%s", orgName, projectName), nil
 		} else {
-			log.Warnf("Found project %v", project)
+			log.Warnf("Found project %v", project.UID)
 		}
 	}
 
