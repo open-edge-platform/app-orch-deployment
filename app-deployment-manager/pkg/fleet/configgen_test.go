@@ -169,6 +169,15 @@ var _ = Describe("Fleet config generator", func() {
 					"password": []byte(imageRegPass),
 				},
 			},
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "profsecretwithimageregistry",
+					Namespace: "default",
+				},
+				Data: map[string][]byte{
+					"values": []byte(`{"image": "%ImageRegistryURL%/%RegistryProjectName%/some-image"}`),
+				},
+			},
 		}
 
 		for i := range secrets {
@@ -184,6 +193,14 @@ var _ = Describe("Fleet config generator", func() {
 			Name:       "wordpress-deployment",
 			Namespace:  "default",
 			UID:        "447107d5-a622-404b-b7b1-260131c1b5a9",
+			Labels: map[string]string{
+				string(v1beta1.AppOrchActiveProjectID): "64f42b12-af68-4676-a689-657dd670daab",
+				"app.kubernetes.io/created-by": "app-deployment-manager",
+				"app.kubernetes.io/instance": "wordpress-deployment",
+				"app.kubernetes.io/managed-by": "kustomize",
+				"app.kubernetes.io/name": "deployment",
+				"app.kubernetes.io/part-of": "app-deployment-manager",
+			},
 			Generation: 1,
 		},
 			Spec: v1beta1.DeploymentSpec{
@@ -675,6 +692,39 @@ var _ = Describe("Fleet config generator", func() {
 				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient)).NotTo(Succeed())
 			})
 		})
+
+		Context("ImageRegistry is provided", func() {
+			It("should replace it in values", func() {
+				app := &deployment.Spec.Applications[0]
+				app.HelmApp.ImageRegistry = imageRegistry
+				app.HelmApp.ImageRegistrySecretName = "imageregcreds"
+				app.ProfileSecretName = "profsecretwithimageregistry"
+
+				basedir := "/tmp/fleet0"
+				Expect(os.RemoveAll(basedir)).To(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient)).To(Succeed())
+
+				// Validate fleet.yaml basic contents
+				fleetdir := filepath.Join(basedir, app.Name)
+				yaml := filepath.Join(fleetdir, "fleet.yaml")
+				Expect(yaml).Should(BeAnExistingFile())
+				verifyFleetBasicConfig(yaml, *app, deployment)
+
+				// Validate fleet.yaml has additional kustomization.dir configuration
+				fleetconf, err := os.ReadFile(yaml)
+				Expect(err).To(BeNil())
+				Expect(yamlv3.Unmarshal(fleetconf, &fleetConfigStruct)).To(Succeed())
+				Expect(string(fleetConfigStruct.Kustomize.Dir)).To(Equal("./kustomize"))
+
+				// Validate profile.yaml is empty
+				yaml = filepath.Join(fleetdir, "profile.yaml")
+				Expect(yaml).Should(BeAnExistingFile())
+				contents, err := os.ReadFile(yaml)
+				Expect(err).To(BeNil())
+				Expect(string(contents)).To(Equal(fmt.Sprintf("{\"image\": \"%s/test-project/some-image\"}", app.HelmApp.ImageRegistry)))
+			})
+		})
+
 
 		Context("DependsOn is provided", func() {
 			It("should create fleet.yaml with dependsOn applications", func() {

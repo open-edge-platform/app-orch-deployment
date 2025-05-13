@@ -11,7 +11,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	nexus "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/nexus-client"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apiserver/pkg/storage/names"
+	"k8s.io/client-go/rest"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -34,6 +38,8 @@ const (
 	// the Helm profile.yaml and overrides.yaml
 	CredentialString string = "%GeneratedDockerCredential%"
 	PreHookString    string = "%PreHookCredential%"
+	ImageRegistryURL string = "%ImageRegistryURL%"
+	RegistryProjectName = "%RegistryProjectName%"
 
 	BundleTypeUnknown BundleType = 0
 	BundleTypeInit    BundleType = 1
@@ -278,6 +284,19 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 		// Check if Prehook present and if it needs image pull.
 		if strings.Contains(contents, PreHookString) {
 			hasPreHook = true
+		}
+
+		if app.HelmApp.ImageRegistry != "" {
+			contents = strings.Replace(contents, ImageRegistryURL, app.HelmApp.ImageRegistry, -1)
+		}
+
+		if strings.Contains(contents, RegistryProjectName) {
+			projectID, err := getRegistryProjectName(d, kc)
+			if err != nil {
+				return err
+			}
+
+			contents = strings.Replace(contents, RegistryProjectName, projectID, -1)
 		}
 
 		err = utils.WriteFile(fleetPath, profileyaml, []byte(contents))
@@ -793,4 +812,41 @@ func WriteExtraValues(basedir string, filename string, e *ExtraValues) error {
 		return err
 	}
 	return utils.WriteFile(basedir, filename, data)
+}
+
+func getRegistryProjectName(d *v1beta1.Deployment, kc client.Client) (string, error) {
+	projectID := d.Labels[string(v1beta1.AppOrchActiveProjectID)]
+	if projectID == "" {
+		return "", fmt.Errorf("project-id not found in deployment labels")
+	}
+
+	cfg, err := rest.InClusterConfig()
+	if err != nil {
+		log.Errorf("Failed to get in-cluster config: %v", err)
+		return "", err
+	}
+
+	nexusClient, err := nexus.NewForConfig(cfg)
+	if err != nil {
+		log.Errorf("Failed to create nexus client: %v", err)
+		return "", err
+	}
+
+	projects, err := nexusClient.Project().ListProjects(context.Background(), v1.ListOptions{})
+	if err != nil {
+		log.Errorf("Failed to get tenancy multi-tenancy: %v", err)
+		return "", err
+	}
+	for _, project := range projects {
+		if project.ObjectMeta.GetUID() == types.UID(projectID) {
+			orgName := project.Labels["orgs.org.edge-orchestrator.intel.com"]
+			projectName := project.Labels["nexus/display_name"]
+
+			return fmt.Sprintf("catalog-apps-%s-%s", orgName, projectName), nil
+		} else {
+			log.Debugf("Found project %v", project)
+		}
+	}
+
+	return "", fmt.Errorf("project %s not found in nexus", projectID)
 }
