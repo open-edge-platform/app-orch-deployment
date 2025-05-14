@@ -116,6 +116,7 @@ require (
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/rancher/wrangler v1.1.2 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
+	github.com/sclevine/agouti v3.0.0+incompatible // indirect
 	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3 // indirect
 	github.com/skeema/knownhosts v1.3.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
