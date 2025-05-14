@@ -49,7 +49,8 @@ const (
 	BundleTypeInitString    = "init"
 	BundleTypeAppString     = "app"
 
-	NexusOrgLabel = "runtimeorgs.runtimeorg.edge-orchestrator.intel.com"
+	NexusOrgLabel string = "runtimeorgs.runtimeorg.edge-orchestrator.intel.com"
+	RegistryProjectPrefix = "catalog-apps" // Corresponds to HarborProjectName in TenantController
 )
 
 var (
@@ -288,7 +289,10 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 			hasPreHook = true
 		}
 
-		if app.HelmApp.ImageRegistry != "" && strings.Contains(contents, ImageRegistryURL) {
+		if strings.Contains(contents, ImageRegistryURL) {
+			if app.HelmApp.ImageRegistry != "" {
+				return fmt.Errorf("imageRegistry not set but '%s' tag is present", ImageRegistryURL)
+			}
 			log.Debugf("Replacing: %s in App %s with %s", ImageRegistryURL, app.Name, app.HelmApp.ImageRegistry)
 			contents = strings.Replace(contents, ImageRegistryURL, app.HelmApp.ImageRegistry, -1)
 		}
@@ -824,7 +828,6 @@ func getRegistryProjectName(d *v1beta1.Deployment, kc client.Client) (string, er
 		return "", fmt.Errorf("project-id not found in deployment labels")
 	}
 	log.Infof("Look for project-id %s in Nexus", projectID)
-
 	cfg, err := rest.InClusterConfig()
 	if err != nil {
 		log.Errorf("Failed to get in-cluster config: %v", err)
@@ -851,7 +854,7 @@ func getRegistryProjectName(d *v1beta1.Deployment, kc client.Client) (string, er
 				return "", fmt.Errorf("nexus project %s has no label %s", projectName, NexusOrgLabel)
 			}
 
-			return fmt.Sprintf("catalog-apps-%s-%s", orgName, projectName), nil
+			return fmt.Sprintf("%s-%s-%s", RegistryProjectPrefix, orgName, projectName), nil
 		}
 	}
 
