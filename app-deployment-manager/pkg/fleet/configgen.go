@@ -48,6 +48,8 @@ const (
 	BundleTypeUnknownString = "unknown"
 	BundleTypeInitString    = "init"
 	BundleTypeAppString     = "app"
+
+	NexusOrgLabel = "runtimeorgs.runtimeorg.edge-orchestrator.intel.com"
 )
 
 var (
@@ -285,20 +287,20 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 		if strings.Contains(contents, PreHookString) {
 			hasPreHook = true
 		}
-		log.Warnf("Application %s. Check ImageRegistry: %s", app.Name, app.HelmApp.ImageRegistry)
-		if app.HelmApp.ImageRegistry != "" {
-			log.Warnf("Replace: %s Found %t", ImageRegistryURL, strings.Contains(contents, ImageRegistryURL))
+
+		if app.HelmApp.ImageRegistry != "" && strings.Contains(contents, ImageRegistryURL) {
+			log.Debugf("Replacing: %s in App %s with %s", ImageRegistryURL, app.Name, app.HelmApp.ImageRegistry)
 			contents = strings.Replace(contents, ImageRegistryURL, app.HelmApp.ImageRegistry, -1)
 		}
 
-		log.Warnf("Application %s. Check RegistryProjectName", app.Name)
 		if strings.Contains(contents, RegistryProjectName) {
-			projectID, err := getRegistryProjectName(d, kc)
+			registryProjectName, err := getRegistryProjectName(d, kc)
 			if err != nil {
 				return err
 			}
+			log.Debugf("Replacing: %s in App %s with %s", RegistryProjectName, app.Name, registryProjectName)
 
-			contents = strings.Replace(contents, RegistryProjectName, projectID, -1)
+			contents = strings.Replace(contents, RegistryProjectName, registryProjectName, -1)
 		}
 
 		err = utils.WriteFile(fleetPath, profileyaml, []byte(contents))
@@ -817,13 +819,11 @@ func WriteExtraValues(basedir string, filename string, e *ExtraValues) error {
 }
 
 func getRegistryProjectName(d *v1beta1.Deployment, kc client.Client) (string, error) {
-	log.Infof("Try to get registry project name from nexus project %s", d.Name)
-
 	projectID := d.Labels[string(v1beta1.AppOrchActiveProjectID)]
 	if projectID == "" {
 		return "", fmt.Errorf("project-id not found in deployment labels")
 	}
-	log.Infof("Look for project-id in Nexus %s", projectID)
+	log.Infof("Look for project-id %s in Nexus", projectID)
 
 	cfg, err := rest.InClusterConfig()
 	if err != nil {
@@ -839,22 +839,21 @@ func getRegistryProjectName(d *v1beta1.Deployment, kc client.Client) (string, er
 
 	runtimeProjects, err := nexusClient.Runtimeproject().ListRuntimeProjects(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		log.Errorf("Failed to List Runtime Project %v", err)
+		log.Errorf("Failed to List Nexus Runtime Project %v", err)
 		return "", err
 	}
 	for _, runtimeProject := range runtimeProjects {
-		log.Warnf("Runtime Project Name: %s, Namespace: %s, UID: %s",
-			runtimeProject.GetName(), runtimeProject.GetNamespace(), runtimeProject.UID)
 		if runtimeProject.GetUID() == types.UID(projectID) {
-			log.Warnf("Found project %s", runtimeProject.GetName())
+			log.Debugf("Found Nexus project %s with UID %s", runtimeProject.GetName(), runtimeProject.UID)
 			projectName := runtimeProject.DisplayName()
-			log.Warnf("Found project name %s", projectName)
-			orgName := runtimeProject.GetLabels()["runtimeorgs.runtimeorg.edge-orchestrator.intel.com"]
-			log.Warnf("Found org %s", orgName)
+			orgName := runtimeProject.GetLabels()[NexusOrgLabel]
+			if orgName == "" {
+				return "", fmt.Errorf("nexus project %s has no label %s", projectName, NexusOrgLabel)
+			}
 
 			return fmt.Sprintf("catalog-apps-%s-%s", orgName, projectName), nil
 		}
 	}
 
-	return "", errors.New("Unable to find nexus project with UID: " + projectID)
+	return "", fmt.Errorf("unable to find nexus runtime project with UID: %s", projectID)
 }
