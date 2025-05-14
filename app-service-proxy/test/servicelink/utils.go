@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
-    "github.com/open-edge-platform/app-orch-deployment/app-service-proxy/test/deploy"
+	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/test/deploy"
 	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/test/utils"
 )
 
