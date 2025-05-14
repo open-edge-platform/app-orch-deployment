@@ -13,6 +13,7 @@ import (
 	"fmt"
 	nexus "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/nexus-client"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apiserver/pkg/storage/names"
 	"k8s.io/client-go/rest"
 	"net/url"
@@ -816,7 +817,7 @@ func WriteExtraValues(basedir string, filename string, e *ExtraValues) error {
 }
 
 func getRegistryProjectName(d *v1beta1.Deployment, kc client.Client) (string, error) {
-	log.Infof("Try to get name from nexus project %s", d.Name)
+	log.Infof("Try to get registry project name from nexus project %s", d.Name)
 
 	projectID := d.Labels[string(v1beta1.AppOrchActiveProjectID)]
 	if projectID == "" {
@@ -842,7 +843,17 @@ func getRegistryProjectName(d *v1beta1.Deployment, kc client.Client) (string, er
 		return "", err
 	}
 	for _, runtimeProject := range runtimeProjects {
-		log.Warnf("Runtime Project ID: %s %s", runtimeProject.GetName(), runtimeProject.GetNamespace())
+		log.Warnf("Runtime Project Name: %s, Namespace: %s, UID: %s",
+			runtimeProject.GetName(), runtimeProject.GetNamespace(), runtimeProject.UID)
+		if runtimeProject.GetUID() == types.UID(projectID) {
+			log.Warnf("Found project %s", runtimeProject.GetName())
+			projectName := runtimeProject.DisplayName()
+			log.Warnf("Found project name %s", projectName)
+			orgName := runtimeProject.GetLabels()["runtimeorgs.runtimeorg.infra-host.com"]
+			log.Warnf("Found org %s", orgName)
+
+			return fmt.Sprintf("catalog-apps-%s-%s", orgName, projectName), nil
+		}
 	}
 
 	runtimeProject, err := nexusClient.Runtimeproject().GetRuntimeProjectByName(context.Background(), projectID)
