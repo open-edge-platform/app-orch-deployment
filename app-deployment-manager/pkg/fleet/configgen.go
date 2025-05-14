@@ -12,8 +12,7 @@ import (
 	"errors"
 	"fmt"
 	nexus "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/nexus-client"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apiserver/pkg/storage/names"
 	"k8s.io/client-go/rest"
 	"net/url"
@@ -837,25 +836,24 @@ func getRegistryProjectName(d *v1beta1.Deployment, kc client.Client) (string, er
 		return "", err
 	}
 
-	projects, err := nexusClient.Project().ListProjects(context.Background(), v1.ListOptions{})
+	runtimeProjects, err := nexusClient.Runtimeproject().ListRuntimeProjects(context.Background(), metav1.ListOptions{})
 	if err != nil {
-		log.Errorf("Failed to get tenancy multi-tenancy: %v", err)
+		log.Errorf("Failed to List Runtime Project %v", err)
 		return "", err
 	}
-	for _, project := range projects {
-		if project.GetUID() == types.UID(projectID) {
-			log.Warnf("Found project %s", projectID)
-
-			orgName := project.Labels["orgs.org.edge-orchestrator.intel.com"]
-			log.Warnf("Found org %s", orgName)
-			projectName := project.Labels["nexus/display_name"]
-			log.Warnf("Found project name %s", projectName)
-
-			return fmt.Sprintf("catalog-apps-%s-%s", orgName, projectName), nil
-		} else {
-			log.Warnf("Found project %v", project.UID)
-		}
+	for _, runtimeProject := range runtimeProjects {
+		log.Warnf("Runtime Project ID: %s %s", runtimeProject.GetName(), runtimeProject.GetNamespace())
 	}
 
-	return "", fmt.Errorf("project %s not found in nexus", projectID)
+	runtimeProject, err := nexusClient.Runtimeproject().GetRuntimeProjectByName(context.Background(), projectID)
+	if err != nil {
+		log.Errorf("Failed to get Runtime Project %s: %v", projectID, err)
+		return "", err
+	}
+	projectName := runtimeProject.DisplayName()
+	log.Warnf("Found project name %s", projectName)
+	orgName := runtimeProject.GetLabels()["runtimeorgs.runtimeorg.infra-host.com"]
+	log.Warnf("Found org %s", orgName)
+
+	return fmt.Sprintf("catalog-apps-%s-%s", orgName, projectName), nil
 }
