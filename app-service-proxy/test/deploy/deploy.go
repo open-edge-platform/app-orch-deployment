@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	TestClusterID = "demo-cluster"
+	TestClusterID = "test7"
 	retryCount    = 10
 )
 
@@ -63,6 +63,16 @@ func CreateDeployment(admClient *restClient.ClientWithResponses, dpPackageName s
 			}
 		}
 	}
+
+	/* Enable if you want to resue existing deployed app
+    if deployID := findDeploymentIDByDisplayName(admClient, displayName); deployID != "" {
+		fmt.Printf("Deployment exists. use it")
+        deployApps, err := getDeployApps(admClient, deployID)
+        if err != nil {
+            return []*restClient.App{}, err
+        }
+		return deployApps, nil
+	}*/
 
 	err := deleteAndRetryUntilDeleted(admClient, displayName, retryCount, time.Duration(retryDelay)*time.Second)
 	if err != nil {

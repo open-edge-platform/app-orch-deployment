@@ -57,7 +57,7 @@ func (s *TestSuite) SetupTest() {
 	s.NotEmpty(s.deployApps)
 }
 
-func TestContainerSuite(t *testing.T) {
+func TestServiceLinkSuite(t *testing.T) {
 	portForwardCmd, err := utils.BringUpPortForward()
 	if err != nil {
 		t.Fatalf("error: %v", err)
