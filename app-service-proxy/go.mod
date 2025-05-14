@@ -14,7 +14,9 @@ require (
 	github.com/onsi/gomega v1.36.0
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager v2.3.39+incompatible
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 v2.3.21
+	github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 v2.0.0-20250512182319-6c6ca626c67c
 	github.com/open-edge-platform/orch-library/go v0.5.30
+	github.com/open-edge-platform/orch-utils/tenancy-datamodel v0.0.0-20250401180309-9c2571c45857
 	github.com/rancher/fleet/pkg/apis v0.0.0-20230316110153-df88fcf0c4f6
 	github.com/rancher/remotedialer v0.4.1
 	github.com/sirupsen/logrus v1.9.3
@@ -47,6 +49,7 @@ require (
 	github.com/cyphar/filepath-securejoin v0.3.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/davidmz/go-pageant v1.0.2 // indirect
+	github.com/elliotchance/orderedmap v1.8.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.1.0 // indirect

@@ -27,7 +27,6 @@ const (
 	ArmPortForwardRemote        = "8082"
 	AspPortForwardService       = "svc/app-service-proxy"
 	AspPortForwardLocal         = "8123"
-	PortForwardAddress          = "0.0.0.0"
 	AspPortForwardRemote        = "8123"
 )
 
@@ -125,7 +124,6 @@ func TearDownASPPortForward(portForwardCmd map[string]*exec.Cmd) {
 		fmt.Printf("%s port-forward process killed\n", scenario)
 	}
 }
-
 
 func CallMethod(url, verb, token, projectID string) (*http.Response, error) {
 	req, err := http.NewRequest(verb, url, nil)
