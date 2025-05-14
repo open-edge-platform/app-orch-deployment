@@ -849,22 +849,12 @@ func getRegistryProjectName(d *v1beta1.Deployment, kc client.Client) (string, er
 			log.Warnf("Found project %s", runtimeProject.GetName())
 			projectName := runtimeProject.DisplayName()
 			log.Warnf("Found project name %s", projectName)
-			orgName := runtimeProject.GetLabels()["runtimeorgs.runtimeorg.infra-host.com"]
+			orgName := runtimeProject.GetLabels()["runtimeorgs.runtimeorg.edge-orchestrator.intel.com"]
 			log.Warnf("Found org %s", orgName)
 
 			return fmt.Sprintf("catalog-apps-%s-%s", orgName, projectName), nil
 		}
 	}
 
-	runtimeProject, err := nexusClient.Runtimeproject().GetRuntimeProjectByName(context.Background(), projectID)
-	if err != nil {
-		log.Errorf("Failed to get Runtime Project %s: %v", projectID, err)
-		return "", err
-	}
-	projectName := runtimeProject.DisplayName()
-	log.Warnf("Found project name %s", projectName)
-	orgName := runtimeProject.GetLabels()["runtimeorgs.runtimeorg.infra-host.com"]
-	log.Warnf("Found org %s", orgName)
-
-	return fmt.Sprintf("catalog-apps-%s-%s", orgName, projectName), nil
+	return "", errors.New("Unable to find nexus project with UID: " + projectID)
 }
