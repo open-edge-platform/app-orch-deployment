@@ -123,6 +123,9 @@ lint-js:
 
 test: go-test ## Run all unit tests
 
+COMP_TEST_COVER := atomic $(shell go list ./test/... )
+component-test: common-component-test ## Run component tests
+
 go-fuzz: FUZZ_FUNCS ?= FuzzRouter FuzzProxyHeaderHost FuzzProxyHeaderProto
 go-fuzz: FUZZ_FUNC_PATH := ./internal/server/fuzztests
 go-fuzz: common-go-fuzz-test ## Run go fuzz tests
