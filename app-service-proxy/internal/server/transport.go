@@ -62,7 +62,6 @@ type RewritingTransport struct {
 
 // RoundTrip executes a single HTTP transaction and allows for response manipulation
 func (t *RewritingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	// Send the request using the default transport if no custom transport is set
 	if t.transport == nil {
 		t.transport = http.DefaultTransport
 	}
@@ -72,10 +71,24 @@ func (t *RewritingTransport) RoundTrip(req *http.Request) (*http.Response, error
 		return nil, err
 	}
 
+	// --- Patch CSP header ---
+	for k, v := range resp.Header {
+		if strings.ToLower(k) == "content-security-policy" {
+			logrus.Debugf("Before patch: %s: %v", k, v)
+		}
+	}
+	csp := resp.Header.Get("Content-Security-Policy")
+	if strings.Contains(csp, "frame-ancestors 'none'") {
+		newCSP := strings.ReplaceAll(csp, "frame-ancestors 'none'", "frame-ancestors 'self'; patched-by-asp")
+		resp.Header.Del("Content-Security-Policy")
+		resp.Header.Del("content-security-policy")
+		resp.Header.Add("Content-Security-Policy", newCSP)
+		logrus.Debugf("Patched CSP header: %s", newCSP)
+	}
+
 	cType := resp.Header.Get("Content-Type")
 	cType = strings.TrimSpace(strings.SplitN(cType, ";", 2)[0])
 	if cType != "text/html" {
-		// Do nothing, simply pass through
 		logrus.Debugf("Ignoring content of type: %s", resp.Header.Get("Content-Type"))
 		return resp, nil
 	}
