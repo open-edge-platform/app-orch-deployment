@@ -11,7 +11,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"k8s.io/apiserver/pkg/storage/names"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -237,16 +236,16 @@ type GlobalValuesFleet struct {
 // GenerateFleetConfigs generates fleet configurations for the applications to a given path
 func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Client) error {
 	appMap := map[string]v1beta1.Application{}
-	var initNsBundleName string
+	//var initNsBundleName string
 
 	for _, app := range d.Spec.Applications {
 		appMap[app.Name] = app
 	}
 
 	// Only generate name if dp.Namespaces defined
-	if len(d.Spec.DeploymentPackageRef.Namespaces) > 0 {
+	/*if len(d.Spec.DeploymentPackageRef.Namespaces) > 0 {
 		initNsBundleName = names.SimpleNameGenerator.GenerateName("")
-	}
+	}*/
 
 	for _, app := range d.Spec.Applications {
 		// Get default namespace
