@@ -631,7 +631,7 @@ func injectNamespaceToSubDir(ns v1beta1.Namespace, fleetPath string, bundleName 
 	}
 
 	// Generate fleet.yaml from Config
-	err := WriteFleetConfig(filepath.Join(fleetPath, ns.Name+"-ns"), subFleetConf)
+	err := WriteFleetConfig(filepath.Join(filepath.Dir(fleetPath), ns.Name+"-ns"), subFleetConf)
 	if err != nil {
 		return err
 	}
