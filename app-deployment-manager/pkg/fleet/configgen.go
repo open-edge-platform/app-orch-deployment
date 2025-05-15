@@ -389,7 +389,7 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 
 		// If declared in dp, create namespace with labels and annotations
 		for _, ns := range d.Spec.DeploymentPackageRef.Namespaces {
-			nsBundleName := fmt.Sprintf("%s-%s", ns.Name, initNsBundleName)
+			nsBundleName := uuid.New().String()
 			err = injectNamespaceToSubDir(ns, fleetPath, nsBundleName)
 			if err != nil {
 				return err
