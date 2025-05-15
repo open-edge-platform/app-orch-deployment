@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package deploy
+package utils
 
 import (
 	"fmt"
@@ -10,38 +10,6 @@ import (
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 )
-
-const (
-	TestClusterID = "demo-cluster"
-	retryCount    = 10
-)
-
-var dpConfigs = map[string]any{
-	"nginx": map[string]any{
-		"appNames":             []string{"nginx"},
-		"deployPackage":        "nginx-app",
-		"deployPackageVersion": "0.1.0",
-		"profileName":          "testing-default",
-	},
-	"vm": map[string]any{
-		"appNames":             []string{"librespeed-vm"},
-		"deployPackage":        "librespeed-app",
-		"deployPackageVersion": "1.0.0",
-		"profileName":          "virtual-cluster",
-	},
-	"virt-extension": map[string]any{
-		"appNames":             []string{"kubevirt", "cdi", "kube-helper"},
-		"deployPackage":        "virtualization",
-		"deployPackageVersion": "0.3.6",
-		"profileName":          "with-software-emulation-profile-nosm",
-	},
-	"wordpress": map[string]any{
-		"appNames":             []string{"wordpress"},
-		"deployPackage":        "wordpress",
-		"deployPackageVersion": "0.1.1",
-		"profileName":          "testing",
-	},
-}
 
 func CreateDeployment(admClient *restClient.ClientWithResponses, dpPackageName string, displayName string, retryDelay int) ([]*restClient.App, error) {
 	if dpConfigs[dpPackageName] == nil {
@@ -64,7 +32,7 @@ func CreateDeployment(admClient *restClient.ClientWithResponses, dpPackageName s
 		}
 	}
 
-	err := deleteAndRetryUntilDeleted(admClient, displayName, retryCount, time.Duration(retryDelay)*time.Second)
+	err := DeleteAndRetryUntilDeleted(admClient, displayName, retryCount, time.Duration(retryDelay)*time.Second)
 	if err != nil {
 		return []*restClient.App{}, err
 	}
