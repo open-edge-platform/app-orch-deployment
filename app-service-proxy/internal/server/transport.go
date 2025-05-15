@@ -77,15 +77,34 @@ func (t *RewritingTransport) RoundTrip(req *http.Request) (*http.Response, error
 	if len(cspHeaders) > 0 {
 		var newCSPs []string
 		for _, csp := range cspHeaders {
-			if strings.Contains(csp, "frame-ancestors 'none'") {
-				csp = strings.ReplaceAll(csp, "frame-ancestors 'none'", "frame-ancestors 'self'; patched-by-asp")
-				logrus.Debugf("Patched CSP header: %s", csp)
-			}
+			// Find frame-ancestors directive
+			re := regexp.MustCompile(`frame-ancestors\s+([^;]+)`)
+			csp = re.ReplaceAllStringFunc(csp, func(match string) string {
+				parts := strings.Fields(match)
+				if len(parts) < 2 {
+					return "frame-ancestors 'self'"
+				}
+				// If 'none', replace with 'self'
+				if parts[1] == "'none'" {
+					return "frame-ancestors 'self'"
+				}
+				// If 'self' is missing, add it
+				hasSelf := false
+				for _, v := range parts[1:] {
+					if v == "'self'" {
+						hasSelf = true
+						break
+					}
+				}
+				if !hasSelf {
+					return match + " 'self'"
+				}
+				return match
+			})
+			logrus.Debugf("Patched CSP header: frame-ancestors: %s", csp)
 			newCSPs = append(newCSPs, csp)
 		}
-		// Remove all existing CSP headers
 		resp.Header.Del("Content-Security-Policy")
-		// Add back the patched ones (as a single header)
 		resp.Header.Set("Content-Security-Policy", strings.Join(newCSPs, "; "))
 	}
 	logrus.Debugf("Updated CSP header: %s", resp.Header.Get("Content-Security-Policy"))
