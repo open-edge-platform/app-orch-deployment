@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/admclient"
-	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/auth"
 	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/server"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
@@ -84,7 +83,6 @@ func setupFuzzTest(t testing.TB, enableAuth bool) *FuzzTestSuite {
 	os.Setenv("AGENT_TARGET_NAMESPACE", "mock-app-namespace")
 	os.Setenv("AUTH_TOKEN_SERVICE_ACCOUNT", "mock-service-account")
 	os.Setenv("AUTH_TOKEN_EXPIRATION", "100")
-	auth.RenewTokenAuthorizer = func(req *http.Request, id string) (bool, error) { return true, nil }
 
 	s := &FuzzTestSuite{}
 	s.addr = "127.0.0.1:8124"

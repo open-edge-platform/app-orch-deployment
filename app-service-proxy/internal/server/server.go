@@ -11,24 +11,18 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/gitclient"
-	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/vault"
-
 	"github.com/gorilla/mux"
 	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/rbac"
-	"github.com/rancher/remotedialer"
 	"github.com/sirupsen/logrus"
 
 	//Blank import
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/admclient"
-	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/auth"
 	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/middleware"
 )
 
@@ -47,17 +41,15 @@ type CookieInfo struct {
 }
 
 type Server struct {
-	addr               string
-	ccgAddress         string
-	remotedialerServer *remotedialer.Server
-	router             *mux.Router
-	server             *http.Server
-	authNenabled       bool
-	authZenabled       bool
-	authenticate       func(req *http.Request) error
-	authorize          func(req *http.Request, projectID string) error
-	admClient          admclient.ADMClient
-	vaultManager       vault.Manager
+	addr         string
+	ccgAddress   string
+	router       *mux.Router
+	server       *http.Server
+	authNenabled bool
+	authZenabled bool
+	authenticate func(req *http.Request) error
+	authorize    func(req *http.Request, projectID string) error
+	admClient    admclient.ADMClient
 }
 
 func extractCookieInfo(req *http.Request) (*CookieInfo, error) {
@@ -116,12 +108,6 @@ func NewServer(addr string) (*Server, error) {
 	http.DefaultTransport.(*http.Transport).DisableKeepAlives = false
 	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 64
 
-	if os.Getenv("CATTLE_TUNNEL_DATA_DEBUG") == "true" {
-		remotedialer.PrintTunnelData = true
-	} else {
-		remotedialer.PrintTunnelData = false
-	}
-
 	a := &Server{
 		addr: addr,
 	}
@@ -141,7 +127,6 @@ func NewServer(addr string) (*Server, error) {
 	}
 
 	a.initAuth()
-	a.initVault()
 	a.initRouter()
 
 	return a, nil
@@ -174,7 +159,7 @@ func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
 			return
 		}
 		logrus.Errorf("Error extracting cookie info: %v", err)
-		remotedialer.DefaultErrorWriter(rw, req, http.StatusBadRequest, err)
+		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 	logrus.Infof("CookieInfo: %+v", ci)
@@ -182,7 +167,7 @@ func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
 	err = a.isAllowed(req, ci.projectID)
 	if err != nil {
 		logrus.Warnf("Failed to authenticate/authorize request: %v", err)
-		remotedialer.DefaultErrorWriter(rw, req, http.StatusUnauthorized, err)
+		http.Error(rw, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
@@ -191,7 +176,7 @@ func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
 	target, err := url.Parse("http" + "://" + a.ccgAddress)
 	if err != nil {
 		logrus.Errorf("Error parsing URL %s: %s", target, err)
-		remotedialer.DefaultErrorWriter(rw, req, http.StatusBadRequest, err)
+		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -261,94 +246,6 @@ func (a *Server) isAllowed(req *http.Request, projectID string) error {
 	return nil
 }
 
-func (a *Server) RenewToken(rw http.ResponseWriter, req *http.Request) {
-	vars := mux.Vars(req)
-	clusterID := vars["cluster"]
-	logrus.Infof("renew/%s", clusterID)
-
-	// authentication
-	_, err := auth.RenewTokenAuthorizer(req, clusterID)
-	if err != nil {
-		logrus.Errorf("Failed to authorize token: %v", err)
-		remotedialer.DefaultErrorWriter(rw, req, http.StatusUnauthorized, err)
-		return
-	}
-
-	// todo: do not renew token if token is recently created?
-
-	// generate new token
-	tokenValue, err := auth.GenerateToken()
-	if err != nil {
-		remotedialer.DefaultErrorWriter(rw, req, http.StatusInternalServerError, err)
-		return
-	}
-
-	// get ttl
-	ttlHours, err := auth.GetTokenTTLHours()
-	if err != nil {
-		remotedialer.DefaultErrorWriter(rw, req, http.StatusInternalServerError, err)
-		return
-	}
-
-	// store new token to Vault
-	err = a.vaultManager.PutToken(context.Background(), clusterID, tokenValue, ttlHours)
-	if err != nil {
-		remotedialer.DefaultErrorWriter(rw, req, http.StatusInternalServerError, err)
-		return
-	}
-
-	gitRepoName := os.Getenv("GIT_REPO_NAME")
-	if gitRepoName == "" {
-		err = fmt.Errorf("failed to find GIT_REPO_NAME")
-		remotedialer.DefaultErrorWriter(rw, req, http.StatusInternalServerError, err)
-		return
-	}
-
-	gitClient := gitclient.NewGitClient
-
-	proxyServerURL := ""
-	if proxyServerURL = os.Getenv("PROXY_SERVER_URL"); proxyServerURL == "" {
-		remotedialer.DefaultErrorWriter(rw, req, http.StatusInternalServerError, fmt.Errorf("failed to parse proxyServerURL (%v)", fmt.Errorf("PROXY_SERVER_URL is not set")))
-		return
-	}
-
-	gitRemoteRepoName := ""
-	var urlTemp *url.URL
-	if urlTemp, err = url.Parse(proxyServerURL); err != nil {
-		remotedialer.DefaultErrorWriter(rw, req, http.StatusInternalServerError, fmt.Errorf("failed to parse proxyServerURL (%v)", err))
-		return
-	}
-
-	gitRemoteRepoName = fmt.Sprintf("%s-%s", "app-service-proxy", urlTemp.Host)
-
-	gc, err := gitClient(gitRemoteRepoName)
-	if err != nil {
-		logrus.Errorf("failed to get git client: %v", err)
-		remotedialer.DefaultErrorWriter(rw, req, http.StatusInternalServerError, fmt.Errorf("failed to find gitClient %v", err))
-		return
-	}
-
-	basedir := filepath.Join("/tmp", gitRepoName)
-	os.RemoveAll(basedir)
-
-	err = gc.Clone(basedir)
-	if err != nil {
-		remotedialer.DefaultErrorWriter(rw, req, http.StatusInternalServerError, fmt.Errorf("failed to clone git repo %v", err))
-		return
-	}
-
-	if err := gc.CommitFiles(); err != nil {
-		remotedialer.DefaultErrorWriter(rw, req, http.StatusInternalServerError, err)
-		return
-	}
-
-	if err := gc.PushToRemote(); err != nil {
-		remotedialer.DefaultErrorWriter(rw, req, http.StatusInternalServerError, err)
-		return
-	}
-	rw.WriteHeader(http.StatusOK)
-}
-
 func (a *Server) maxBodySizeBytesLimit() int64 {
 	maxBodySizeBytesLimit, err := strconv.Atoi(os.Getenv(MaxBodySizeBytesLimit))
 	if err != nil {
@@ -358,8 +255,6 @@ func (a *Server) maxBodySizeBytesLimit() int64 {
 }
 
 func (a *Server) initRouter() {
-	a.remotedialerServer = remotedialer.New(auth.ConnectAuthorizer, remotedialer.DefaultErrorWriter)
-
 	a.router = mux.NewRouter()
 	a.router.HandleFunc("/app-service-proxy-test", func(rw http.ResponseWriter, _ *http.Request) {
 		if _, err := rw.Write([]byte("Ok\n")); err != nil {
@@ -402,11 +297,6 @@ func (a *Server) initRouter() {
 
 	maxBodySizeBytesLimit := a.maxBodySizeBytesLimit()
 	a.router.Use(middleware.SizeLimitMiddleware(maxBodySizeBytesLimit))
-	a.router.Handle(PathPrefix+"/connect", a.remotedialerServer).Methods("GET")
-	tokenRouter := a.router.PathPrefix(PathPrefix + "/renew").Subrouter()
-	tokenRouter.Use(middleware.SizeLimitMiddleware(maxBodySizeBytesLimit))
-	tokenRouter.HandleFunc("/{cluster}", a.RenewToken).Methods("GET")
-
 	a.router.PathPrefix("/").HandlerFunc(a.ServicesProxy) // Must be registered last, default handler.
 }
 
@@ -436,8 +326,4 @@ func (a *Server) initAdmClient() error {
 		return err
 	}
 	return nil
-}
-
-func (a *Server) initVault() {
-	a.vaultManager = vault.NewManager()
 }
