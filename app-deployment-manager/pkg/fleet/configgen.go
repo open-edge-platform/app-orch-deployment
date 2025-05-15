@@ -297,8 +297,12 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 			if app.HelmApp.ImageRegistry == "" {
 				return fmt.Errorf("imageRegistry not set but '%s' tag is present", ImageRegistryURL)
 			}
-			log.Debugf("Replacing: %s in App %s with %s", ImageRegistryURL, app.Name, app.HelmApp.ImageRegistry)
-			contents = strings.Replace(contents, ImageRegistryURL, app.HelmApp.ImageRegistry, -1)
+			imageRegistryURLBare := strings.TrimPrefix(app.HelmApp.ImageRegistry, "oci://")
+			imageRegistryURLBare = strings.TrimPrefix(imageRegistryURLBare, "http://")
+			imageRegistryURLBare = strings.TrimPrefix(imageRegistryURLBare, "https://")
+			imageRegistryURLBare = strings.TrimSuffix(imageRegistryURLBare, "/")
+			log.Debugf("Replacing: %s in App %s with %s", ImageRegistryURL, app.Name, imageRegistryURLBare)
+			contents = strings.Replace(contents, ImageRegistryURL, imageRegistryURLBare, -1)
 		}
 
 		if strings.Contains(contents, RegistryProjectName) {

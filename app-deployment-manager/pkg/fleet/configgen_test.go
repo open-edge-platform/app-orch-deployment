@@ -99,7 +99,7 @@ var _ = Describe("Fleet config generator", func() {
 		overValues []byte
 		globValues *ExtraValues
 
-		imageRegistry = "https://test.registry.intel.com"
+		imageRegistry = "https://test.registry.intel.com/"
 		imageRegUser  = "user"
 		imageRegPass  = "pass"
 
@@ -721,8 +721,9 @@ var _ = Describe("Fleet config generator", func() {
 				Expect(yaml).Should(BeAnExistingFile())
 				contents, err := os.ReadFile(yaml)
 				Expect(err).To(BeNil())
-				Expect(string(contents)).To(Equal(fmt.Sprintf("{\"image\": \"%s/catalog-apps-%s-%s/some-image\"}",
-					app.HelmApp.ImageRegistry, "mock-org-1", "mock-project-1-in-mock-org-1")))
+
+				Expect(string(contents)).To(
+					Equal("{\"image\": \"test.registry.intel.com/catalog-apps-mock-org-1-mock-project-1-in-mock-org-1/some-image\"}"))
 			})
 		})
 
