@@ -11,11 +11,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	nexus "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/nexus-client"
+	nexus "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/client/clientset/versioned/typed/runtimeproject.edge-orchestrator.intel.com/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apiserver/pkg/storage/names"
-	"k8s.io/client-go/rest"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -36,10 +35,10 @@ type BundleType int
 const (
 	// This special string is a placeholder for the actual credential name in
 	// the Helm profile.yaml and overrides.yaml
-	CredentialString string = "%GeneratedDockerCredential%"
-	PreHookString    string = "%PreHookCredential%"
-	ImageRegistryURL string = "%ImageRegistryURL%"
-	RegistryProjectName = "%RegistryProjectName%"
+	CredentialString    string = "%GeneratedDockerCredential%"
+	PreHookString       string = "%PreHookCredential%"
+	ImageRegistryURL    string = "%ImageRegistryURL%"
+	RegistryProjectName        = "%RegistryProjectName%"
 
 	BundleTypeUnknown BundleType = 0
 	BundleTypeInit    BundleType = 1
@@ -49,7 +48,7 @@ const (
 	BundleTypeInitString    = "init"
 	BundleTypeAppString     = "app"
 
-	NexusOrgLabel string = "runtimeorgs.runtimeorg.edge-orchestrator.intel.com"
+	NexusOrgLabel         = "runtimeorgs.runtimeorg.edge-orchestrator.intel.com"
 	RegistryProjectPrefix = "catalog-apps" // Corresponds to HarborProjectName in TenantController
 )
 
@@ -244,7 +243,7 @@ type GlobalValuesFleet struct {
 }
 
 // GenerateFleetConfigs generates fleet configurations for the applications to a given path
-func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Client) error {
+func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Client, nc nexus.RuntimeprojectEdgeV1Interface) error {
 	appMap := map[string]v1beta1.Application{}
 	var initNsBundleName string
 
@@ -255,6 +254,11 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 	// Only generate name if dp.Namespaces defined
 	if len(d.Spec.DeploymentPackageRef.Namespaces) > 0 {
 		initNsBundleName = names.SimpleNameGenerator.GenerateName("")
+	}
+
+	registryProjectName, err := getRegistryProjectName(d, nc)
+	if err != nil {
+		return err
 	}
 
 	for _, app := range d.Spec.Applications {
@@ -290,7 +294,7 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 		}
 
 		if strings.Contains(contents, ImageRegistryURL) {
-			if app.HelmApp.ImageRegistry != "" {
+			if app.HelmApp.ImageRegistry == "" {
 				return fmt.Errorf("imageRegistry not set but '%s' tag is present", ImageRegistryURL)
 			}
 			log.Debugf("Replacing: %s in App %s with %s", ImageRegistryURL, app.Name, app.HelmApp.ImageRegistry)
@@ -298,10 +302,6 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 		}
 
 		if strings.Contains(contents, RegistryProjectName) {
-			registryProjectName, err := getRegistryProjectName(d, kc)
-			if err != nil {
-				return err
-			}
 			log.Debugf("Replacing: %s in App %s with %s", RegistryProjectName, app.Name, registryProjectName)
 
 			contents = strings.Replace(contents, RegistryProjectName, registryProjectName, -1)
@@ -822,30 +822,18 @@ func WriteExtraValues(basedir string, filename string, e *ExtraValues) error {
 	return utils.WriteFile(basedir, filename, data)
 }
 
-func getRegistryProjectName(d *v1beta1.Deployment, kc client.Client) (string, error) {
+func getRegistryProjectName(d *v1beta1.Deployment, nexusClient nexus.RuntimeProjectsGetter) (string, error) {
 	projectID := d.Labels[string(v1beta1.AppOrchActiveProjectID)]
 	if projectID == "" {
 		return "", fmt.Errorf("project-id not found in deployment labels")
 	}
 	log.Infof("Look for project-id %s in Nexus", projectID)
-	cfg, err := rest.InClusterConfig()
-	if err != nil {
-		log.Errorf("Failed to get in-cluster config: %v", err)
-		return "", err
-	}
-
-	nexusClient, err := nexus.NewForConfig(cfg)
-	if err != nil {
-		log.Errorf("Failed to create nexus client: %v", err)
-		return "", err
-	}
-
-	runtimeProjects, err := nexusClient.Runtimeproject().ListRuntimeProjects(context.Background(), metav1.ListOptions{})
+	runtimeProjects, err := nexusClient.RuntimeProjects().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		log.Errorf("Failed to List Nexus Runtime Project %v", err)
 		return "", err
 	}
-	for _, runtimeProject := range runtimeProjects {
+	for _, runtimeProject := range runtimeProjects.Items {
 		if runtimeProject.GetUID() == types.UID(projectID) {
 			log.Debugf("Found Nexus project %s with UID %s", runtimeProject.GetName(), runtimeProject.UID)
 			projectName := runtimeProject.DisplayName()
