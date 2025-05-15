@@ -474,6 +474,11 @@ func TestCSPFrameAncestorsPatched(t *testing.T) {
 	req := httptest.NewRequest("GET", "http://example.com", nil)
 	req.Header.Set("X-Forwarded-Host", "example.com")
 	req.Header.Set("X-Forwarded-Proto", "http")
+	// Add required cookies
+	req.AddCookie(&http.Cookie{Name: "app-service-proxy-project", Value: "project1"})
+	req.AddCookie(&http.Cookie{Name: "app-service-proxy-cluster", Value: "cluster123"})
+	req.AddCookie(&http.Cookie{Name: "app-service-proxy-namespace", Value: "namespace123"})
+	req.AddCookie(&http.Cookie{Name: "app-service-proxy-service", Value: "service123:80"})
 
 	gotResp, err := rt.RoundTrip(req)
 	require.NoError(t, err)
@@ -504,6 +509,11 @@ func TestCSPFrameAncestorsAddsSelfIfMissing(t *testing.T) {
 	req := httptest.NewRequest("GET", "http://example.com", nil)
 	req.Header.Set("X-Forwarded-Host", "example.com")
 	req.Header.Set("X-Forwarded-Proto", "http")
+	// Add required cookies
+	req.AddCookie(&http.Cookie{Name: "app-service-proxy-project", Value: "project1"})
+	req.AddCookie(&http.Cookie{Name: "app-service-proxy-cluster", Value: "cluster123"})
+	req.AddCookie(&http.Cookie{Name: "app-service-proxy-namespace", Value: "namespace123"})
+	req.AddCookie(&http.Cookie{Name: "app-service-proxy-service", Value: "service123:80"})
 
 	gotResp, err := rt.RoundTrip(req)
 	require.NoError(t, err)
