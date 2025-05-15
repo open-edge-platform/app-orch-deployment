@@ -450,3 +450,79 @@ func TestRewritingTransportWithDeflate(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotEqual(t, expectedHTML, string(body), "The response body was not correctly rewritten")
 }
+
+// TestCSPFrameAncestorsPatched verifies that the CSP header is patched correctly.
+func TestCSPFrameAncestorsPatched(t *testing.T) {
+	originalCSP := "default-src 'self'; frame-ancestors 'none'; script-src 'self'"
+	expectedCSP := "default-src 'self'; frame-ancestors 'self'; script-src 'self'"
+
+	resp := &http.Response{
+		StatusCode: 200,
+		Header:     make(http.Header),
+		Body:       io.NopCloser(strings.NewReader("<html></html>")),
+	}
+	resp.Header.Set("Content-Security-Policy", originalCSP)
+	resp.Header.Set("Content-Type", "text/html")
+
+	// Use a dummy transport that returns our mocked response
+	dummyTransport := &struct{ http.RoundTripper }{}
+	rt := &RewritingTransport{transport: dummyTransport}
+	rt.transport = roundTripperFunc(func(*http.Request) (*http.Response, error) {
+		return resp, nil
+	})
+
+	req := httptest.NewRequest("GET", "http://example.com", nil)
+	req.Header.Set("X-Forwarded-Host", "example.com")
+	req.Header.Set("X-Forwarded-Proto", "http")
+	// Add required cookies
+	req.AddCookie(&http.Cookie{Name: "app-service-proxy-project", Value: "project1"})
+	req.AddCookie(&http.Cookie{Name: "app-service-proxy-cluster", Value: "cluster123"})
+	req.AddCookie(&http.Cookie{Name: "app-service-proxy-namespace", Value: "namespace123"})
+	req.AddCookie(&http.Cookie{Name: "app-service-proxy-service", Value: "service123:80"})
+
+	gotResp, err := rt.RoundTrip(req)
+	require.NoError(t, err)
+
+	gotCSP := gotResp.Header.Get("Content-Security-Policy")
+	assert.Equal(t, expectedCSP, gotCSP, "CSP header was not patched correctly")
+}
+
+// TestCSPFrameAncestorsAddsSelfIfMissing verifies that 'self' is added to frame-ancestors if missing.
+func TestCSPFrameAncestorsAddsSelfIfMissing(t *testing.T) {
+	originalCSP := "default-src 'self'; frame-ancestors https://example.com; script-src 'self'"
+	expectedCSP := "default-src 'self'; frame-ancestors https://example.com 'self'; script-src 'self'"
+
+	resp := &http.Response{
+		StatusCode: 200,
+		Header:     make(http.Header),
+		Body:       io.NopCloser(strings.NewReader("<html></html>")),
+	}
+	resp.Header.Set("Content-Security-Policy", originalCSP)
+	resp.Header.Set("Content-Type", "text/html")
+
+	dummyTransport := &struct{ http.RoundTripper }{}
+	rt := &RewritingTransport{transport: dummyTransport}
+	rt.transport = roundTripperFunc(func(*http.Request) (*http.Response, error) {
+		return resp, nil
+	})
+
+	req := httptest.NewRequest("GET", "http://example.com", nil)
+	req.Header.Set("X-Forwarded-Host", "example.com")
+	req.Header.Set("X-Forwarded-Proto", "http")
+	// Add required cookies
+	req.AddCookie(&http.Cookie{Name: "app-service-proxy-project", Value: "project1"})
+	req.AddCookie(&http.Cookie{Name: "app-service-proxy-cluster", Value: "cluster123"})
+	req.AddCookie(&http.Cookie{Name: "app-service-proxy-namespace", Value: "namespace123"})
+	req.AddCookie(&http.Cookie{Name: "app-service-proxy-service", Value: "service123:80"})
+
+	gotResp, err := rt.RoundTrip(req)
+	require.NoError(t, err)
+
+	gotCSP := gotResp.Header.Get("Content-Security-Policy")
+	assert.Equal(t, expectedCSP, gotCSP, "CSP header was not patched correctly when 'self' was missing")
+}
+
+// Helper type for inline RoundTripper
+type roundTripperFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
