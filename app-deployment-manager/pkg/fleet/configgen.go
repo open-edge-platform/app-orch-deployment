@@ -831,7 +831,6 @@ func getRegistryProjectName(d *v1beta1.Deployment, nexusClient nexus.RuntimeProj
 	if projectID == "" {
 		return "", fmt.Errorf("project-id not found in deployment labels")
 	}
-	log.Infof("Look for project-id %s in Nexus", projectID)
 	runtimeProjects, err := nexusClient.RuntimeProjects().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		log.Errorf("Failed to List Nexus Runtime Project %v", err)

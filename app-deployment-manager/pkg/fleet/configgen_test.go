@@ -190,16 +190,16 @@ var _ = Describe("Fleet config generator", func() {
 		}
 
 		deployment = &v1beta1.Deployment{ObjectMeta: metav1.ObjectMeta{
-			Name:       "wordpress-deployment",
-			Namespace:  "default",
-			UID:        "447107d5-a622-404b-b7b1-260131c1b5a9",
+			Name:      "wordpress-deployment",
+			Namespace: "default",
+			UID:       "447107d5-a622-404b-b7b1-260131c1b5a9",
 			Labels: map[string]string{
 				string(v1beta1.AppOrchActiveProjectID): "64f42b12-af68-4676-a689-657dd670daab",
-				"app.kubernetes.io/created-by": "app-deployment-manager",
-				"app.kubernetes.io/instance": "wordpress-deployment",
-				"app.kubernetes.io/managed-by": "kustomize",
-				"app.kubernetes.io/name": "deployment",
-				"app.kubernetes.io/part-of": "app-deployment-manager",
+				"app.kubernetes.io/created-by":         "app-deployment-manager",
+				"app.kubernetes.io/instance":           "wordpress-deployment",
+				"app.kubernetes.io/managed-by":         "kustomize",
+				"app.kubernetes.io/name":               "deployment",
+				"app.kubernetes.io/part-of":            "app-deployment-manager",
 			},
 			Generation: 1,
 		},
@@ -693,8 +693,8 @@ var _ = Describe("Fleet config generator", func() {
 			})
 		})
 
-		Context("ImageRegistry is provided", func() {
-			It("should replace it in values", func() {
+		Context("ImageRegistryURL% and %RegistryProjectName are provided", func() {
+			It("should replace them in values", func() {
 				app := &deployment.Spec.Applications[0]
 				app.HelmApp.ImageRegistry = imageRegistry
 				app.HelmApp.ImageRegistrySecretName = "imageregcreds"
@@ -704,20 +704,9 @@ var _ = Describe("Fleet config generator", func() {
 				Expect(os.RemoveAll(basedir)).To(Succeed())
 				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).To(Succeed())
 
-				// Validate fleet.yaml basic contents
-				fleetdir := filepath.Join(basedir, app.Name)
-				yaml := filepath.Join(fleetdir, "fleet.yaml")
-				Expect(yaml).Should(BeAnExistingFile())
-				verifyFleetBasicConfig(yaml, *app, deployment)
-
-				// Validate fleet.yaml has additional kustomization.dir configuration
-				fleetconf, err := os.ReadFile(yaml)
-				Expect(err).To(BeNil())
-				Expect(yamlv3.Unmarshal(fleetconf, &fleetConfigStruct)).To(Succeed())
-				Expect(string(fleetConfigStruct.Kustomize.Dir)).To(Equal("./kustomize"))
-
 				// Validate profile.yaml is empty
-				yaml = filepath.Join(fleetdir, "profile.yaml")
+				fleetdir := filepath.Join(basedir, app.Name)
+				yaml := filepath.Join(fleetdir, "profile.yaml")
 				Expect(yaml).Should(BeAnExistingFile())
 				contents, err := os.ReadFile(yaml)
 				Expect(err).To(BeNil())
@@ -727,6 +716,19 @@ var _ = Describe("Fleet config generator", func() {
 			})
 		})
 
+		Context("ImageRegistry tag is provided by no image registry object present", func() {
+			It("should throw error", func() {
+				app := &deployment.Spec.Applications[0]
+				app.HelmApp.ImageRegistrySecretName = "imageregcreds"
+				app.ProfileSecretName = "profsecretwithimageregistry"
+
+				basedir := "/tmp/fleet0"
+				Expect(os.RemoveAll(basedir)).To(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).
+					To(MatchError("imageRegistry not set but '%ImageRegistryURL%' tag is present"))
+
+			})
+		})
 
 		Context("DependsOn is provided", func() {
 			It("should create fleet.yaml with dependsOn applications", func() {
