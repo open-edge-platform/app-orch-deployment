@@ -666,16 +666,7 @@ func injectNamespaceToSubDir(ns v1beta1.Namespace, fleetPath string, bundleName 
 	if err != nil {
 		return err
 	}
-	// Generate a dummy configmap.yaml
-	emptyConfigMap := map[string]interface{}{
-		"apiVersion": "v1",
-		"kind":       "ConfigMap",
-		"metadata": map[string]interface{}{
-			"name":      ns.Name,
-			"namespace": ns.Name,
-		},
-		"data": map[string]interface{}{},
-	}
+
 	// Adding an empty YAML file
 	emptyYaml := map[string]interface{}{}
 	err = WriteResourceConfig(
@@ -683,7 +674,8 @@ func injectNamespaceToSubDir(ns v1beta1.Namespace, fleetPath string, bundleName 
 		emptyYaml, "empty-configmap.yaml")
 	if err != nil {
 		return err
-	} // Commenting out the previous code for testing purposes
+	}
+	// Commenting out the previous code for testing purposes
 	// emptyConfigMap := map[string]interface{}{
 	// 	"apiVersion": "v1",
 	// 	"kind":       "ConfigMap",
