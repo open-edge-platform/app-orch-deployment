@@ -668,11 +668,15 @@ func injectNamespaceToSubDir(ns v1beta1.Namespace, fleetPath string, bundleName 
 	}
 	// Generate a dummy configmap.yaml
 	emptyConfigMap := &corev1.ConfigMap{
-		Data: map[string]string{},
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ConfigMap",
+			APIVersion: "v1",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      ns.Name,
 			Namespace: ns.Name,
 		},
+		Data: map[string]string{},
 	}
 
 	err = WriteResourceConfig(
