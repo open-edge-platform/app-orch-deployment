@@ -6,9 +6,11 @@ package fleet
 
 import (
 	"context"
-	fleetclient "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/fleet/mocks"
+	nexusApi "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/apis/runtimeproject.edge-orchestrator.intel.com/v1"
 	v1 "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/apis/runtimeproject.edge-orchestrator.intel.com/v1"
-	nexus "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/client/clientset/versioned/typed/runtimeproject.edge-orchestrator.intel.com/v1"
+	nexus "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/client/clientset/versioned"
+	nexusFake "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/client/clientset/versioned/fake"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"path/filepath"
 	"testing"
@@ -31,7 +33,7 @@ const (
 var (
 	cfg         *rest.Config
 	k8sClient   client.Client
-	nexusClient nexus.RuntimeprojectEdgeV1Interface
+	nexusClient nexus.Interface
 	testEnv     *envtest.Environment
 	ctx         context.Context
 	cancel      context.CancelFunc
@@ -66,8 +68,8 @@ var _ = BeforeSuite(func() {
 	k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(k8sClient).NotTo(BeNil())
-	nexusClient = fleetclient.NewMockNexusClient([]v1.RuntimeProject{
-		{
+	nexusClient = nexusFake.NewSimpleClientset(
+		&nexusApi.RuntimeProject{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "mock-runtime-project-hash-12345",
 				Labels: map[string]string{
@@ -82,7 +84,7 @@ var _ = BeforeSuite(func() {
 			},
 			Spec: v1.RuntimeProjectSpec{},
 		},
-		{
+		&nexusApi.RuntimeProject{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "mock-runtime-project-hash-54321",
 				Labels: map[string]string{
@@ -96,8 +98,7 @@ var _ = BeforeSuite(func() {
 				UID: "0a07df38-9df6-4d91-8275-d907c27915b8",
 			},
 			Spec: v1.RuntimeProjectSpec{},
-		},
-	})
+		})
 
 	go func() {
 		defer GinkgoRecover()

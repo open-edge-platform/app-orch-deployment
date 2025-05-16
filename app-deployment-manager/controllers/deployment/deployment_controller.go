@@ -76,11 +76,12 @@ const (
 var (
 	Clock clock.Clock = clock.RealClock{}
 
-	ownerKey    = ".metadata.controller"
-	jobOwnerKey = ".metadata.jobowner"
-	apiGVStr    = v1beta1.GroupVersion.String()
-	gitjobGVStr = "gitjob.cattle.io/v1"
-	logchecker  *lc.LogChecker
+	ownerKey               = ".metadata.controller"
+	jobOwnerKey            = ".metadata.jobowner"
+	apiGVStr               = v1beta1.GroupVersion.String()
+	gitjobGVStr            = "gitjob.cattle.io/v1"
+	getInclusterConfigFunc = rest.InClusterConfig
+	logchecker             *lc.LogChecker
 )
 
 // Reconciler reconciles a Deployment object
@@ -95,7 +96,7 @@ type Reconciler struct {
 	requeueStatus           bool
 	fleetGitPollingInterval *metav1.Duration
 	recorder                record.EventRecorder
-	nexusclient             *nexus.Clientset
+	nexusclient             nexus.Interface
 }
 
 // +kubebuilder:rbac:groups=app.edge-orchestrator.intel.com,resources=deployments,verbs=get;list;watch;create;update;patch;delete
@@ -181,7 +182,7 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) (err error) {
 		return fmt.Errorf("failed to setup deployment controller (%v)", err)
 	}
 
-	cfg, err := rest.InClusterConfig()
+	cfg, err := getInclusterConfigFunc()
 	if err != nil {
 		return fmt.Errorf("failed to get in-cluster config: %v", err)
 	}

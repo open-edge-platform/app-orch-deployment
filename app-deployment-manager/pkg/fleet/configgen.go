@@ -243,7 +243,7 @@ type GlobalValuesFleet struct {
 }
 
 // GenerateFleetConfigs generates fleet configurations for the applications to a given path
-func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Client, nc nexus.RuntimeprojectEdgeV1Interface) error {
+func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Client, nc nexus.RuntimeProjectsGetter) error {
 	appMap := map[string]v1beta1.Application{}
 	var initNsBundleName string
 

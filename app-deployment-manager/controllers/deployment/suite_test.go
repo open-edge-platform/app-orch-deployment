@@ -8,17 +8,14 @@ import (
 	"context"
 	"os"
 	"path/filepath"
-	"testing"
-
 	ctrl "sigs.k8s.io/controller-runtime"
+	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/v1beta1"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/catalogclient"
 	fleetv1alpha1 "github.com/rancher/fleet/pkg/apis/fleet.cattle.io/v1alpha1"
-
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -40,6 +37,10 @@ var (
 	cancel    context.CancelFunc
 )
 
+func fakeGetInclusterConfig() (*rest.Config, error) {
+	return &rest.Config{}, nil
+}
+
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
 
@@ -50,6 +51,8 @@ var _ = BeforeSuite(func() {
 	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 
 	ctx, cancel = context.WithCancel(context.TODO())
+
+	getInclusterConfigFunc = fakeGetInclusterConfig
 
 	By("bootstrapping test environment")
 	testEnv = &envtest.Environment{
