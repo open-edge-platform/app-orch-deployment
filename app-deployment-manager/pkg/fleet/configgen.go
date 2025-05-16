@@ -11,6 +11,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	nexus "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/client/clientset/versioned/typed/runtimeproject.edge-orchestrator.intel.com/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apiserver/pkg/storage/names"
 	"net/url"
 	"os"
@@ -32,8 +35,10 @@ type BundleType int
 const (
 	// This special string is a placeholder for the actual credential name in
 	// the Helm profile.yaml and overrides.yaml
-	CredentialString string = "%GeneratedDockerCredential%"
-	PreHookString    string = "%PreHookCredential%"
+	CredentialString    string = "%GeneratedDockerCredential%"
+	PreHookString       string = "%PreHookCredential%"
+	ImageRegistryURL    string = "%ImageRegistryURL%"
+	RegistryProjectName        = "%RegistryProjectName%"
 
 	BundleTypeUnknown BundleType = 0
 	BundleTypeInit    BundleType = 1
@@ -42,6 +47,9 @@ const (
 	BundleTypeUnknownString = "unknown"
 	BundleTypeInitString    = "init"
 	BundleTypeAppString     = "app"
+
+	NexusOrgLabel         = "runtimeorgs.runtimeorg.edge-orchestrator.intel.com"
+	RegistryProjectPrefix = "catalog-apps" // Corresponds to HarborProjectName in TenantController
 )
 
 var (
@@ -235,7 +243,7 @@ type GlobalValuesFleet struct {
 }
 
 // GenerateFleetConfigs generates fleet configurations for the applications to a given path
-func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Client) error {
+func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Client, nc nexus.RuntimeProjectsGetter) error {
 	appMap := map[string]v1beta1.Application{}
 	var initNsBundleName string
 
@@ -246,6 +254,11 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 	// Only generate name if dp.Namespaces defined
 	if len(d.Spec.DeploymentPackageRef.Namespaces) > 0 {
 		initNsBundleName = names.SimpleNameGenerator.GenerateName("")
+	}
+
+	registryProjectName, err := getRegistryProjectName(d, nc)
+	if err != nil {
+		return err
 	}
 
 	for _, app := range d.Spec.Applications {
@@ -278,6 +291,24 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 		// Check if Prehook present and if it needs image pull.
 		if strings.Contains(contents, PreHookString) {
 			hasPreHook = true
+		}
+
+		if strings.Contains(contents, ImageRegistryURL) {
+			if app.HelmApp.ImageRegistry == "" {
+				return fmt.Errorf("imageRegistry not set but '%s' tag is present", ImageRegistryURL)
+			}
+			imageRegistryURLBare := strings.TrimPrefix(app.HelmApp.ImageRegistry, "oci://")
+			imageRegistryURLBare = strings.TrimPrefix(imageRegistryURLBare, "http://")
+			imageRegistryURLBare = strings.TrimPrefix(imageRegistryURLBare, "https://")
+			imageRegistryURLBare = strings.TrimSuffix(imageRegistryURLBare, "/")
+			log.Debugf("Replacing: %s in App %s with %s", ImageRegistryURL, app.Name, imageRegistryURLBare)
+			contents = strings.Replace(contents, ImageRegistryURL, imageRegistryURLBare, -1)
+		}
+
+		if strings.Contains(contents, RegistryProjectName) {
+			log.Debugf("Replacing: %s in App %s with %s", RegistryProjectName, app.Name, registryProjectName)
+
+			contents = strings.Replace(contents, RegistryProjectName, registryProjectName, -1)
 		}
 
 		err = utils.WriteFile(fleetPath, profileyaml, []byte(contents))
@@ -793,4 +824,30 @@ func WriteExtraValues(basedir string, filename string, e *ExtraValues) error {
 		return err
 	}
 	return utils.WriteFile(basedir, filename, data)
+}
+
+func getRegistryProjectName(d *v1beta1.Deployment, nexusClient nexus.RuntimeProjectsGetter) (string, error) {
+	projectID := d.Labels[string(v1beta1.AppOrchActiveProjectID)]
+	if projectID == "" {
+		return "", fmt.Errorf("project-id not found in deployment labels")
+	}
+	runtimeProjects, err := nexusClient.RuntimeProjects().List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		log.Errorf("Failed to List Nexus Runtime Project %v", err)
+		return "", err
+	}
+	for _, runtimeProject := range runtimeProjects.Items {
+		if runtimeProject.GetUID() == types.UID(projectID) {
+			log.Debugf("Found Nexus project %s with UID %s", runtimeProject.GetName(), runtimeProject.UID)
+			projectName := runtimeProject.DisplayName()
+			orgName := runtimeProject.GetLabels()[NexusOrgLabel]
+			if orgName == "" {
+				return "", fmt.Errorf("nexus project %s has no label %s", projectName, NexusOrgLabel)
+			}
+
+			return fmt.Sprintf("%s-%s-%s", RegistryProjectPrefix, orgName, projectName), nil
+		}
+	}
+
+	return "", fmt.Errorf("unable to find nexus runtime project with UID: %s", projectID)
 }
