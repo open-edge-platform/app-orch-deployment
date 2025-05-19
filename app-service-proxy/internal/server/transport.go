@@ -72,6 +72,43 @@ func (t *RewritingTransport) RoundTrip(req *http.Request) (*http.Response, error
 		return nil, err
 	}
 
+	// Patch CSP header
+	cspHeaders := resp.Header.Values("Content-Security-Policy")
+	if len(cspHeaders) > 0 {
+		var newCSPs []string
+		for _, csp := range cspHeaders {
+			// Find frame-ancestors directive
+			re := regexp.MustCompile(`frame-ancestors\s+([^;]+)`)
+			csp = re.ReplaceAllStringFunc(csp, func(match string) string {
+				parts := strings.Fields(match)
+				if len(parts) < 2 {
+					return "frame-ancestors 'self'"
+				}
+				// If 'none', replace with 'self'
+				if parts[1] == "'none'" {
+					return "frame-ancestors 'self'"
+				}
+				// If 'self' is missing, add it
+				hasSelf := false
+				for _, v := range parts[1:] {
+					if v == "'self'" {
+						hasSelf = true
+						break
+					}
+				}
+				if !hasSelf {
+					return match + " 'self'"
+				}
+				return match
+			})
+			logrus.Debugf("Patched CSP header: frame-ancestors: %s", csp)
+			newCSPs = append(newCSPs, csp)
+		}
+		resp.Header.Del("Content-Security-Policy")
+		resp.Header.Set("Content-Security-Policy", strings.Join(newCSPs, "; "))
+	}
+	logrus.Debugf("Updated CSP header: %s", resp.Header.Get("Content-Security-Policy"))
+
 	cType := resp.Header.Get("Content-Type")
 	cType = strings.TrimSpace(strings.SplitN(cType, ";", 2)[0])
 	if cType != "text/html" {
