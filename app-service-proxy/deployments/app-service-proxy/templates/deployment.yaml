@@ -60,8 +60,6 @@ spec:
           - name: OPA_ENABLED
             value: "true"
           {{- end}}
-          - name: CATTLE_TUNNEL_DATA_DEBUG
-            value: {{ .Values.remotedialer.debug | quote }}
           - name: ASP_LOG_LEVEL
             value: {{ .Values.logLevel }}
           - name: ADM_ADDRESS
@@ -72,95 +70,6 @@ spec:
             value: {{ .Values.admRateLimiter.qps | quote }}
           - name: RATE_LIMITER_BURST
             value: {{ .Values.admRateLimiter.burst | quote }}
-          - name: GIT_REPO_NAME
-            value: {{ .Values.git.repoName }}
-          - name: GIT_PROVIDER
-            value: {{ .Values.git.provider }}
-          - name: SECRET_SERVICE_ENABLED
-            value: {{ .Values.git.secretService.enabled | quote }}
-          {{- with .Values.git.user }}
-          - name: GIT_USER
-            value: {{ . }}
-          {{- end }}
-          {{- with .Values.git.password }}
-          - name: GIT_PASSWORD
-            value: {{ . }}
-          {{- end }}
-          {{- with .Values.git.server }}
-          - name: GIT_SERVER
-            value: {{ . }}
-          {{- end }}
-          {{- with .Values.git.proxy }}
-          - name: GIT_PROXY
-            value: {{ . | quote }}
-          {{- end }}
-          {{- if .Values.git.gitUseCaCert }}
-          - name: GIT_CA_CERT
-            valueFrom:
-              secretKeyRef:
-                key: {{ .Values.git.gitCaCertSecretKey }}
-                name: {{ .Values.git.gitCaCertSecret }}
-          {{- end }}
-          {{- with .Values.git.clientSecret }}
-          - name: GIT_CLIENT_SECRET
-            value: "{{ . }}"
-          {{- end }}
-          {{- with .Values.git.codeCommit.awsRegion }}
-          - name: GIT_REGION
-            value: {{ . | quote }}
-          {{- end }}
-          {{- with .Values.git.codeCommit.awsAccessKeyId }}
-          - name: GIT_ACCESSKEY
-            value: {{ . | quote }}
-          {{- end }}
-          {{- with .Values.git.codeCommit.awsSecretAccessKey }}
-          - name: GIT_SECRET_ACCESSKEY
-            value: {{ . | quote }}
-          {{- end }}
-          {{- with .Values.git.codeCommit.awsSshKeyId }}
-          - name: GIT_AWSSSHKEY
-            value: {{ . | quote }}
-          {{- end }}
-          {{- with .Values.git.secretService.endpoint }}
-          - name: SECRET_SERVICE_ENDPOINT
-            value: {{ . | quote }}
-          {{- end }}
-          {{- with .Values.git.secretService.secrets.gitService.path }}
-          - name: SECRET_GIT_SERVICE_PATH
-            value: {{ . | quote }}
-          {{- end }}
-          {{- with .Values.git.secretService.secrets.gitService.keys.username }}
-          - name: SECRET_GIT_SERVICE_USERNAME_KVKEY
-            value: {{ . | quote }}
-          {{- end }}
-          {{- with .Values.git.secretService.secrets.gitService.keys.password }}
-          - name: SECRET_GIT_SERVICE_PASSWORD_KVKEY
-            value: {{ . | quote }}
-          {{- end }}
-          {{- with .Values.git.secretService.secrets.awsService.path }}
-          - name: SECRET_AWS_SERVICE_PATH
-            value: {{ . | quote }}
-          {{- end }}
-          {{- with .Values.git.secretService.secrets.awsService.keys.region }}
-          - name: SECRET_AWS_SERVICE_REGION_KVKEY
-            value: {{ . | quote }}
-          {{- end }}
-          {{- with .Values.git.secretService.secrets.awsService.keys.accessKeyID }}
-          - name: SECRET_AWS_SERVICE_ACCESSKEY_KVKEY
-            value: {{ . | quote }}
-          {{- end }}
-          {{- with .Values.git.secretService.secrets.awsService.keys.secretAccessKey }}
-          - name: SECRET_AWS_SERVICE_SECRET_ACCESSKEY_KVKEY
-            value: {{ . | quote }}
-          {{- end }}
-          {{- with .Values.git.secretService.secrets.awsService.keys.sshKeyID }}
-          - name: SECRET_AWS_SERVICE_SECRET_SSHKEY_KVKEY
-            value: {{ . | quote }}
-          {{- end }}
-          {{- with .Values.git.remoteType }}
-          - name: FLEET_GIT_REMOTE_TYPE
-            value: "{{ . }}"
-          {{- end }}
         securityContext:
           {{- toYaml .Values.containerSecurityContext | nindent 10 }}
         {{- if .Values.resources }}
@@ -169,10 +78,6 @@ spec:
         volumeMounts:
           - name: asptmp
             mountPath: /tmp
-        {{- if .Values.git.gitUseCaCert }}
-          - name: {{ .Values.git.gitCaCertVolume }}
-            mountPath: {{ .Values.git.gitCaCertFolder }}
-        {{- end }}
       {{- if .Values.openpolicyagent.enabled }}
       - name: openpolicyagent
         {{- with .Values.openpolicyagent }}
@@ -223,9 +128,3 @@ spec:
           configMap:
             name: {{ include "app-service-proxy.fullname" . }}-opa-rego
         {{- end }}
-      {{- if .Values.git.gitUseCaCert }}
-        - name: {{ .Values.git.gitCaCertVolume }}
-          secret:
-            defaultMode: 420
-            secretName: {{ .Values.git.gitCaCertSecret }}
-      {{- end }}

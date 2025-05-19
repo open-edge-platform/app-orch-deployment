@@ -99,7 +99,7 @@ var _ = Describe("Fleet config generator", func() {
 		overValues []byte
 		globValues *ExtraValues
 
-		imageRegistry = "https://test.registry.intel.com"
+		imageRegistry = "https://test.registry.intel.com/"
 		imageRegUser  = "user"
 		imageRegPass  = "pass"
 
@@ -169,6 +169,15 @@ var _ = Describe("Fleet config generator", func() {
 					"password": []byte(imageRegPass),
 				},
 			},
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "profsecretwithimageregistry",
+					Namespace: "default",
+				},
+				Data: map[string][]byte{
+					"values": []byte(`{"image": "%ImageRegistryURL%/%RegistryProjectName%/some-image"}`),
+				},
+			},
 		}
 
 		for i := range secrets {
@@ -181,9 +190,17 @@ var _ = Describe("Fleet config generator", func() {
 		}
 
 		deployment = &v1beta1.Deployment{ObjectMeta: metav1.ObjectMeta{
-			Name:       "wordpress-deployment",
-			Namespace:  "default",
-			UID:        "447107d5-a622-404b-b7b1-260131c1b5a9",
+			Name:      "wordpress-deployment",
+			Namespace: "default",
+			UID:       "447107d5-a622-404b-b7b1-260131c1b5a9",
+			Labels: map[string]string{
+				string(v1beta1.AppOrchActiveProjectID): "64f42b12-af68-4676-a689-657dd670daab",
+				"app.kubernetes.io/created-by":         "app-deployment-manager",
+				"app.kubernetes.io/instance":           "wordpress-deployment",
+				"app.kubernetes.io/managed-by":         "kustomize",
+				"app.kubernetes.io/name":               "deployment",
+				"app.kubernetes.io/part-of":            "app-deployment-manager",
+			},
 			Generation: 1,
 		},
 			Spec: v1beta1.DeploymentSpec{
@@ -261,7 +278,7 @@ var _ = Describe("Fleet config generator", func() {
 				// Generate Fleet Configs
 				basedir := "/tmp/fleet0"
 				Expect(os.RemoveAll(basedir)).To(Succeed())
-				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient)).To(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).To(Succeed())
 
 				app := deployment.Spec.Applications[0]
 
@@ -301,7 +318,7 @@ var _ = Describe("Fleet config generator", func() {
 				// Generate Fleet Configs
 				basedir := "/tmp/fleet0"
 				Expect(os.RemoveAll(basedir)).To(Succeed())
-				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient)).To(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).To(Succeed())
 
 				for _, app := range deployment.Spec.Applications {
 					// Validate fleet.yaml
@@ -343,7 +360,7 @@ var _ = Describe("Fleet config generator", func() {
 
 				basedir := "/tmp/fleet0"
 				Expect(os.RemoveAll(basedir)).To(Succeed())
-				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient)).To(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).To(Succeed())
 
 				// Validate fleet.yaml
 				fleetdir := filepath.Join(basedir, app.Name)
@@ -383,7 +400,7 @@ var _ = Describe("Fleet config generator", func() {
 
 				basedir := "/tmp/fleet0"
 				Expect(os.RemoveAll(basedir)).To(Succeed())
-				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient)).NotTo(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).NotTo(Succeed())
 			})
 		})
 
@@ -394,7 +411,7 @@ var _ = Describe("Fleet config generator", func() {
 
 				basedir := "/tmp/fleet0"
 				Expect(os.RemoveAll(basedir)).To(Succeed())
-				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient)).To(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).To(Succeed())
 
 				// Validate fleet.yaml
 				fleetdir := filepath.Join(basedir, app.Name)
@@ -434,7 +451,7 @@ var _ = Describe("Fleet config generator", func() {
 
 				basedir := "/tmp/fleet0"
 				Expect(os.RemoveAll(basedir)).To(Succeed())
-				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient)).NotTo(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).NotTo(Succeed())
 			})
 		})
 
@@ -448,7 +465,7 @@ var _ = Describe("Fleet config generator", func() {
 
 				basedir := "/tmp/fleet0"
 				Expect(os.RemoveAll(basedir)).To(Succeed())
-				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient)).To(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).To(Succeed())
 
 				// Validate fleet.yaml basic contents
 				fleetdir := filepath.Join(basedir, app.Name)
@@ -522,7 +539,7 @@ var _ = Describe("Fleet config generator", func() {
 
 				basedir := "/tmp/fleet0"
 				Expect(os.RemoveAll(basedir)).To(Succeed())
-				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient)).To(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).To(Succeed())
 
 				// Validate fleet.yaml basic contents
 				fleetdir := filepath.Join(basedir, app.Name)
@@ -553,7 +570,7 @@ var _ = Describe("Fleet config generator", func() {
 
 				basedir := "/tmp/fleet0"
 				Expect(os.RemoveAll(basedir)).To(Succeed())
-				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient)).To(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).To(Succeed())
 
 				// Validate fleet.yaml basic contents
 				fleetdir := filepath.Join(basedir, app.Name)
@@ -593,7 +610,7 @@ var _ = Describe("Fleet config generator", func() {
 
 				basedir := "/tmp/fleet0"
 				Expect(os.RemoveAll(basedir)).To(Succeed())
-				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient)).To(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).To(Succeed())
 
 				// Validate fleet.yaml basic contents
 				fleetdir := filepath.Join(basedir, app.Name)
@@ -657,7 +674,7 @@ var _ = Describe("Fleet config generator", func() {
 
 				basedir := "/tmp/fleet0"
 				Expect(os.RemoveAll(basedir)).To(Succeed())
-				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient)).NotTo(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).NotTo(Succeed())
 				fleetdir := filepath.Join(basedir, app.Name)
 				yaml := filepath.Join(fleetdir, "fleet.yaml")
 				Expect(yaml).ShouldNot(BeAnExistingFile())
@@ -672,7 +689,44 @@ var _ = Describe("Fleet config generator", func() {
 
 				basedir := "/tmp/fleet0"
 				Expect(os.RemoveAll(basedir)).To(Succeed())
-				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient)).NotTo(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).NotTo(Succeed())
+			})
+		})
+
+		Context("ImageRegistryURL% and %RegistryProjectName are provided", func() {
+			It("should replace them in values", func() {
+				app := &deployment.Spec.Applications[0]
+				app.HelmApp.ImageRegistry = imageRegistry
+				app.HelmApp.ImageRegistrySecretName = "imageregcreds"
+				app.ProfileSecretName = "profsecretwithimageregistry"
+
+				basedir := "/tmp/fleet0"
+				Expect(os.RemoveAll(basedir)).To(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).To(Succeed())
+
+				// Validate profile.yaml is empty
+				fleetdir := filepath.Join(basedir, app.Name)
+				yaml := filepath.Join(fleetdir, "profile.yaml")
+				Expect(yaml).Should(BeAnExistingFile())
+				contents, err := os.ReadFile(yaml)
+				Expect(err).To(BeNil())
+
+				Expect(string(contents)).To(
+					Equal("{\"image\": \"test.registry.intel.com/catalog-apps-mock-org-1-mock-project-1-in-mock-org-1/some-image\"}"))
+			})
+		})
+
+		Context("ImageRegistry tag is provided by no image registry object present", func() {
+			It("should throw error", func() {
+				app := &deployment.Spec.Applications[0]
+				app.HelmApp.ImageRegistrySecretName = "imageregcreds"
+				app.ProfileSecretName = "profsecretwithimageregistry"
+
+				basedir := "/tmp/fleet0"
+				Expect(os.RemoveAll(basedir)).To(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).
+					To(MatchError("imageRegistry not set but '%ImageRegistryURL%' tag is present"))
+
 			})
 		})
 
@@ -685,7 +739,7 @@ var _ = Describe("Fleet config generator", func() {
 
 				basedir := "/tmp/fleet0"
 				Expect(os.RemoveAll(basedir)).To(Succeed())
-				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient)).To(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).To(Succeed())
 
 				// Validate fleet.yaml basic contents
 				fleetdir := filepath.Join(basedir, app0.Name)
@@ -768,7 +822,7 @@ var _ = Describe("Fleet config generator", func() {
 
 				basedir := "/tmp/fleet0"
 				Expect(os.RemoveAll(basedir)).To(Succeed())
-				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient)).To(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).To(Succeed())
 
 				// Validate fleet.yaml basic contents
 				fleetdir := filepath.Join(basedir, app.Name)

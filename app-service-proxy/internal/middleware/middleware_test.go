@@ -9,7 +9,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 
 	. "github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/middleware"
 
@@ -37,32 +36,6 @@ var _ = Describe("Middleware", func() {
 		})
 	})
 
-	Describe("ValidateUnicodePrintableChars", func() {
-		Context("when request body contains only printable characters", func() {
-			It("should pass the request to the next handler", func() {
-				body := strings.NewReader("This is a valid request body with printable characters.")
-				request = httptest.NewRequest("POST", "/test", body)
-				middleware := ValidateUnicodePrintableChars(nextHandler)
-
-				middleware.ServeHTTP(responseRecorder, request)
-
-				Expect(responseRecorder.Code).To(Equal(http.StatusOK))
-			})
-		})
-
-		Context("when request body contains non-printable characters", func() {
-			It("should return an error response", func() {
-				body := strings.NewReader("Invalid\x00Body")
-				request = httptest.NewRequest("POST", "/test", body)
-				middleware := ValidateUnicodePrintableChars(nextHandler)
-
-				middleware.ServeHTTP(responseRecorder, request)
-
-				Expect(responseRecorder.Code).To(Equal(http.StatusBadRequest))
-			})
-		})
-	})
-
 	Describe("SizeLimitMiddleware", func() {
 		Context("when request body size is within the limit", func() {
 			It("should pass the request to the next handler", func() {
@@ -86,22 +59,6 @@ var _ = Describe("Middleware", func() {
 
 				Expect(responseRecorder.Code).To(Equal(http.StatusOK))
 			})
-		})
-	})
-
-	Describe("ValidateUnicodePrintableChars", func() {
-		It("should return an internal server error if copying the body fails", func() {
-			// Creating a request with a closed body to simulate an error in reading the body
-			req := httptest.NewRequest("POST", "/test", errorReader{})
-			req.Body.Close() // Simulating an error condition
-
-			recorder := httptest.NewRecorder()
-			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
-			middleware := ValidateUnicodePrintableChars(handler)
-
-			middleware.ServeHTTP(recorder, req)
-
-			Expect(recorder.Code).To(Equal(http.StatusInternalServerError))
 		})
 	})
 })

@@ -7,11 +7,13 @@ package deployment
 import (
 	"errors"
 	"fmt"
+	nexusApi "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/apis/runtimeproject.edge-orchestrator.intel.com/v1"
 	"os"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	nexusFake "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/client/clientset/versioned/fake"
 	fleetv1alpha1 "github.com/rancher/fleet/pkg/apis/fleet.cattle.io/v1alpha1"
 	"github.com/rancher/wrangler/v3/pkg/genericcondition"
 	batchv1 "k8s.io/api/batch/v1"
@@ -258,6 +260,28 @@ var _ = Describe("Deployment controller", func() {
 			gitclient: func(uuid string) (gitclient.Repository, error) {
 				return &m, nil
 			},
+			nexusclient: nexusFake.NewSimpleClientset(
+				&nexusApi.RuntimeProject{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "runtimeproject.edge-orchestrator.intel.com",
+						APIVersion: "v1",
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "mock-runtime-project-hash-12345",
+						Labels: map[string]string{
+							"multitenancies.tenancy.edge-orchestrator.intel.com": "default",
+							"nexus/display_name":   "mock-project-1-in-mock-org-1",
+							"nexus/is_name_hashed": "true",
+							"runtimefolders.runtimefolder.edge-orchestrator.intel.com": "default",
+							"runtimeorgs.runtimeorg.edge-orchestrator.intel.com":       "mock-org-1",
+							"runtimes.runtime.edge-orchestrator.intel.com":             "default",
+						},
+						UID: "a563356a-b4df-47bb-b620-aae2d74c5129",
+					},
+					Spec:   nexusApi.RuntimeProjectSpec{},
+					Status: nexusApi.RuntimeProjectNexusStatus{},
+				},
+			),
 		}
 		wordpressProfile = v1.Secret{
 			TypeMeta: metav1.TypeMeta{
