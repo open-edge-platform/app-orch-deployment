@@ -667,6 +667,15 @@ func injectNamespaceToSubDir(ns v1beta1.Namespace, fleetPath string, bundleName 
 		return err
 	}
 
+	// Adding an empty YAML file to trigger bundle creation
+	emptyYaml := map[string]interface{}{}
+	err = WriteResourceConfig(
+		filepath.Join(fleetPath, ns.Name+"-ns"),
+		emptyYaml, "empty.yaml")
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
