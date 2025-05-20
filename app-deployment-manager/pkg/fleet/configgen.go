@@ -652,8 +652,14 @@ func BundleName(app v1beta1.Application, depName string) string {
 	// Generate a UUID using the SHA-1 hash as a namespace
 	u := uuid.NewSHA1(uuid.Nil, []byte(hashInHex))
 	uuidStr := u.String()
+	truncatedUUIDLength := 16
 
 	// Extract truncatedUUIDLength characters from the UUID
+	// The truncation to 16 characters is intended to create a shorter, human-readable identifier
+	// while still retaining sufficient uniqueness for the expected scale of the system.
+	// The risk of collisions is minimal because the UUID is derived from a SHA-1 hash of the input,
+	// which provides a high degree of entropy. However, truncating the UUID reduces its entropy,
+	// so this approach assumes that the system will not generate an extremely high volume of bundle names.
 	bundleName := fmt.Sprintf("b-%s", uuidStr[:truncatedUUIDLength])
 
 	return bundleName
