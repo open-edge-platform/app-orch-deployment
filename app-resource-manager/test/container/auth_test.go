@@ -8,8 +8,8 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
-// TestListAuthProjectID tests list both app workload and endpoint service with invalid project id
-func (s *TestSuite) TestListAuthProjectID() {
+// TestAppWorkloadsListInvalidProjectID tests list app workload with invalid project id
+func (s *TestSuite) TestAppWorkloadsListInvalidProjectID() {
 	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
@@ -20,17 +20,11 @@ func (s *TestSuite) TestListAuthProjectID() {
 		s.Error(err)
 		s.Empty(appWorkloads)
 		s.T().Logf("successfully handled invalid projectid to list app workloads\n")
-
-		appEndpoints, retCode, err := AppEndpointsList(armClient, appID)
-		s.Equal(retCode, 403)
-		s.Error(err)
-		s.Empty(appEndpoints)
-		s.T().Logf("successfully handled invalid projectid to list app endpoints\n")
 	}
 }
 
-// TestListAuthJWT tests list both app workload and endpoint service with invalid jwt
-func (s *TestSuite) TestListAuthJWT() {
+// TestAppWorkloadsListInvalidJWT tests list app workload with invalid JWT
+func (s *TestSuite) TestAppWorkloadsListInvalidJWT() {
 	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.projectID)
 	s.NoError(err)
 
@@ -41,7 +35,31 @@ func (s *TestSuite) TestListAuthJWT() {
 		s.Error(err)
 		s.Empty(appWorkloads)
 		s.T().Logf("successfully handled invalid JWT to list app workloads\n")
+	}
+}
 
+// TestAppEndpointsListInvalidProjectID tests list app endpoints with invalid project id
+func (s *TestSuite) TestAppEndpointsListInvalidProjectID() {
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
+	s.NoError(err)
+
+	for _, app := range s.deployApps {
+		appID := *app.Id
+		appEndpoints, retCode, err := AppEndpointsList(armClient, appID)
+		s.Equal(retCode, 403)
+		s.Error(err)
+		s.Empty(appEndpoints)
+		s.T().Logf("successfully handled invalid projectid to list app endpoints\n")
+	}
+}
+
+// TestAppEndpointsListInvalidJWT tests list app endpoints with invalid JWT
+func (s *TestSuite) TestAppEndpointsListInvalidJWT() {
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.projectID)
+	s.NoError(err)
+
+	for _, app := range s.deployApps {
+		appID := *app.Id
 		appEndpoints, retCode, err := AppEndpointsList(armClient, appID)
 		s.Equal(retCode, 401)
 		s.Error(err)
@@ -50,8 +68,8 @@ func (s *TestSuite) TestListAuthJWT() {
 	}
 }
 
-// TestDeletePodAuthProjectID tests delete pod with invalid project id
-func (s *TestSuite) TestDeletePodAuthProjectID() {
+// TestDeletePodAuthInvalidProjectID tests delete pod with invalid project id
+func (s *TestSuite) TestDeletePodAuthInvalidProjectID() {
 	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
@@ -61,8 +79,8 @@ func (s *TestSuite) TestDeletePodAuthProjectID() {
 	s.T().Logf("successfully handled invalid projectid to delete pod\n")
 }
 
-// TestDeletePodAuthJWT tests delete pod with invalid jwt
-func (s *TestSuite) TestDeletePodAuthJWT() {
+// TestDeletePodAuthInvalidJWT tests delete pod with invalid jwt
+func (s *TestSuite) TestDeletePodAuthInvalidJWT() {
 	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.projectID)
 	s.NoError(err)
 

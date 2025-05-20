@@ -9,27 +9,27 @@ import (
 )
 
 var appWorkloadsMethods = map[string]int{
-	http.MethodPut:    405,
-	http.MethodGet:    200,
-	http.MethodDelete: 405,
-	http.MethodPatch:  405,
-	http.MethodPost:   405,
+	http.MethodPut:    http.StatusMethodNotAllowed,
+	http.MethodGet:    http.StatusOK,
+	http.MethodDelete: http.StatusMethodNotAllowed,
+	http.MethodPatch:  http.StatusMethodNotAllowed,
+	http.MethodPost:   http.StatusMethodNotAllowed,
 }
 
 var appEndpointsMethods = map[string]int{
-	http.MethodPut:    405,
-	http.MethodGet:    200,
-	http.MethodDelete: 405,
-	http.MethodPatch:  405,
-	http.MethodPost:   405,
+	http.MethodPut:    http.StatusMethodNotAllowed,
+	http.MethodGet:    http.StatusOK,
+	http.MethodDelete: http.StatusMethodNotAllowed,
+	http.MethodPatch:  http.StatusMethodNotAllowed,
+	http.MethodPost:   http.StatusMethodNotAllowed,
 }
 
 var deleteMethods = map[string]int{
-	http.MethodPut:    200,
-	http.MethodGet:    405,
-	http.MethodDelete: 405,
-	http.MethodPatch:  405,
-	http.MethodPost:   405,
+	http.MethodPut:    http.StatusOK,
+	http.MethodGet:    http.StatusMethodNotAllowed,
+	http.MethodDelete: http.StatusMethodNotAllowed,
+	http.MethodPatch:  http.StatusMethodNotAllowed,
+	http.MethodPost:   http.StatusMethodNotAllowed,
 }
 
 // TestListMethods tests both app workload and endpoint service with different HTTP methods
@@ -57,15 +57,13 @@ func (s *TestSuite) TestListMethods() {
 func (s *TestSuite) TestDeletePodMethod() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := AppWorkloadsList(s.armClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
 		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
+		s.Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		s.T().Logf("app workloads len: %+v\n", len(*appWorkloads))
 
@@ -75,7 +73,7 @@ func (s *TestSuite) TestDeletePodMethod() {
 
 			for method, expectedStatus := range deleteMethods {
 				if expectedStatus == 200 {
-					err = GetPodStatus(s.ArmClient, appID, appWorkload.Id, "STATE_RUNNING")
+					err = GetPodStatus(s.armClient, appID, appWorkload.Id, "STATE_RUNNING")
 					s.NoError(err)
 				}
 
@@ -84,7 +82,7 @@ func (s *TestSuite) TestDeletePodMethod() {
 				s.Equal(expectedStatus, res.StatusCode)
 
 				if expectedStatus == 200 {
-					err = WaitPodDelete(s.ArmClient, appID)
+					err = WaitPodDelete(s.armClient, appID)
 					s.NoError(err)
 				}
 

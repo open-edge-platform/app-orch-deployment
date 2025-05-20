@@ -7,7 +7,9 @@ package deployment
 import (
 	"context"
 	"fmt"
+	nexus "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/client/clientset/versioned"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/rest"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -74,11 +76,12 @@ const (
 var (
 	Clock clock.Clock = clock.RealClock{}
 
-	ownerKey    = ".metadata.controller"
-	jobOwnerKey = ".metadata.jobowner"
-	apiGVStr    = v1beta1.GroupVersion.String()
-	gitjobGVStr = "gitjob.cattle.io/v1"
-	logchecker  *lc.LogChecker
+	ownerKey               = ".metadata.controller"
+	jobOwnerKey            = ".metadata.jobowner"
+	apiGVStr               = v1beta1.GroupVersion.String()
+	gitjobGVStr            = "gitjob.cattle.io/v1"
+	getInclusterConfigFunc = rest.InClusterConfig
+	logchecker             *lc.LogChecker
 )
 
 // Reconciler reconciles a Deployment object
@@ -93,6 +96,7 @@ type Reconciler struct {
 	requeueStatus           bool
 	fleetGitPollingInterval *metav1.Duration
 	recorder                record.EventRecorder
+	nexusclient             nexus.Interface
 }
 
 // +kubebuilder:rbac:groups=app.edge-orchestrator.intel.com,resources=deployments,verbs=get;list;watch;create;update;patch;delete
@@ -176,6 +180,16 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) (err error) {
 		Build(r)
 	if err != nil {
 		return fmt.Errorf("failed to setup deployment controller (%v)", err)
+	}
+
+	cfg, err := getInclusterConfigFunc()
+	if err != nil {
+		return fmt.Errorf("failed to get in-cluster config: %v", err)
+	}
+
+	r.nexusclient, err = nexus.NewForConfig(cfg)
+	if err != nil {
+		return fmt.Errorf("failed to create nexus client: %v", err)
 	}
 
 	return nil
@@ -533,7 +547,7 @@ func (r *Reconciler) reconcileRepository(_ context.Context, d *v1beta1.Deploymen
 	}
 	// Generate fleet configurations for the applications and commit,
 	// and push to the remote git repository
-	if err := fleet.GenerateFleetConfigs(d, basedir, r.Client); err != nil {
+	if err := fleet.GenerateFleetConfigs(d, basedir, r.Client, r.nexusclient.RuntimeprojectEdgeV1()); err != nil {
 		reason = reasonFleetConfigFailed
 		return ctrl.Result{}, err
 	}

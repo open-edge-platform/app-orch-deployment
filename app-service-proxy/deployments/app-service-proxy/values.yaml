@@ -193,76 +193,11 @@ openidc:
   issuer: "http://platform-keycloak.orch-platform.svc/realms/master"
   insecureSkipVerify: false
 
-# Enables debug logging on the WS tunnel. Note that logLevel has to be set to "info" or below for this to have an effect.
-remotedialer:
-  debug: "true"
-
 # Application-wide log level. Must be a valid logrus log level string.
-logLevel: "warn"
+logLevel: "debug"
 
 admAddress: app-deployment-api-grpc-server:8080
 ccgAddress: cluster-connect-gateway.orch-cluster.svc:8080
 admRateLimiter:
   qps: 30
   burst: 2000
-
-git:
-  ## @param git.repoName The name of git repository and fleet gitrepo object
-  repoName: "orchestrator-service-proxy"
-  # Existing secret name containing the private git repo access credentials.
-  # The secret needs to created manually in the same namespace the GitRepo CR is in.
-  # ssh remote type requires client secret.
-  # Configuration for Git provider to which repos will be pushed
-  # gitProvider options < gitea | codecommit >
-  provider: gitea
-  user:
-  password:
-  server: "https://gitea.kind.internal"
-  proxy: ""
-  # Git remote URL type used in Fleet GitRepo configuration.
-  # Available options are http, https, ssh
-  remoteType: http
-  gitUseCaCert: true
-  gitCaCertSecret: gitea-ca-cert
-  gitCaCertSecretKey: ca.crt
-  # Name of the volume that has the git ca cert mounted
-  gitCaCertVolume: git-ca-cert-volume
-  # Folder in the volume where git ca cert is mounted
-  gitCaCertFolder: /tmp/ssl/certs/
-  # Name of the file in the folder containing the git ca certificate
-  gitCaCertFile: ca.crt
-
-  # If gitProvider is not codecommit these values will be ignored
-  # Keys are used for AWS SDK git client
-  codeCommit:
-    awsRegion: us-west-2
-    awsAccessKeyId:
-    awsSecretAccessKey:
-    awsSshKeyId:
-
-  secretService:
-    enabled: true
-    # Rest of the parameters will be ignored if enabled is false
-    endpoint: "http://vault.orch-platform.svc.cluster.local:8200"
-    secrets:
-      mount: "secret"
-      gitService:
-        path: "ma_git_service"
-        keys:
-          username: "username"
-          password: "password"
-      awsService:
-        path: "ma_aws_service"
-        keys:
-          region: "region"
-          accessKeyID: "accessKeyID"
-          secretAccessKey: "secretAccessKey"
-          sshKeyID: "sshKeyID"
-      harborService:
-        path: "ma_harbor_service"
-        keys:
-          cert: "cacerts"
-
-metrics:
-  enabled: true
-  port: 8080

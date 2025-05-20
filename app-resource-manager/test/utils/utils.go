@@ -16,17 +16,6 @@ import (
 
 var portForwardCmd = make(map[string]*exec.Cmd)
 
-const (
-	PortForwardServiceNamespace = "orch-app"
-	AdmPortForwardService       = "svc/app-deployment-api-rest-proxy"
-	ArmPortForwardService       = "svc/app-resource-manager-rest-proxy"
-	AdmPortForwardLocal         = "8081"
-	ArmPortForwardLocal         = "8081"
-	PortForwardAddress          = "0.0.0.0"
-	AdmPortForwardRemote        = "8081"
-	ArmPortForwardRemote        = "8082"
-)
-
 func PortForward(scenario string, portForwardCmd map[string]*exec.Cmd) (map[string]*exec.Cmd, error) {
 	service := AdmPortForwardService
 	localPort := AdmPortForwardLocal
@@ -72,7 +61,7 @@ func KillPortForward(scenario string, portForwardCmd map[string]*exec.Cmd) error
 	return nil
 }
 
-func BringUpPortForward() (map[string]*exec.Cmd, error) {
+func StartPortForwarding() (map[string]*exec.Cmd, error) {
 	portForwardCmd, err := PortForward("adm", portForwardCmd)
 	if err != nil {
 		return nil, fmt.Errorf("error: %v", err)

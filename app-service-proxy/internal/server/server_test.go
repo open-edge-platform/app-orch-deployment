@@ -20,10 +20,7 @@ import (
 
 	//"net/http/httptest"
 
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/gitclient"
 	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/admclient"
-	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/auth"
-	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/internal/vault"
 )
 
 var _ = Describe("Server", func() {
@@ -50,7 +47,6 @@ var _ = Describe("Server", func() {
 		os.Setenv("PROXY_SERVER_URL", "wss://app-orch.kind.internal/app-service-proxy")
 		os.Setenv("SECRET_SERVICE_ENABLED", "true")
 		os.Setenv("ASP_LOG_LEVEL", "debug")
-		auth.RenewTokenAuthorizer = func(req *http.Request, id string) (bool, error) { return true, nil }
 		addr = "127.0.0.1:8123"
 	})
 
@@ -125,7 +121,6 @@ var _ = Describe("Server", func() {
 			It("Should process the request successfully", func() {
 				testServer.authenticate = func(req *http.Request) error { return nil }
 				testServer.authorize = func(req *http.Request, projectID string) error { return nil }
-				testServer.vaultManager = &mockVaultManager{}
 				testServer.admClient = &mockADMClient{}
 			})
 		})
@@ -136,19 +131,6 @@ var _ = Describe("Server", func() {
 			It("Should process the request successfully", func() {
 				recorder = httptest.NewRecorder()
 				request, err = http.NewRequest("GET", "http://127.0.0.1:8123/app-service-proxy-test", bytes.NewBufferString(""))
-				Expect(err).NotTo(HaveOccurred())
-				testServer.router.ServeHTTP(recorder, request)
-				Expect(recorder.Code).To(Equal(http.StatusOK))
-			})
-		})
-	})
-
-	Describe("API extension", func() {
-		Context("When a client makes a request to an api extension", func() {
-			It("Should process the request successfully", func() {
-				gitclient.NewGitClient = func(repoName string) (gitclient.Repository, error) { return &mockGitClient{}, nil }
-				recorder = httptest.NewRecorder()
-				request, err = http.NewRequest("GET", "http://127.0.0.1:8123/app-service-proxy/renew/mock-cluster", bytes.NewBufferString(""))
 				Expect(err).NotTo(HaveOccurred())
 				testServer.router.ServeHTTP(recorder, request)
 				Expect(recorder.Code).To(Equal(http.StatusOK))
@@ -289,40 +271,3 @@ func (c *mockADMClient) GetClusterInfraName(ctx context.Context, clusterID,
 var NewMockAdmNewClient = func(opts ...grpc.DialOption) (admclient.ADMClient, error) {
 	return &mockADMClient{}, nil
 }
-
-// Mock Vault Manager
-type mockVaultManager struct{}
-
-func (v *mockVaultManager) GetToken(ctx context.Context, clusterID string) (*vault.Token, error) {
-	return &vault.Token{
-		Value:       "mock-token",
-		UpdatedTime: time.Time{},
-		TTLHours:    0,
-	}, nil
-}
-func (v *mockVaultManager) PutToken(ctx context.Context, clusterID string, tokenValue string, tokenTTLHours int) error {
-	return nil
-}
-func (v *mockVaultManager) DeleteToken(ctx context.Context, clusterID string) error {
-	return nil
-}
-func (v *mockVaultManager) GetHarborCred(ctx context.Context) (*vault.HarborCred, error) {
-	return nil, nil
-}
-
-func (v *mockVaultManager) GetGitRepoCred(ctx context.Context) (map[string]string, error) {
-	return nil, nil
-}
-
-// Mock Git Client
-type mockGitClient struct{}
-
-func (g *mockGitClient) ExistsOnRemote() (bool, error)   { return true, nil }
-func (g *mockGitClient) Initialize(basedir string) error { return nil }
-func (g *mockGitClient) Clone(basedir string) error      { return nil }
-func (g *mockGitClient) CommitFiles() error              { return nil }
-func (g *mockGitClient) PushToRemote() error             { return nil }
-func (g *mockGitClient) Delete() error                   { return nil }
-func (g *mockGitClient) CreateCodeCommitClient() error   { return nil }
-func (g *mockGitClient) CreateRepo() error               { return nil }
-func (g *mockGitClient) DeleteRepo() error               { return nil }

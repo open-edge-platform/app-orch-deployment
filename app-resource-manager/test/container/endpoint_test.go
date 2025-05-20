@@ -4,24 +4,29 @@
 
 package container
 
-// TestList tests both app workload and service endpoints
-func (s *TestSuite) TestList() {
+import "net/http"
+
+// TestListWorkloads tests listing app workloads
+func (s *TestSuite) TestListWorkloads() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := AppWorkloadsList(s.ArmClient, appID)
-		s.Equal(retCode, 200)
+		appWorkloads, retCode, err := AppWorkloadsList(s.armClient, appID)
+		s.Equal(retCode, http.StatusOK)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
 		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
-
+		s.Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 		s.T().Logf("app workloads len: %+v\n", len(*appWorkloads))
+	}
+}
 
-		appEndpoints, retCode, err := AppEndpointsList(s.ArmClient, appID)
-		s.Equal(retCode, 200)
+// TestListEndpoints tests listing app endpoints
+func (s *TestSuite) TestListEndpoints() {
+	for _, app := range s.deployApps {
+		appID := *app.Id
+		appEndpoints, retCode, err := AppEndpointsList(s.armClient, appID)
+		s.Equal(retCode, http.StatusOK)
 		s.NoError(err)
 		s.NotEmpty(appEndpoints)
 	}
@@ -31,19 +36,17 @@ func (s *TestSuite) TestList() {
 func (s *TestSuite) TestDeletePod() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := AppWorkloadsList(s.ArmClient, appID)
-		s.Equal(retCode, 200)
+		appWorkloads, retCode, err := AppWorkloadsList(s.armClient, appID)
+		s.Equal(retCode, http.StatusOK)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
 		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
+		s.Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		for _, appWorkload := range *appWorkloads {
-			retCode, err := PodDelete(s.ArmClient, *appWorkload.Namespace, appWorkload.Name, appID)
-			s.Equal(retCode, 200)
+			retCode, err := PodDelete(s.armClient, *appWorkload.Namespace, appWorkload.Name, appID)
+			s.Equal(retCode, http.StatusOK)
 			s.NoError(err)
 
 			s.T().Logf("deleted pod %s\n", appWorkload.Name)

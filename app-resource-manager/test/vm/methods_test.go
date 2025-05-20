@@ -10,188 +10,180 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/container"
 )
 
+// HTTP method maps for various VM operations
+// These maps define the expected HTTP status codes for different HTTP methods
+// for each VM operation endpoint
+
+// Map of HTTP methods and their expected status codes for VNC endpoint
 var getVncMethods = map[string]int{
-	http.MethodPut:    405,
-	http.MethodGet:    200,
-	http.MethodDelete: 405,
-	http.MethodPatch:  405,
-	http.MethodPost:   405,
+	http.MethodPut:    405, // Method not allowed
+	http.MethodGet:    200, // OK - this is the only allowed method
+	http.MethodDelete: 405, // Method not allowed
+	http.MethodPatch:  405, // Method not allowed
+	http.MethodPost:   405, // Method not allowed
 }
 
+// Map of HTTP methods and their expected status codes for VM start endpoint
 var startVMMethods = map[string]int{
-	http.MethodPut:    200,
-	http.MethodGet:    405,
-	http.MethodDelete: 405,
-	http.MethodPatch:  405,
-	http.MethodPost:   405,
+	http.MethodPut:    200, // OK - this is the only allowed method
+	http.MethodGet:    405, // Method not allowed
+	http.MethodDelete: 405, // Method not allowed
+	http.MethodPatch:  405, // Method not allowed
+	http.MethodPost:   405, // Method not allowed
 }
 
+// Map of HTTP methods and their expected status codes for VM stop endpoint
 var stopVMMethods = map[string]int{
-	http.MethodPut:    200,
-	http.MethodGet:    405,
-	http.MethodDelete: 405,
-	http.MethodPatch:  405,
-	http.MethodPost:   405,
+	http.MethodPut:    200, // OK - this is the only allowed method
+	http.MethodGet:    405, // Method not allowed
+	http.MethodDelete: 405, // Method not allowed
+	http.MethodPatch:  405, // Method not allowed
+	http.MethodPost:   405, // Method not allowed
 }
 
+// Map of HTTP methods and their expected status codes for VM restart endpoint
 var restartVMMethods = map[string]int{
-	http.MethodPut:    200,
-	http.MethodGet:    405,
-	http.MethodDelete: 405,
-	http.MethodPatch:  405,
-	http.MethodPost:   405,
+	http.MethodPut:    200, // OK - this is the only allowed method
+	http.MethodGet:    405, // Method not allowed
+	http.MethodDelete: 405, // Method not allowed
+	http.MethodPatch:  405, // Method not allowed
+	http.MethodPost:   405, // Method not allowed
 }
 
-// TestGetVNCMethod tests get vnc method
-func (s *TestSuite) TestGetVNCMethod() {
+// testVMMethod tests various HTTP methods against VM endpoints
+// This function tests all HTTP methods (GET, PUT, POST, DELETE, PATCH) against a specific VM endpoint
+// Parameters:
+//   - appID: The application ID
+//   - appWorkloadID: The workload ID for the VM
+//   - methods: Map of HTTP methods and their expected status codes
+//   - methodFunc: Function to call the specific VM operation with the given HTTP method
+//   - desiredState: The state the VM should be in after successful operations (200 response)
+func (s *TestSuite) testVMMethod(appID string, appWorkloadID string, methods map[string]int, methodFunc func(string, string, string, string, string, string) (*http.Response, error), desiredState string) {
+	for method, expectedStatus := range methods {
+		// Call the endpoint with the current HTTP method
+		res, err := methodFunc(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkloadID)
+		s.NoError(err)
+		s.Equal(expectedStatus, res.StatusCode)
+
+		// If the operation should be successful (200) and we expect a state change,
+		// verify the VM reached the expected state
+		if expectedStatus == 200 && desiredState != "" {
+			err = GetVMStatus(s.armClient, appID, appWorkloadID, desiredState)
+			s.NoError(err)
+		}
+
+		s.T().Logf("method: %s (%d)\n", method, res.StatusCode)
+	}
+}
+
+// prepareVMForState prepares the VM to be in a specific state
+// This is a wrapper around ensureVMState for backward compatibility
+// Parameters:
+//   - appID: The application ID
+//   - appWorkloadID: The workload ID for the VM
+//   - currentState: Current state of the VM (unused but kept for API compatibility)
+//   - targetState: The state we want the VM to be in
+func (s *TestSuite) prepareVMForState(appID string, appWorkloadID string, currentState string, targetState string) {
+	// We can simply use ensureVMState which already handles the state transition logic
+	err := s.ensureVMState(appID, appWorkloadID, targetState)
+	s.NoError(err)
+}
+
+// TestGetVNCResponseCodeValidation tests the VNC endpoint with all HTTP methods
+// This test verifies that:
+// 1. GET method returns 200 (success)
+// 2. All other HTTP methods return 405 (method not allowed)
+func (s *TestSuite) TestGetVNCResponseCodeValidation() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		// Get all workloads for the application
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
-		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
-
 		for _, appWorkload := range *appWorkloads {
-			for method, expectedStatus := range getVncMethods {
-				res, err := MethodGetVNC(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id)
-				s.NoError(err)
-				s.Equal(expectedStatus, res.StatusCode)
-				s.T().Logf("get VNC method: %s (%d)\n", method, res.StatusCode)
-			}
+			// Test all HTTP methods on the VNC endpoint
+			// No desired state is specified ("") since VNC doesn't change VM state
+			s.testVMMethod(appID, appWorkload.Id, getVncMethods, MethodGetVNC, "")
 		}
 	}
 }
 
-// TestVMStartMethod tests VM start method
-func (s *TestSuite) TestVMStartMethod() {
+// TestStartVMResponseCodeValidation tests the Start VM endpoint with all HTTP methods
+// This test verifies that:
+// 1. PUT method returns 200 (success) and changes VM state to running
+// 2. All other HTTP methods return 405 (method not allowed)
+func (s *TestSuite) TestStartVMResponseCodeValidation() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		// Get all workloads for the application
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
-		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
-
 		for _, appWorkload := range *appWorkloads {
-			// will get 400 if VM is already running
-			currState := string(*appWorkload.VirtualMachine.Status.State)
-			if currState != VMStopped {
-				retCode, err = StopVirtualMachine(s.ArmClient, appID, appWorkload.Id)
-				s.Equal(retCode, 200)
-				s.NoError(err)
-				s.T().Logf("stop VM pod %s\n", appWorkload.Name)
+			// Make sure VM is stopped before testing start methods
+			// This ensures that the PUT method has a state to change
+			err := s.ensureVMState(appID, appWorkload.Id, VMStopped)
+			s.NoError(err)
 
-				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMStopped)
-				s.NoError(err)
-			}
-
-			for method, expectedStatus := range startVMMethods {
-				res, err := MethodVMStart(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id)
-				s.NoError(err)
-				s.Equal(expectedStatus, res.StatusCode)
-
-				if expectedStatus == 200 {
-					err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
-					s.NoError(err)
-				}
-
-				s.T().Logf("start VM method: %s (%d)\n", method, res.StatusCode)
-			}
+			// Test all HTTP methods on the start endpoint
+			// The desired state after successful operation is VMRunning
+			s.testVMMethod(appID, appWorkload.Id, startVMMethods, MethodVMStart, VMRunning)
 		}
 	}
 }
 
-// TestVMStopMethod tests VM stop method
-func (s *TestSuite) TestVMStopMethod() {
+// TestStopVMResponseCodeValidation tests the Stop VM endpoint with all HTTP methods
+// This test verifies that:
+// 1. PUT method returns 200 (success) and changes VM state to stopped
+// 2. All other HTTP methods return 405 (method not allowed)
+func (s *TestSuite) TestStopVMResponseCodeValidation() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		// Get all workloads for the application
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
-		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
-
 		for _, appWorkload := range *appWorkloads {
-			// will get 400 if VM is not already running
-			currState := string(*appWorkload.VirtualMachine.Status.State)
-			if currState != VMRunning {
-				retCode, err = StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
-				s.Equal(retCode, 200)
-				s.NoError(err)
-				s.T().Logf("start VM pod %s\n", appWorkload.Name)
+			// Make sure VM is running before testing stop methods
+			// This ensures that the PUT method has a state to change
+			err := s.ensureVMState(appID, appWorkload.Id, VMRunning)
+			s.NoError(err)
 
-				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
-				s.NoError(err)
-			}
-
-			for method, expectedStatus := range stopVMMethods {
-				res, err := MethodVMStop(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id)
-				s.NoError(err)
-				s.Equal(expectedStatus, res.StatusCode)
-
-				if expectedStatus == 200 {
-					err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMStopped)
-					s.NoError(err)
-				}
-
-				s.T().Logf("stop VM method: %s (%d)\n", method, res.StatusCode)
-			}
+			// Test all HTTP methods on the stop endpoint
+			// The desired state after successful operation is VMStopped
+			s.testVMMethod(appID, appWorkload.Id, stopVMMethods, MethodVMStop, VMStopped)
 		}
 	}
 }
 
-// TestVMRestartMethod tests VM restart methods
-func (s *TestSuite) TestVMRestartMethod() {
+// TestRestartVMResponseCodeValidation tests the Restart VM endpoint with all HTTP methods
+// This test verifies that:
+// 1. PUT method returns 200 (success) and maintains VM in running state
+// 2. All other HTTP methods return 405 (method not allowed)
+func (s *TestSuite) TestRestartVMResponseCodeValidation() {
 	for _, app := range s.deployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		// Get all workloads for the application
+		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
-		// app workload len should be 1
-		if len(*appWorkloads) != 1 {
-			s.T().Errorf("invalid app workloads len: %+v expected len 1\n", len(*appWorkloads))
-		}
-
 		for _, appWorkload := range *appWorkloads {
-			// will get 400 if VM is not already running
-			currState := string(*appWorkload.VirtualMachine.Status.State)
-			if currState != VMRunning {
-				retCode, err := StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
-				s.Equal(retCode, 200)
-				s.NoError(err)
-				s.T().Logf("start VM pod %s\n", appWorkload.Name)
+			// Make sure VM is running before testing restart methods
+			// VM must be running to be restarted
+			err := s.ensureVMState(appID, appWorkload.Id, VMRunning)
+			s.NoError(err)
 
-				err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
-				s.NoError(err)
-			}
-
-			for method, expectedStatus := range restartVMMethods {
-				res, err := MethodVMRestart(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID, appWorkload.Id)
-				s.NoError(err)
-				s.Equal(expectedStatus, res.StatusCode)
-
-				if expectedStatus == 200 {
-					err = GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
-					s.NoError(err)
-				}
-
-				s.T().Logf("restart VM method: %s (%d)\n", method, res.StatusCode)
-			}
+			// Test all HTTP methods on the restart endpoint
+			// The desired state after successful operation is VMRunning
+			s.testVMMethod(appID, appWorkload.Id, restartVMMethods, MethodVMRestart, VMRunning)
 		}
 	}
 }

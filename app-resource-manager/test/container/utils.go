@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/deploy"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
@@ -21,7 +20,7 @@ const (
 )
 
 func AppWorkloadsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppWorkload, int, error) {
-	resp, err := armClient.AppWorkloadServiceListAppWorkloadsWithResponse(context.TODO(), appID, deploy.TestClusterID)
+	resp, err := armClient.AppWorkloadServiceListAppWorkloadsWithResponse(context.TODO(), appID, utils.TestClusterID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return &[]restClient.AppWorkload{}, resp.StatusCode(), fmt.Errorf("%v", err)
@@ -33,7 +32,7 @@ func AppWorkloadsList(armClient *restClient.ClientWithResponses, appID string) (
 }
 
 func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppEndpoint, int, error) {
-	resp, err := armClient.EndpointsServiceListAppEndpointsWithResponse(context.TODO(), appID, deploy.TestClusterID)
+	resp, err := armClient.EndpointsServiceListAppEndpointsWithResponse(context.TODO(), appID, utils.TestClusterID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return &[]restClient.AppEndpoint{}, resp.StatusCode(), fmt.Errorf("%v", err)
@@ -45,7 +44,7 @@ func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (
 }
 
 func PodDelete(armClient *restClient.ClientWithResponses, namespace, podName, appID string) (int, error) {
-	resp, err := armClient.PodServiceDeletePodWithResponse(context.TODO(), deploy.TestClusterID, namespace, podName)
+	resp, err := armClient.PodServiceDeletePodWithResponse(context.TODO(), utils.TestClusterID, namespace, podName)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return resp.StatusCode(), fmt.Errorf("%v", err)
@@ -62,7 +61,7 @@ func PodDelete(armClient *restClient.ClientWithResponses, namespace, podName, ap
 }
 
 func MethodAppWorkloadsList(verb, restServerURL, appID, token, projectID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/%s/%s", restServerURL, appID, deploy.TestClusterID)
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/%s/%s", restServerURL, appID, utils.TestClusterID)
 	res, err := utils.CallMethod(url, verb, token, projectID)
 	if err != nil {
 		return nil, err
@@ -72,7 +71,7 @@ func MethodAppWorkloadsList(verb, restServerURL, appID, token, projectID string)
 }
 
 func MethodAppEndpointsList(verb, restServerURL, appID, token, projectID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/endpoints/%s/%s", restServerURL, appID, deploy.TestClusterID)
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/endpoints/%s/%s", restServerURL, appID, utils.TestClusterID)
 	res, err := utils.CallMethod(url, verb, token, projectID)
 	if err != nil {
 		return nil, err
@@ -82,7 +81,7 @@ func MethodAppEndpointsList(verb, restServerURL, appID, token, projectID string)
 }
 
 func MethodPodDelete(verb, restServerURL, namespace, podName, token, projectID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/pods/%s/%s/%s/delete", restServerURL, deploy.TestClusterID, namespace, podName)
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/pods/%s/%s/%s/delete", restServerURL, utils.TestClusterID, namespace, podName)
 	res, err := utils.CallMethod(url, verb, token, projectID)
 	if err != nil {
 		return nil, err

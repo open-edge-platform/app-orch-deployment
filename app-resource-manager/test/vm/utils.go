@@ -8,17 +8,17 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/deploy"
-
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/container"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
 func StartVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) (int, error) {
-	resp, err := armClient.VirtualMachineServiceStartVirtualMachineWithResponse(context.TODO(), appID, deploy.TestClusterID, virtMachineID)
+	resp, err := armClient.VirtualMachineServiceStartVirtualMachineWithResponse(context.TODO(), appID, utils.TestClusterID, virtMachineID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return resp.StatusCode(), fmt.Errorf("%v", err)
@@ -30,7 +30,7 @@ func StartVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtM
 }
 
 func StopVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) (int, error) {
-	resp, err := armClient.VirtualMachineServiceStopVirtualMachineWithResponse(context.TODO(), appID, deploy.TestClusterID, virtMachineID)
+	resp, err := armClient.VirtualMachineServiceStopVirtualMachineWithResponse(context.TODO(), appID, utils.TestClusterID, virtMachineID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return resp.StatusCode(), fmt.Errorf("%v", err)
@@ -42,7 +42,7 @@ func StopVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMa
 }
 
 func RestartVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) (int, error) {
-	resp, err := armClient.VirtualMachineServiceRestartVirtualMachineWithResponse(context.TODO(), appID, deploy.TestClusterID, virtMachineID)
+	resp, err := armClient.VirtualMachineServiceRestartVirtualMachineWithResponse(context.TODO(), appID, utils.TestClusterID, virtMachineID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return resp.StatusCode(), fmt.Errorf("%v", err)
@@ -54,7 +54,7 @@ func RestartVirtualMachine(armClient *restClient.ClientWithResponses, appID, vir
 }
 
 func GetVNC(armClient *restClient.ClientWithResponses, appID, virtMachineID string) (int, error) {
-	resp, err := armClient.VirtualMachineServiceGetVNCWithResponse(context.TODO(), appID, deploy.TestClusterID, virtMachineID)
+	resp, err := armClient.VirtualMachineServiceGetVNCWithResponse(context.TODO(), appID, utils.TestClusterID, virtMachineID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return resp.StatusCode(), fmt.Errorf("%v", err)
@@ -66,7 +66,7 @@ func GetVNC(armClient *restClient.ClientWithResponses, appID, virtMachineID stri
 }
 
 func MethodGetVNC(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/vnc", restServerURL, appID, deploy.TestClusterID, virtMachineID)
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/vnc", restServerURL, appID, utils.TestClusterID, virtMachineID)
 	res, err := utils.CallMethod(url, verb, token, projectID)
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func MethodGetVNC(verb, restServerURL, appID, token, projectID, virtMachineID st
 }
 
 func MethodVMStart(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/start", restServerURL, appID, deploy.TestClusterID, virtMachineID)
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/start", restServerURL, appID, utils.TestClusterID, virtMachineID)
 	res, err := utils.CallMethod(url, verb, token, projectID)
 	if err != nil {
 		return nil, err
@@ -86,7 +86,7 @@ func MethodVMStart(verb, restServerURL, appID, token, projectID, virtMachineID s
 }
 
 func MethodVMStop(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/stop", restServerURL, appID, deploy.TestClusterID, virtMachineID)
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/stop", restServerURL, appID, utils.TestClusterID, virtMachineID)
 	res, err := utils.CallMethod(url, verb, token, projectID)
 	if err != nil {
 		return nil, err
@@ -96,7 +96,7 @@ func MethodVMStop(verb, restServerURL, appID, token, projectID, virtMachineID st
 }
 
 func MethodVMRestart(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/restart", restServerURL, appID, deploy.TestClusterID, virtMachineID)
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/restart", restServerURL, appID, utils.TestClusterID, virtMachineID)
 	res, err := utils.CallMethod(url, verb, token, projectID)
 	if err != nil {
 		return nil, err
@@ -135,4 +135,22 @@ func GetVMStatus(armClient *restClient.ClientWithResponses, appID, virtMachineID
 	}
 
 	return fmt.Errorf("VM %s failed to reach desired state %s. Last known state: %s", appName, desiredState, currState)
+}
+
+// UploadCirrosVM clones the cirros-vm repository and loads it into the catalog
+func UploadCirrosVM() error {
+	// Clone the repository and get the path to cirros-vm
+	cirrosVMPath, err := utils.CloneCirrosVM()
+	if err != nil {
+		return fmt.Errorf("failed to clone cirros-vm repository: %w", err)
+	}
+	defer os.RemoveAll(filepath.Dir(filepath.Dir(cirrosVMPath))) // Clean up the temporary directory after upload
+
+	// Upload the cirros-vm to the catalog
+	err = utils.Upload([]string{cirrosVMPath})
+	if err != nil {
+		return fmt.Errorf("failed to upload cirros-vm: %w", err)
+	}
+
+	return nil
 }
