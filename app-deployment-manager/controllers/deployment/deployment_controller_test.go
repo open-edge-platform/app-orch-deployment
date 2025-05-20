@@ -126,7 +126,7 @@ func checkNginxGitRepo(d v1beta1.Deployment, gr fleetv1alpha1.GitRepo) {
 	Expect(*or.BlockOwnerDeletion).To(BeTrue())
 
 	// Check Labels
-	Expect(gr.Labels[string(v1beta1.BundleName)]).To(Equal("b-3866e0e6-bb7b-5223-95ef-27bd7f7c7fee"))
+	Expect(gr.Labels[string(v1beta1.BundleName)]).To(Equal("b-3866e0e6-bb7b-52"))
 	Expect(gr.Labels[string(v1beta1.BundleType)]).To(Equal("app"))
 
 	// Check Spec
