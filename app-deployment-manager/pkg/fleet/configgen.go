@@ -638,7 +638,7 @@ func BundleName(app v1beta1.Application, depName string) string {
 	}
 	token = token + depName
 
-	hash := sha1.New()
+	hash := sha1.New() // #nosec G401 todo: update it
 	_, err := hash.Write([]byte(token))
 	if err != nil {
 		u := uuid.New()
