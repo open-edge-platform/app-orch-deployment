@@ -653,8 +653,8 @@ func BundleName(app v1beta1.Application, depName string) string {
 	u := uuid.NewSHA1(uuid.Nil, []byte(hashInHex))
 	uuidStr := u.String()
 
-	// Extract 16 characters from the UUID
-	bundleName := fmt.Sprintf("b-%s", uuidStr[:16])
+	// Extract truncatedUUIDLength characters from the UUID
+	bundleName := fmt.Sprintf("b-%s", uuidStr[:truncatedUUIDLength])
 
 	return bundleName
 }
