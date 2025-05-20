@@ -99,7 +99,7 @@ func checkWordpressGitRepo(d v1beta1.Deployment, gr fleetv1alpha1.GitRepo) {
 	Expect(*or.BlockOwnerDeletion).To(BeTrue())
 
 	// Check Labels
-	Expect(gr.Labels[string(v1beta1.BundleName)]).To(Equal("b-1bc91be2-4cba-5717-80a1-6b90704804b8"))
+	Expect(gr.Labels[string(v1beta1.BundleName)]).To(Equal("b-1bc91be2-4cba-57"))
 	Expect(gr.Labels[string(v1beta1.BundleType)]).To(Equal("app"))
 
 	// Check Spec
