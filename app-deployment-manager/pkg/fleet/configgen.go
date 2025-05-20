@@ -638,7 +638,7 @@ func BundleName(app v1beta1.Application, depName string) string {
 	}
 	token = token + depName
 
-	hash := sha1.New() // #nosec G401 todo: update it
+	hash := sha1.New()
 	_, err := hash.Write([]byte(token))
 	if err != nil {
 		u := uuid.New()
@@ -648,8 +648,15 @@ func BundleName(app v1beta1.Application, depName string) string {
 	}
 
 	hashInHex := hex.EncodeToString(hash.Sum(nil))
+
+	// Generate a UUID using the SHA-1 hash as a namespace
 	u := uuid.NewSHA1(uuid.Nil, []byte(hashInHex))
-	return fmt.Sprintf("b-%s", u.String())
+	uuidStr := u.String()
+
+	// Extract 16 characters from the UUID
+	bundleName := fmt.Sprintf("b-%s", uuidStr[:16])
+
+	return bundleName
 }
 
 // injectNamespaceToSubDir adds namespace with required labels and annotations to new fleet.yaml.
