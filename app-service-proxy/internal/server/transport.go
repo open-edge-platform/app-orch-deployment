@@ -109,6 +109,7 @@ func (t *RewritingTransport) RoundTrip(req *http.Request) (*http.Response, error
 	}
 	logrus.Debugf("Updated CSP header: %s", resp.Header.Get("Content-Security-Policy"))
 
+	resp.Header.Set("Cross-Origin-Embedder-Policy", "require-corp")
 	cType := resp.Header.Get("Content-Type")
 	cType = strings.TrimSpace(strings.SplitN(cType, ";", 2)[0])
 	if cType != "text/html" {
