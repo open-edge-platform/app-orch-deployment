@@ -108,7 +108,7 @@ type HelmApp struct {
 	// Valid only when Repo is provided.
 	RepoSecretName string `json:"repoSecretName,omitempty"`
 
-	// ImageRegistry is a http/https url to a image registry to download
+	// ImageRegistry is an http/https url to an image registry to download
 	// application container images
 	ImageRegistry string `json:"imageRegistry,omitempty"`
 

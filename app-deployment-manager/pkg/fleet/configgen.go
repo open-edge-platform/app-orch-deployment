@@ -38,7 +38,8 @@ const (
 	CredentialString    string = "%GeneratedDockerCredential%"
 	PreHookString       string = "%PreHookCredential%"
 	ImageRegistryURL    string = "%ImageRegistryURL%"
-	RegistryProjectName        = "%RegistryProjectName%"
+	OrgName            = "%OrgName%"
+	ProjectName        = "%ProjectName%"
 
 	BundleTypeUnknown BundleType = 0
 	BundleTypeInit    BundleType = 1
@@ -49,7 +50,6 @@ const (
 	BundleTypeAppString     = "app"
 
 	NexusOrgLabel         = "runtimeorgs.runtimeorg.edge-orchestrator.intel.com"
-	RegistryProjectPrefix = "catalog-apps" // Corresponds to HarborProjectName in TenantController
 )
 
 var (
@@ -256,7 +256,7 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 		initNsBundleName = names.SimpleNameGenerator.GenerateName("")
 	}
 
-	registryProjectName, err := getRegistryProjectName(d, nc)
+	orgName, projectName, err := getNexusOrgAndProjectNames(d, nc)
 	if err != nil {
 		return err
 	}
@@ -268,7 +268,10 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 		hasImageCreds := app.HelmApp.ImageRegistrySecretName != ""
 		hasPreHook := false
 		bundleName := BundleName(app, d.GetName())
-
+		imageRegistryUrl, err := url.Parse(app.HelmApp.ImageRegistry)
+		if err != nil {
+			return err
+		}
 		// Create Config
 		fleetConf := newFleetConfig(app.Name, appMap, d.GetId(), d.GetName(), d.GetGeneration(), namespace)
 		fleetPath := filepath.Join(baseDir, app.Name)
@@ -294,21 +297,23 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 		}
 
 		if strings.Contains(contents, ImageRegistryURL) {
-			if app.HelmApp.ImageRegistry == "" {
+			if imageRegistryUrl == nil || imageRegistryUrl.Host == "" {
 				return fmt.Errorf("imageRegistry not set but '%s' tag is present", ImageRegistryURL)
 			}
-			imageRegistryURLBare := strings.TrimPrefix(app.HelmApp.ImageRegistry, "oci://")
-			imageRegistryURLBare = strings.TrimPrefix(imageRegistryURLBare, "http://")
-			imageRegistryURLBare = strings.TrimPrefix(imageRegistryURLBare, "https://")
-			imageRegistryURLBare = strings.TrimSuffix(imageRegistryURLBare, "/")
+
+			imageRegistryURLBare := fmt.Sprintf("%s%s", imageRegistryUrl.Host, imageRegistryUrl.Path)
 			log.Debugf("Replacing: %s in App %s with %s", ImageRegistryURL, app.Name, imageRegistryURLBare)
 			contents = strings.Replace(contents, ImageRegistryURL, imageRegistryURLBare, -1)
 		}
 
-		if strings.Contains(contents, RegistryProjectName) {
-			log.Debugf("Replacing: %s in App %s with %s", RegistryProjectName, app.Name, registryProjectName)
+		if strings.Contains(contents, OrgName) {
+			log.Debugf("Replacing: %s in App %s with %s", OrgName, app.Name, orgName)
+			contents = strings.Replace(contents, OrgName, orgName, -1)
+		}
 
-			contents = strings.Replace(contents, RegistryProjectName, registryProjectName, -1)
+		if strings.Contains(contents, ProjectName) {
+			log.Debugf("Replacing: %s in App %s with %s", ProjectName, app.Name, projectName)
+			contents = strings.Replace(contents, ProjectName, projectName, -1)
 		}
 
 		err = utils.WriteFile(fleetPath, profileyaml, []byte(contents))
@@ -437,7 +442,7 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 			// If pre hook present with image pull then generate
 			// secret in separate bundle.
 			err := injectImageCredentialSecretToSubDir(
-				app.HelmApp.ImageRegistry,
+				imageRegistryUrl,
 				app.HelmApp.ImageRegistrySecretName,
 				d.Namespace, namespace, kc, bundleName, fleetPath)
 			if err != nil {
@@ -452,7 +457,7 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 		} else if hasImageCreds {
 			// Generate kutomization for image credential
 			err := injectImageCredentialToKustomization(
-				app.HelmApp.ImageRegistry,
+				imageRegistryUrl,
 				app.HelmApp.ImageRegistrySecretName,
 				d.Namespace, namespace, kc, bundleName, k)
 			if err != nil {
@@ -694,7 +699,7 @@ func injectNamespaceToSubDir(ns v1beta1.Namespace, fleetPath string, bundleName 
 
 // injectImageCredentialToKustomization extracts image credentials from the
 // image registry secret and generate Kustomization configuration.
-func injectImageCredentialToKustomization(reg string, regSecret string, secretNamespace string,
+func injectImageCredentialToKustomization(reg *url.URL, regSecret string, secretNamespace string,
 	appNamespace string, kc client.Client, bundleName string, k *kustomize.Kustomization) error {
 	creds := &corev1.Secret{}
 	if err := kc.Get(context.Background(), client.ObjectKey{
@@ -706,7 +711,7 @@ func injectImageCredentialToKustomization(reg string, regSecret string, secretNa
 
 	credmap := map[string]interface{}{
 		"auths": map[string]interface{}{
-			reg: map[string]string{
+			reg.Host: map[string]string{
 				"username": string(creds.Data["username"]),
 				"password": string(creds.Data["password"]),
 			},
@@ -745,7 +750,7 @@ func injectImageCredentialToKustomization(reg string, regSecret string, secretNa
 
 // injectImageCredentialSecretToSubDir extracts image credentials from the
 // image registry secret and generates secret with new fleet.yaml.
-func injectImageCredentialSecretToSubDir(reg string, regSecret string,
+func injectImageCredentialSecretToSubDir(reg *url.URL, regSecret string,
 	secretNamespace string, appNamespace string, kc client.Client,
 	bundleName string, fleetPath string) error {
 	creds := &corev1.Secret{}
@@ -768,7 +773,7 @@ func injectImageCredentialSecretToSubDir(reg string, regSecret string,
 
 	credmap := map[string]interface{}{
 		"auths": map[string]interface{}{
-			reg: map[string]string{
+			reg.Host: map[string]string{
 				"username": string(creds.Data["username"]),
 				"password": string(creds.Data["password"]),
 			},
@@ -848,15 +853,15 @@ func WriteExtraValues(basedir string, filename string, e *ExtraValues) error {
 	return utils.WriteFile(basedir, filename, data)
 }
 
-func getRegistryProjectName(d *v1beta1.Deployment, nexusClient nexus.RuntimeProjectsGetter) (string, error) {
+func getNexusOrgAndProjectNames(d *v1beta1.Deployment, nexusClient nexus.RuntimeProjectsGetter) (string, string, error) {
 	projectID := d.Labels[string(v1beta1.AppOrchActiveProjectID)]
 	if projectID == "" {
-		return "", fmt.Errorf("project-id not found in deployment labels")
+		return "", "", fmt.Errorf("project-id not found in deployment labels")
 	}
 	runtimeProjects, err := nexusClient.RuntimeProjects().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		log.Errorf("Failed to List Nexus Runtime Project %v", err)
-		return "", err
+		return "", "", err
 	}
 	for _, runtimeProject := range runtimeProjects.Items {
 		if runtimeProject.GetUID() == types.UID(projectID) {
@@ -864,12 +869,12 @@ func getRegistryProjectName(d *v1beta1.Deployment, nexusClient nexus.RuntimeProj
 			projectName := runtimeProject.DisplayName()
 			orgName := runtimeProject.GetLabels()[NexusOrgLabel]
 			if orgName == "" {
-				return "", fmt.Errorf("nexus project %s has no label %s", projectName, NexusOrgLabel)
+				return "", "", fmt.Errorf("nexus project %s has no label %s", projectName, NexusOrgLabel)
 			}
 
-			return fmt.Sprintf("%s-%s-%s", RegistryProjectPrefix, orgName, projectName), nil
+			return orgName, projectName, nil
 		}
 	}
 
-	return "", fmt.Errorf("unable to find nexus runtime project with UID: %s", projectID)
+	return "", "", fmt.Errorf("unable to find nexus runtime project with UID: %s", projectID)
 }
