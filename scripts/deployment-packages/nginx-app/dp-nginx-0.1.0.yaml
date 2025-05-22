@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2025 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+---
+specSchema: "DeploymentPackage"
+schemaVersion: "0.1"
+$schema: "https://schema.intel.com/catalog.orchestrator/0.1/schema"
+
+name: "nginx-app"
+displayName: "NGINX"
+description: "NGINX"
+version: "0.1.0"
+
+# CLI tool will also have to contend with converting application (name, version, publisher)
+# tuple into an application ID.
+
+applications:
+  - name: nginx
+    version: 0.1.0
+
+deploymentProfiles:
+  - name: "testing-default"
+    applicationProfiles:
+      - application: "nginx"
+        profile: "default"
