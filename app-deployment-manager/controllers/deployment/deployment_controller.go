@@ -988,12 +988,13 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 		appName := getAppNameForGitRepo(&gitrepo, d.GetId())
 
 		if d.Status.DeployInProgress {
-			// Check if the GitRepo is in Stalled state
 			if gitrepo.Status.Summary.DesiredReady != 1 &&
 				(gitrepo.Status.GitJobStatus == "Current" || gitrepo.Status.GitJobStatus == "InProgress") {
-				stalledApps = true
-
+				r.requeueStatus = true
+				return
 			}
+			
+			// Check if the GitRepo is in Stalled state
 
 			if sc, ok := utils.GetGenericCondition(&gitrepo.Status.Conditions, "Stalled"); ok && sc.Status == corev1.ConditionTrue {
 				stalledApps = true
