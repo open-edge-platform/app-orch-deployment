@@ -66,6 +66,9 @@ const (
 	reasonGitCommitFailed         = "GitCommitFailed"
 	reasonGitPushFailed           = "GitPushFailed"
 	reasonGitRepoUpdateFailed     = "GitRepoUpdateFailed"
+	gitJobFailed                  = "Current"
+	gitJobCurrent                 = "Failed"
+	gitJobInProgress              = "InProgress"
 
 	maxErrorBackoff      = 5 * time.Minute
 	forceResyncInterval  = time.Minute
@@ -981,6 +984,33 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 	message := ""
 	r.requeueStatus = false
 
+	// Map to track the last known GitJobStatus and its timestamp
+	gitJobStatusTracker := make(map[string]struct {
+		Status    string
+		Timestamp time.Time
+	})
+
+	// Helper function to check if GitJobStatus is stable
+	isGitJobStable := func(gitRepoName, currentStatus string, stableDuration time.Duration) bool {
+		now := time.Now()
+		entry, exists := gitJobStatusTracker[gitRepoName]
+
+		if !exists || entry.Status != currentStatus {
+			// Update the tracker if the status is new or changed
+			gitJobStatusTracker[gitRepoName] = struct {
+				Status    string
+				Timestamp time.Time
+			}{
+				Status:    currentStatus,
+				Timestamp: now,
+			}
+			return false
+		}
+
+		// Check if the status has been stable for the required duration
+		return now.Sub(entry.Timestamp) >= stableDuration
+	}
+
 	// Walk GitRepos for the Deployment to extract any error conditions
 	for i := range grlist {
 		gitrepo := grlist[i]
@@ -992,6 +1022,26 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 			if sc, ok := utils.GetGenericCondition(&gitrepo.Status.Conditions, "Stalled"); ok && sc.Status == corev1.ConditionTrue {
 				stalledApps = true
 				message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, sc.Message))
+			}
+
+			// Stabilization logic for GitJobStatus
+			gitJobStatus := gitrepo.Status.GitJobStatus
+			if gitJobStatus == "InProgress" {
+				// Requeue if GitJob is still in progress
+				r.requeueStatus = true
+				stalledApps = false
+				message = utils.AppendMessage(message, fmt.Sprintf("App %s: GitJob is still in progress", appName))
+				continue
+			} else if gitJobStatus == "Failed" {
+				// Mark as stalled if GitJob has failed
+				stalledApps = true
+				message = utils.AppendMessage(message, fmt.Sprintf("App %s: GitJob failed", appName))
+			} else if gitJobStatus == "Current" {
+				// Ensure stability by checking if the status remains consistent
+				if !isGitJobStable(gitrepo.Name, gitJobStatus, 5*time.Second) {
+					r.requeueStatus = true
+					continue
+				}
 			}
 		}
 
