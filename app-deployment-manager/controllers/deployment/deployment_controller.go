@@ -973,7 +973,6 @@ func updateStatusMetrics(d *v1beta1.Deployment, deleteMetrics bool) {
 
 	}
 }
-
 func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []fleetv1alpha1.GitRepo, dclist []v1beta1.DeploymentCluster) {
 	var newState v1beta1.StateType
 	stalledApps := false
@@ -1052,45 +1051,54 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 		}
 	}
 
-	// Calculate the Deployment's state
-	switch {
-	case stalledApps:
+	// Calculate the Deployment's state with sticky error behavior
+	// If already in Error state, maintain that state regardless of other conditions
+	if d.Status.State == v1beta1.Error {
 		newState = v1beta1.Error
-	case clustercounts.Unknown > 0:
-		newState = v1beta1.Unknown
-	case clustercounts.Total == 0:
-		// Wait specified interval after creation before showing NoTargetClusters,
-		// to give Fleet + ADM a chance to bootstrap the Deployment.
-		if time.Now().After(d.CreationTimestamp.Time.Add(noTargetClustersWait)) {
-			newState = v1beta1.NoTargetClusters
-		} else {
-			// If deployment was already running and cluster went down
-			// before (d.CreationTimestamp.Time.Add(noTargetClustersWait)) then set NoTargetClusters
-			if d.Status.DeployInProgress {
-				newState = v1beta1.Deploying
-			} else {
+		// Keep the previous error message if no new message is available
+		if message == "" {
+			message = d.Status.Message
+		}
+	} else {
+		// Normal state determination for non-error states
+		switch {
+		case stalledApps:
+			newState = v1beta1.Error
+		case clustercounts.Unknown > 0:
+			newState = v1beta1.Unknown
+		case clustercounts.Total == 0:
+			// Wait specified interval after creation before showing NoTargetClusters,
+			// to give Fleet + ADM a chance to bootstrap the Deployment.
+			if time.Now().After(d.CreationTimestamp.Time.Add(noTargetClustersWait)) {
 				newState = v1beta1.NoTargetClusters
-			}
-		}
-
-	case clustercounts.Down > 0 || clustercounts.Total > clustercounts.Running:
-		// Ignore Down state Deployment is updating
-		if d.Status.DeployInProgress {
-			if d.Generation <= 1 {
-				newState = v1beta1.Deploying
 			} else {
-				newState = v1beta1.Updating
+				// If deployment was already running and cluster went down
+				// before (d.CreationTimestamp.Time.Add(noTargetClustersWait)) then set NoTargetClusters
+				if d.Status.DeployInProgress {
+					newState = v1beta1.Deploying
+				} else {
+					newState = v1beta1.NoTargetClusters
+				}
 			}
-		} else {
-			newState = v1beta1.Down
-		}
-	default:
-		newState = v1beta1.Running
-		d.Status.DeployInProgress = false
-		projectID := d.Labels[string(v1beta1.AppOrchActiveProjectID)]
-		orchLibMetrics.RecordTimestamp(projectID, d.GetId(), d.Spec.DisplayName, string(newState), "status-change")
-		if newState == v1beta1.Running {
-			orchLibMetrics.CalculateTimeDifference(projectID, d.GetId(), d.Spec.DisplayName, "start", "CreateDeployment", string(v1beta1.Running), "status-change")
+		case clustercounts.Down > 0 || clustercounts.Total > clustercounts.Running:
+			// Ignore Down state Deployment is updating
+			if d.Status.DeployInProgress {
+				if d.Generation <= 1 {
+					newState = v1beta1.Deploying
+				} else {
+					newState = v1beta1.Updating
+				}
+			} else {
+				newState = v1beta1.Down
+			}
+		default:
+			newState = v1beta1.Running
+			d.Status.DeployInProgress = false
+			projectID := d.Labels[string(v1beta1.AppOrchActiveProjectID)]
+			orchLibMetrics.RecordTimestamp(projectID, d.GetId(), d.Spec.DisplayName, string(newState), "status-change")
+			if newState == v1beta1.Running {
+				orchLibMetrics.CalculateTimeDifference(projectID, d.GetId(), d.Spec.DisplayName, "start", "CreateDeployment", string(v1beta1.Running), "status-change")
+			}
 		}
 	}
 
