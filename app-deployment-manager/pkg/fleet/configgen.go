@@ -35,11 +35,11 @@ type BundleType int
 const (
 	// This special string is a placeholder for the actual credential name in
 	// the Helm profile.yaml and overrides.yaml
-	CredentialString    string = "%GeneratedDockerCredential%"
-	PreHookString       string = "%PreHookCredential%"
-	ImageRegistryURL    string = "%ImageRegistryURL%"
-	OrgName            = "%OrgName%"
-	ProjectName        = "%ProjectName%"
+	CredentialString string = "%GeneratedDockerCredential%"
+	PreHookString    string = "%PreHookCredential%"
+	ImageRegistryURL string = "%ImageRegistryURL%"
+	OrgName          string = "%OrgName%"
+	ProjectName      string = "%ProjectName%"
 
 	BundleTypeUnknown BundleType = 0
 	BundleTypeInit    BundleType = 1
@@ -49,7 +49,7 @@ const (
 	BundleTypeInitString    = "init"
 	BundleTypeAppString     = "app"
 
-	NexusOrgLabel         = "runtimeorgs.runtimeorg.edge-orchestrator.intel.com"
+	NexusOrgLabel = "runtimeorgs.runtimeorg.edge-orchestrator.intel.com"
 )
 
 var (
@@ -268,7 +268,7 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 		hasImageCreds := app.HelmApp.ImageRegistrySecretName != ""
 		hasPreHook := false
 		bundleName := BundleName(app, d.GetName())
-		imageRegistryUrl, err := url.Parse(app.HelmApp.ImageRegistry)
+		imageRegistryURL, err := url.Parse(app.HelmApp.ImageRegistry)
 		if err != nil {
 			return err
 		}
@@ -297,11 +297,11 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 		}
 
 		if strings.Contains(contents, ImageRegistryURL) {
-			if imageRegistryUrl == nil || imageRegistryUrl.Host == "" {
+			if imageRegistryURL == nil || imageRegistryURL.Host == "" {
 				return fmt.Errorf("imageRegistry not set but '%s' tag is present", ImageRegistryURL)
 			}
 
-			imageRegistryURLBare := fmt.Sprintf("%s%s", imageRegistryUrl.Host, imageRegistryUrl.Path)
+			imageRegistryURLBare := fmt.Sprintf("%s%s", imageRegistryURL.Host, imageRegistryURL.Path)
 			log.Debugf("Replacing: %s in App %s with %s", ImageRegistryURL, app.Name, imageRegistryURLBare)
 			contents = strings.Replace(contents, ImageRegistryURL, imageRegistryURLBare, -1)
 		}
@@ -442,7 +442,7 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 			// If pre hook present with image pull then generate
 			// secret in separate bundle.
 			err := injectImageCredentialSecretToSubDir(
-				imageRegistryUrl,
+				imageRegistryURL,
 				app.HelmApp.ImageRegistrySecretName,
 				d.Namespace, namespace, kc, bundleName, fleetPath)
 			if err != nil {
@@ -457,7 +457,7 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 		} else if hasImageCreds {
 			// Generate kutomization for image credential
 			err := injectImageCredentialToKustomization(
-				imageRegistryUrl,
+				imageRegistryURL,
 				app.HelmApp.ImageRegistrySecretName,
 				d.Namespace, namespace, kc, bundleName, k)
 			if err != nil {
