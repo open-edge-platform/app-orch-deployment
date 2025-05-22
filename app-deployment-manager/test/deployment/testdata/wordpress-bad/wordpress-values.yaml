@@ -1,0 +1,6 @@
+	tab: "to the left of this name"
+service:
+  type: ClusterIP
+  annotations:
+    service-proxy.app.orchestrator.io/ports: "80"
+    external-dns.alpha.kubernetes.io/hostname: "wordpress.example.org"

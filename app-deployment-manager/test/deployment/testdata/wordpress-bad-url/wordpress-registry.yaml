@@ -1,0 +1,11 @@
+---
+specSchema: "Registry"
+schemaVersion: "0.1"
+$schema: "https://schema.intel.com/catalog.orchestrator/0.1/schema"
+
+name: wordpress-badreg
+description: OCI registry for wordpress
+type: HELM
+rootUrl: oci://registry-1.docker.doesnotexistio/bitnamicharts
+userName: ""
+authToken: ""
