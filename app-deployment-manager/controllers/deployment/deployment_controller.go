@@ -1070,11 +1070,7 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 		// to give Fleet + ADM a chance to bootstrap the Deployment.
 		if time.Now().After(d.CreationTimestamp.Time.Add(noTargetClustersWait)) {
 			if gitReposInTransition {
-				if d.Status.DeployInProgress {
-					newState = v1beta1.Deploying
-				} else {
-					newState = v1beta1.NoTargetClusters
-				}
+				newState = v1beta1.NoTargetClusters
 				message = d.Status.Message
 			} else {
 				newState = v1beta1.NoTargetClusters
