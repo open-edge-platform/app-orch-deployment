@@ -977,6 +977,7 @@ func updateStatusMetrics(d *v1beta1.Deployment, deleteMetrics bool) {
 func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []fleetv1alpha1.GitRepo, dclist []v1beta1.DeploymentCluster) {
 	var newState v1beta1.StateType
 	stalledApps := false
+	gitReposInTransition := false
 	apps := 0
 	message := ""
 	r.requeueStatus = false
@@ -988,18 +989,16 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 		appName := getAppNameForGitRepo(&gitrepo, d.GetId())
 
 		if d.Status.DeployInProgress {
+			// Check if GitRepo is not ready for processing yet
 			if gitrepo.Status.Summary.DesiredReady == 0 && gitrepo.Status.GitJobStatus != "Failed" {
-				r.requeueStatus = true
-				return
+				gitReposInTransition = true
 			}
 
 			// Check if the GitRepo is in Stalled state
-
 			if sc, ok := utils.GetGenericCondition(&gitrepo.Status.Conditions, "Stalled"); ok && sc.Status == corev1.ConditionTrue {
 				stalledApps = true
 				message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, sc.Message))
 			}
-
 		}
 
 		// Record the message if there is one
@@ -1068,8 +1067,10 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 	case clustercounts.Total == 0:
 		// Wait specified interval after creation before showing NoTargetClusters,
 		// to give Fleet + ADM a chance to bootstrap the Deployment.
-		if time.Now().After(d.CreationTimestamp.Time.Add(noTargetClustersWait)) {
-			newState = v1beta1.NoTargetClusters
+		if !gitReposInTransition {
+			if time.Now().After(d.CreationTimestamp.Time.Add(noTargetClustersWait)) {
+				newState = v1beta1.NoTargetClusters
+			}
 		} else {
 			// If deployment was already running and cluster went down
 			// before (d.CreationTimestamp.Time.Add(noTargetClustersWait)) then set NoTargetClusters
