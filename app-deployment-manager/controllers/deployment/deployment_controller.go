@@ -988,7 +988,7 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 		appName := getAppNameForGitRepo(&gitrepo, d.GetId())
 
 		if d.Status.DeployInProgress {
-			if gitrepo.Status.Summary.DesiredReady != 1 && gitrepo.Status.GitJobStatus != "Failed" {
+			if gitrepo.Status.Summary.DesiredReady == 0 && gitrepo.Status.GitJobStatus != "Failed" {
 				r.requeueStatus = true
 				return
 			}
