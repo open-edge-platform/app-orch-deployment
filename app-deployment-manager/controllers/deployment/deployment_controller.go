@@ -1066,7 +1066,11 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 		newState = v1beta1.Unknown
 	case clustercounts.Total == 0:
 		if gitReposInTransition {
-			newState = d.Status.State
+			if d.Status.DeployInProgress {
+				newState = v1beta1.Deploying
+			} else {
+				newState = v1beta1.NoTargetClusters
+			}
 			message = d.Status.Message
 		} else {
 			// Wait specified interval after creation before showing NoTargetClusters,
