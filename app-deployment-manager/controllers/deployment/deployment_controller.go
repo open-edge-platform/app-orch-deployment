@@ -1065,26 +1065,28 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 	case clustercounts.Unknown > 0:
 		newState = v1beta1.Unknown
 	case clustercounts.Total == 0:
-		if gitReposInTransition {
-			if d.Status.DeployInProgress {
-				newState = v1beta1.Deploying
-			} else {
-				newState = v1beta1.NoTargetClusters
-			}
-			message = d.Status.Message
-		} else {
-			// Wait specified interval after creation before showing NoTargetClusters,
-			// to give Fleet + ADM a chance to bootstrap the Deployment.
-			if time.Now().After(d.CreationTimestamp.Time.Add(noTargetClustersWait)) {
-				newState = v1beta1.NoTargetClusters
-			} else {
-				// If deployment was already running and cluster went down
-				// before (d.CreationTimestamp.Time.Add(noTargetClustersWait)) then set NoTargetClusters
+
+		// Wait specified interval after creation before showing NoTargetClusters,
+		// to give Fleet + ADM a chance to bootstrap the Deployment.
+		if time.Now().After(d.CreationTimestamp.Time.Add(noTargetClustersWait)) {
+			if gitReposInTransition {
 				if d.Status.DeployInProgress {
 					newState = v1beta1.Deploying
 				} else {
 					newState = v1beta1.NoTargetClusters
 				}
+				message = d.Status.Message
+			} else {
+				newState = v1beta1.NoTargetClusters
+			}
+
+		} else {
+			// If deployment was already running and cluster went down
+			// before (d.CreationTimestamp.Time.Add(noTargetClustersWait)) then set NoTargetClusters
+			if d.Status.DeployInProgress {
+				newState = v1beta1.Deploying
+			} else {
+				newState = v1beta1.NoTargetClusters
 			}
 		}
 
