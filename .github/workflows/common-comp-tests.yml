@@ -156,7 +156,7 @@ jobs:
         with:
           input: app-orch-deployment/${{ inputs.component }}/test-report.json
           output: app-orch-deployment/${{ inputs.component }}/${{ github.event_name }}-${{ github.event.number }}-test-report.html
-          template: app-orch-catalog/test/template.html
+          template: app-orch-deployment/${{ inputs.component }/test/template.html
 
       - name: Upload Test Report
         if: always()
