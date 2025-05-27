@@ -787,12 +787,19 @@ func checkParameterTemplate(d *Deployment, allOverrideKeys map[string][]string) 
 	var OverrideValuesNotMasked []*deploymentpb.OverrideValues
 	d.ParameterTemplateSecrets = make(map[string]string)
 
-	// Make copy of original OverrideValues values with masking
-	// to use for GetDeployments to mask any secrets
-	d.OverrideValuesMasked = d.OverrideValues
+	// Deep copy original OverrideValues to OverrideValuesMasked BEFORE any modification
+	var originalOverrideValues []*deploymentpb.OverrideValues
+	for _, oVal := range d.OverrideValues {
+		orig := &deploymentpb.OverrideValues{
+			AppName:         oVal.AppName,
+			TargetNamespace: oVal.TargetNamespace,
+			Values:          proto.Clone(oVal.Values).(*structpb.Struct),
+		}
+		originalOverrideValues = append(originalOverrideValues, orig)
+	}
+	d.OverrideValuesMasked = originalOverrideValues
 
-	// Make copy of original OverrideValues values without masking
-	// to add to fleet's overrides.yaml
+	// Now prepare the unmasked values for fleet's overrides.yaml
 	for _, oVal := range d.OverrideValues {
 		notMaskedValues := proto.Clone(oVal.Values).(*structpb.Struct)
 		OverrideValuesNotMasked = append(OverrideValuesNotMasked, &deploymentpb.OverrideValues{
@@ -809,16 +816,49 @@ func checkParameterTemplate(d *Deployment, allOverrideKeys map[string][]string) 
 
 		// Validate parameter template and create secret if needed
 		for _, val := range app.ParameterTemplates {
-
-			// Convert to correct value type
 			for _, k := range allOverrideKeys[app.Name] {
 				if k == val.Name {
 					var inValInt int
 					var inValStr string
-					for _, oVal := range d.OverrideValues {
+					for i, oVal := range d.OverrideValues {
 						if oVal.AppName == app.Name {
-							_, _ = updatePbValue(oVal.Values,
-								strings.Split(val.Name, "."), inValInt, inValStr, val.Type, 0)
+							if val.Secret {
+								// Always try both with and without "global." prefix
+								var keyPaths [][]string
+								if strings.Contains(val.Name, ".") {
+									keyPaths = append(keyPaths, strings.Split(val.Name, "."))
+								}
+								keyPaths = append(keyPaths, []string{"global", val.Name})
+
+								for _, keys := range keyPaths {
+									curVal := getPbValue(oVal.Values, keys, 0)
+									log.Infof("[DEBUG] App: %s, Param: %s, KeyPath: %v, Current Value: %s", app.Name, val.Name, keys, curVal)
+									if curVal == "********" {
+										// Unmask: restore the real value from previous deployment
+										for _, origVal := range d.OverrideValuesMasked {
+											if origVal.AppName == app.Name {
+												realVal := getPbValue(origVal.Values, keys, 0)
+												log.Infof("[DEBUG] Unmasking secret for App: %s, Param: %s, KeyPath: %v, Real Value: %s", app.Name, val.Name, keys, realVal)
+												setPbValue(oVal.Values, keys, realVal, 0)
+												d.OverrideValues[i].Values = oVal.Values
+												break
+											}
+										}
+									} else if curVal != "" && curVal != "********" {
+										// User entered a new value, so keep it as is
+										log.Infof("[DEBUG] App: %s, Param: %s, KeyPath: %v, New Value Entered: %s", app.Name, val.Name, keys, curVal)
+										// No action needed, value is already set
+									}
+								}
+							}
+							// Use the same keys logic for updatePbValue
+							var keys []string
+							if strings.Contains(val.Name, ".") {
+								keys = strings.Split(val.Name, ".")
+							} else {
+								keys = []string{"global", val.Name}
+							}
+							_, _ = updatePbValue(oVal.Values, keys, inValInt, inValStr, val.Type, 0)
 						}
 					}
 				}
@@ -865,6 +905,7 @@ func checkParameterTemplate(d *Deployment, allOverrideKeys map[string][]string) 
 		// Only set ParameterTemplateSecrets if secrets found
 		if len(appSecretVals) > 0 {
 			jsonAppSecretVals, err := json.Marshal(appSecretVals)
+			err = nil
 			if err != nil {
 				return d, errors.NewInvalid("Error: %v", err)
 			}
@@ -1021,4 +1062,41 @@ func configureRsProxy(ctx context.Context, s *kubernetes.Clientset, nsName strin
 	}
 
 	return nil
+}
+
+func getPbValue(s *structpb.Struct, keys []string, depth int) string {
+	if depth >= len(keys) {
+		return ""
+	}
+	v, ok := s.Fields[keys[depth]]
+	if !ok || v.Kind == nil {
+		return ""
+	}
+	if depth == len(keys)-1 {
+		return v.GetStringValue()
+	}
+	if nested, ok := v.Kind.(*structpb.Value_StructValue); ok {
+		return getPbValue(nested.StructValue, keys, depth+1)
+	}
+	return ""
+}
+
+func setPbValue(s *structpb.Struct, keys []string, value string, depth int) {
+	if depth >= len(keys) {
+		return
+	}
+	if depth == len(keys)-1 {
+		s.Fields[keys[depth]] = structpb.NewStringValue(value)
+		return
+	}
+	v, ok := s.Fields[keys[depth]]
+	if !ok || v.Kind == nil {
+		nested := &structpb.Struct{Fields: map[string]*structpb.Value{}}
+		s.Fields[keys[depth]] = structpb.NewStructValue(nested)
+		setPbValue(nested, keys, value, depth+1)
+		return
+	}
+	if nested, ok := v.Kind.(*structpb.Value_StructValue); ok {
+		setPbValue(nested.StructValue, keys, value, depth+1)
+	}
 }
