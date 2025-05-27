@@ -151,6 +151,20 @@ jobs:
           make component-test
           echo "${{ inputs.component }} component tests done!"
 
+      - name: Report
+        uses: becheran/go-testreport@main
+        with:
+          input: app-orch-deployment/${{ inputs.component }}/test-report.json
+          output: app-orch-deployment/${{ inputs.component }}/${{ github.event_name }}-${{ github.event.number }}-test-report.html
+          template: app-orch-catalog/test/template.html
+
+      - name: Upload Test Report
+        if: always()
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: test-report
+          path: app-orch-deployment/${{ inputs.component }}/${{ github.event_name }}-${{ github.event.number }}-test-report.html
+
       - name: Get Argo diagnostic information
         if: ${{ failure() }}
         id: get-argo-diag-info
