@@ -977,7 +977,7 @@ func updateStatusMetrics(d *v1beta1.Deployment, deleteMetrics bool) {
 func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []fleetv1alpha1.GitRepo, dclist []v1beta1.DeploymentCluster) {
 	var newState v1beta1.StateType
 	stalledApps := false
-	gitReposInTransition := false
+	gitRepoInTransitionStatus := false
 	apps := 0
 	message := ""
 	r.requeueStatus = false
@@ -991,7 +991,7 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 		if d.Status.DeployInProgress {
 			// Check if GitRepo is not ready for processing yet
 			if gitrepo.Status.Summary.DesiredReady == 0 && gitrepo.Status.GitJobStatus != "Failed" {
-				gitReposInTransition = true
+				gitRepoInTransitionStatus = true
 			}
 
 			// Check if the GitRepo is in Stalled state
@@ -1065,11 +1065,10 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 	case clustercounts.Unknown > 0:
 		newState = v1beta1.Unknown
 	case clustercounts.Total == 0:
-
 		// Wait specified interval after creation before showing NoTargetClusters,
 		// to give Fleet + ADM a chance to bootstrap the Deployment.
 		if time.Now().After(d.CreationTimestamp.Time.Add(noTargetClustersWait)) {
-			if gitReposInTransition {
+			if gitRepoInTransitionStatus {
 				newState = v1beta1.NoTargetClusters
 				message = d.Status.Message
 			} else {
@@ -1079,10 +1078,20 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 		} else {
 			// If deployment was already running and cluster went down
 			// before (d.CreationTimestamp.Time.Add(noTargetClustersWait)) then set NoTargetClusters
-			if d.Status.DeployInProgress {
-				newState = v1beta1.Deploying
+			if gitRepoInTransitionStatus {
+				if d.Status.DeployInProgress {
+					newState = v1beta1.Deploying
+					message = d.Status.Message
+				} else {
+					newState = v1beta1.NoTargetClusters
+				}
+
 			} else {
-				newState = v1beta1.NoTargetClusters
+				if d.Status.DeployInProgress {
+					newState = v1beta1.Deploying
+				} else {
+					newState = v1beta1.NoTargetClusters
+				}
 			}
 		}
 
