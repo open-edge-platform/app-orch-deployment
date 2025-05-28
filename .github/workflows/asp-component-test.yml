@@ -1,0 +1,35 @@
+---
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+name: ASP Component Tests
+on:
+  pull_request:
+    types: [labeled]
+  schedule:
+    - cron: "0 0 * * *" # Run every day at midnight
+  workflow_dispatch:  # Run on manual trigger
+    inputs:
+      run-arm:
+        description: 'Run App Service Proxy component tests'
+        required: true
+        type: boolean
+        default: false
+      emf-branch:
+        description: 'The branch, tag or SHA to checkout EMF'
+        required: true
+        type: string
+        default: 'b3c4815fe5a221d827886bba0563dacc26f2ae2a'
+permissions:
+  contents: read
+
+jobs:
+  component-test-arm:
+    if: ${{ inputs.run-asp || github.event_name == 'schedule' || github.event.label.name == 'run-asp-component-tests' }}
+    name: ASP Component Test
+    uses: ./.github/workflows/common-comp-tests.yml
+    with:
+      component: app-service-proxy
+      use-enic: true
+      emf-branch: ${{ inputs.emf-branch || 'b3c4815fe5a221d827886bba0563dacc26f2ae2a' }}
+    secrets: inherit # zizmor: ignore[secrets-inherit]
