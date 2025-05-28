@@ -197,10 +197,15 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 		}
 	}
 
+	log.Infof("[DEBUG] OverrideValuesMasked before checkParameterTemplate: %+v", d.OverrideValuesMasked)
+	log.Infof("[DEBUG] OverrideValues before checkParameterTemplate: %+v", d.OverrideValues)
+
 	d, err = checkParameterTemplate(d, allOverrideKeys)
 	if err != nil {
 		return d, err
 	}
+
+	log.Infof("[DEBUG] OverrideValues after checkParameterTemplate: %+v", d.OverrideValues)
 
 	// if no profilename was provided, use default profilename from dp
 	if d.ProfileName == "" {
@@ -1266,6 +1271,46 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 	}
 
 	d.Name = deployment.ObjectMeta.Name
+
+	// Set OverrideValuesMasked to previous real values
+	var prevOverrideValues []*deploymentpb.OverrideValues
+	for _, app := range deployment.Spec.Applications {
+		if app.ValueSecretName != "" {
+			secretValue, err := utils.GetSecretValue(ctx, s.k8sClient, deployment.ObjectMeta.Namespace, app.ValueSecretName+"-masked")
+			if err != nil {
+				if apierrors.IsNotFound(err) {
+					secretValue, err = utils.GetSecretValue(ctx, s.k8sClient, deployment.ObjectMeta.Namespace, app.ValueSecretName)
+					if err != nil {
+						utils.LogActivity(ctx, "get", "ADM", fmt.Sprintf("cannot get secret %s, error: %v", app.ValueSecretName, err))
+						continue
+					}
+				} else {
+					utils.LogActivity(ctx, "get", "ADM", fmt.Sprintf("cannot get secret %s-masked, error: %v", app.ValueSecretName, err))
+					continue
+				}
+			}
+
+			val, err := yaml2.YAMLToJSON(secretValue.Data["values"])
+			if err != nil {
+				utils.LogActivity(ctx, "get", "ADM", fmt.Sprintf("cannot convert values to JSON %v", err))
+				continue
+			}
+
+			var valuesStrPb *structpb.Struct
+			_ = json.Unmarshal(val, &valuesStrPb)
+
+			prevOverrideValues = append(prevOverrideValues, &deploymentpb.OverrideValues{
+				AppName:         app.Name,
+				TargetNamespace: app.Namespace,
+				Values:          valuesStrPb,
+			})
+		}
+	}
+	if len(prevOverrideValues) > 0 {
+		d.OverrideValuesMasked = prevOverrideValues
+	} else {
+		d.OverrideValuesMasked = nil
+	}
 
 	if d.DisplayName == "" {
 		d.DisplayName = deployment.Spec.DisplayName

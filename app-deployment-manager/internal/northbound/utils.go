@@ -789,7 +789,7 @@ func checkParameterTemplate(d *Deployment, allOverrideKeys map[string][]string) 
 
 	// Make copy of original OverrideValues values with masking
 	// to use for GetDeployments to mask any secrets
-	d.OverrideValuesMasked = d.OverrideValues
+	// d.OverrideValuesMasked = d.OverrideValues
 
 	// Make copy of original OverrideValues values without masking
 	// to add to fleet's overrides.yaml
@@ -803,57 +803,64 @@ func checkParameterTemplate(d *Deployment, allOverrideKeys map[string][]string) 
 	}
 	d.OverrideValues = OverrideValuesNotMasked
 
+	// Unmask all secrets in OverrideValues using OverrideValuesMasked
+	for i, oVal := range d.OverrideValues {
+		for _, origVal := range d.OverrideValuesMasked {
+			if oVal.AppName == origVal.AppName {
+				unmaskSecrets(oVal.Values, origVal.Values)
+				d.OverrideValues[i].Values = oVal.Values
+				log.Infof("[DEBUG] After unmaskSecrets: %v", d.OverrideValues[i].Values)
+				break
+			}
+		}
+	}
+
+	log.Infof("[DEBUG] Entering checkParameterTemplate for deployment: %s", d.Name)
 	for _, app := range *d.HelmApps {
 		addedToNotFoundApp := false
 		appSecretVals := make(map[string]string)
 
 		// Validate parameter template and create secret if needed
+		log.Infof("[DEBUG] Processing app: %s", app.Name)
 		for _, val := range app.ParameterTemplates {
-
-			// Convert to correct value type
+			log.Infof("[DEBUG] Processing param: %s (secret=%v)", val.Name, val.Secret)
+			// Type conversion for values (if needed)
 			for _, k := range allOverrideKeys[app.Name] {
+				log.Infof("[DEBUG] allOverrideKey: %s, val.Name: %s", k, val.Name)
 				if k == val.Name {
 					var inValInt int
 					var inValStr string
 					for _, oVal := range d.OverrideValues {
 						if oVal.AppName == app.Name {
-							_, _ = updatePbValue(oVal.Values,
-								strings.Split(val.Name, "."), inValInt, inValStr, val.Type, 0)
+							keys := strings.Split(val.Name, ".")
+							_, _ = updatePbValue(oVal.Values, keys, inValInt, inValStr, val.Type, 0)
 						}
 					}
 				}
 			}
 
+			// Check for missing mandatory values
 			foundMandatory := false
-			// Search in override values input to confirm mandatory value was provided
 			if val.Mandatory {
 				for _, k := range allOverrideKeys[app.Name] {
 					if k == val.Name {
 						foundMandatory = true
 					}
 				}
-
-				// Mandatory value not found in override values so append which app has missing value
-				// Prevent duplicate in notFoundApp slice by setting addedToNotFoundApp
-				if !(foundMandatory) && !(addedToNotFoundApp) {
+				if !foundMandatory && !addedToNotFoundApp {
 					addedToNotFoundApp = true
 					notFoundApp = append(notFoundApp, app.Name)
 				}
 			}
 
-			// Search in override values input to confirm mandatory value was provided
+			// Prepare masked secrets for UI (not for storage/deployment)
 			if val.Secret {
 				for _, k := range allOverrideKeys[app.Name] {
 					if k == val.Name {
 						var secretVal string
 						for _, oVal := range d.OverrideValuesMasked {
-							// Make sure values belong to same app
-							// ie 2 apps can share same key
 							if oVal.AppName == app.Name {
-								// will update new values with masking to output to user
-								secretVal = maskPbValue(oVal.Values,
-									strings.Split(val.Name, "."), secretVal, 0)
-
+								secretVal = maskPbValue(oVal.Values, strings.Split(val.Name, "."), secretVal, 0)
 								appSecretVals[val.Name] = secretVal
 							}
 						}
@@ -862,13 +869,12 @@ func checkParameterTemplate(d *Deployment, allOverrideKeys map[string][]string) 
 			}
 		}
 
-		// Only set ParameterTemplateSecrets if secrets found
+		// Only set ParameterTemplateSecrets if secrets found (for UI masking)
 		if len(appSecretVals) > 0 {
 			jsonAppSecretVals, err := json.Marshal(appSecretVals)
 			if err != nil {
 				return d, errors.NewInvalid("Error: %v", err)
 			}
-
 			d.ParameterTemplateSecrets[app.Name] = string(jsonAppSecretVals)
 		}
 	}
@@ -884,7 +890,6 @@ func checkParameterTemplate(d *Deployment, allOverrideKeys map[string][]string) 
 			notFoundAppStr = strings.TrimSuffix(notFoundAppStr, ", ")
 			msg = fmt.Sprintf("applications %s are missing mandatory override profile values", notFoundAppStr)
 		}
-
 		return d, errors.NewInvalid(msg)
 	}
 
@@ -1021,4 +1026,25 @@ func configureRsProxy(ctx context.Context, s *kubernetes.Clientset, nsName strin
 	}
 
 	return nil
+}
+
+func unmaskSecrets(current, previous *structpb.Struct) {
+	for k, v := range current.Fields {
+		switch val := v.Kind.(type) {
+		case *structpb.Value_StringValue:
+			if val.StringValue == "********" {
+				if prevVal, ok := previous.Fields[k]; ok {
+					if prevStr, ok := prevVal.Kind.(*structpb.Value_StringValue); ok {
+						current.Fields[k] = structpb.NewStringValue(prevStr.StringValue)
+					}
+				}
+			}
+		case *structpb.Value_StructValue:
+			if prevVal, ok := previous.Fields[k]; ok {
+				if prevStruct, ok := prevVal.Kind.(*structpb.Value_StructValue); ok {
+					unmaskSecrets(val.StructValue, prevStruct.StructValue)
+				}
+			}
+		}
+	}
 }
