@@ -6,8 +6,8 @@ apiVersion: v2
 description: App Deployment Manager
 name: app-deployment-manager
 # Correct version will be added by "make helm-package" from VERSION
-version: 2.4.12
+version: 2.4.13-dev
 annotations:
-  revision: "49ff7c7"
-  created: "2025-05-27T16:40:49Z"
-appVersion: 2.4.12
+  revision: "3e99885"
+  created: "2025-05-28T14:32:27Z"
+appVersion: 2.4.13-dev-3e99885
