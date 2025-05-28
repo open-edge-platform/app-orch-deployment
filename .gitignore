@@ -19,7 +19,7 @@ workspace
 */build/_output/**
 
 app-deployment-manager/config/
-
+*/test-report.json
 # output from make test
 */cover.out
 */coverage.html
