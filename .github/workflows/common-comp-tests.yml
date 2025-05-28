@@ -157,7 +157,7 @@ jobs:
           echo "${{ inputs.component }} component tests done!"
 
       - name: Report
-        uses: becheran/go-testreport@main
+        uses: becheran/go-testreport@90efc1ce13c872f23d6bc8a069527c26288b8f9c
         with:
           input: app-orch-deployment/${{ inputs.component }}/test-report.json
           output: app-orch-deployment/${{ inputs.component }}/${{ github.event_name }}-${{ github.event.number }}-test-report.html
