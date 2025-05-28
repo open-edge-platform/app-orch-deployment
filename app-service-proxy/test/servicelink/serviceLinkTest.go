@@ -5,8 +5,8 @@
 package servicelink
 
 import (
-//	"io/ioutil"
-//	"net/http"
+// "io/ioutil"
+// "net/http"
 )
 
 // TestServiceLink checks if http get for service link works.
@@ -35,6 +35,7 @@ func (s *TestSuite) TestServiceLinkPageAccess() {
 		}
 	}
 }
+
 /*
 // TestServiceLink checks if http get for service link works.
 func (s *TestSuite) TestServiceLink() {
