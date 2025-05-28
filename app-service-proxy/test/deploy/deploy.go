@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	TestClusterID = "test7"
+	TestClusterID = "test1"
 	retryCount    = 10
 )
 

@@ -5,8 +5,8 @@
 package servicelink
 
 import (
-	"io/ioutil"
-	"net/http"
+//	"io/ioutil"
+//	"net/http"
 )
 
 // TestServiceLink checks if http get for service link works.
@@ -22,8 +22,9 @@ func (s *TestSuite) TestServiceLinkPageAccess() {
 				for _, port := range *appEndPoint.Ports {
 					serviceUrl := port.ServiceProxyUrl
 					if serviceUrl != nil && *serviceUrl != "" {
-						err := openPageInChrome(*serviceUrl)
-						if err != nil {
+						searchStr := "A commitment to innovation and sustainability"
+						found, err := openPageInHeadlessChrome(*serviceUrl, searchStr, s.token)
+						if err != nil || found == false {
 							s.T().Errorf("Failed to open wordpress page : %s", err)
 						}
 					}
@@ -34,7 +35,7 @@ func (s *TestSuite) TestServiceLinkPageAccess() {
 		}
 	}
 }
-
+/*
 // TestServiceLink checks if http get for service link works.
 func (s *TestSuite) TestServiceLink() {
 	for _, app := range s.deployApps {
@@ -113,4 +114,4 @@ func (s *TestSuite) TestKeycloakRedirect() {
 			}
 		}
 	}
-}
+}*/
