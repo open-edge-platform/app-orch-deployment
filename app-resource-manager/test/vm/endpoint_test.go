@@ -18,6 +18,7 @@ import (
 //   - appID: The application ID
 //   - workloadID: The workload ID for the VM
 //   - desiredState: The state we want the VM to be in (VMRunning or VMStopped)
+//
 // Returns:
 //   - error: Any error that occurred during the state transition
 func (s *TestSuite) ensureVMState(appID string, workloadID string, desiredState string) error {
