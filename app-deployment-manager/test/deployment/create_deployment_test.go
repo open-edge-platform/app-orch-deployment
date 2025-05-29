@@ -69,7 +69,7 @@ func (s *TestSuite) TestRetrieveDeploymentStatus() {
 		s.NoError(err, "Failed to create '"+app+"-"+DeploymentTypeTargeted+"' deployment")
 
 	}
-	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &[]string{})
+	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &[]string{"color=blue"})
 	s.NoError(err)
 	s.Equal(http.StatusOK, code)
 	s.Equal(2, status.Running)
