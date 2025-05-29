@@ -61,8 +61,15 @@ func (s *TestSuite) TestCreateDiffDataDeployment() {
 	s.Equal(http.StatusOK, code)
 	s.NoError(err, "Failed to create '"+AppWordpress+"-"+DeploymentTypeTargeted+"' deployment")
 }
-
 func (s *TestSuite) TestRetrieveDeploymentStatus() {
+	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, nil)
+	s.NoError(err)
+	s.Equal(http.StatusOK, code)
+	s.T().Log(status)
+	s.Equal(int32(3), *status.Total)
+}
+
+func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 	var labelsList []string
 	for _, app := range []string{AppWordpress, AppNginx} {
 		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeAutoScaling, DeploymentTimeout)
@@ -72,7 +79,6 @@ func (s *TestSuite) TestRetrieveDeploymentStatus() {
 		if labels, ok := useDP["labelsList"].([]string); ok {
 			labelsList = append(labelsList, labels...)
 		}
-
 	}
 
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)

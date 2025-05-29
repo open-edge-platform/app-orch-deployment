@@ -332,9 +332,13 @@ func createDeploymentCmd(admClient *restClient.ClientWithResponses, reqBody *res
 }
 
 func GetDeploymentsStatus(admClient *restClient.ClientWithResponses, labels *[]string) (*restClient.GetDeploymentsStatusResponse, int, error) {
-	resp, err := admClient.DeploymentServiceGetDeploymentsStatusWithResponse(context.TODO(), &restClient.DeploymentServiceGetDeploymentsStatusParams{
-		Labels: labels,
-	})
+	var params *restClient.DeploymentServiceGetDeploymentsStatusParams
+	if labels != nil {
+		params = &restClient.DeploymentServiceGetDeploymentsStatusParams{
+			Labels: labels,
+		}
+	}
+	resp, err := admClient.DeploymentServiceGetDeploymentsStatusWithResponse(context.TODO(), params)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return &restClient.GetDeploymentsStatusResponse{}, resp.StatusCode(), fmt.Errorf("%v", err)
