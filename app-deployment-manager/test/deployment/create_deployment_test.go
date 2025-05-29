@@ -47,7 +47,7 @@ func (s *TestSuite) TestCreateDiffDataDeployment() {
 
 	overrideValues := []map[string]any{
 		{
-			"appName":         AppNginx,
+			"appName":         AppWordpress,
 			"targetNamespace": "",
 			"targetValues":    map[string]any{"service": map[string]any{"type": "NodePort"}},
 		},
