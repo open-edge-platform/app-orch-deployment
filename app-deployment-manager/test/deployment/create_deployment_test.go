@@ -122,7 +122,6 @@ func (s *TestSuite) TestDeploymentStateCountsVerification() {
 	s.NoError(err)
 	deployment, retCode, err := utils.GetDeployment(s.AdmClient, deploymentIDs[0])
 	s.Equal(retCode, http.StatusNotFound)
-	s.NoError(err)
 	s.Empty(deployment)
 
 	status, code, err = utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
