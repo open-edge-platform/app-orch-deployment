@@ -11,7 +11,7 @@ import (
 )
 
 func (s *TestSuite) TestRetrieveDeploymentStatusWithNoLabels() {
-	_, code, err := utils.StartDeployment(s.AdmClient, utils.AppWordpress, utils.DeploymentTypeAutoScaling, utils.DeploymentTimeout, "TestRetrieveDeploymentStatusWithNoLabels")
+	_, code, err := utils.StartDeployment(s.AdmClient, utils.AppWordpress, utils.DeploymentTypeAutoScaling, utils.DeploymentTimeout, "RetrieveDeploymentStatusWithNoLabels")
 	s.Equal(http.StatusOK, code)
 	s.NoError(err, "Failed to create '"+utils.AppWordpress+"-"+utils.DeploymentTypeAutoScaling+"' deployment")
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, nil)
