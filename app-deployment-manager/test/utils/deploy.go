@@ -27,6 +27,7 @@ var DpConfigs = map[string]any{
 		"profileName":          "testing-default",
 		"clusterId":            TestClusterID,
 		"labels":               map[string]string{"color": "blue"},
+		"labelsList":           []string{"color=blue"},
 		"overrideValues":       []map[string]any{},
 	},
 	"vm": map[string]any{
@@ -36,6 +37,7 @@ var DpConfigs = map[string]any{
 		"profileName":          "virtual-cluster",
 		"clusterId":            TestClusterID,
 		"labels":               map[string]string{"color": "blue"},
+		"labelsList":           []string{"color=blue"},
 		"overrideValues":       []map[string]any{},
 	},
 	"virt-extension": map[string]any{
@@ -45,6 +47,7 @@ var DpConfigs = map[string]any{
 		"profileName":          "with-software-emulation-profile-nosm",
 		"clusterId":            TestClusterID,
 		"labels":               map[string]string{"color": "blue"},
+		"labelsList":           []string{"color=blue"},
 		"overrideValues":       []map[string]any{},
 	},
 	"wordpress": map[string]any{
@@ -54,6 +57,7 @@ var DpConfigs = map[string]any{
 		"profileName":          "testing",
 		"clusterId":            TestClusterID,
 		"labels":               map[string]string{"color": "blue"},
+		"labelsList":           []string{"color=blue"},
 		"overrideValues":       []map[string]any{},
 	},
 }

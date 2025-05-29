@@ -63,16 +63,22 @@ func (s *TestSuite) TestCreateDiffDataDeployment() {
 }
 
 func (s *TestSuite) TestRetrieveDeploymentStatus() {
+	var labelsList []string
 	for _, app := range []string{AppWordpress, AppNginx} {
 		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeAutoScaling, DeploymentTimeout)
 		s.Equal(http.StatusOK, code)
 		s.NoError(err, "Failed to create '"+app+"-"+DeploymentTypeAutoScaling+"' deployment")
+		useDP := utils.DpConfigs[app].(map[string]any)
+		if labels, ok := useDP["labelsList"].([]string); ok {
+			labelsList = append(labelsList, labels...)
+		}
 
 	}
-	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &[]string{"color=blue"})
+
+	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
 	s.NoError(err)
 	s.Equal(http.StatusOK, code)
 	s.T().Log(status)
-	s.Equal(2, *status.Running)
-	s.Equal(2, *status.Total)
+	s.Equal(int32(2), *status.Running)
+	s.Equal(int32(2), *status.Total)
 }
