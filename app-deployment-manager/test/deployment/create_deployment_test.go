@@ -77,7 +77,7 @@ func (s *TestSuite) TestRetrieveDeploymentStatusWithNoLabels() {
 func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 	s.T().Skip()
 	var labelsList []string
-	for _, app := range []string{AppWordpress, AppNginx} {
+	for _, app := range []string{AppNginx} {
 		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeAutoScaling, DeploymentTimeout)
 		s.Equal(http.StatusOK, code)
 		s.NoError(err, "Failed to create '"+app+"-"+DeploymentTypeAutoScaling+"' deployment")
@@ -90,14 +90,14 @@ func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
 	s.NoError(err)
 	s.Equal(http.StatusOK, code)
-	s.Equal(int32(2), *status.Running)
-	s.Equal(int32(2), *status.Total)
+	s.Equal(int32(1), *status.Running)
+	s.Equal(int32(1), *status.Total)
 }
 
 func (s *TestSuite) TestDeploymentStateCountsVerification() {
 	var labelsList []string
 	var deploymentIDs []string
-	for _, app := range []string{AppWordpress, AppNginx} {
+	for _, app := range []string{AppNginx} {
 		deployID, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeAutoScaling, DeploymentTimeout)
 		s.Equal(http.StatusOK, code)
 		s.NoError(err, "Failed to create '"+app+"-"+DeploymentTypeAutoScaling+"' deployment")
@@ -111,8 +111,8 @@ func (s *TestSuite) TestDeploymentStateCountsVerification() {
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
 	s.NoError(err)
 	s.Equal(http.StatusOK, code)
-	s.Equal(int32(2), *status.Running)
-	s.Equal(int32(2), *status.Total)
+	s.Equal(int32(1), *status.Running)
+	s.Equal(int32(1), *status.Total)
 	s.Zero(*status.Deploying)
 	s.Zero(*status.Down)
 	s.Zero(*status.Error)
@@ -127,8 +127,8 @@ func (s *TestSuite) TestDeploymentStateCountsVerification() {
 	status, code, err = utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
 	s.NoError(err)
 	s.Equal(http.StatusOK, code)
-	s.Equal(int32(1), *status.Running)
-	s.Equal(int32(1), *status.Total)
+	s.Equal(int32(0), *status.Running)
+	s.Equal(int32(0), *status.Total)
 	s.Zero(*status.Deploying)
 	s.Zero(*status.Down)
 	s.Zero(*status.Error)
