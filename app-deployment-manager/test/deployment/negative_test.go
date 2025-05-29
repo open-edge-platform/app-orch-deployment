@@ -10,7 +10,6 @@ import (
 )
 
 func (s *TestSuite) TestNegativeCreateDeployment() {
-	s.T().Skip()
 	originalDpConfigs := CopyOriginalDpConfig(utils.DpConfigs)
 	defer func() { utils.DpConfigs = CopyOriginalDpConfig(originalDpConfigs) }()
 

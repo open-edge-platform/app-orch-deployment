@@ -25,7 +25,6 @@ const (
 )
 
 func (s *TestSuite) TestCreateTargetedDeployment() {
-	s.T().Skip()
 	for _, app := range []string{AppWordpress, AppNginx} {
 		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeTargeted, DeploymentTimeout)
 		s.Equal(http.StatusOK, code)
@@ -34,7 +33,6 @@ func (s *TestSuite) TestCreateTargetedDeployment() {
 }
 
 func (s *TestSuite) TestCreateAutoScaleDeployment() {
-	s.T().Skip()
 	for _, app := range []string{AppWordpress, AppNginx} {
 		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeAutoScaling, DeploymentTimeout)
 		s.Equal(http.StatusOK, code)
@@ -43,7 +41,6 @@ func (s *TestSuite) TestCreateAutoScaleDeployment() {
 }
 
 func (s *TestSuite) TestCreateDiffDataDeployment() {
-	s.T().Skip()
 	originalDpConfigs := CopyOriginalDpConfig(utils.DpConfigs)
 	defer func() { utils.DpConfigs = CopyOriginalDpConfig(originalDpConfigs) }()
 
