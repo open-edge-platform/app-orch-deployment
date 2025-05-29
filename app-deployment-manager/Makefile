@@ -157,7 +157,8 @@ test: manifests fmt vet envtest opa-test ## Run tests
 	${GOBIN}/gocov convert cover.out | ${GOBIN}/gocov-xml > coverage.xml
 	go tool cover -html=cover.out -o coverage.html
 
-COMP_TEST_COVER := atomic ./test/... GO_TEST_JSON=true
+COMP_TEST_COVER := atomic ./test/...
+GO_TEST_JSON=true
 component-test: common-component-test ## Run component tests
 
 go-fuzz: FUZZ_FUNCS ?= FuzzCreateDeployment FuzzListDeployments$$ FuzzGetDeployment FuzzDeleteDeployment \
