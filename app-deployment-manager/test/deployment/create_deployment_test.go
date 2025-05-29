@@ -66,7 +66,19 @@ func (s *TestSuite) TestRetrieveDeploymentStatus() {
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, nil)
 	s.NoError(err)
 	s.Equal(http.StatusOK, code, "Failed to retrieve deployments status")
-	s.Equal(int32(3), *status.Total, "Total deployments count mismatch")
+	currentTotal := *status.Total
+
+	_, code, err = utils.StartDeployment(s.AdmClient, AppWordpress, DeploymentTypeAutoScaling, DeploymentTimeout)
+	s.Equalf(http.StatusOK, code, "Failed to create '"+AppWordpress+"-"+DeploymentTypeAutoScaling+"' deployment")
+	s.NoError(err, "Failed to create '"+AppWordpress+"-"+DeploymentTypeAutoScaling+"' deployment")
+
+	status, code, err = utils.GetDeploymentsStatus(s.AdmClient, nil)
+	s.NoError(err)
+	s.Equalf(http.StatusOK, code, "Failed to retrieve deployments status")
+	newTotalDeployments := *status.Total
+
+	s.Equalf(currentTotal+1, newTotalDeployments, "Total deployments count mismatch after creating a new deployment")
+
 }
 
 func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
