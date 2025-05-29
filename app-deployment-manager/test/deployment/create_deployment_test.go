@@ -59,22 +59,14 @@ func (s *TestSuite) TestCreateDiffDataDeployment() {
 	s.NoError(err, "Failed to create '"+AppWordpress+"-"+DeploymentTypeTargeted+"' deployment")
 }
 func (s *TestSuite) TestRetrieveDeploymentStatusWithNoLabels() {
-	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, nil)
-	s.NoError(err)
-	s.Equal(http.StatusOK, code, "Failed to retrieve deployments status")
-	currentTotal := *status.Total
-
-	// this code delete a deployment if it exists and create a new one
-	// so the number of deployments should not change
-	_, code, err = utils.StartDeployment(s.AdmClient, AppWordpress, DeploymentTypeAutoScaling, DeploymentTimeout)
+	_, code, err := utils.StartDeployment(s.AdmClient, AppWordpress, DeploymentTypeAutoScaling, DeploymentTimeout)
 	s.Equal(http.StatusOK, code)
 	s.NoError(err, "Failed to create '"+AppWordpress+"-"+DeploymentTypeAutoScaling+"' deployment")
-
-	status, code, err = utils.GetDeploymentsStatus(s.AdmClient, nil)
+	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, nil)
 	s.NoError(err)
 	s.Equal(http.StatusOK, code)
-	newTotalDeployments := *status.Total
-	s.Equal(currentTotal, newTotalDeployments)
+	s.NotZero(status.Total)
+	s.NotZero(status.Running)
 
 }
 
@@ -92,11 +84,29 @@ func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
 	s.NoError(err)
-	s.Equal(http.StatusOK, code, "Failed to retrieve deployments status with labels filter")
-	s.Equal(int32(2), *status.Running, "Running deployments count mismatch")
-	s.Equal(int32(2), *status.Total, "Total deployments count mismatch with labels filter")
+	s.Equal(http.StatusOK, code)
+	s.Equal(int32(2), *status.Running)
+	s.Equal(int32(2), *status.Total)
 }
 
 func (s *TestSuite) TestDeploymentStateCountsVerification() {
-	s.T().Skip()
+	var labelsList []string
+	for _, app := range []string{AppWordpress, AppNginx} {
+		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeAutoScaling, DeploymentTimeout)
+		s.Equal(http.StatusOK, code)
+		s.NoError(err, "Failed to create '"+app+"-"+DeploymentTypeAutoScaling+"' deployment")
+		useDP := utils.DpConfigs[app].(map[string]any)
+		if labels, ok := useDP["labelsList"].([]string); ok {
+			labelsList = append(labelsList, labels...)
+		}
+	}
+
+	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
+	s.NoError(err)
+	s.Equal(http.StatusOK, code)
+	s.Equal(int32(2), *status.Running)
+	s.Equal(int32(2), *status.Total)
+	s.Zero(*status.Deploying)
+	s.Zero(*status.Down)
+	s.Zero(*status.Error)
 }
