@@ -148,6 +148,7 @@ func (a *Server) Close() error {
 }
 
 func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
+	logrus.Debugf("ServicesProxy handler invoked for path: %s", req.URL.Path)
 	logrus.Infof("ServicesProxy default handler for path %s", req.URL.Path)
 
 	ci, err := extractCookieInfo(req)
@@ -198,6 +199,13 @@ func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// Check if the request is a WebSocket upgrade
+	if isWebSocketRequest(req) {
+		logrus.Debugf("Handling WebSocket request for path %s", req.URL.Path)
+		a.handleWebSocket(rw, req, target, ci)
+		return
+	}
+
 	// Create proxy and set the Transport rancher/remoteDialer client
 	proxy := httputil.NewSingleHostReverseProxy(target)
 	proxy.Transport = &RewritingTransport{}
@@ -226,6 +234,50 @@ func (a *Server) ServicesProxy(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	proxy.ServeHTTP(rw, req)
+}
+
+// handleWebSocket handles WebSocket requests by upgrading the connection
+// and proxying it to the backend service.
+func (a *Server) handleWebSocket(rw http.ResponseWriter, req *http.Request, target *url.URL, ci *CookieInfo) {
+	// Compose the backend WebSocket URL
+	wsScheme := "ws"
+	if req.TLS != nil || req.Header.Get("X-Forwarded-Proto") == "https" {
+		wsScheme = "wss"
+	}
+	wsTarget := *target
+	wsTarget.Scheme = wsScheme
+	wsTarget.Path = fmt.Sprintf("/kubernetes/%s-%s/api/v1/namespaces/%s/services/%s/proxy%s",
+		ci.projectID, ci.cluster, ci.namespace, ci.service, req.URL.Path)
+
+	logrus.Infof("Proxying WebSocket to backend: %s", wsTarget.String())
+
+	proxy := httputil.NewSingleHostReverseProxy(&wsTarget)
+	originalDirector := proxy.Director
+	proxy.Director = func(r *http.Request) {
+		originalDirector(r)
+		r.URL.Scheme = wsScheme
+		r.URL.Host = wsTarget.Host
+		r.URL.Path = wsTarget.Path
+		r.Host = wsTarget.Host
+		// Forward all WebSocket headers
+		r.Header.Set("Connection", "Upgrade")
+		r.Header.Set("Upgrade", "websocket")
+	}
+	proxy.ErrorHandler = func(rw http.ResponseWriter, req *http.Request, err error) {
+		logrus.Errorf("WebSocket proxy error: %v", err)
+		http.Error(rw, "WebSocket proxy error", http.StatusBadGateway)
+	}
+	proxy.ServeHTTP(rw, req)
+}
+
+func isWebSocketRequest(req *http.Request) bool {
+	connectionHeader := req.Header.Get("Connection")
+	upgradeHeader := req.Header.Get("Upgrade")
+
+	logrus.Debugf("Connection header: %s", connectionHeader)
+	logrus.Debugf("Upgrade header: %s", upgradeHeader)
+
+	return strings.EqualFold(connectionHeader, "upgrade") && strings.EqualFold(upgradeHeader, "websocket")
 }
 
 func (a *Server) isAllowed(req *http.Request, projectID string) error {
