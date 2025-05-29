@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package deployment
+package deploymentstatus
 
 import (
 	"context"
@@ -34,7 +34,7 @@ func (s *TestSuite) SetupTest() {
 
 }
 
-func TestDeploymentSuite(t *testing.T) {
+func TestDeploymentStatusSuite(t *testing.T) {
 	portForwardCmd, err := utils.BringUpPortForward()
 	if err != nil {
 		t.Fatalf("failed to bring up port forward: %v", err)

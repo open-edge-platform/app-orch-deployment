@@ -62,6 +62,21 @@ var DpConfigs = map[string]any{
 	},
 }
 
+const (
+	// DeploymentTypeTargeted represents the targeted deployment type
+	DeploymentTypeTargeted = "targeted"
+	// DeploymentTypeAutoScaling represents the auto-scaling deployment type
+	DeploymentTypeAutoScaling = "auto-scaling"
+
+	// AppWordpress represents the WordPress application name
+	AppWordpress = "wordpress"
+	// AppNginx represents the Nginx application name
+	AppNginx = "nginx"
+
+	// DeploymentTimeout represents the timeout in seconds for deployment operations
+	DeploymentTimeout = 10
+)
+
 type CreateDeploymentParams struct {
 	DpName         string
 	AppNames       []string
@@ -78,12 +93,12 @@ func ptr[T any](v T) *T {
 	return &v
 }
 
-func StartDeployment(admClient *restClient.ClientWithResponses, dpPackageName, deploymentType string, retryDelay int) (string, int, error) {
+func StartDeployment(admClient *restClient.ClientWithResponses, dpPackageName, deploymentType string, retryDelay int, testName string) (string, int, error) {
 	retCode := http.StatusOK
 	if DpConfigs[dpPackageName] == nil {
 		return "", retCode, fmt.Errorf("deployment package %s not found in configuration", dpPackageName)
 	}
-	displayName := fmt.Sprintf("%s-%s", dpPackageName, deploymentType)
+	displayName := fmt.Sprintf("%s-%s-%s", dpPackageName, deploymentType, testName)
 	useDP := DpConfigs[dpPackageName].(map[string]any)
 
 	// Check if virt-extension DP is already running, do not recreate a new one

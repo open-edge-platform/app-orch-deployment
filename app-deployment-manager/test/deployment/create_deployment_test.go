@@ -5,39 +5,23 @@
 package deployment
 
 import (
-	"fmt"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/utils"
 	"net/http"
 )
 
-const (
-	// DeploymentTypeTargeted represents the targeted deployment type
-	DeploymentTypeTargeted = "targeted"
-	// DeploymentTypeAutoScaling represents the auto-scaling deployment type
-	DeploymentTypeAutoScaling = "auto-scaling"
-
-	// AppWordpress represents the WordPress application name
-	AppWordpress = "wordpress"
-	// AppNginx represents the Nginx application name
-	AppNginx = "nginx"
-
-	// DeploymentTimeout represents the timeout in seconds for deployment operations
-	DeploymentTimeout = 10
-)
-
 func (s *TestSuite) TestCreateTargetedDeployment() {
-	for _, app := range []string{AppWordpress, AppNginx} {
-		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeTargeted, DeploymentTimeout)
+	for _, app := range []string{utils.AppWordpress, utils.AppNginx} {
+		_, code, err := utils.StartDeployment(s.AdmClient, app, utils.DeploymentTypeTargeted, utils.DeploymentTimeout, "TestCreateTargetedDeployment")
 		s.Equal(http.StatusOK, code)
-		s.NoError(err, "Failed to create '"+app+"-"+DeploymentTypeTargeted+"' deployment")
+		s.NoError(err, "Failed to create '"+app+"-"+utils.DeploymentTypeTargeted+"' deployment")
 	}
 }
 
 func (s *TestSuite) TestCreateAutoScaleDeployment() {
-	for _, app := range []string{AppWordpress, AppNginx} {
-		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeAutoScaling, DeploymentTimeout)
+	for _, app := range []string{utils.AppWordpress, utils.AppNginx} {
+		_, code, err := utils.StartDeployment(s.AdmClient, app, utils.DeploymentTypeAutoScaling, utils.DeploymentTimeout, "TestCreateAutoScaleDeployment")
 		s.Equal(http.StatusOK, code)
-		s.NoError(err, "Failed to create '"+app+"-"+DeploymentTypeAutoScaling+"' deployment")
+		s.NoError(err, "Failed to create '"+app+"-"+utils.DeploymentTypeAutoScaling+"' deployment")
 	}
 }
 
@@ -47,84 +31,15 @@ func (s *TestSuite) TestCreateDiffDataDeployment() {
 
 	overrideValues := []map[string]any{
 		{
-			"appName":         AppWordpress,
+			"appName":         utils.AppWordpress,
 			"targetNamespace": "",
 			"targetValues":    map[string]any{"service": map[string]any{"type": "NodePort"}},
 		},
 	}
-	err := ResetThenChangeDpConfig(AppWordpress, "overrideValues", overrideValues, originalDpConfigs)
+	err := ResetThenChangeDpConfig(utils.AppWordpress, "overrideValues", overrideValues, originalDpConfigs)
 	s.NoError(err, "Failed to reset and change deployment configuration")
 
-	_, code, err := utils.StartDeployment(s.AdmClient, AppWordpress, DeploymentTypeTargeted, DeploymentTimeout)
+	_, code, err := utils.StartDeployment(s.AdmClient, utils.AppWordpress, utils.DeploymentTypeTargeted, utils.DeploymentTimeout, "TestCreateDiffDataDeployment")
 	s.Equal(http.StatusOK, code)
-	s.NoError(err, "Failed to create '"+AppWordpress+"-"+DeploymentTypeTargeted+"' deployment")
-}
-func (s *TestSuite) TestRetrieveDeploymentStatusWithNoLabels() {
-	_, code, err := utils.StartDeployment(s.AdmClient, AppWordpress, DeploymentTypeAutoScaling, DeploymentTimeout)
-	s.Equal(http.StatusOK, code)
-	s.NoError(err, "Failed to create '"+AppWordpress+"-"+DeploymentTypeAutoScaling+"' deployment")
-	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, nil)
-	s.NoError(err)
-	s.Equal(http.StatusOK, code)
-	s.NotZero(status.Total)
-	s.NotZero(status.Running)
-
-}
-
-func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
-	var labelsList []string
-	for _, app := range []string{AppNginx} {
-		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeAutoScaling, DeploymentTimeout)
-		s.Equal(http.StatusOK, code)
-		s.NoError(err, "Failed to create '"+app+"-"+DeploymentTypeAutoScaling+"' deployment")
-		useDP := utils.DpConfigs[app].(map[string]any)
-		if labels, ok := useDP["labelsList"].([]string); ok {
-			labelsList = append(labelsList, labels...)
-		}
-	}
-
-	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
-	s.NoError(err)
-	s.Equal(http.StatusOK, code)
-	s.Equal(int32(1), *status.Running)
-	s.Equal(int32(1), *status.Total)
-}
-
-func (s *TestSuite) TestDeploymentStateCountsVerification() {
-	var labelsList []string
-	var deploymentIDs []string
-	for _, app := range []string{AppNginx} {
-		deployID, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeAutoScaling, DeploymentTimeout)
-		s.Equal(http.StatusOK, code)
-		s.NoError(err, "Failed to create '"+app+"-"+DeploymentTypeAutoScaling+"' deployment")
-		useDP := utils.DpConfigs[app].(map[string]any)
-		if labels, ok := useDP["labelsList"].([]string); ok {
-			labelsList = append(labelsList, labels...)
-		}
-		deploymentIDs = append(deploymentIDs, deployID)
-	}
-
-	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
-	s.NoError(err)
-	s.Equal(http.StatusOK, code)
-	s.Equal(int32(1), *status.Running)
-	s.Equal(int32(1), *status.Total)
-	s.Zero(*status.Deploying)
-	s.Zero(*status.Down)
-	s.Zero(*status.Error)
-	displayName := fmt.Sprintf("%s-%s", AppNginx, DeploymentTypeAutoScaling)
-	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, 20, 10)
-	s.NoError(err)
-	deployment, retCode, err := utils.GetDeployment(s.AdmClient, deploymentIDs[0])
-	s.Equal(retCode, http.StatusNotFound)
-	s.Empty(deployment)
-
-	status, code, err = utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
-	s.NoError(err)
-	s.Equal(http.StatusOK, code)
-	s.Equal(int32(0), *status.Running)
-	s.Equal(int32(0), *status.Total)
-	s.Zero(*status.Deploying)
-	s.Zero(*status.Down)
-	s.Zero(*status.Error)
+	s.NoError(err, "Failed to create '"+utils.AppWordpress+"-"+utils.DeploymentTypeTargeted+"' deployment")
 }
