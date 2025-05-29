@@ -326,3 +326,17 @@ func createDeploymentCmd(admClient *restClient.ClientWithResponses, reqBody *res
 
 	return resp.JSON200.DeploymentId, resp.StatusCode(), nil
 }
+
+func GetDeploymentsStatus(admClient *restClient.ClientWithResponses, labels *[]string) (*restClient.GetDeploymentsStatusResponse, int, error) {
+	resp, err := admClient.DeploymentServiceGetDeploymentsStatusWithResponse(context.TODO(), &restClient.DeploymentServiceGetDeploymentsStatusParams{
+		Labels: labels,
+	})
+	if err != nil || resp.StatusCode() != 200 {
+		if err != nil {
+			return &restClient.GetDeploymentsStatusResponse{}, resp.StatusCode(), fmt.Errorf("%v", err)
+		}
+		return &restClient.GetDeploymentsStatusResponse{}, resp.StatusCode(), fmt.Errorf("failed to get deployment status: %v", string(resp.Body))
+	}
+
+	return resp.JSON200, resp.StatusCode(), nil
+}

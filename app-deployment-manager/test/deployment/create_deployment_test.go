@@ -58,3 +58,18 @@ func (s *TestSuite) TestCreateDiffDataDeployment() {
 	s.Equal(http.StatusOK, code)
 	s.NoError(err, "Failed to create '"+AppWordpress+"-"+DeploymentTypeTargeted+"' deployment")
 }
+
+func (s *TestSuite) TestRetrieveDeploymentStatus() {
+	for _, app := range []string{AppWordpress, AppNginx} {
+		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeTargeted, DeploymentTimeout)
+		s.Equal(http.StatusOK, code)
+		s.NoError(err, "Failed to create '"+app+"-"+DeploymentTypeTargeted+"' deployment")
+
+		status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &[]string{})
+		s.NoError(err)
+		s.Equal(http.StatusOK, code)
+		s.Equal(2, status.Running)
+		s.Equal(2, status.Total)
+
+	}
+}
