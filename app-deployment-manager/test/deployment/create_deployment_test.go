@@ -82,7 +82,6 @@ func (s *TestSuite) TestRetrieveDeploymentStatus() {
 }
 
 func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
-	s.T().Skip()
 	var labelsList []string
 	for _, app := range []string{AppWordpress, AppNginx} {
 		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeAutoScaling, DeploymentTimeout)
