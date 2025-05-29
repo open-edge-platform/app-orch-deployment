@@ -25,6 +25,7 @@ SHELL := bash -eu -o pipefail
 ## GO variables ##
 GOARCH	:= $(shell go env GOARCH)
 GOCMD   := go
+GOTESTSUM := go run gotest.tools/gotestsum@latest
 OAPI_CODEGEN_VERSION ?= v2.2.0
 LOCALBIN ?= $(shell pwd)/bin
 BUF_VERSION ?= v1.52.1
@@ -273,8 +274,10 @@ go-test: $(OUT_DIR) $(GO_TEST_DEPS) ## Run go test and calculate code coverage
 
 # Prevent parallel tests from running to avoid issues with deletion and creation of resources
 common-component-test: ## Run component tests
-	$(GOCMD) test -p 1 -timeout 30m -count=1 -v -json \
-	-covermode $(COMP_TEST_COVER) 2>&1 | tee test-report.json || true
+	#$(GOCMD) test -p 1 -timeout 30m -count=1 -v -json \
+	#-covermode $(COMP_TEST_COVER) | tee test-report.json || true
+	$(GOTESTSUM) --format=standard-verbose --jsonfile=test-report.json -p 1 -timeout 30m -count=1 \
+	-covermode $(COMP_TEST_COVER) | true
 
 common-go-fuzz-test: ## GO fuzz tests
 	for func in $(FUZZ_FUNCS); do \
