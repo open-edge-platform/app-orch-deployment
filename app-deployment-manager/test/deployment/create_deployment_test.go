@@ -26,7 +26,6 @@ const (
 )
 
 func (s *TestSuite) TestCreateTargetedDeployment() {
-	s.T().Skip()
 	for _, app := range []string{AppWordpress, AppNginx} {
 		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeTargeted, DeploymentTimeout)
 		s.Equal(http.StatusOK, code)
@@ -35,7 +34,6 @@ func (s *TestSuite) TestCreateTargetedDeployment() {
 }
 
 func (s *TestSuite) TestCreateAutoScaleDeployment() {
-	s.T().Skip()
 	for _, app := range []string{AppWordpress, AppNginx} {
 		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeAutoScaling, DeploymentTimeout)
 		s.Equal(http.StatusOK, code)
@@ -44,7 +42,6 @@ func (s *TestSuite) TestCreateAutoScaleDeployment() {
 }
 
 func (s *TestSuite) TestCreateDiffDataDeployment() {
-	s.T().Skip()
 	originalDpConfigs := CopyOriginalDpConfig(utils.DpConfigs)
 	defer func() { utils.DpConfigs = CopyOriginalDpConfig(originalDpConfigs) }()
 
@@ -63,7 +60,6 @@ func (s *TestSuite) TestCreateDiffDataDeployment() {
 	s.NoError(err, "Failed to create '"+AppWordpress+"-"+DeploymentTypeTargeted+"' deployment")
 }
 func (s *TestSuite) TestRetrieveDeploymentStatusWithNoLabels() {
-	s.T().Skip()
 	_, code, err := utils.StartDeployment(s.AdmClient, AppWordpress, DeploymentTypeAutoScaling, DeploymentTimeout)
 	s.Equal(http.StatusOK, code)
 	s.NoError(err, "Failed to create '"+AppWordpress+"-"+DeploymentTypeAutoScaling+"' deployment")
@@ -76,7 +72,6 @@ func (s *TestSuite) TestRetrieveDeploymentStatusWithNoLabels() {
 }
 
 func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
-	s.T().Skip()
 	var labelsList []string
 	for _, app := range []string{AppNginx} {
 		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeAutoScaling, DeploymentTimeout)
