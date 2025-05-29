@@ -158,7 +158,7 @@ test: manifests fmt vet envtest opa-test ## Run tests
 	go tool cover -html=cover.out -o coverage.html
 
 COMP_TEST_COVER := atomic ./test/...
-component-test: common-component-test
+component-test: common-component-test ## Run component tests
 
 go-fuzz: FUZZ_FUNCS ?= FuzzCreateDeployment FuzzListDeployments$$ FuzzGetDeployment FuzzDeleteDeployment \
 	FuzzUpdateDeployment FuzzDeploymentsStatus FuzzListDeploymentsPerCluster FuzzListDeploymentClusters \
