@@ -277,7 +277,7 @@ common-component-test: ## Run component tests
 	#$(GOCMD) test -p 1 -timeout 30m -count=1 -v -json \
 	#-covermode $(COMP_TEST_COVER) | tee test-report.json || true
 	$(GOTESTSUM) --format=standard-verbose --jsonfile=test-report.json -- -p 1 -timeout 30m -count=1 \
-	-covermode $(COMP_TEST_COVER) | true
+	-covermode $(COMP_TEST_COVER) || true
 
 common-go-fuzz-test: ## GO fuzz tests
 	for func in $(FUZZ_FUNCS); do \
