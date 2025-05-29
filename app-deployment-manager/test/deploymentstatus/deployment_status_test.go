@@ -11,7 +11,7 @@ import (
 )
 
 func (s *TestSuite) TestRetrieveDeploymentStatusWithNoLabels() {
-	_, code, err := utils.StartDeployment(s.AdmClient, utils.AppWordpress, utils.DeploymentTypeAutoScaling, utils.DeploymentTimeout, "RetrieveDeploymentStatusWithNoLabels")
+	_, code, err := utils.StartDeployment(s.AdmClient, utils.AppWordpress, utils.DeploymentTypeAutoScaling, utils.DeploymentTimeout, "DeploymentStatusWithNoLabels")
 	s.Equal(http.StatusOK, code)
 	s.NoError(err, "Failed to create '"+utils.AppWordpress+"-"+utils.DeploymentTypeAutoScaling+"' deployment")
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, nil)
@@ -25,7 +25,7 @@ func (s *TestSuite) TestRetrieveDeploymentStatusWithNoLabels() {
 func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 	var labelsList []string
 	for _, app := range []string{utils.AppWordpress} {
-		_, code, err := utils.StartDeployment(s.AdmClient, app, utils.DeploymentTypeAutoScaling, utils.DeploymentTimeout, "TestDeploymentStatusWithLabelsFilter")
+		_, code, err := utils.StartDeployment(s.AdmClient, app, utils.DeploymentTypeAutoScaling, utils.DeploymentTimeout, "DeploymentStatusWithLabels")
 		s.Equal(http.StatusOK, code)
 		s.NoError(err, "Failed to create '"+app+"-"+utils.DeploymentTypeAutoScaling+"' deployment")
 		useDP := utils.DpConfigs[app].(map[string]any)

@@ -98,7 +98,7 @@ func StartDeployment(admClient *restClient.ClientWithResponses, dpPackageName, d
 	if DpConfigs[dpPackageName] == nil {
 		return "", retCode, fmt.Errorf("deployment package %s not found in configuration", dpPackageName)
 	}
-	displayName := fmt.Sprintf("%s-%s-%s", dpPackageName, testName)
+	displayName := fmt.Sprintf("%s-%s", dpPackageName, testName)
 	useDP := DpConfigs[dpPackageName].(map[string]any)
 
 	// Check if virt-extension DP is already running, do not recreate a new one
