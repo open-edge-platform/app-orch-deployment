@@ -64,14 +64,15 @@ func (s *TestSuite) TestCreateDiffDataDeployment() {
 
 func (s *TestSuite) TestRetrieveDeploymentStatus() {
 	for _, app := range []string{AppWordpress, AppNginx} {
-		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeTargeted, DeploymentTimeout)
+		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeAutoScaling, DeploymentTimeout)
 		s.Equal(http.StatusOK, code)
-		s.NoError(err, "Failed to create '"+app+"-"+DeploymentTypeTargeted+"' deployment")
+		s.NoError(err, "Failed to create '"+app+"-"+DeploymentTypeAutoScaling+"' deployment")
 
 	}
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &[]string{"color=blue"})
 	s.NoError(err)
 	s.Equal(http.StatusOK, code)
+	s.T().Log(status)
 	s.Equal(2, *status.Running)
 	s.Equal(2, *status.Total)
 }
