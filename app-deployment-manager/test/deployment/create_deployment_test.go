@@ -72,6 +72,6 @@ func (s *TestSuite) TestRetrieveDeploymentStatus() {
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &[]string{"color=blue"})
 	s.NoError(err)
 	s.Equal(http.StatusOK, code)
-	s.Equal(2, status.Running)
-	s.Equal(2, status.Total)
+	s.Equal(2, *status.Running)
+	s.Equal(2, *status.Total)
 }
