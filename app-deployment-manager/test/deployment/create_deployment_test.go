@@ -91,14 +91,16 @@ func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 
 func (s *TestSuite) TestDeploymentStateCountsVerification() {
 	var labelsList []string
+	var deploymentIDs []string
 	for _, app := range []string{AppWordpress, AppNginx} {
-		_, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeAutoScaling, DeploymentTimeout)
+		deployID, code, err := utils.StartDeployment(s.AdmClient, app, DeploymentTypeAutoScaling, DeploymentTimeout)
 		s.Equal(http.StatusOK, code)
 		s.NoError(err, "Failed to create '"+app+"-"+DeploymentTypeAutoScaling+"' deployment")
 		useDP := utils.DpConfigs[app].(map[string]any)
 		if labels, ok := useDP["labelsList"].([]string); ok {
 			labelsList = append(labelsList, labels...)
 		}
+		deploymentIDs = append(deploymentIDs, deployID)
 	}
 
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
@@ -106,6 +108,22 @@ func (s *TestSuite) TestDeploymentStateCountsVerification() {
 	s.Equal(http.StatusOK, code)
 	s.Equal(int32(2), *status.Running)
 	s.Equal(int32(2), *status.Total)
+	s.Zero(*status.Deploying)
+	s.Zero(*status.Down)
+	s.Zero(*status.Error)
+
+	err = utils.DeleteDeployment(s.AdmClient, deploymentIDs[0])
+	s.NoError(err, "Failed to delete deployment "+deploymentIDs[0])
+	deployment, retCode, err := utils.GetDeployment(s.AdmClient, deploymentIDs[0])
+	s.Equal(retCode, http.StatusOK)
+	s.NoError(err)
+	s.Empty(deployment)
+
+	status, code, err = utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
+	s.NoError(err)
+	s.Equal(http.StatusOK, code)
+	s.Equal(int32(1), *status.Running)
+	s.Equal(int32(1), *status.Total)
 	s.Zero(*status.Deploying)
 	s.Zero(*status.Down)
 	s.Zero(*status.Error)

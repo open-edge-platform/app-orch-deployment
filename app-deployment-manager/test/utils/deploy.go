@@ -135,7 +135,7 @@ func StartDeployment(admClient *restClient.ClientWithResponses, dpPackageName, d
 	return deployID, retCode, nil
 }
 
-func deleteDeployment(client *restClient.ClientWithResponses, deployID string) error {
+func DeleteDeployment(client *restClient.ClientWithResponses, deployID string) error {
 	resp, err := client.DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployID, nil)
 	if err != nil || resp.StatusCode() != 200 {
 		return fmt.Errorf("failed to delete deployment: %v, status: %d", err, resp.StatusCode())
@@ -232,7 +232,7 @@ func FindDeploymentIDByDisplayName(client *restClient.ClientWithResponses, displ
 
 func deleteDeploymentByDisplayName(client *restClient.ClientWithResponses, displayName string) error {
 	if deployID := FindDeploymentIDByDisplayName(client, displayName); deployID != "" {
-		err := deleteDeployment(client, deployID)
+		err := DeleteDeployment(client, deployID)
 		if err != nil {
 			return fmt.Errorf("failed to delete deployment %s: %v", displayName, err)
 		}
