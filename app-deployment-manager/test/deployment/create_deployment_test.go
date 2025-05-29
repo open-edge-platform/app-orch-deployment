@@ -5,6 +5,7 @@
 package deployment
 
 import (
+	"fmt"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/utils"
 	"net/http"
 )
@@ -116,8 +117,8 @@ func (s *TestSuite) TestDeploymentStateCountsVerification() {
 	s.Zero(*status.Deploying)
 	s.Zero(*status.Down)
 	s.Zero(*status.Error)
-
-	err = utils.DeleteDeployment(s.AdmClient, deploymentIDs[0])
+	displayName := fmt.Sprintf("%s-%s", AppNginx, DeploymentTypeAutoScaling)
+	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, 10, 5)
 	s.NoError(err, "Failed to delete deployment "+deploymentIDs[0])
 	deployment, retCode, err := utils.GetDeployment(s.AdmClient, deploymentIDs[0])
 	s.Equal(retCode, http.StatusOK)

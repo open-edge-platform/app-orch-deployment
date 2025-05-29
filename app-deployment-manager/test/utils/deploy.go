@@ -100,7 +100,7 @@ func StartDeployment(admClient *restClient.ClientWithResponses, dpPackageName, d
 		}
 	}
 
-	err := deleteAndRetryUntilDeleted(admClient, displayName, retryCount, time.Duration(retryDelay)*time.Second)
+	err := DeleteAndRetryUntilDeleted(admClient, displayName, retryCount, time.Duration(retryDelay)*time.Second)
 	if err != nil {
 		return "", retCode, err
 	}
@@ -298,7 +298,7 @@ func createDeployment(client *restClient.ClientWithResponses, params CreateDeplo
 	return deployID, retCode, nil
 }
 
-func deleteAndRetryUntilDeleted(client *restClient.ClientWithResponses, displayName string, retries int, delay time.Duration) error {
+func DeleteAndRetryUntilDeleted(client *restClient.ClientWithResponses, displayName string, retries int, delay time.Duration) error {
 	// Attempt to delete the deployment
 	if err := deleteDeploymentByDisplayName(client, displayName); err != nil {
 		return fmt.Errorf("initial deletion failed: %v", err)
