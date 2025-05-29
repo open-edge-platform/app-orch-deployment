@@ -121,7 +121,7 @@ func (s *TestSuite) TestDeploymentStateCountsVerification() {
 	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, 20, 10)
 	s.NoError(err)
 	deployment, retCode, err := utils.GetDeployment(s.AdmClient, deploymentIDs[0])
-	s.Equal(retCode, http.StatusOK)
+	s.Equal(retCode, http.StatusNotFound)
 	s.NoError(err)
 	s.Empty(deployment)
 
