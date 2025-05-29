@@ -45,7 +45,7 @@ func openPageInHeadlessChrome(url, search, token string) (bool, error) {
 	ctx, cancel := chromedp.NewContext(allocCtx)
 	defer cancel()
 
-	var pageTitle, pageHTML string
+	var pageTitle string
 	var buf []byte
 	// This will hold the IDs
 
@@ -138,15 +138,18 @@ func openPageInHeadlessChrome(url, search, token string) (bool, error) {
 			}
 		}
 	})
-	var text string
-	var cookie string
+
 	// The selector for the <p> element
+	selector := "p.has-text-align-center"
+
+	var html string
+
 	// Run tasks
 	err := chromedp.Run(ctx,
-		network.Enable(),
-		network.SetExtraHTTPHeaders(network.Headers{
-			"Authorization": "Bearer " + token,
-		}),
+		//network.Enable(),
+		//network.SetExtraHTTPHeaders(network.Headers{
+		//	"Authorization": "Bearer " + token,
+		//}),
 		chromedp.Navigate(url), // Navigate to the URL
 		//chromedp.WaitVisible("body", chromedp.ByQuery), // Wait for the page body to be visible
 		//chromedp.Evaluate(`
@@ -159,33 +162,23 @@ func openPageInHeadlessChrome(url, search, token string) (bool, error) {
 		chromedp.CaptureScreenshot(&buf),
 		//chromedp.WaitReady("body"),
 		chromedp.Title(&pageTitle), // Get the page title
-		//chromedp.Sleep(3*time.Second),
-		//chromedp.Evaluate(`document.cookie`, &cookie),
-		//chromedp.Location(&text),
-		//chromedp.Sleep(5*time.Second),
-		//chromedp.CaptureScreenshot(&buf),
+		chromedp.WaitVisible(selector),
+		chromedp.InnerHTML(selector, &html, chromedp.NodeVisible),
 	)
 
 	if err != nil {
 		return false, fmt.Errorf("chromedp error: %w", err)
 	}
 
-	fmt.Println("Cookies on page:", cookie)
-	fmt.Println("next url:", text)
-	/*
-	   // Check for your string in the element's HTML
-	   searchString := "Études is a pioneering firm"
-	   if strings.Contains(text, searchString) {
-	       fmt.Println("String found!")
-	   } else {
-	       fmt.Println("String not found.")
-	   }
-
-	   // Print the IDs
-	   for _, id := range ids {
-	       fmt.Println(id)
-	   }
-	*/
+	found := false
+	// Check for your string in the element's HTML
+	searchString := "Études is a pioneering firm"
+	if strings.Contains(html, searchString) {
+		fmt.Println("String found!")
+		found = true
+	} else {
+		fmt.Println("String not found.")
+	}
 
 	if err := ioutil.WriteFile("/home/seu/temp/screenshot.png", buf, 0644); err != nil {
 		return false, fmt.Errorf("screenshot error: %w", err)
@@ -211,7 +204,6 @@ func openPageInHeadlessChrome(url, search, token string) (bool, error) {
 		fmt.Printf("Name: %s\nValue: %s\nDomain: %s\nPath: %s\nExpires: %v\nSecure: %v\nHttpOnly: %v\n\n",
 			c.Name, c.Value, c.Domain, c.Path, c.Expires, c.Secure, c.HTTPOnly)
 	}
-	found := strings.Contains(pageHTML, search)
 	return found, nil
 }
 
