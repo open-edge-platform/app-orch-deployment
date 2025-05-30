@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-func (s *TestSuite) TestRetrieveDeploymentStatusWithNoLabels() {
+func (s *TestSuite) TestDeploymentStatusWithNoLabels() {
 	deployemntReq := utils.StartDeploymentRequest{
 		AdmClient:      s.AdmClient,
 		DpPackageName:  utils.AppWordpress,
@@ -29,7 +29,7 @@ func (s *TestSuite) TestRetrieveDeploymentStatusWithNoLabels() {
 
 }
 
-func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
+func (s *TestSuite) TestDeploymentStatusWithLabels() {
 	var labelsList []string
 
 	deploymentReq := utils.StartDeploymentRequest{

@@ -16,7 +16,7 @@ import (
 
 const (
 	TestClusterID = "demo-cluster"
-	retryCount    = 10
+	retryCount    = 20
 )
 
 var DpConfigs = map[string]any{
