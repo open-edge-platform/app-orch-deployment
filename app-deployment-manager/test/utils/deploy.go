@@ -328,6 +328,7 @@ func DeleteAndRetryUntilDeleted(client *restClient.ClientWithResponses, displayN
 
 	// Retry until the deployment is confirmed deleted
 	for i := 0; i < retries; i++ {
+		fmt.Printf("Checking if deployment %s is deleted (%d/%d)\n", displayName, i+1, retries)
 		deployments, retCode, err := getDeployments(client)
 		if err != nil || retCode != 200 {
 			return fmt.Errorf("failed to get deployments: %v", err)
