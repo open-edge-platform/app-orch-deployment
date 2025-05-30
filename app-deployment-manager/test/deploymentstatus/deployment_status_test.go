@@ -42,9 +42,11 @@ func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 		_, code, err := utils.StartDeployment(deploymentReq)
 		s.Equal(http.StatusOK, code)
 		s.NoError(err, "Failed to create '"+app+"-"+utils.DeploymentTypeAutoScaling+"' deployment")
-	}
-	for key, value := range utils.DpConfigs["labels"].(map[string]string) {
-		labelsList = append(labelsList, fmt.Sprintf("%s=%s", key, value))
+		useDP := utils.DpConfigs[deploymentReq.DpPackageName].(map[string]any)
+		labels := useDP["labels"].(map[string]string)
+		for key, value := range labels {
+			labelsList = append(labelsList, fmt.Sprintf("%s=%s", key, value))
+		}
 	}
 
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
@@ -72,9 +74,12 @@ func (s *TestSuite) TestDeploymentStateCountsVerification() {
 
 		deploymentIDs = append(deploymentIDs, deployID)
 		displayName = fmt.Sprintf("%s-%s", deploymentReq.DpPackageName, deploymentReq.TestName)
-	}
-	for key, value := range utils.DpConfigs["labels"].(map[string]string) {
-		labelsList = append(labelsList, fmt.Sprintf("%s=%s", key, value))
+		useDP := utils.DpConfigs[deploymentReq.DpPackageName].(map[string]any)
+		labels := useDP["labels"].(map[string]string)
+		for key, value := range labels {
+			labelsList = append(labelsList, fmt.Sprintf("%s=%s", key, value))
+		}
+
 	}
 
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
