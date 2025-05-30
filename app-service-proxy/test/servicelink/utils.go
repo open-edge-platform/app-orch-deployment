@@ -6,10 +6,10 @@ package servicelink
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	//"encoding/json"
 	"strings"
 	"time"
 	//"os"
@@ -21,13 +21,134 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
 	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/test/deploy"
 	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/test/utils"
-	"github.com/sclevine/agouti"
 )
 
 const (
 	retryDelay = 10 * time.Second
 	retryCount = 10
 )
+
+func getCliSecretHarbor(url, token string) (string, error) {
+	// Create a user data dir for Chrome to persist cookies and session
+	//userDataDir := filepath.Join(os.TempDir(), "chromedp-user-data")
+	//os.MkdirAll(userDataDir, 0700)
+
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("ignore-certificate-errors", true),
+		//  chromedp.UserDataDir(userDataDir), // <-- this makes cookies persistent!
+	)
+
+	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer cancel()
+
+	ctx, cancel := chromedp.NewContext(allocCtx)
+	defer cancel()
+
+	var pageTitle string
+	var buf []byte
+	// This will hold the IDs
+
+	username := "sample-project-edge-mgr"
+	password := "ChangeMeOn1stLogin!"
+
+	selectors := []string{"#log_oidc"}
+
+	js := `
+    (function(selectors) {
+        return selectors.map(function(selector) {
+            var el = document.querySelector(selector);
+            if (!el) return { selector: selector, exists: false };
+            var tag = el.tagName.toLowerCase();
+            var writable =
+                (tag === 'input' || tag === 'textarea') &&
+                !el.disabled &&
+                !el.readOnly;
+            var style = window.getComputedStyle(el);
+            var hidden =
+                style.display === 'none' ||
+                style.visibility === 'hidden' ||
+                el.offsetParent === null;
+            var focusable = !el.disabled && !hidden &&
+                (
+                    ['input', 'select', 'textarea', 'button', 'a'].includes(tag) ||
+                    el.hasAttribute('tabindex')
+                );
+            return {
+                selector: selector,
+                exists: true,
+                writable: writable,
+                hidden: hidden,
+                focusable: focusable
+            };
+        });
+    })(%s)
+    `
+	// Encode Go array as JSON for injection into JS
+	selectorsJSON, _ := json.Marshal(selectors)
+	js = fmt.Sprintf(js, string(selectorsJSON))
+
+	var results []map[string]interface{}
+	err := chromedp.Run(ctx,
+		chromedp.Navigate(url),
+		chromedp.WaitReady("body"),
+		chromedp.Evaluate(js, &results),
+	)
+	if err != nil {
+		return "", fmt.Errorf("js error: %w", err)
+	}
+
+	// Parse and print the result
+	for _, res := range results {
+		fmt.Println(res)
+	}
+
+	var secret string
+
+	// Run tasks
+	err = chromedp.Run(ctx,
+		network.Enable(),
+		network.SetExtraHTTPHeaders(network.Headers{
+			"Authorization": "Bearer " + token,
+		}),
+		chromedp.Navigate(url), // Navigate to the URL
+		chromedp.Sleep(3*time.Second),
+		chromedp.CaptureScreenshot(&buf),
+		chromedp.Click(`//button[normalize-space()='LOGIN WITH Open Edge IAM']`, chromedp.BySearch),
+		chromedp.CaptureScreenshot(&buf),
+		chromedp.WaitReady("body"),
+		chromedp.SendKeys(`#username`, username, chromedp.ByID),
+		chromedp.SendKeys(`#password`, password, chromedp.ByID),
+		chromedp.Click(`#kc-login`, chromedp.ByID),
+		chromedp.Sleep(3*time.Second),
+		chromedp.CaptureScreenshot(&buf),
+		chromedp.WaitVisible(`//button[span[contains(text(), "sample-project-edge-mgr")]]`, chromedp.BySearch),
+		// Click the button
+		chromedp.Click(`//button[span[contains(text(), "sample-project-edge-mgr")]]`, chromedp.BySearch),
+		chromedp.Sleep(500*time.Millisecond), // Wait for menu animation/render
+		chromedp.CaptureScreenshot(&buf),
+		chromedp.WaitVisible(`//a[contains(text(), "User Profile")]`, chromedp.BySearch),
+		chromedp.Click(`//a[contains(text(), "User Profile")]`, chromedp.BySearch),
+		chromedp.Sleep(500*time.Millisecond), // Wait for menu animation/render
+		chromedp.CaptureScreenshot(&buf),
+		// Wait for the modal and textarea to appear
+		chromedp.WaitVisible(`textarea.inputTarget`, chromedp.ByQuery),
+		// Get the value of the textarea
+		chromedp.Value(`textarea.inputTarget`, &secret, chromedp.ByQuery),
+		chromedp.CaptureScreenshot(&buf),
+	)
+
+	if err != nil {
+		return "", fmt.Errorf("chromedp error: %w", err)
+	}
+
+	fmt.Println("html link : ", pageTitle)
+	fmt.Println("secret : ", secret)
+	if err := ioutil.WriteFile("/home/seu/temp/registry.png", buf, 0644); err != nil {
+		return "", fmt.Errorf("screenshot error: %w", err)
+	}
+
+	return secret, nil
+}
 
 func openPageInHeadlessChrome(url, search, token string) (bool, error) {
 	// Create a user data dir for Chrome to persist cookies and session
@@ -172,8 +293,7 @@ func openPageInHeadlessChrome(url, search, token string) (bool, error) {
 
 	found := false
 	// Check for your string in the element's HTML
-	searchString := "Études is a pioneering firm"
-	if strings.Contains(html, searchString) {
+	if strings.Contains(html, search) {
 		fmt.Println("String found!")
 		found = true
 	} else {
@@ -207,66 +327,6 @@ func openPageInHeadlessChrome(url, search, token string) (bool, error) {
 	return found, nil
 }
 
-func openPageInChrome(serviceUrl string) error {
-	// Start a new WebDriver instance
-	driver := agouti.ChromeDriver()
-	if err := driver.Start(); err != nil {
-		fmt.Println("Failed to start driver:", err)
-		return err
-	}
-	defer driver.Stop()
-
-	// Create a new page
-	page, err := driver.NewPage()
-	if err != nil {
-		fmt.Println("Failed to open page:", err)
-		return err
-	}
-
-	// Navigate to the URL
-	fmt.Println("Navigating to URL:", serviceUrl)
-	if err := page.Navigate(serviceUrl); err != nil {
-		fmt.Println("Failed to navigate:", err)
-		return err
-	}
-
-	// Check if the page is loaded
-	if _, err := page.Find("body").Visible(); err != nil {
-		fmt.Println("Page body not visible:", err)
-		return err
-	}
-	// Find the element containing the specific text
-	selection := page.Find("body").FindByXPath("//*[contains(text(), 'A commitment to innovation and sustainability')]")
-	if visible, err := selection.Visible(); err != nil || !visible {
-		fmt.Println("Text not found or not visible:", err)
-		return err
-	}
-
-	// Retrieve and print the text
-	text, err := selection.Text()
-	if err != nil {
-		fmt.Println("Failed to retrieve text:", err)
-		return err
-	}
-	fmt.Println("Found text:", text)
-	return nil
-
-	/*
-		// Interact with the page and execute JavaScript
-		// For example, you can wait for an element to be visible
-		if err := page.Find("#some-element").Visible(); err != nil {
-			fmt.Println("Element not visible:", err)
-			return
-		}
-
-		// You can also execute JavaScript directly
-		result, err := page.RunScript("return document.title;", nil, nil)
-		if err != nil {
-			fmt.Println("Failed to run script:", err)
-			return
-		}
-		fmt.Println("Page title is:", result) */
-}
 func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppEndpoint, int, error) {
 	resp, err := armClient.EndpointsServiceListAppEndpointsWithResponse(context.TODO(), appID, deploy.TestClusterID)
 	if err != nil || resp.StatusCode() != 200 {
