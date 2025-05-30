@@ -11,12 +11,13 @@ import (
 )
 
 func (s *TestSuite) TestDeploymentStatusWithNoLabels() {
+	testName := "DeploymentStatusWithNoLabels"
 	deployemntReq := utils.StartDeploymentRequest{
 		AdmClient:      s.AdmClient,
 		DpPackageName:  utils.AppWordpress,
 		DeploymentType: utils.DeploymentTypeAutoScaling,
 		RetryDelay:     utils.DeploymentTimeout,
-		TestName:       "DeploymentStatusWithNoLabels",
+		TestName:       testName,
 	}
 	_, code, err := utils.StartDeployment(deployemntReq)
 	s.Equal(http.StatusOK, code)
@@ -26,6 +27,9 @@ func (s *TestSuite) TestDeploymentStatusWithNoLabels() {
 	s.Equal(http.StatusOK, code)
 	s.NotZero(status.Total)
 	s.NotZero(status.Running)
+	displayName := utils.FormDisplayName(utils.AppWordpress, testName)
+	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.DeploymentTimeout, utils.RetryCount)
+	s.NoError(err)
 
 }
 
@@ -53,4 +57,7 @@ func (s *TestSuite) TestDeploymentStatusWithLabels() {
 	s.Equal(http.StatusOK, code)
 	s.NotZero(status.Total)
 	s.NotZero(status.Running)
+	displayName := utils.FormDisplayName(utils.AppWordpress, deploymentReq.TestName)
+	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.DeploymentTimeout, utils.RetryCount)
+	s.NoError(err)
 }
