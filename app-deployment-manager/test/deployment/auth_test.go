@@ -35,7 +35,7 @@ func (s *TestSuite) TestGetDeploymentAuthProjectID() {
 		TestName:       "GetDeploymentAuthProjectID",
 	}
 	deployID, retCode, err := utils.StartDeployment(deploymentReq)
-	s.Equal(retCode, http.StatusForbidden)
+	s.Equal(retCode, http.StatusOK)
 	s.NoError(err)
 
 	admClient, err := utils.CreateClient(deploymentRESTServerUrl, token, "invalidprojectid")
