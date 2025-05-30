@@ -31,8 +31,6 @@ func (s *TestSuite) TestRetrieveDeploymentStatusWithNoLabels() {
 
 func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 	var labelsList []string
-	extraLabels := make(map[string]string)
-	extraLabels["test"] = "dep-status-with-labels-filter"
 
 	for _, app := range []string{utils.AppWordpress} {
 		deploymentReq := utils.StartDeploymentRequest{
@@ -41,13 +39,12 @@ func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 			DeploymentType: utils.DeploymentTypeAutoScaling,
 			RetryDelay:     utils.DeploymentTimeout,
 			TestName:       "DepStatusWithLabels",
-			ExtraLabels:    extraLabels,
 		}
 		_, code, err := utils.StartDeployment(deploymentReq)
 		s.Equal(http.StatusOK, code)
 		s.NoError(err, "Failed to create '"+app+"-"+utils.DeploymentTypeAutoScaling+"' deployment")
 	}
-	for key, value := range extraLabels {
+	for key, value := range utils.DpConfigs["labels"].(map[string]string) {
 		labelsList = append(labelsList, fmt.Sprintf("%s=%s", key, value))
 	}
 
@@ -59,10 +56,8 @@ func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 }
 
 func (s *TestSuite) TestDeploymentStateCountsVerification() {
-	var labelsList []string
 	var deploymentIDs []string
-	extraLabels := make(map[string]string)
-	extraLabels["test"] = "dep-state-counts-verification"
+	var labelsList []string
 
 	for _, app := range []string{utils.AppWordpress} {
 		deploymentReq := utils.StartDeploymentRequest{
@@ -71,7 +66,6 @@ func (s *TestSuite) TestDeploymentStateCountsVerification() {
 			DeploymentType: utils.DeploymentTypeAutoScaling,
 			RetryDelay:     utils.DeploymentTimeout,
 			TestName:       "DepStateCountsVerification",
-			ExtraLabels:    extraLabels,
 		}
 		deployID, code, err := utils.StartDeployment(deploymentReq)
 		s.Equal(http.StatusOK, code)
@@ -79,7 +73,7 @@ func (s *TestSuite) TestDeploymentStateCountsVerification() {
 
 		deploymentIDs = append(deploymentIDs, deployID)
 	}
-	for key, value := range extraLabels {
+	for key, value := range utils.DpConfigs["labels"].(map[string]string) {
 		labelsList = append(labelsList, fmt.Sprintf("%s=%s", key, value))
 	}
 

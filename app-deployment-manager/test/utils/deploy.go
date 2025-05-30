@@ -96,7 +96,6 @@ type StartDeploymentRequest struct {
 	DeploymentType string
 	RetryDelay     int
 	TestName       string
-	ExtraLabels    map[string]string // Optional
 }
 
 func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
@@ -127,13 +126,6 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 	}
 
 	labels := useDP["labels"].(map[string]string)
-
-	// Merge ExtraLabels if provided
-	if opts.ExtraLabels != nil {
-		for key, value := range opts.ExtraLabels {
-			labels[key] = value
-		}
-	}
 
 	overrideValues := useDP["overrideValues"].([]map[string]any)
 
