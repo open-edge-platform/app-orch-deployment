@@ -28,11 +28,12 @@ func (s *TestSuite) TestListDeploymentsAuthProjectID() {
 func (s *TestSuite) TestGetDeploymentAuthProjectID() {
 
 	deploymentReq := utils.StartDeploymentRequest{
-		AdmClient:      s.AdmClient,
-		DpPackageName:  utils.AppNginx,
-		DeploymentType: utils.DeploymentTypeTargeted,
-		RetryDelay:     utils.DeploymentTimeout,
-		TestName:       "GetDeploymentAuthProjectID",
+		AdmClient:         s.AdmClient,
+		DpPackageName:     utils.AppNginx,
+		DeploymentType:    utils.DeploymentTypeTargeted,
+		DeploymentTimeout: utils.DeploymentTimeout,
+		DeleteTimeout:     utils.DeleteTimeout,
+		TestName:          "GetDeploymentAuthProjectID",
 	}
 	deployID, retCode, err := utils.StartDeployment(deploymentReq)
 	s.Equal(retCode, http.StatusOK)

@@ -71,7 +71,7 @@ const (
 	AppNginx = "nginx"
 
 	// DeploymentTimeout represents the timeout in seconds for deployment operations
-	DeploymentTimeout = 20 // 20 seconds
+	DeploymentTimeout = 20 * time.Second // 20 seconds
 
 	RetryCount = 20 // Number of retries for deployment operations
 
@@ -95,11 +95,12 @@ func ptr[T any](v T) *T {
 }
 
 type StartDeploymentRequest struct {
-	AdmClient      *restClient.ClientWithResponses
-	DpPackageName  string
-	DeploymentType string
-	RetryDelay     int
-	TestName       string
+	AdmClient         *restClient.ClientWithResponses
+	DpPackageName     string
+	DeploymentType    string
+	DeploymentTimeout time.Duration
+	DeleteTimeout     time.Duration
+	TestName          string
 }
 
 func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
@@ -124,7 +125,7 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 		}
 	}
 
-	err := DeleteAndRetryUntilDeleted(opts.AdmClient, displayName, retryCount, time.Duration(opts.RetryDelay)*time.Second)
+	err := DeleteAndRetryUntilDeleted(opts.AdmClient, displayName, retryCount, opts.DeleteTimeout)
 	if err != nil {
 		return "", retCode, err
 	}
@@ -150,7 +151,7 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 
 	fmt.Printf("Created %s deployment successfully, deployment id %s\n", displayName, deployID)
 
-	err = waitForDeploymentStatus(opts.AdmClient, displayName, restClient.RUNNING, retryCount, time.Duration(opts.RetryDelay)*time.Second)
+	err = waitForDeploymentStatus(opts.AdmClient, displayName, restClient.RUNNING, retryCount, opts.DeploymentTimeout)
 	if err != nil {
 		return "", retCode, err
 	}

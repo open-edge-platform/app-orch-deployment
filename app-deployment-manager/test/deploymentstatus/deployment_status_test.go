@@ -13,11 +13,12 @@ import (
 func (s *TestSuite) TestDeploymentStatusWithNoLabels() {
 	testName := "DeploymentStatusWithNoLabels"
 	deployemntReq := utils.StartDeploymentRequest{
-		AdmClient:      s.AdmClient,
-		DpPackageName:  utils.AppWordpress,
-		DeploymentType: utils.DeploymentTypeAutoScaling,
-		RetryDelay:     utils.DeploymentTimeout,
-		TestName:       testName,
+		AdmClient:         s.AdmClient,
+		DpPackageName:     utils.AppWordpress,
+		DeploymentType:    utils.DeploymentTypeAutoScaling,
+		DeploymentTimeout: utils.DeploymentTimeout,
+		DeleteTimeout:     utils.DeleteTimeout,
+		TestName:          testName,
 	}
 	_, code, err := utils.StartDeployment(deployemntReq)
 	s.Equal(http.StatusOK, code)
@@ -37,11 +38,12 @@ func (s *TestSuite) TestDeploymentStatusWithLabels() {
 	var labelsList []string
 
 	deploymentReq := utils.StartDeploymentRequest{
-		AdmClient:      s.AdmClient,
-		DpPackageName:  utils.AppWordpress,
-		DeploymentType: utils.DeploymentTypeAutoScaling,
-		RetryDelay:     utils.DeploymentTimeout,
-		TestName:       "DepStatusWithLabels",
+		AdmClient:         s.AdmClient,
+		DpPackageName:     utils.AppWordpress,
+		DeploymentType:    utils.DeploymentTypeAutoScaling,
+		DeploymentTimeout: utils.DeploymentTimeout,
+		DeleteTimeout:     utils.DeleteTimeout,
+		TestName:          "DepStatusWithLabels",
 	}
 	_, code, err := utils.StartDeployment(deploymentReq)
 	s.Equal(http.StatusOK, code)

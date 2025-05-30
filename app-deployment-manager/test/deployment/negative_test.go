@@ -30,11 +30,12 @@ func (s *TestSuite) TestNegativeCreateDeployment() {
 		s.NoError(err, "failed to reset "+test.configKey+" in deployment config")
 
 		deploymentReq := utils.StartDeploymentRequest{
-			AdmClient:      s.AdmClient,
-			DpPackageName:  "nginx",
-			DeploymentType: test.deployment,
-			RetryDelay:     utils.DeploymentTimeout,
-			TestName:       "NegativeCreateDeployment",
+			AdmClient:         s.AdmClient,
+			DpPackageName:     "nginx",
+			DeploymentType:    test.deployment,
+			DeploymentTimeout: utils.DeploymentTimeout,
+			DeleteTimeout:     utils.DeleteTimeout,
+			TestName:          "NegativeCreateDeployment",
 		}
 		deployID, retCode, err := utils.StartDeployment(deploymentReq)
 		s.Equal(retCode, http.StatusBadRequest)

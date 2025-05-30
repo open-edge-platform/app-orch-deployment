@@ -83,11 +83,12 @@ func (s *TestSuite) TestAPIMethods() {
 			description: "get and delete deployment",
 			setup: func() string {
 				deploymentReq := utils.StartDeploymentRequest{
-					AdmClient:      admclient,
-					DpPackageName:  utils.AppNginx,
-					DeploymentType: utils.DeploymentTypeTargeted,
-					RetryDelay:     utils.DeploymentTimeout,
-					TestName:       "GetAndDeleteDeployment",
+					AdmClient:         admclient,
+					DpPackageName:     utils.AppNginx,
+					DeploymentType:    utils.DeploymentTypeTargeted,
+					DeploymentTimeout: utils.DeploymentTimeout,
+					DeleteTimeout:     utils.DeleteTimeout,
+					TestName:          "GetAndDeleteDeployment",
 				}
 				deployID, retCode, err := utils.StartDeployment(deploymentReq)
 				s.Equal(retCode, http.StatusOK)
@@ -108,11 +109,12 @@ func (s *TestSuite) TestAPIMethods() {
 			description: "list deployment clusters",
 			setup: func() string {
 				deploymentReq := utils.StartDeploymentRequest{
-					AdmClient:      admclient,
-					DpPackageName:  utils.AppNginx,
-					DeploymentType: utils.DeploymentTypeTargeted,
-					RetryDelay:     utils.DeploymentTimeout,
-					TestName:       "ListDeploymentClusters",
+					AdmClient:         admclient,
+					DpPackageName:     utils.AppNginx,
+					DeploymentType:    utils.DeploymentTypeTargeted,
+					DeploymentTimeout: utils.DeploymentTimeout,
+					DeleteTimeout:     utils.DeleteTimeout,
+					TestName:          "ListDeploymentClusters",
 				}
 				deployID, retCode, err := utils.StartDeployment(deploymentReq)
 				s.Equal(retCode, http.StatusOK)

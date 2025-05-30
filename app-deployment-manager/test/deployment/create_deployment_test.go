@@ -13,11 +13,12 @@ func (s *TestSuite) TestCreateTargetedDeployment() {
 	testName := "CreateTargetedDeployment"
 	for _, app := range []string{utils.AppWordpress, utils.AppNginx} {
 		deploymentReq := utils.StartDeploymentRequest{
-			AdmClient:      s.AdmClient,
-			DpPackageName:  app,
-			DeploymentType: utils.DeploymentTypeTargeted,
-			RetryDelay:     utils.DeploymentTimeout,
-			TestName:       testName,
+			AdmClient:         s.AdmClient,
+			DpPackageName:     app,
+			DeploymentType:    utils.DeploymentTypeTargeted,
+			DeploymentTimeout: utils.DeploymentTimeout,
+			DeleteTimeout:     utils.DeleteTimeout,
+			TestName:          testName,
 		}
 		_, code, err := utils.StartDeployment(deploymentReq)
 		s.Equal(http.StatusOK, code)
@@ -26,7 +27,7 @@ func (s *TestSuite) TestCreateTargetedDeployment() {
 
 	for _, app := range []string{utils.AppWordpress, utils.AppNginx} {
 		displayName := utils.FormDisplayName(app, testName)
-		err := utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.RetryCount, utils.DeploymentTimeout)
+		err := utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.RetryCount, utils.DeleteTimeout)
 		s.NoError(err)
 	}
 }
@@ -35,11 +36,12 @@ func (s *TestSuite) TestCreateAutoScaleDeployment() {
 	testName := "CreateAutoScaleDeployment"
 	for _, app := range []string{utils.AppWordpress, utils.AppNginx} {
 		deploymentReq := utils.StartDeploymentRequest{
-			AdmClient:      s.AdmClient,
-			DpPackageName:  app,
-			DeploymentType: utils.DeploymentTypeAutoScaling,
-			RetryDelay:     utils.DeploymentTimeout,
-			TestName:       testName,
+			AdmClient:         s.AdmClient,
+			DpPackageName:     app,
+			DeploymentType:    utils.DeploymentTypeAutoScaling,
+			DeploymentTimeout: utils.DeploymentTimeout,
+			DeleteTimeout:     utils.DeleteTimeout,
+			TestName:          testName,
 		}
 		_, code, err := utils.StartDeployment(deploymentReq)
 		s.Equal(http.StatusOK, code)
@@ -67,11 +69,12 @@ func (s *TestSuite) TestCreateDiffDataDeployment() {
 	err := ResetThenChangeDpConfig(utils.AppWordpress, "overrideValues", overrideValues, originalDpConfigs)
 	s.NoError(err, "Failed to reset and change deployment configuration")
 	deploymentReq := utils.StartDeploymentRequest{
-		AdmClient:      s.AdmClient,
-		DpPackageName:  utils.AppWordpress,
-		DeploymentType: utils.DeploymentTypeTargeted,
-		RetryDelay:     utils.DeploymentTimeout,
-		TestName:       testName,
+		AdmClient:         s.AdmClient,
+		DpPackageName:     utils.AppWordpress,
+		DeploymentType:    utils.DeploymentTypeTargeted,
+		DeploymentTimeout: utils.DeploymentTimeout,
+		DeleteTimeout:     utils.DeleteTimeout,
+		TestName:          testName,
 	}
 
 	_, code, err := utils.StartDeployment(deploymentReq)
