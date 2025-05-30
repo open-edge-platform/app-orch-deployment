@@ -32,7 +32,7 @@ func (s *TestSuite) TestRetrieveDeploymentStatusWithNoLabels() {
 func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 	var labelsList []string
 	extraLabels := make(map[string]string)
-	extraLabels["testName"] = "DepStatusWithLabelsFilter"
+	extraLabels["test"] = "DepStatusWithLabelsFilter"
 
 	for _, app := range []string{utils.AppWordpress} {
 		deploymentReq := utils.StartDeploymentRequest{
@@ -62,7 +62,7 @@ func (s *TestSuite) TestDeploymentStateCountsVerification() {
 	var labelsList []string
 	var deploymentIDs []string
 	extraLabels := make(map[string]string)
-	extraLabels["testName"] = "DepStateCountsVerification"
+	extraLabels["test"] = "DepStateCountsVerification"
 
 	for _, app := range []string{utils.AppWordpress} {
 		deploymentReq := utils.StartDeploymentRequest{
@@ -70,7 +70,7 @@ func (s *TestSuite) TestDeploymentStateCountsVerification() {
 			DpPackageName:  app,
 			DeploymentType: utils.DeploymentTypeAutoScaling,
 			RetryDelay:     utils.DeploymentTimeout,
-			TestName:       "DeploymentStateCountsVerification",
+			TestName:       "DepStateCountsVerification",
 			ExtraLabels:    extraLabels,
 		}
 		deployID, code, err := utils.StartDeployment(deploymentReq)
