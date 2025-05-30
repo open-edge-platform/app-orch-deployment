@@ -49,4 +49,8 @@ func (s *TestSuite) TestGetDeploymentAuthProjectID() {
 	if !s.T().Failed() {
 		s.T().Logf("successfully handled invalid projectid to get deployment\n")
 	}
+	// Clean up the deployment created for this test
+	displayName := utils.FormDisplayName(utils.AppNginx, deploymentReq.TestName)
+	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.DeploymentTimeout, utils.RetryCount)
+	s.NoError(err)
 }
