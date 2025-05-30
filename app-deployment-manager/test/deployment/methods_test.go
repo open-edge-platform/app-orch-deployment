@@ -131,8 +131,6 @@ func (s *TestSuite) TestAPIMethods() {
 				url = fmt.Sprintf(tc.url, deployID)
 			}
 			testEndpointMethods(s, url, tc.methodMap, tc.description)
-			err := utils.DeleteDeployment(s.AdmClient, deployID)
-			s.NoError(err)
 		})
 	}
 }
