@@ -26,11 +26,20 @@ func (s *TestSuite) TestListDeploymentsAuthProjectID() {
 
 // TestGetDeploymentAuthProjectID tests the get deployment method with invalid project ID
 func (s *TestSuite) TestGetDeploymentAuthProjectID() {
-	admClient, err := utils.CreateClient(deploymentRESTServerUrl, token, "invalidprojectid")
+
+	deploymentReq := utils.StartDeploymentRequest{
+		AdmClient:         s.AdmClient,
+		DpPackageName:     utils.AppNginx,
+		DeploymentType:    utils.DeploymentTypeTargeted,
+		DeploymentTimeout: utils.DeploymentTimeout,
+		DeleteTimeout:     utils.DeleteTimeout,
+		TestName:          "GetDeploymentAuthProjectID",
+	}
+	deployID, retCode, err := utils.StartDeployment(deploymentReq)
+	s.Equal(retCode, http.StatusOK)
 	s.NoError(err)
 
-	deployID, retCode, err := utils.StartDeployment(admclient, dpConfigName, "targeted", 10)
-	s.Equal(retCode, http.StatusOK)
+	admClient, err := utils.CreateClient(deploymentRESTServerUrl, token, "invalidprojectid")
 	s.NoError(err)
 
 	deployment, retCode, err := utils.GetDeployment(admClient, deployID)
@@ -41,4 +50,8 @@ func (s *TestSuite) TestGetDeploymentAuthProjectID() {
 	if !s.T().Failed() {
 		s.T().Logf("successfully handled invalid projectid to get deployment\n")
 	}
+	// Clean up the deployment created for this test
+	displayName := utils.FormDisplayName(utils.AppNginx, deploymentReq.TestName)
+	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.RetryCount, utils.DeleteTimeout)
+	s.NoError(err)
 }

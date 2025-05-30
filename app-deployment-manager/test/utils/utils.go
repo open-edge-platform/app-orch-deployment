@@ -24,6 +24,11 @@ const (
 	AdmPortForwardRemote        = "8081"
 )
 
+const (
+	RestAddressPortForward = "127.0.0.1"
+	KeycloakServer         = "keycloak.kind.internal"
+)
+
 func PortForward(scenario string, portForwardCmd map[string]*exec.Cmd) (map[string]*exec.Cmd, error) {
 	service := AdmPortForwardService
 	localPort := AdmPortForwardLocal

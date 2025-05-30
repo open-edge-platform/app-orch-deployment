@@ -22,14 +22,6 @@ var (
 	admclient               *restClient.ClientWithResponses
 )
 
-const (
-	RestAddressPortForward = "127.0.0.1"
-	KeycloakServer         = "keycloak.kind.internal"
-
-	AdmPortForwardRemote = "8081"
-	dpConfigName         = "nginx"
-)
-
 // TestSuite is the basic test suite
 type TestSuite struct {
 	suite.Suite
@@ -43,13 +35,14 @@ func (s *TestSuite) SetupTest() {
 }
 
 func TestDeploymentSuite(t *testing.T) {
+	t.Parallel()
 	portForwardCmd, err := utils.BringUpPortForward()
 	if err != nil {
 		t.Fatalf("failed to bring up port forward: %v", err)
 	}
 	defer utils.TearDownPortForward(portForwardCmd)
 
-	token, err = utils.SetUpAccessToken(KeycloakServer)
+	token, err = utils.SetUpAccessToken(utils.KeycloakServer)
 	if err != nil {
 		t.Fatalf("failed to setup access token: %v", err)
 	}
@@ -59,7 +52,7 @@ func TestDeploymentSuite(t *testing.T) {
 		t.Fatalf("failed to get project id: %v", err)
 	}
 
-	deploymentRESTServerUrl = fmt.Sprintf("http://%s:%s", RestAddressPortForward, AdmPortForwardRemote)
+	deploymentRESTServerUrl = fmt.Sprintf("http://%s:%s", utils.RestAddressPortForward, utils.AdmPortForwardRemote)
 	admclient, err = utils.CreateClient(deploymentRESTServerUrl, token, projectID)
 	if err != nil {
 		t.Fatalf("failed to create client: %v", err)

@@ -82,7 +82,15 @@ func (s *TestSuite) TestAPIMethods() {
 			methodMap:   methodResponses["deploymentById"],
 			description: "get and delete deployment",
 			setup: func() string {
-				deployID, retCode, err := utils.StartDeployment(admclient, dpConfigName, "targeted", 10)
+				deploymentReq := utils.StartDeploymentRequest{
+					AdmClient:         admclient,
+					DpPackageName:     utils.AppNginx,
+					DeploymentType:    utils.DeploymentTypeTargeted,
+					DeploymentTimeout: utils.DeploymentTimeout,
+					DeleteTimeout:     utils.DeleteTimeout,
+					TestName:          "GetAndDeleteDeployment",
+				}
+				deployID, retCode, err := utils.StartDeployment(deploymentReq)
 				s.Equal(retCode, http.StatusOK)
 				s.NoError(err)
 				return deployID
@@ -100,7 +108,15 @@ func (s *TestSuite) TestAPIMethods() {
 			methodMap:   methodResponses["deploymentClusters"],
 			description: "list deployment clusters",
 			setup: func() string {
-				deployID, retCode, err := utils.StartDeployment(admclient, dpConfigName, "targeted", 10)
+				deploymentReq := utils.StartDeploymentRequest{
+					AdmClient:         admclient,
+					DpPackageName:     utils.AppNginx,
+					DeploymentType:    utils.DeploymentTypeTargeted,
+					DeploymentTimeout: utils.DeploymentTimeout,
+					DeleteTimeout:     utils.DeleteTimeout,
+					TestName:          "ListDeploymentClusters",
+				}
+				deployID, retCode, err := utils.StartDeployment(deploymentReq)
 				s.Equal(retCode, http.StatusOK)
 				s.NoError(err)
 				return deployID
@@ -111,8 +127,9 @@ func (s *TestSuite) TestAPIMethods() {
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
 			url := tc.url
+			var deployID string
 			if tc.setup != nil {
-				deployID := tc.setup()
+				deployID = tc.setup()
 				url = fmt.Sprintf(tc.url, deployID)
 			}
 			testEndpointMethods(s, url, tc.methodMap, tc.description)
