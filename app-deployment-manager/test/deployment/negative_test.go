@@ -29,7 +29,14 @@ func (s *TestSuite) TestNegativeCreateDeployment() {
 		err := ResetThenChangeDpConfig("nginx", test.configKey, test.configValue, originalDpConfigs)
 		s.NoError(err, "failed to reset "+test.configKey+" in deployment config")
 
-		deployID, retCode, err := utils.StartDeployment(s.AdmClient, "nginx", test.deployment, utils.DeploymentTimeout, "NegativeCreateDeployment")
+		deploymentReq := utils.StartDeploymentRequest{
+			AdmClient:      s.AdmClient,
+			DpPackageName:  "nginx",
+			DeploymentType: test.deployment,
+			RetryDelay:     utils.DeploymentTimeout,
+			TestName:       "NegativeCreateDeployment",
+		}
+		deployID, retCode, err := utils.StartDeployment(deploymentReq)
 		s.Equal(retCode, http.StatusBadRequest)
 		s.Error(err)
 		s.Contains(err.Error(), test.expectedErr)

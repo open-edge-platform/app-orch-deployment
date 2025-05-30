@@ -11,7 +11,14 @@ import (
 )
 
 func (s *TestSuite) TestRetrieveDeploymentStatusWithNoLabels() {
-	_, code, err := utils.StartDeployment(s.AdmClient, utils.AppWordpress, utils.DeploymentTypeAutoScaling, utils.DeploymentTimeout, "DeploymentStatusWithNoLabels")
+	deployemntReq := utils.StartDeploymentRequest{
+		AdmClient:      s.AdmClient,
+		DpPackageName:  utils.AppWordpress,
+		DeploymentType: utils.DeploymentTypeAutoScaling,
+		RetryDelay:     utils.DeploymentTimeout,
+		TestName:       "DeploymentStatusWithNoLabels",
+	}
+	_, code, err := utils.StartDeployment(deployemntReq)
 	s.Equal(http.StatusOK, code)
 	s.NoError(err, "Failed to create '"+utils.AppWordpress+"-"+utils.DeploymentTypeAutoScaling+"' deployment")
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, nil)
@@ -24,14 +31,24 @@ func (s *TestSuite) TestRetrieveDeploymentStatusWithNoLabels() {
 
 func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 	var labelsList []string
+	extraLabels := make(map[string]string)
+	extraLabels["testName"] = "DeploymentStatusWithLabelsFilter"
+
 	for _, app := range []string{utils.AppWordpress} {
-		_, code, err := utils.StartDeployment(s.AdmClient, app, utils.DeploymentTypeAutoScaling, utils.DeploymentTimeout, "DeploymentStatusWithLabels")
+		deploymentReq := utils.StartDeploymentRequest{
+			AdmClient:      s.AdmClient,
+			DpPackageName:  app,
+			DeploymentType: utils.DeploymentTypeAutoScaling,
+			RetryDelay:     utils.DeploymentTimeout,
+			TestName:       "DeploymentStatusWithLabelsFilter",
+			ExtraLabels:    extraLabels,
+		}
+		_, code, err := utils.StartDeployment(deploymentReq)
 		s.Equal(http.StatusOK, code)
 		s.NoError(err, "Failed to create '"+app+"-"+utils.DeploymentTypeAutoScaling+"' deployment")
-		useDP := utils.DpConfigs[app].(map[string]any)
-		if labels, ok := useDP["labelsList"].([]string); ok {
-			labelsList = append(labelsList, labels...)
-		}
+	}
+	for key, value := range extraLabels {
+		labelsList = append(labelsList, fmt.Sprintf("%s=%s", key, value))
 	}
 
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
@@ -44,15 +61,25 @@ func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 func (s *TestSuite) TestDeploymentStateCountsVerification() {
 	var labelsList []string
 	var deploymentIDs []string
+	extraLabels := make(map[string]string)
+	extraLabels["testName"] = "DeploymentStateCountsVerification"
+
 	for _, app := range []string{utils.AppWordpress} {
-		deployID, code, err := utils.StartDeployment(s.AdmClient, app, utils.DeploymentTypeAutoScaling, utils.DeploymentTimeout, "TestDeploymentStateCountsVerification")
+		deploymentReq := utils.StartDeploymentRequest{
+			AdmClient:      s.AdmClient,
+			DpPackageName:  app,
+			DeploymentType: utils.DeploymentTypeAutoScaling,
+			RetryDelay:     utils.DeploymentTimeout,
+			TestName:       "DeploymentStateCountsVerification",
+		}
+		deployID, code, err := utils.StartDeployment(deploymentReq)
 		s.Equal(http.StatusOK, code)
 		s.NoError(err, "Failed to create '"+app+"-"+utils.DeploymentTypeAutoScaling+"' deployment")
-		useDP := utils.DpConfigs[app].(map[string]any)
-		if labels, ok := useDP["labelsList"].([]string); ok {
-			labelsList = append(labelsList, labels...)
-		}
+
 		deploymentIDs = append(deploymentIDs, deployID)
+	}
+	for key, value := range extraLabels {
+		labelsList = append(labelsList, fmt.Sprintf("%s=%s", key, value))
 	}
 
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)

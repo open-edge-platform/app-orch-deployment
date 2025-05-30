@@ -27,8 +27,8 @@ var DpConfigs = map[string]any{
 		"profileName":          "testing-default",
 		"clusterId":            TestClusterID,
 		"labels":               map[string]string{"color": "blue"},
-		"labelsList":           []string{"color=blue"},
-		"overrideValues":       []map[string]any{},
+
+		"overrideValues": []map[string]any{},
 	},
 	"vm": map[string]any{
 		"appNames":             []string{"librespeed-vm"},
@@ -37,7 +37,6 @@ var DpConfigs = map[string]any{
 		"profileName":          "virtual-cluster",
 		"clusterId":            TestClusterID,
 		"labels":               map[string]string{"color": "blue"},
-		"labelsList":           []string{"color=blue"},
 		"overrideValues":       []map[string]any{},
 	},
 	"virt-extension": map[string]any{
@@ -47,7 +46,6 @@ var DpConfigs = map[string]any{
 		"profileName":          "with-software-emulation-profile-nosm",
 		"clusterId":            TestClusterID,
 		"labels":               map[string]string{"color": "blue"},
-		"labelsList":           []string{"color=blue"},
 		"overrideValues":       []map[string]any{},
 	},
 	"wordpress": map[string]any{
@@ -57,7 +55,6 @@ var DpConfigs = map[string]any{
 		"profileName":          "testing",
 		"clusterId":            TestClusterID,
 		"labels":               map[string]string{"color": "blue"},
-		"labelsList":           []string{"color=blue"},
 		"overrideValues":       []map[string]any{},
 	},
 }
@@ -93,17 +90,26 @@ func ptr[T any](v T) *T {
 	return &v
 }
 
-func StartDeployment(admClient *restClient.ClientWithResponses, dpPackageName, deploymentType string, retryDelay int, testName string) (string, int, error) {
+type StartDeploymentRequest struct {
+	AdmClient      *restClient.ClientWithResponses
+	DpPackageName  string
+	DeploymentType string
+	RetryDelay     int
+	TestName       string
+	ExtraLabels    map[string]string // Optional
+}
+
+func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 	retCode := http.StatusOK
-	if DpConfigs[dpPackageName] == nil {
-		return "", retCode, fmt.Errorf("deployment package %s not found in configuration", dpPackageName)
+	if DpConfigs[opts.DpPackageName] == nil {
+		return "", retCode, fmt.Errorf("deployment package %s not found in configuration", opts.DpPackageName)
 	}
-	displayName := fmt.Sprintf("%s-%s", dpPackageName, testName)
-	useDP := DpConfigs[dpPackageName].(map[string]any)
+	displayName := fmt.Sprintf("%s-%s", opts.DpPackageName, opts.TestName)
+	useDP := DpConfigs[opts.DpPackageName].(map[string]any)
 
 	// Check if virt-extension DP is already running, do not recreate a new one
-	if dpPackageName == "virt-extension" {
-		deployments, retCode, err := getDeploymentPerCluster(admClient)
+	if opts.DpPackageName == "virt-extension" {
+		deployments, retCode, err := getDeploymentPerCluster(opts.AdmClient)
 		if err != nil || retCode != 200 {
 			return "", retCode, fmt.Errorf("failed to get deployments per cluster: %v, status code: %d", err, retCode)
 		}
@@ -115,23 +121,30 @@ func StartDeployment(admClient *restClient.ClientWithResponses, dpPackageName, d
 		}
 	}
 
-	err := DeleteAndRetryUntilDeleted(admClient, displayName, retryCount, time.Duration(retryDelay)*time.Second)
+	err := DeleteAndRetryUntilDeleted(opts.AdmClient, displayName, retryCount, time.Duration(opts.RetryDelay)*time.Second)
 	if err != nil {
 		return "", retCode, err
 	}
 
 	labels := useDP["labels"].(map[string]string)
 
+	// Merge ExtraLabels if provided
+	if opts.ExtraLabels != nil {
+		for key, value := range opts.ExtraLabels {
+			labels[key] = value
+		}
+	}
+
 	overrideValues := useDP["overrideValues"].([]map[string]any)
 
-	deployID, retCode, err := createDeployment(admClient, CreateDeploymentParams{
+	deployID, retCode, err := createDeployment(opts.AdmClient, CreateDeploymentParams{
 		ClusterID:      useDP["clusterId"].(string),
 		DpName:         useDP["deployPackage"].(string),
 		AppNames:       useDP["appNames"].([]string),
 		AppVersion:     useDP["deployPackageVersion"].(string),
 		DisplayName:    displayName,
 		ProfileName:    useDP["profileName"].(string),
-		DeploymentType: deploymentType,
+		DeploymentType: opts.DeploymentType,
 		OverrideValues: overrideValues,
 		Labels:         &labels,
 	})
@@ -141,7 +154,7 @@ func StartDeployment(admClient *restClient.ClientWithResponses, dpPackageName, d
 
 	fmt.Printf("Created %s deployment successfully, deployment id %s\n", displayName, deployID)
 
-	err = waitForDeploymentStatus(admClient, displayName, restClient.RUNNING, retryCount, time.Duration(retryDelay)*time.Second)
+	err = waitForDeploymentStatus(opts.AdmClient, displayName, restClient.RUNNING, retryCount, time.Duration(opts.RetryDelay)*time.Second)
 	if err != nil {
 		return "", retCode, err
 	}

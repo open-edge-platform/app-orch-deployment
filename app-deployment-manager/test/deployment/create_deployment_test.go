@@ -11,7 +11,14 @@ import (
 
 func (s *TestSuite) TestCreateTargetedDeployment() {
 	for _, app := range []string{utils.AppWordpress, utils.AppNginx} {
-		_, code, err := utils.StartDeployment(s.AdmClient, app, utils.DeploymentTypeTargeted, utils.DeploymentTimeout, "CreateTargetedDeployment")
+		deploymentReq := utils.StartDeploymentRequest{
+			AdmClient:      s.AdmClient,
+			DpPackageName:  app,
+			DeploymentType: utils.DeploymentTypeTargeted,
+			RetryDelay:     utils.DeploymentTimeout,
+			TestName:       "CreateTargetedDeployment",
+		}
+		_, code, err := utils.StartDeployment(deploymentReq)
 		s.Equal(http.StatusOK, code)
 		s.NoError(err, "Failed to create '"+app+"-"+utils.DeploymentTypeTargeted+"' deployment")
 	}
@@ -19,7 +26,14 @@ func (s *TestSuite) TestCreateTargetedDeployment() {
 
 func (s *TestSuite) TestCreateAutoScaleDeployment() {
 	for _, app := range []string{utils.AppWordpress, utils.AppNginx} {
-		_, code, err := utils.StartDeployment(s.AdmClient, app, utils.DeploymentTypeAutoScaling, utils.DeploymentTimeout, "CreateAutoScaleDeployment")
+		deploymentReq := utils.StartDeploymentRequest{
+			AdmClient:      s.AdmClient,
+			DpPackageName:  app,
+			DeploymentType: utils.DeploymentTypeAutoScaling,
+			RetryDelay:     utils.DeploymentTimeout,
+			TestName:       "CreateAutoScaleDeployment",
+		}
+		_, code, err := utils.StartDeployment(deploymentReq)
 		s.Equal(http.StatusOK, code)
 		s.NoError(err, "Failed to create '"+app+"-"+utils.DeploymentTypeAutoScaling+"' deployment")
 	}
@@ -38,8 +52,15 @@ func (s *TestSuite) TestCreateDiffDataDeployment() {
 	}
 	err := ResetThenChangeDpConfig(utils.AppWordpress, "overrideValues", overrideValues, originalDpConfigs)
 	s.NoError(err, "Failed to reset and change deployment configuration")
+	deploymentReq := utils.StartDeploymentRequest{
+		AdmClient:      s.AdmClient,
+		DpPackageName:  utils.AppWordpress,
+		DeploymentType: utils.DeploymentTypeTargeted,
+		RetryDelay:     utils.DeploymentTimeout,
+		TestName:       "CreateDiffDataDeployment",
+	}
 
-	_, code, err := utils.StartDeployment(s.AdmClient, utils.AppWordpress, utils.DeploymentTypeTargeted, utils.DeploymentTimeout, "CreateDiffDataDeployment")
+	_, code, err := utils.StartDeployment(deploymentReq)
 	s.Equal(http.StatusOK, code)
 	s.NoError(err, "Failed to create '"+utils.AppWordpress+"-"+utils.DeploymentTypeTargeted+"' deployment")
 }
