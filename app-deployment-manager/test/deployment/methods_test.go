@@ -125,11 +125,14 @@ func (s *TestSuite) TestAPIMethods() {
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
 			url := tc.url
+			var deployID string
 			if tc.setup != nil {
-				deployID := tc.setup()
+				deployID = tc.setup()
 				url = fmt.Sprintf(tc.url, deployID)
 			}
 			testEndpointMethods(s, url, tc.methodMap, tc.description)
+			err := utils.DeleteDeployment(s.AdmClient, deployID)
+			s.NoError(err)
 		})
 	}
 }
