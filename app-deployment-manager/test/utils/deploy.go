@@ -72,6 +72,8 @@ const (
 
 	// DeploymentTimeout represents the timeout in seconds for deployment operations
 	DeploymentTimeout = 20
+
+	RetryCount = 20 // Number of retries for deployment operations
 )
 
 type CreateDeploymentParams struct {
@@ -103,9 +105,9 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 	if DpConfigs[opts.DpPackageName] == nil {
 		return "", retCode, fmt.Errorf("deployment package %s not found in configuration", opts.DpPackageName)
 	}
-	displayName := fmt.Sprintf("%s-%s", opts.DpPackageName, opts.TestName)
 	useDP := DpConfigs[opts.DpPackageName].(map[string]any)
 
+	displayName := FormDisplayName(opts.DpPackageName, opts.TestName)
 	// Check if virt-extension DP is already running, do not recreate a new one
 	if opts.DpPackageName == "virt-extension" {
 		deployments, retCode, err := getDeploymentPerCluster(opts.AdmClient)
@@ -367,4 +369,8 @@ func GetDeploymentsStatus(admClient *restClient.ClientWithResponses, labels *[]s
 	}
 
 	return resp.JSON200, resp.StatusCode(), nil
+}
+
+func FormDisplayName(dpPackageName, testName string) string {
+	return fmt.Sprintf("%s-%s", dpPackageName, testName)
 }

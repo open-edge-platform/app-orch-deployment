@@ -10,32 +10,45 @@ import (
 )
 
 func (s *TestSuite) TestCreateTargetedDeployment() {
+	testName := "CreateTargetedDeployment"
 	for _, app := range []string{utils.AppWordpress, utils.AppNginx} {
 		deploymentReq := utils.StartDeploymentRequest{
 			AdmClient:      s.AdmClient,
 			DpPackageName:  app,
 			DeploymentType: utils.DeploymentTypeTargeted,
 			RetryDelay:     utils.DeploymentTimeout,
-			TestName:       "CreateTargetedDeployment",
+			TestName:       testName,
 		}
 		_, code, err := utils.StartDeployment(deploymentReq)
 		s.Equal(http.StatusOK, code)
 		s.NoError(err, "Failed to create '"+app+"-"+utils.DeploymentTypeTargeted+"' deployment")
 	}
+
+	for _, app := range []string{utils.AppWordpress, utils.AppNginx} {
+		displayName := utils.FormDisplayName(app, testName)
+		err := utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.DeploymentTimeout, utils.RetryCount)
+		s.NoError(err)
+	}
 }
 
 func (s *TestSuite) TestCreateAutoScaleDeployment() {
+	testName := "CreateAutoScaleDeployment"
 	for _, app := range []string{utils.AppWordpress, utils.AppNginx} {
 		deploymentReq := utils.StartDeploymentRequest{
 			AdmClient:      s.AdmClient,
 			DpPackageName:  app,
 			DeploymentType: utils.DeploymentTypeAutoScaling,
 			RetryDelay:     utils.DeploymentTimeout,
-			TestName:       "CreateAutoScaleDeployment",
+			TestName:       testName,
 		}
 		_, code, err := utils.StartDeployment(deploymentReq)
 		s.Equal(http.StatusOK, code)
 		s.NoError(err, "Failed to create '"+app+"-"+utils.DeploymentTypeAutoScaling+"' deployment")
+	}
+	for _, app := range []string{utils.AppWordpress, utils.AppNginx} {
+		displayName := utils.FormDisplayName(app, testName)
+		err := utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.DeploymentTimeout, utils.RetryCount)
+		s.NoError(err)
 	}
 }
 
@@ -50,6 +63,7 @@ func (s *TestSuite) TestCreateDiffDataDeployment() {
 			"targetValues":    map[string]any{"service": map[string]any{"type": "NodePort"}},
 		},
 	}
+	testName := "CreateDiffDataDeployment"
 	err := ResetThenChangeDpConfig(utils.AppWordpress, "overrideValues", overrideValues, originalDpConfigs)
 	s.NoError(err, "Failed to reset and change deployment configuration")
 	deploymentReq := utils.StartDeploymentRequest{
@@ -57,10 +71,14 @@ func (s *TestSuite) TestCreateDiffDataDeployment() {
 		DpPackageName:  utils.AppWordpress,
 		DeploymentType: utils.DeploymentTypeTargeted,
 		RetryDelay:     utils.DeploymentTimeout,
-		TestName:       "CreateDiffDataDeployment",
+		TestName:       testName,
 	}
 
 	_, code, err := utils.StartDeployment(deploymentReq)
 	s.Equal(http.StatusOK, code)
 	s.NoError(err, "Failed to create '"+utils.AppWordpress+"-"+utils.DeploymentTypeTargeted+"' deployment")
+
+	displayName := utils.FormDisplayName(utils.AppWordpress, testName)
+	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.DeploymentTimeout, utils.RetryCount)
+	s.NoError(err)
 }
