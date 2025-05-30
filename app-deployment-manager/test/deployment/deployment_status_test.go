@@ -1,8 +1,4 @@
-// SPDX-FileCopyrightText: 2025-present Intel Corporation
-//
-// SPDX-License-Identifier: Apache-2.0
-
-package deploymentstatus
+package deployment
 
 import (
 	"fmt"
