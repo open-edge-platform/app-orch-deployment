@@ -71,7 +71,7 @@ const (
 	AppNginx = "nginx"
 
 	// DeploymentTimeout represents the timeout in seconds for deployment operations
-	DeploymentTimeout = 20
+	DeploymentTimeout = 20 * time.Second
 
 	RetryCount = 20 // Number of retries for deployment operations
 )
