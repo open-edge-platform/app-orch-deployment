@@ -28,7 +28,7 @@ func (s *TestSuite) TestListDeploymentsAuthProjectID() {
 func (s *TestSuite) TestGetDeploymentAuthProjectID() {
 
 	deploymentReq := utils.StartDeploymentRequest{
-		AdmClient:      s.AdmClient,
+		AdmClient:      s.Admclient,
 		DpPackageName:  utils.AppNginx,
 		DeploymentType: utils.DeploymentTypeTargeted,
 		RetryDelay:     utils.DeploymentTimeout,
@@ -37,7 +37,7 @@ func (s *TestSuite) TestGetDeploymentAuthProjectID() {
 	deployID, retCode, err := utils.StartDeployment(deploymentReq)
 	s.Equal(retCode, http.StatusForbidden)
 	s.NoError(err)
-	
+
 	admClient, err := utils.CreateClient(deploymentRESTServerUrl, token, "invalidprojectid")
 	s.NoError(err)
 
