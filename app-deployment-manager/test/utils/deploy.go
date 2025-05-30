@@ -212,7 +212,7 @@ func GetDeployment(client *restClient.ClientWithResponses, deployID string) (res
 
 func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName string, status restClient.DeploymentStatusState, retries int, delay time.Duration) error {
 	currState := "UNKNOWN"
-	for range retries {
+	for i := 0; i < retries; i++ {
 		deployments, retCode, err := getDeployments(client)
 		if err != nil || retCode != 200 {
 			return fmt.Errorf("failed to get deployments: %v", err)
@@ -327,7 +327,7 @@ func DeleteAndRetryUntilDeleted(client *restClient.ClientWithResponses, displayN
 	}
 
 	// Retry until the deployment is confirmed deleted
-	for range retries {
+	for i := 0; i < retries; i++ {
 		deployments, retCode, err := getDeployments(client)
 		if err != nil || retCode != 200 {
 			return fmt.Errorf("failed to get deployments: %v", err)
