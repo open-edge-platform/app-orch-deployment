@@ -32,7 +32,7 @@ func (s *TestSuite) TestRetrieveDeploymentStatusWithNoLabels() {
 func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 	var labelsList []string
 	extraLabels := make(map[string]string)
-	extraLabels["testName"] = "DeploymentStatusWithLabelsFilter"
+	extraLabels["testName"] = "DepStatusWithLabelsFilter"
 
 	for _, app := range []string{utils.AppWordpress} {
 		deploymentReq := utils.StartDeploymentRequest{
@@ -40,7 +40,7 @@ func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 			DpPackageName:  app,
 			DeploymentType: utils.DeploymentTypeAutoScaling,
 			RetryDelay:     utils.DeploymentTimeout,
-			TestName:       "DeploymentStatusWithLabelsFilter",
+			TestName:       "DepStatusWithLabels",
 			ExtraLabels:    extraLabels,
 		}
 		_, code, err := utils.StartDeployment(deploymentReq)
@@ -62,7 +62,7 @@ func (s *TestSuite) TestDeploymentStateCountsVerification() {
 	var labelsList []string
 	var deploymentIDs []string
 	extraLabels := make(map[string]string)
-	extraLabels["testName"] = "DeploymentStateCountsVerification"
+	extraLabels["testName"] = "DepStateCountsVerification"
 
 	for _, app := range []string{utils.AppWordpress} {
 		deploymentReq := utils.StartDeploymentRequest{
@@ -71,6 +71,7 @@ func (s *TestSuite) TestDeploymentStateCountsVerification() {
 			DeploymentType: utils.DeploymentTypeAutoScaling,
 			RetryDelay:     utils.DeploymentTimeout,
 			TestName:       "DeploymentStateCountsVerification",
+			ExtraLabels:    extraLabels,
 		}
 		deployID, code, err := utils.StartDeployment(deploymentReq)
 		s.Equal(http.StatusOK, code)
