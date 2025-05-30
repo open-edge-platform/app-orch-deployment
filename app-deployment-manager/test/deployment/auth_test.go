@@ -28,7 +28,7 @@ func (s *TestSuite) TestListDeploymentsAuthProjectID() {
 func (s *TestSuite) TestGetDeploymentAuthProjectID() {
 
 	deploymentReq := utils.StartDeploymentRequest{
-		AdmClient:      s.Admclient,
+		AdmClient:      s.AdmClient,
 		DpPackageName:  utils.AppNginx,
 		DeploymentType: utils.DeploymentTypeTargeted,
 		RetryDelay:     utils.DeploymentTimeout,
