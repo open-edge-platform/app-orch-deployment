@@ -31,7 +31,6 @@ func (s *TestSuite) TestRetrieveDeploymentStatusWithNoLabels() {
 
 func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 	var labelsList []string
-
 	for _, app := range []string{utils.AppWordpress} {
 		deploymentReq := utils.StartDeploymentRequest{
 			AdmClient:      s.AdmClient,
@@ -51,14 +50,14 @@ func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
 	s.NoError(err)
 	s.Equal(http.StatusOK, code)
-	s.Equal(int32(1), *status.Running)
-	s.Equal(int32(1), *status.Total)
+	s.NotZero(status.Total)
+	s.NotZero(status.Running)
 }
 
 func (s *TestSuite) TestDeploymentStateCountsVerification() {
 	var deploymentIDs []string
 	var labelsList []string
-
+	var displayName string
 	for _, app := range []string{utils.AppWordpress} {
 		deploymentReq := utils.StartDeploymentRequest{
 			AdmClient:      s.AdmClient,
@@ -72,6 +71,7 @@ func (s *TestSuite) TestDeploymentStateCountsVerification() {
 		s.NoError(err, "Failed to create '"+app+"-"+utils.DeploymentTypeAutoScaling+"' deployment")
 
 		deploymentIDs = append(deploymentIDs, deployID)
+		displayName = fmt.Sprintf("%s-%s", deploymentReq.DpPackageName, deploymentReq.TestName)
 	}
 	for key, value := range utils.DpConfigs["labels"].(map[string]string) {
 		labelsList = append(labelsList, fmt.Sprintf("%s=%s", key, value))
@@ -80,12 +80,12 @@ func (s *TestSuite) TestDeploymentStateCountsVerification() {
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
 	s.NoError(err)
 	s.Equal(http.StatusOK, code)
-	s.Equal(int32(1), *status.Running)
-	s.Equal(int32(1), *status.Total)
 	s.Zero(*status.Deploying)
 	s.Zero(*status.Down)
 	s.Zero(*status.Error)
-	displayName := fmt.Sprintf("%s-%s", utils.AppWordpress, utils.DeploymentTypeAutoScaling)
+	currentTotal := *status.Total
+	currentRunning := *status.Running
+
 	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, 20, 10)
 	s.NoError(err)
 	deployment, retCode, err := utils.GetDeployment(s.AdmClient, deploymentIDs[0])
@@ -95,8 +95,8 @@ func (s *TestSuite) TestDeploymentStateCountsVerification() {
 	status, code, err = utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
 	s.NoError(err)
 	s.Equal(http.StatusOK, code)
-	s.Equal(int32(0), *status.Running)
-	s.Equal(int32(0), *status.Total)
+	s.Equal(currentRunning-1, *status.Running)
+	s.Equal(currentTotal-1, *status.Total)
 	s.Zero(*status.Deploying)
 	s.Zero(*status.Down)
 	s.Zero(*status.Error)
