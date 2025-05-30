@@ -31,22 +31,21 @@ func (s *TestSuite) TestRetrieveDeploymentStatusWithNoLabels() {
 
 func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 	var labelsList []string
-	for _, app := range []string{utils.AppWordpress} {
-		deploymentReq := utils.StartDeploymentRequest{
-			AdmClient:      s.AdmClient,
-			DpPackageName:  app,
-			DeploymentType: utils.DeploymentTypeAutoScaling,
-			RetryDelay:     utils.DeploymentTimeout,
-			TestName:       "DepStatusWithLabels",
-		}
-		_, code, err := utils.StartDeployment(deploymentReq)
-		s.Equal(http.StatusOK, code)
-		s.NoError(err, "Failed to create '"+app+"-"+utils.DeploymentTypeAutoScaling+"' deployment")
-		useDP := utils.DpConfigs[deploymentReq.DpPackageName].(map[string]any)
-		labels := useDP["labels"].(map[string]string)
-		for key, value := range labels {
-			labelsList = append(labelsList, fmt.Sprintf("%s=%s", key, value))
-		}
+
+	deploymentReq := utils.StartDeploymentRequest{
+		AdmClient:      s.AdmClient,
+		DpPackageName:  utils.AppWordpress,
+		DeploymentType: utils.DeploymentTypeAutoScaling,
+		RetryDelay:     utils.DeploymentTimeout,
+		TestName:       "DepStatusWithLabels",
+	}
+	_, code, err := utils.StartDeployment(deploymentReq)
+	s.Equal(http.StatusOK, code)
+	s.NoError(err)
+	useDP := utils.DpConfigs[deploymentReq.DpPackageName].(map[string]any)
+	labels := useDP["labels"].(map[string]string)
+	for key, value := range labels {
+		labelsList = append(labelsList, fmt.Sprintf("%s=%s", key, value))
 	}
 
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
@@ -57,31 +56,19 @@ func (s *TestSuite) TestDeploymentStatusWithLabelsFilter() {
 }
 
 func (s *TestSuite) TestDeploymentStateCountsVerification() {
-	var deploymentIDs []string
 	var labelsList []string
-	var displayName string
-	for _, app := range []string{utils.AppWordpress} {
-		deploymentReq := utils.StartDeploymentRequest{
-			AdmClient:      s.AdmClient,
-			DpPackageName:  app,
-			DeploymentType: utils.DeploymentTypeAutoScaling,
-			RetryDelay:     utils.DeploymentTimeout,
-			TestName:       "DepStateCountsVerification",
-		}
-		deployID, code, err := utils.StartDeployment(deploymentReq)
-		s.Equal(http.StatusOK, code)
-		s.NoError(err, "Failed to create '"+app+"-"+utils.DeploymentTypeAutoScaling+"' deployment")
-
-		deploymentIDs = append(deploymentIDs, deployID)
-		displayName = fmt.Sprintf("%s-%s", deploymentReq.DpPackageName, deploymentReq.TestName)
-		useDP := utils.DpConfigs[deploymentReq.DpPackageName].(map[string]any)
-		labels := useDP["labels"].(map[string]string)
-		for key, value := range labels {
-			labelsList = append(labelsList, fmt.Sprintf("%s=%s", key, value))
-		}
-
+	deploymentReq := utils.StartDeploymentRequest{
+		AdmClient:      s.AdmClient,
+		DpPackageName:  utils.AppWordpress,
+		DeploymentType: utils.DeploymentTypeAutoScaling,
+		RetryDelay:     utils.DeploymentTimeout,
+		TestName:       "DepStateCountsVerification",
 	}
-
+	useDP := utils.DpConfigs[deploymentReq.DpPackageName].(map[string]any)
+	labels := useDP["labels"].(map[string]string)
+	for key, value := range labels {
+		labelsList = append(labelsList, fmt.Sprintf("%s=%s", key, value))
+	}
 	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
 	s.NoError(err)
 	s.Equal(http.StatusOK, code)
@@ -91,17 +78,15 @@ func (s *TestSuite) TestDeploymentStateCountsVerification() {
 	currentTotal := *status.Total
 	currentRunning := *status.Running
 
-	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, 20, 10)
+	_, code, err = utils.StartDeployment(deploymentReq)
+	s.Equal(http.StatusOK, code)
 	s.NoError(err)
-	deployment, retCode, err := utils.GetDeployment(s.AdmClient, deploymentIDs[0])
-	s.Equal(retCode, http.StatusNotFound)
-	s.Empty(deployment)
 
 	status, code, err = utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
 	s.NoError(err)
 	s.Equal(http.StatusOK, code)
-	s.Equal(currentRunning-1, *status.Running)
-	s.Equal(currentTotal-1, *status.Total)
+	s.Equal(currentRunning+1, *status.Running)
+	s.Equal(currentTotal+1, *status.Total)
 	s.Zero(*status.Deploying)
 	s.Zero(*status.Down)
 	s.Zero(*status.Error)

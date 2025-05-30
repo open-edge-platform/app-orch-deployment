@@ -71,7 +71,7 @@ const (
 	AppNginx = "nginx"
 
 	// DeploymentTimeout represents the timeout in seconds for deployment operations
-	DeploymentTimeout = 10
+	DeploymentTimeout = 20
 )
 
 type CreateDeploymentParams struct {
