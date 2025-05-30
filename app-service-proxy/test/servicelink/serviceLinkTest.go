@@ -5,9 +5,33 @@
 package servicelink
 
 import (
- "io/ioutil"
- "net/http"
+// "io/ioutil"
+// "net/http"
 )
+
+func (s *TestSuite) TestHarborCliSecret() {
+	for _, app := range s.deployApps {
+		appID := *app.Id
+		appEndPoints, retCode, err := AppEndpointsList(s.ArmClient, appID)
+		s.Equal(retCode, 200)
+		s.NoError(err)
+		s.NotEmpty(appEndPoints)
+		for _, appEndPoint := range *appEndPoints {
+			if appEndPoint.Ports != nil {
+				for _, port := range *appEndPoint.Ports {
+					serviceUrl := port.ServiceProxyUrl
+					if serviceUrl != nil && *serviceUrl != "" {
+						secret, _ := getCliSecretHarbor("https://registry-oci.kind.internal", s.token)
+						s.T().Logf("harbor secret %s", secret)
+
+					}
+				}
+			} else {
+				s.T().Logf("No ports in service")
+			}
+		}
+	}
+}
 
 // TestServiceLink checks if http get for service link works.
 func (s *TestSuite) TestServiceLinkPageAccess() {
@@ -22,7 +46,7 @@ func (s *TestSuite) TestServiceLinkPageAccess() {
 				for _, port := range *appEndPoint.Ports {
 					serviceUrl := port.ServiceProxyUrl
 					if serviceUrl != nil && *serviceUrl != "" {
-						searchStr := "A commitment to innovation and sustainability"
+						searchStr := "Études is a pioneering firm"
 						found, err := openPageInHeadlessChrome(*serviceUrl, searchStr, s.token)
 						if err != nil || found == false {
 							s.T().Errorf("Failed to open wordpress page : %s", err)
