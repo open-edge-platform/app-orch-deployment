@@ -35,7 +35,6 @@ func (s *TestSuite) SetupTest() {
 }
 
 func TestDeploymentSuite(t *testing.T) {
-	t.Parallel()
 	portForwardCmd, err := utils.BringUpPortForward()
 	if err != nil {
 		t.Fatalf("failed to bring up port forward: %v", err)
