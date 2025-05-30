@@ -71,9 +71,11 @@ const (
 	AppNginx = "nginx"
 
 	// DeploymentTimeout represents the timeout in seconds for deployment operations
-	DeploymentTimeout = 20 * time.Second
+	DeploymentTimeout = 20 // 20 seconds
 
 	RetryCount = 20 // Number of retries for deployment operations
+
+	DeleteTimeout = 10 * time.Second // Timeout for deletion operations
 )
 
 type CreateDeploymentParams struct {

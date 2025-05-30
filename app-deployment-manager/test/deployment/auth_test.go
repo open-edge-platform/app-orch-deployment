@@ -51,6 +51,6 @@ func (s *TestSuite) TestGetDeploymentAuthProjectID() {
 	}
 	// Clean up the deployment created for this test
 	displayName := utils.FormDisplayName(utils.AppNginx, deploymentReq.TestName)
-	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.DeploymentTimeout, utils.RetryCount)
+	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.RetryCount, utils.DeleteTimeout)
 	s.NoError(err)
 }

@@ -28,7 +28,7 @@ func (s *TestSuite) TestDeploymentStatusWithNoLabels() {
 	s.NotZero(status.Total)
 	s.NotZero(status.Running)
 	displayName := utils.FormDisplayName(utils.AppWordpress, testName)
-	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.DeploymentTimeout, utils.RetryCount)
+	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.RetryCount, utils.DeleteTimeout)
 	s.NoError(err)
 
 }
@@ -58,6 +58,6 @@ func (s *TestSuite) TestDeploymentStatusWithLabels() {
 	s.NotZero(status.Total)
 	s.NotZero(status.Running)
 	displayName := utils.FormDisplayName(utils.AppWordpress, deploymentReq.TestName)
-	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.DeploymentTimeout, utils.RetryCount)
+	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.RetryCount, utils.DeleteTimeout)
 	s.NoError(err)
 }

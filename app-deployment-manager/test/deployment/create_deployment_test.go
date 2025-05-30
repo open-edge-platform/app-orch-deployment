@@ -26,7 +26,7 @@ func (s *TestSuite) TestCreateTargetedDeployment() {
 
 	for _, app := range []string{utils.AppWordpress, utils.AppNginx} {
 		displayName := utils.FormDisplayName(app, testName)
-		err := utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.DeploymentTimeout, utils.RetryCount)
+		err := utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.RetryCount, utils.DeploymentTimeout)
 		s.NoError(err)
 	}
 }
@@ -47,7 +47,7 @@ func (s *TestSuite) TestCreateAutoScaleDeployment() {
 	}
 	for _, app := range []string{utils.AppWordpress, utils.AppNginx} {
 		displayName := utils.FormDisplayName(app, testName)
-		err := utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.DeploymentTimeout, utils.RetryCount)
+		err := utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.RetryCount, utils.DeleteTimeout)
 		s.NoError(err)
 	}
 }
@@ -79,6 +79,6 @@ func (s *TestSuite) TestCreateDiffDataDeployment() {
 	s.NoError(err, "Failed to create '"+utils.AppWordpress+"-"+utils.DeploymentTypeTargeted+"' deployment")
 
 	displayName := utils.FormDisplayName(utils.AppWordpress, testName)
-	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.DeploymentTimeout, utils.RetryCount)
+	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.RetryCount, utils.DeleteTimeout)
 	s.NoError(err)
 }
