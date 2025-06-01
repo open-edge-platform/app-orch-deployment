@@ -10,12 +10,12 @@ import (
 
 // TestAppWorkloadsListInvalidProjectID tests list app workload with invalid project id
 func (s *TestSuite) TestAppWorkloadsListInvalidProjectID() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.Token, "invalidprojectid")
 	s.NoError(err)
 
-	for _, app := range s.deployApps {
+	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := AppWorkloadsList(armClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(armClient, appID)
 		s.Equal(retCode, 403)
 		s.Error(err)
 		s.Empty(appWorkloads)
@@ -25,12 +25,12 @@ func (s *TestSuite) TestAppWorkloadsListInvalidProjectID() {
 
 // TestAppWorkloadsListInvalidJWT tests list app workload with invalid JWT
 func (s *TestSuite) TestAppWorkloadsListInvalidJWT() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.projectID)
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.ProjectID)
 	s.NoError(err)
 
-	for _, app := range s.deployApps {
+	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := AppWorkloadsList(armClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(armClient, appID)
 		s.Equal(retCode, 401)
 		s.Error(err)
 		s.Empty(appWorkloads)
@@ -40,12 +40,12 @@ func (s *TestSuite) TestAppWorkloadsListInvalidJWT() {
 
 // TestAppEndpointsListInvalidProjectID tests list app endpoints with invalid project id
 func (s *TestSuite) TestAppEndpointsListInvalidProjectID() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.Token, "invalidprojectid")
 	s.NoError(err)
 
-	for _, app := range s.deployApps {
+	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appEndpoints, retCode, err := AppEndpointsList(armClient, appID)
+		appEndpoints, retCode, err := utils.AppEndpointsList(armClient, appID)
 		s.Equal(retCode, 403)
 		s.Error(err)
 		s.Empty(appEndpoints)
@@ -55,12 +55,12 @@ func (s *TestSuite) TestAppEndpointsListInvalidProjectID() {
 
 // TestAppEndpointsListInvalidJWT tests list app endpoints with invalid JWT
 func (s *TestSuite) TestAppEndpointsListInvalidJWT() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.projectID)
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.ProjectID)
 	s.NoError(err)
 
-	for _, app := range s.deployApps {
+	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appEndpoints, retCode, err := AppEndpointsList(armClient, appID)
+		appEndpoints, retCode, err := utils.AppEndpointsList(armClient, appID)
 		s.Equal(retCode, 401)
 		s.Error(err)
 		s.Empty(appEndpoints)
@@ -70,10 +70,10 @@ func (s *TestSuite) TestAppEndpointsListInvalidJWT() {
 
 // TestDeletePodAuthInvalidProjectID tests delete pod with invalid project id
 func (s *TestSuite) TestDeletePodAuthInvalidProjectID() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.token, "invalidprojectid")
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.Token, "invalidprojectid")
 	s.NoError(err)
 
-	retCode, err := PodDelete(armClient, "namespace", "podname", "appID")
+	retCode, err := utils.PodDelete(armClient, "namespace", "podname", "appID")
 	s.Equal(retCode, 403)
 	s.Error(err)
 	s.T().Logf("successfully handled invalid projectid to delete pod\n")
@@ -81,10 +81,10 @@ func (s *TestSuite) TestDeletePodAuthInvalidProjectID() {
 
 // TestDeletePodAuthInvalidJWT tests delete pod with invalid jwt
 func (s *TestSuite) TestDeletePodAuthInvalidJWT() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.projectID)
+	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.ProjectID)
 	s.NoError(err)
 
-	retCode, err := PodDelete(armClient, "namespace", "podname", "appID")
+	retCode, err := utils.PodDelete(armClient, "namespace", "podname", "appID")
 	s.Equal(retCode, 401)
 	s.Error(err)
 	s.T().Logf("successfully handled invalid JWT to delete pod\n")

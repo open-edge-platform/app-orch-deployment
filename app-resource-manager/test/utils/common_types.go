@@ -4,6 +4,8 @@
 
 package utils
 
+import "time"
+
 const (
 	RestAddressPortForward      = "127.0.0.1"
 	PortForwardServiceNamespace = "orch-app"
@@ -39,6 +41,9 @@ const (
 	CirrosAppName                  = "cirros-container-disk"
 	WordpressAppName               = "wordpress"
 	VirtualizationExtensionAppName = "virtualization-extension"
+)
+const (
+	retryDelay = 10 * time.Second
 )
 
 var dpConfigs = map[string]any{
