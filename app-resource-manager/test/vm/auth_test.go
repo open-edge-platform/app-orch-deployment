@@ -5,8 +5,6 @@
 package vm
 
 import (
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/container"
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/shared"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
@@ -17,7 +15,7 @@ func (s *TestSuite) TestVMAuthInvalidProjectIDStop() {
 
 	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -31,16 +29,16 @@ func (s *TestSuite) TestVMAuthInvalidProjectIDStop() {
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			// Start VM if not running
 			if currState != VMRunning {
-				retCode, err := shared.StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
+				retCode, err := utils.StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
 				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
-				err = shared.GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
+				err = utils.GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
 				s.NoError(err)
 			}
 
-			retCode, err = shared.StopVirtualMachine(armClient, appID, appWorkload.Id)
+			retCode, err = utils.StopVirtualMachine(armClient, appID, appWorkload.Id)
 			s.Equal(retCode, 403)
 			s.Error(err)
 			s.T().Logf("successfully handled invalid project id to stop virtual machine\n")
@@ -55,7 +53,7 @@ func (s *TestSuite) TestVMAuthInvalidJWTStop() {
 
 	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -69,16 +67,16 @@ func (s *TestSuite) TestVMAuthInvalidJWTStop() {
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			// Start VM if not running
 			if currState != VMRunning {
-				retCode, err := shared.StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
+				retCode, err := utils.StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
 				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
-				err = shared.GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
+				err = utils.GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
 				s.NoError(err)
 			}
 
-			retCode, err := shared.StopVirtualMachine(armClient, appID, appWorkload.Id)
+			retCode, err := utils.StopVirtualMachine(armClient, appID, appWorkload.Id)
 			s.Equal(retCode, 401)
 			s.Error(err)
 			s.T().Logf("successfully handled invalid JWT to stop virtual machine\n")
@@ -93,7 +91,7 @@ func (s *TestSuite) TestVMAuthInvalidProjectIDStart() {
 
 	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -107,16 +105,16 @@ func (s *TestSuite) TestVMAuthInvalidProjectIDStart() {
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			// Stop VM if running
 			if currState != VMStopped {
-				retCode, err := shared.StopVirtualMachine(s.ArmClient, appID, appWorkload.Id)
+				retCode, err := utils.StopVirtualMachine(s.ArmClient, appID, appWorkload.Id)
 				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("stop VM pod %s\n", appWorkload.Name)
 
-				err = shared.GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMStopped)
+				err = utils.GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMStopped)
 				s.NoError(err)
 			}
 
-			retCode, err := shared.StartVirtualMachine(armClient, appID, appWorkload.Id)
+			retCode, err := utils.StartVirtualMachine(armClient, appID, appWorkload.Id)
 			s.Equal(retCode, 403)
 			s.Error(err)
 			s.T().Logf("successfully handled invalid project id to start virtual machine\n")
@@ -131,7 +129,7 @@ func (s *TestSuite) TestVMAuthInvalidJWTStart() {
 
 	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -145,16 +143,16 @@ func (s *TestSuite) TestVMAuthInvalidJWTStart() {
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			// Stop VM if not running
 			if currState != VMStopped {
-				retCode, err := shared.StopVirtualMachine(s.ArmClient, appID, appWorkload.Id)
+				retCode, err := utils.StopVirtualMachine(s.ArmClient, appID, appWorkload.Id)
 				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
-				err = shared.GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMStopped)
+				err = utils.GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMStopped)
 				s.NoError(err)
 			}
 
-			retCode, err := shared.StartVirtualMachine(armClient, appID, appWorkload.Id)
+			retCode, err := utils.StartVirtualMachine(armClient, appID, appWorkload.Id)
 			s.Equal(retCode, 401)
 			s.Error(err)
 			s.T().Logf("successfully handled invalid JWT to start virtual machine\n")
@@ -169,7 +167,7 @@ func (s *TestSuite) TestVMAuthInvalidProjectIDRestart() {
 
 	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -181,16 +179,16 @@ func (s *TestSuite) TestVMAuthInvalidProjectIDRestart() {
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			// Start VM if not running
 			if currState != VMRunning {
-				retCode, err = shared.StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
+				retCode, err = utils.StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
 				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
-				err = shared.GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
+				err = utils.GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
 				s.NoError(err)
 			}
 
-			retCode, err = shared.RestartVirtualMachine(armClient, appID, appWorkload.Id)
+			retCode, err = utils.RestartVirtualMachine(armClient, appID, appWorkload.Id)
 			s.Equal(retCode, 403)
 			s.Error(err)
 			s.T().Logf("successfully handled invalid project id to restart virtual machine\n")
@@ -205,7 +203,7 @@ func (s *TestSuite) TestVMAuthInvalidJWTRestart() {
 
 	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -217,16 +215,16 @@ func (s *TestSuite) TestVMAuthInvalidJWTRestart() {
 			currState := string(*appWorkload.VirtualMachine.Status.State)
 			// Start VM if not running
 			if currState != VMRunning {
-				retCode, err = shared.StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
+				retCode, err = utils.StartVirtualMachine(s.ArmClient, appID, appWorkload.Id)
 				s.Equal(retCode, 200)
 				s.NoError(err)
 				s.T().Logf("start VM pod %s\n", appWorkload.Name)
 
-				err = shared.GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
+				err = utils.GetVMStatus(s.ArmClient, appID, appWorkload.Id, VMRunning)
 				s.NoError(err)
 			}
 
-			retCode, err = shared.RestartVirtualMachine(armClient, appID, appWorkload.Id)
+			retCode, err = utils.RestartVirtualMachine(armClient, appID, appWorkload.Id)
 			s.Equal(retCode, 401)
 			s.Error(err)
 			s.T().Logf("successfully handled invalid jwt to restart virtual machine\n")
@@ -241,7 +239,7 @@ func (s *TestSuite) TestVMAuthInvalidProjectIDGetVNC() {
 
 	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -250,7 +248,7 @@ func (s *TestSuite) TestVMAuthInvalidProjectIDGetVNC() {
 		s.Assert().Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		for _, appWorkload := range *appWorkloads {
-			retCode, err = shared.GetVNC(armClient, appID, appWorkload.Id)
+			retCode, err = utils.GetVNC(armClient, appID, appWorkload.Id)
 			s.Equal(retCode, 403)
 			s.Error(err)
 			s.T().Logf("successfully handled invalid project id to get vnc\n")
@@ -265,7 +263,7 @@ func (s *TestSuite) TestVMAuthInvalidJWTGetVNC() {
 
 	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -274,7 +272,7 @@ func (s *TestSuite) TestVMAuthInvalidJWTGetVNC() {
 		s.Assert().Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		for _, appWorkload := range *appWorkloads {
-			retCode, err = shared.GetVNC(armClient, appID, appWorkload.Id)
+			retCode, err = utils.GetVNC(armClient, appID, appWorkload.Id)
 			s.Equal(retCode, 401)
 			s.Error(err)
 			s.T().Logf("successfully handled invalid JWT to get VNC\n")

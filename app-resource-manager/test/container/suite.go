@@ -10,12 +10,10 @@ import (
 	"time"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
-	"github.com/stretchr/testify/suite"
 )
 
 // TestSuite is the basic test suite
 type TestSuite struct {
-	suite.Suite
 	shared.BaseSuite
 }
 

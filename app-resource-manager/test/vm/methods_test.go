@@ -5,10 +5,8 @@
 package vm
 
 import (
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/shared"
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 	"net/http"
-
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/container"
 )
 
 // HTTP method maps for various VM operations
@@ -69,7 +67,7 @@ func (s *TestSuite) testVMMethod(appID string, appWorkloadID string, methods map
 		// If the operation should be successful (200) and we expect a state change,
 		// verify the VM reached the expected state
 		if expectedStatus == 200 && desiredState != "" {
-			err = shared.GetVMStatus(s.ArmClient, appID, appWorkloadID, desiredState)
+			err = utils.GetVMStatus(s.ArmClient, appID, appWorkloadID, desiredState)
 			s.NoError(err)
 		}
 
@@ -98,7 +96,7 @@ func (s *TestSuite) TestGetVNCResponseCodeValidation() {
 	for _, app := range s.DeployApps {
 		appID := *app.Id
 		// Get all workloads for the application
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -106,7 +104,7 @@ func (s *TestSuite) TestGetVNCResponseCodeValidation() {
 		for _, appWorkload := range *appWorkloads {
 			// Test all HTTP methods on the VNC endpoint
 			// No desired state is specified ("") since VNC doesn't change VM state
-			s.testVMMethod(appID, appWorkload.Id, getVncMethods, shared.MethodGetVNC, "")
+			s.testVMMethod(appID, appWorkload.Id, getVncMethods, utils.MethodGetVNC, "")
 		}
 	}
 }
@@ -119,7 +117,7 @@ func (s *TestSuite) TestStartVMResponseCodeValidation() {
 	for _, app := range s.DeployApps {
 		appID := *app.Id
 		// Get all workloads for the application
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -132,7 +130,7 @@ func (s *TestSuite) TestStartVMResponseCodeValidation() {
 
 			// Test all HTTP methods on the start endpoint
 			// The desired state after successful operation is VMRunning
-			s.testVMMethod(appID, appWorkload.Id, startVMMethods, shared.MethodVMStart, VMRunning)
+			s.testVMMethod(appID, appWorkload.Id, startVMMethods, utils.MethodVMStart, VMRunning)
 		}
 	}
 }
@@ -145,7 +143,7 @@ func (s *TestSuite) TestStopVMResponseCodeValidation() {
 	for _, app := range s.DeployApps {
 		appID := *app.Id
 		// Get all workloads for the application
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -158,7 +156,7 @@ func (s *TestSuite) TestStopVMResponseCodeValidation() {
 
 			// Test all HTTP methods on the stop endpoint
 			// The desired state after successful operation is VMStopped
-			s.testVMMethod(appID, appWorkload.Id, stopVMMethods, shared.MethodVMStop, VMStopped)
+			s.testVMMethod(appID, appWorkload.Id, stopVMMethods, utils.MethodVMStop, VMStopped)
 		}
 	}
 }
@@ -171,7 +169,7 @@ func (s *TestSuite) TestRestartVMResponseCodeValidation() {
 	for _, app := range s.DeployApps {
 		appID := *app.Id
 		// Get all workloads for the application
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.ArmClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -184,7 +182,7 @@ func (s *TestSuite) TestRestartVMResponseCodeValidation() {
 
 			// Test all HTTP methods on the restart endpoint
 			// The desired state after successful operation is VMRunning
-			s.testVMMethod(appID, appWorkload.Id, restartVMMethods, shared.MethodVMRestart, VMRunning)
+			s.testVMMethod(appID, appWorkload.Id, restartVMMethods, utils.MethodVMRestart, VMRunning)
 		}
 	}
 }
