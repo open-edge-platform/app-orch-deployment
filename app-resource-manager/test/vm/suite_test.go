@@ -93,7 +93,7 @@ func (s *TestSuite) SetupSuite() {
 		s.T().Fatalf("error: %v", err)
 	}
 
-	s.DeployApps, err = utils.CreateDeployment(s.AdmClient, utils.CirrosAppName, utils.CirrosAppName, 10)
+	s.DeployApps, err = utils.CreateDeployment(s.AdmClient, utils.CirrosAppName, utils.CirrosAppName, 30)
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
