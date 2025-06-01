@@ -46,11 +46,17 @@ func deploymentExists(deployments []restClient.Deployment, displayName string) b
 
 func getDeploymentPerCluster(client *restClient.ClientWithResponses) ([]restClient.DeploymentInstancesCluster, int, error) {
 	resp, err := client.DeploymentServiceListDeploymentsPerClusterWithResponse(context.TODO(), TestClusterID, nil)
-	if err != nil || resp.StatusCode() != 200 {
+	if err != nil || resp == nil || resp.StatusCode() != 200 {
 		if err != nil {
-			return nil, resp.StatusCode(), fmt.Errorf("%v", err)
+			if resp != nil {
+				return nil, resp.StatusCode(), fmt.Errorf("%v", err)
+			}
+			return nil, 0, fmt.Errorf("%v", err)
 		}
-		return nil, resp.StatusCode(), fmt.Errorf("failed to list deployment cluster: %v", string(resp.Body))
+		if resp != nil {
+			return nil, resp.StatusCode(), fmt.Errorf("failed to list deployment cluster: %v", string(resp.Body))
+		}
+		return nil, 0, fmt.Errorf("failed to list deployment cluster: response is nil")
 	}
 
 	return resp.JSON200.DeploymentInstancesCluster, resp.StatusCode(), nil
@@ -58,11 +64,17 @@ func getDeploymentPerCluster(client *restClient.ClientWithResponses) ([]restClie
 
 func getDeployments(client *restClient.ClientWithResponses) ([]restClient.Deployment, int, error) {
 	resp, err := client.DeploymentServiceListDeploymentsWithResponse(context.TODO(), nil)
-	if err != nil || resp.StatusCode() != 200 {
+	if err != nil || resp == nil || resp.StatusCode() != 200 {
 		if err != nil {
-			return nil, resp.StatusCode(), fmt.Errorf("%v", err)
+			if resp != nil {
+				return nil, resp.StatusCode(), fmt.Errorf("%v", err)
+			}
+			return nil, 0, fmt.Errorf("%v", err)
 		}
-		return nil, resp.StatusCode(), fmt.Errorf("failed to list deployments: %v", string(resp.Body))
+		if resp != nil {
+			return nil, resp.StatusCode(), fmt.Errorf("failed to list deployments: %v", string(resp.Body))
+		}
+		return nil, 0, fmt.Errorf("failed to list deployments: response is nil")
 	}
 
 	return resp.JSON200.Deployments, resp.StatusCode(), nil
