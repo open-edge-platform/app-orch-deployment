@@ -1,23 +1,28 @@
-// SPDX-FileCopyrightText: (C) 2025-present Intel Corporation
+// SPDX-FileCopyrightText: 2025-present Intel Corporation
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package shared
+package container
 
 import (
 	"context"
 	"fmt"
 	admClient "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 	armClient "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
+	"testing"
+
+	"time"
+
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
-type BaseSuite struct {
+// TestSuite is the basic test suite
+type TestSuite struct {
 	suite.Suite
 	ResourceRESTServerUrl string
 	Token                 string
@@ -31,7 +36,7 @@ type BaseSuite struct {
 }
 
 // SetupSuite sets up the test suite once before all tests
-func (s *BaseSuite) SetupSuite() {
+func (s *TestSuite) SetupSuite() {
 	autoCert, err := strconv.ParseBool(os.Getenv("AUTO_CERT"))
 	s.OrchDomain = os.Getenv("ORCH_DOMAIN")
 	if err != nil || !autoCert || s.OrchDomain == "" {
@@ -87,6 +92,17 @@ func (s *BaseSuite) SetupSuite() {
 }
 
 // SetupTest can be used for per-test setup if needed
-func (s *BaseSuite) SetupTest() {
+func (s *TestSuite) SetupTest() {
 	// Leave empty or add per-test setup logic here
+}
+
+// TearDownSuite cleans up after the entire test suite
+func (s *TestSuite) TearDownSuite() {
+	err := utils.DeleteAndRetryUntilDeleted(s.AdmClient, utils.NginxAppName, 10, 10*time.Second)
+	s.NoError(err)
+	utils.TearDownPortForward(s.PortForwardCmd)
+}
+
+func TestContainerTestSuite(t *testing.T) {
+	suite.Run(t, new(TestSuite))
 }
