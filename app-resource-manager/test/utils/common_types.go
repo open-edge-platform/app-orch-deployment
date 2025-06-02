@@ -46,29 +46,41 @@ const (
 	retryDelay = 10 * time.Second
 )
 
-var dpConfigs = map[string]any{
-	NginxAppName: map[string]any{
+var DpConfigs = map[string]any{
+	"nginx": map[string]any{
 		"appNames":             []string{"nginx"},
 		"deployPackage":        "nginx-app",
 		"deployPackageVersion": "0.1.0",
 		"profileName":          "testing-default",
+		"clusterId":            TestClusterID,
+		"labels":               map[string]string{"color": "blue"},
+		"overrideValues":       []map[string]any{},
 	},
-	CirrosAppName: map[string]any{
-		"appNames":             []string{"cirros-container-disk"},
-		"deployPackage":        "cirros-container-disk",
-		"deployPackageVersion": "0.1.0",
-		"profileName":          "default",
+	"vm": map[string]any{
+		"appNames":             []string{"librespeed-vm"},
+		"deployPackage":        "librespeed-app",
+		"deployPackageVersion": "1.0.0",
+		"profileName":          "virtual-cluster",
+		"clusterId":            TestClusterID,
+		"labels":               map[string]string{"color": "blue"},
+		"overrideValues":       []map[string]any{},
 	},
-	VirtualizationExtensionAppName: map[string]any{
+	"virt-extension": map[string]any{
 		"appNames":             []string{"kubevirt", "cdi", "kube-helper"},
 		"deployPackage":        "virtualization",
-		"deployPackageVersion": "0.3.7",
+		"deployPackageVersion": "0.3.6",
 		"profileName":          "with-software-emulation-profile-nosm",
+		"clusterId":            TestClusterID,
+		"labels":               map[string]string{"color": "blue"},
+		"overrideValues":       []map[string]any{},
 	},
-	WordpressAppName: map[string]any{
+	"wordpress": map[string]any{
 		"appNames":             []string{"wordpress"},
 		"deployPackage":        "wordpress",
-		"deployPackageVersion": "0.1.1",
+		"deployPackageVersion": "0.1.0",
 		"profileName":          "testing",
+		"clusterId":            TestClusterID,
+		"labels":               map[string]string{"color": "blue"},
+		"overrideValues":       []map[string]any{},
 	},
 }

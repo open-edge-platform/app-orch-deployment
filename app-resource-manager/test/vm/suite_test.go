@@ -88,16 +88,39 @@ func (s *TestSuite) SetupSuite() {
 		s.T().Fatalf("error: %v", err)
 	}
 
-	_, err = utils.CreateDeployment(s.AdmClient, utils.VirtualizationExtensionAppName, utils.VirtualizationExtensionAppName, 30)
+	// Start the virtualization extension deployment
+	virtDeploymentRequest := utils.StartDeploymentRequest{
+		AdmClient:         s.AdmClient,
+		DpPackageName:     utils.VirtualizationExtensionAppName,
+		DeploymentType:    utils.DeploymentTypeTargeted,
+		DeploymentTimeout: utils.DeploymentTimeout,
+		DeleteTimeout:     utils.DeleteTimeout,
+		TestName:          "VirtualizationExtensionDeployment",
+	}
+	_, _, err = utils.StartDeployment(virtDeploymentRequest)
+	if err != nil {
+		s.T().Fatalf("error: %v", err)
+
+	}
+
+	// Create a deployment for the cirros app
+	cirrosDeploymentRequest := utils.StartDeploymentRequest{
+		AdmClient:         s.AdmClient,
+		DpPackageName:     utils.CirrosAppName,
+		DeploymentType:    utils.DeploymentTypeTargeted,
+		DeploymentTimeout: utils.DeploymentTimeout,
+		DeleteTimeout:     utils.DeleteTimeout,
+		TestName:          "CirrosDeployment",
+	}
+
+	deployID, _, err := utils.StartDeployment(cirrosDeploymentRequest)
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
-
-	s.DeployApps, err = utils.CreateDeployment(s.AdmClient, utils.CirrosAppName, utils.CirrosAppName, 30)
+	s.DeployApps, err = utils.GetDeployApps(s.AdmClient, deployID)
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
-
 	s.NotEmpty(s.DeployApps)
 }
 
