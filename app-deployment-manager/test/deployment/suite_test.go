@@ -45,7 +45,7 @@ func TestDeploymentSuite(t *testing.T) {
 	}
 	defer portforwarding.TearDownPortForward(portForwardCmd)
 
-	token, err = auth.SetUpAccessToken(types.KeycloakServer)
+	token, err = auth.SetUpAccessToken(auth.GetKeycloakServer())
 	if err != nil {
 		t.Fatalf("failed to setup access token: %v", err)
 	}

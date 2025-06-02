@@ -16,10 +16,7 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/portforwarding"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
 
-	"net/http"
-	"os"
 	"os/exec"
-	"strconv"
 	"testing"
 	"time"
 
@@ -41,7 +38,6 @@ type TestSuite struct {
 	DeployApps            []*admClient.App
 	ArmClient             *armClient.ClientWithResponses
 	AdmClient             *admClient.ClientWithResponses
-	KeycloakServer        string
 	OrchDomain            string
 	PortForwardCmd        map[string]*exec.Cmd
 }
@@ -53,14 +49,9 @@ func (s *TestSuite) SetupTest() {
 
 // SetupSuite sets up the test suite once before all tests
 func (s *TestSuite) SetupSuite() {
-	autoCert, err := strconv.ParseBool(os.Getenv("AUTO_CERT"))
-	s.OrchDomain = os.Getenv("ORCH_DOMAIN")
-	if err != nil || !autoCert || s.OrchDomain == "" {
-		s.OrchDomain = "kind.internal"
-	}
-	s.KeycloakServer = fmt.Sprintf("keycloak.%s", s.OrchDomain)
 
-	s.Token, err = auth.SetUpAccessToken(s.KeycloakServer)
+	var err error
+	s.Token, err = auth.SetUpAccessToken(auth.GetKeycloakServer())
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
@@ -81,10 +72,7 @@ func (s *TestSuite) SetupSuite() {
 	}
 
 	deploymentRESTServerUrl := fmt.Sprintf("http://%s:%s", types.RestAddressPortForward, types.AdmPortForwardRemote)
-	s.AdmClient, err = admClient.NewClientWithResponses(deploymentRESTServerUrl, admClient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-		auth.AddRestAuthHeader(req, s.Token, s.ProjectID)
-		return nil
-	}))
+	s.AdmClient, err = clients.CreateAdmClient(deploymentRESTServerUrl, s.Token, s.ProjectID)
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}

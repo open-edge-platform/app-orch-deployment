@@ -19,10 +19,6 @@ const (
 )
 
 const (
-	KeycloakServer = "keycloak.kind.internal"
-)
-
-const (
 	SampleOrg     = "sample-org"
 	SampleProject = "sample-project"
 	KCPass        = "ChangeMeOn1stLogin!"

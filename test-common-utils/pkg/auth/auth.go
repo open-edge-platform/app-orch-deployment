@@ -10,6 +10,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
+	"os"
+	"strconv"
 
 	nexus_client "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/nexus-client"
 	"io"
@@ -108,4 +110,13 @@ func GetProjectID(ctx context.Context) (string, error) {
 	}
 
 	return projectStatus.UID, nil
+}
+
+func GetKeycloakServer() string {
+	autoCert, err := strconv.ParseBool(os.Getenv("AUTO_CERT"))
+	orchDomain := os.Getenv("ORCH_DOMAIN")
+	if err != nil || !autoCert || orchDomain == "" {
+		orchDomain = "kind.internal"
+	}
+	return fmt.Sprintf("keycloak.%s", orchDomain)
 }
