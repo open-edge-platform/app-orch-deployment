@@ -67,24 +67,24 @@ func (s *TestSuite) TestAPIMethods() {
 	}{
 		{
 			name:        "ListDeployments",
-			url:         fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments", deploymentRESTServerUrl),
+			url:         fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments", s.deploymentRESTServerUrl),
 			methodMap:   methodResponses["deployments"],
 			description: "list deployments",
 		},
 		{
 			name:        "ListDeploymentsPerCluster",
-			url:         fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/clusters/%s", deploymentRESTServerUrl, types.TestClusterID),
+			url:         fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/clusters/%s", s.deploymentRESTServerUrl, types.TestClusterID),
 			methodMap:   methodResponses["deploymentsPerCluster"],
 			description: "list deployments per cluster",
 		},
 		{
 			name:        "GetAndDeleteDeployment",
-			url:         fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s", deploymentRESTServerUrl, "%s"),
+			url:         fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s", s.deploymentRESTServerUrl, "%s"),
 			methodMap:   methodResponses["deploymentById"],
 			description: "get and delete deployment",
 			setup: func() string {
 				deploymentReq := deploymentutils.StartDeploymentRequest{
-					AdmClient:         admclient,
+					AdmClient:         s.AdmClient,
 					DpPackageName:     deploymentutils.AppNginx,
 					DeploymentType:    deploymentutils.DeploymentTypeTargeted,
 					DeploymentTimeout: deploymentutils.DeploymentTimeout,
@@ -99,18 +99,18 @@ func (s *TestSuite) TestAPIMethods() {
 		},
 		{
 			name:        "GetDeploymentsStatus",
-			url:         fmt.Sprintf("%s/deployment.orchestrator.apis/v1/summary/deployments_status", deploymentRESTServerUrl),
+			url:         fmt.Sprintf("%s/deployment.orchestrator.apis/v1/summary/deployments_status", s.deploymentRESTServerUrl),
 			methodMap:   methodResponses["deploymentsStatus"],
 			description: "get deployments status",
 		},
 		{
 			name:        "ListDeploymentClusters",
-			url:         fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s/clusters", deploymentRESTServerUrl, "%s"),
+			url:         fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/%s/clusters", s.deploymentRESTServerUrl, "%s"),
 			methodMap:   methodResponses["deploymentClusters"],
 			description: "list deployment clusters",
 			setup: func() string {
 				deploymentReq := deploymentutils.StartDeploymentRequest{
-					AdmClient:         admclient,
+					AdmClient:         s.AdmClient,
 					DpPackageName:     deploymentutils.AppNginx,
 					DeploymentType:    deploymentutils.DeploymentTypeTargeted,
 					DeploymentTimeout: deploymentutils.DeploymentTimeout,
@@ -141,7 +141,7 @@ func (s *TestSuite) TestAPIMethods() {
 // Helper function to test HTTP methods on an endpoint
 func testEndpointMethods(s *TestSuite, url string, methodResponses []MethodResponse, description string) {
 	for _, mr := range methodResponses {
-		res, err := portforwarding.CallMethod(url, mr.Method, token, projectID)
+		res, err := portforwarding.CallMethod(url, mr.Method, s.token, s.projectID)
 		s.NoError(err)
 		s.Equal(mr.ExpectedCode, res.StatusCode)
 		s.T().Logf("%s method: %s (%d)\n", description, mr.Method, res.StatusCode)

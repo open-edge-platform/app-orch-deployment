@@ -12,7 +12,7 @@ import (
 
 // TestListDeploymentsAuthProjectID tests the list deployments method with invalid project ID
 func (s *TestSuite) TestListDeploymentsAuthProjectID() {
-	admClient, err := clients.CreateAdmClient(deploymentRESTServerUrl, token, "invalidprojectid")
+	admClient, err := clients.CreateAdmClient(s.deploymentRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
 	deployments, retCode, err := deploymentutils.DeploymentsList(admClient)
@@ -40,7 +40,7 @@ func (s *TestSuite) TestGetDeploymentAuthProjectID() {
 	s.Equal(retCode, http.StatusOK)
 	s.NoError(err)
 
-	admClient, err := clients.CreateAdmClient(deploymentRESTServerUrl, token, "invalidprojectid")
+	admClient, err := clients.CreateAdmClient(s.deploymentRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
 	deployment, retCode, err := deploymentutils.GetDeployment(admClient, deployID)

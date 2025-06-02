@@ -7,59 +7,58 @@ package deployment
 import (
 	"context"
 	"fmt"
+	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/auth"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/clients"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/portforwarding"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
-
-	"testing"
-
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 	"github.com/stretchr/testify/suite"
-)
-
-var (
-	token                   string
-	projectID               string
-	deploymentRESTServerUrl string
-	admclient               *restClient.ClientWithResponses
+	"os/exec"
+	"testing"
+	"time"
 )
 
 // TestSuite is the basic test suite
 type TestSuite struct {
 	suite.Suite
-	AdmClient *restClient.ClientWithResponses
+	AdmClient               *restClient.ClientWithResponses
+	PortForwardCmd          map[string]*exec.Cmd
+	deploymentRESTServerUrl string
+	token                   string
+	projectID               string
 }
 
-// SetupTest sets up for each test
-func (s *TestSuite) SetupTest() {
-	s.AdmClient = admclient
+func (s *TestSuite) SetupSuite() {
+	var err error
+	s.PortForwardCmd, err = portforwarding.StartPortForwarding()
+	if err != nil {
+		s.T().Fatalf("failed to bring up port forward: %v", err)
+	}
+	time.Sleep(5 * time.Second) // Give some time for port-forwarding to establish
 
+	s.token, err = auth.SetUpAccessToken(auth.GetKeycloakServer())
+	if err != nil {
+		s.T().Fatalf("failed to setup access token: %v", err)
+	}
+
+	s.projectID, err = auth.GetProjectID(context.TODO())
+	if err != nil {
+		s.T().Fatalf("failed to get project id: %v", err)
+	}
+
+	s.deploymentRESTServerUrl = fmt.Sprintf("http://%s:%s", types.RestAddressPortForward, types.AdmPortForwardRemote)
+	s.AdmClient, err = clients.CreateAdmClient(s.deploymentRESTServerUrl, s.token, s.projectID)
+	if err != nil {
+		s.T().Fatalf("failed to create client: %v", err)
+	}
 }
 
 func TestDeploymentSuite(t *testing.T) {
-	t.Parallel()
-	portForwardCmd, err := portforwarding.StartPortForwarding()
-	if err != nil {
-		t.Fatalf("failed to bring up port forward: %v", err)
-	}
-	defer portforwarding.TearDownPortForward(portForwardCmd)
-
-	token, err = auth.SetUpAccessToken(auth.GetKeycloakServer())
-	if err != nil {
-		t.Fatalf("failed to setup access token: %v", err)
-	}
-
-	projectID, err = auth.GetProjectID(context.TODO())
-	if err != nil {
-		t.Fatalf("failed to get project id: %v", err)
-	}
-
-	deploymentRESTServerUrl = fmt.Sprintf("http://%s:%s", types.RestAddressPortForward, types.AdmPortForwardRemote)
-	admclient, err = clients.CreateAdmClient(deploymentRESTServerUrl, token, projectID)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
-
 	suite.Run(t, new(TestSuite))
+}
+
+// TearDownSuite cleans up after the entire test suite
+func (s *TestSuite) TearDownSuite() {
+	portforwarding.TearDownPortForward(s.PortForwardCmd)
+
 }
