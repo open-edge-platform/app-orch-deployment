@@ -95,7 +95,7 @@ func (s *TestSuite) SetupSuite() {
 		DeploymentType:    utils.DeploymentTypeTargeted,
 		DeploymentTimeout: utils.DeploymentTimeout,
 		DeleteTimeout:     utils.DeleteTimeout,
-		TestName:          "VirtualizationExtensionDeployment",
+		TestName:          "VirtExtDep",
 	}
 	_, _, err = utils.StartDeployment(virtDeploymentRequest)
 	if err != nil {
