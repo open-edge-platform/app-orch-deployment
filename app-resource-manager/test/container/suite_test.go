@@ -73,7 +73,7 @@ func (s *TestSuite) SetupSuite() {
 		s.T().Fatalf("error: %v", err)
 	}
 
-	// Create a deployment for the cirros app
+	// Create a deployment for the nginx app
 	nginxDeploymentRequest := utils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
 		DpPackageName:     utils.NginxAppName,
