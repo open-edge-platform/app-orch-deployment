@@ -6,9 +6,10 @@ package deployment
 
 import (
 	"fmt"
+	deploymentutils "github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/deployment"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/portforwarding"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
 	"net/http"
-
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/utils"
 )
 
 // HTTP method expected responses for different API endpoints
@@ -72,7 +73,7 @@ func (s *TestSuite) TestAPIMethods() {
 		},
 		{
 			name:        "ListDeploymentsPerCluster",
-			url:         fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/clusters/%s", deploymentRESTServerUrl, utils.TestClusterID),
+			url:         fmt.Sprintf("%s/deployment.orchestrator.apis/v1/deployments/clusters/%s", deploymentRESTServerUrl, types.TestClusterID),
 			methodMap:   methodResponses["deploymentsPerCluster"],
 			description: "list deployments per cluster",
 		},
@@ -82,15 +83,15 @@ func (s *TestSuite) TestAPIMethods() {
 			methodMap:   methodResponses["deploymentById"],
 			description: "get and delete deployment",
 			setup: func() string {
-				deploymentReq := utils.StartDeploymentRequest{
+				deploymentReq := deploymentutils.StartDeploymentRequest{
 					AdmClient:         admclient,
-					DpPackageName:     utils.AppNginx,
-					DeploymentType:    utils.DeploymentTypeTargeted,
-					DeploymentTimeout: utils.DeploymentTimeout,
-					DeleteTimeout:     utils.DeleteTimeout,
+					DpPackageName:     deploymentutils.AppNginx,
+					DeploymentType:    deploymentutils.DeploymentTypeTargeted,
+					DeploymentTimeout: deploymentutils.DeploymentTimeout,
+					DeleteTimeout:     deploymentutils.DeleteTimeout,
 					TestName:          "GetAndDeleteDeployment",
 				}
-				deployID, retCode, err := utils.StartDeployment(deploymentReq)
+				deployID, retCode, err := deploymentutils.StartDeployment(deploymentReq)
 				s.Equal(retCode, http.StatusOK)
 				s.NoError(err)
 				return deployID
@@ -108,15 +109,15 @@ func (s *TestSuite) TestAPIMethods() {
 			methodMap:   methodResponses["deploymentClusters"],
 			description: "list deployment clusters",
 			setup: func() string {
-				deploymentReq := utils.StartDeploymentRequest{
+				deploymentReq := deploymentutils.StartDeploymentRequest{
 					AdmClient:         admclient,
-					DpPackageName:     utils.AppNginx,
-					DeploymentType:    utils.DeploymentTypeTargeted,
-					DeploymentTimeout: utils.DeploymentTimeout,
-					DeleteTimeout:     utils.DeleteTimeout,
+					DpPackageName:     deploymentutils.AppNginx,
+					DeploymentType:    deploymentutils.DeploymentTypeTargeted,
+					DeploymentTimeout: deploymentutils.DeploymentTimeout,
+					DeleteTimeout:     deploymentutils.DeleteTimeout,
 					TestName:          "ListDeploymentClusters",
 				}
-				deployID, retCode, err := utils.StartDeployment(deploymentReq)
+				deployID, retCode, err := deploymentutils.StartDeployment(deploymentReq)
 				s.Equal(retCode, http.StatusOK)
 				s.NoError(err)
 				return deployID
@@ -140,7 +141,7 @@ func (s *TestSuite) TestAPIMethods() {
 // Helper function to test HTTP methods on an endpoint
 func testEndpointMethods(s *TestSuite, url string, methodResponses []MethodResponse, description string) {
 	for _, mr := range methodResponses {
-		res, err := utils.CallMethod(url, mr.Method, token, projectID)
+		res, err := portforwarding.CallMethod(url, mr.Method, token, projectID)
 		s.NoError(err)
 		s.Equal(mr.ExpectedCode, res.StatusCode)
 		s.T().Logf("%s method: %s (%d)\n", description, mr.Method, res.StatusCode)

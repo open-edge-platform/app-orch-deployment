@@ -6,30 +6,30 @@ package deployment
 
 import (
 	"fmt"
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/utils"
+	deploymentutils "github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/deployment"
 	"net/http"
 )
 
 func (s *TestSuite) TestDeploymentStatusWithNoLabels() {
 	testName := "DeploymentStatusWithNoLabels"
-	deployemntReq := utils.StartDeploymentRequest{
+	deployemntReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
-		DpPackageName:     utils.AppWordpress,
-		DeploymentType:    utils.DeploymentTypeAutoScaling,
-		DeploymentTimeout: utils.DeploymentTimeout,
-		DeleteTimeout:     utils.DeleteTimeout,
+		DpPackageName:     deploymentutils.AppWordpress,
+		DeploymentType:    deploymentutils.DeploymentTypeAutoScaling,
+		DeploymentTimeout: deploymentutils.DeploymentTimeout,
+		DeleteTimeout:     deploymentutils.DeleteTimeout,
 		TestName:          testName,
 	}
-	_, code, err := utils.StartDeployment(deployemntReq)
+	_, code, err := deploymentutils.StartDeployment(deployemntReq)
 	s.Equal(http.StatusOK, code)
 	s.NoError(err)
-	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, nil)
+	status, code, err := deploymentutils.GetDeploymentsStatus(s.AdmClient, nil)
 	s.NoError(err)
 	s.Equal(http.StatusOK, code)
 	s.NotZero(status.Total)
 	s.NotZero(status.Running)
-	displayName := utils.FormDisplayName(utils.AppWordpress, testName)
-	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.RetryCount, utils.DeleteTimeout)
+	displayName := deploymentutils.FormDisplayName(deploymentutils.AppWordpress, testName)
+	err = deploymentutils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, deploymentutils.RetryCount, deploymentutils.DeleteTimeout)
 	s.NoError(err)
 
 }
@@ -37,29 +37,29 @@ func (s *TestSuite) TestDeploymentStatusWithNoLabels() {
 func (s *TestSuite) TestDeploymentStatusWithLabels() {
 	var labelsList []string
 
-	deploymentReq := utils.StartDeploymentRequest{
+	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
-		DpPackageName:     utils.AppWordpress,
-		DeploymentType:    utils.DeploymentTypeAutoScaling,
-		DeploymentTimeout: utils.DeploymentTimeout,
-		DeleteTimeout:     utils.DeleteTimeout,
+		DpPackageName:     deploymentutils.AppWordpress,
+		DeploymentType:    deploymentutils.DeploymentTypeAutoScaling,
+		DeploymentTimeout: deploymentutils.DeploymentTimeout,
+		DeleteTimeout:     deploymentutils.DeleteTimeout,
 		TestName:          "DepStatusWithLabels",
 	}
-	_, code, err := utils.StartDeployment(deploymentReq)
+	_, code, err := deploymentutils.StartDeployment(deploymentReq)
 	s.Equal(http.StatusOK, code)
 	s.NoError(err)
-	useDP := utils.DpConfigs[deploymentReq.DpPackageName].(map[string]any)
+	useDP := deploymentutils.DpConfigs[deploymentReq.DpPackageName].(map[string]any)
 	labels := useDP["labels"].(map[string]string)
 	for key, value := range labels {
 		labelsList = append(labelsList, fmt.Sprintf("%s=%s", key, value))
 	}
 
-	status, code, err := utils.GetDeploymentsStatus(s.AdmClient, &labelsList)
+	status, code, err := deploymentutils.GetDeploymentsStatus(s.AdmClient, &labelsList)
 	s.NoError(err)
 	s.Equal(http.StatusOK, code)
 	s.NotZero(status.Total)
 	s.NotZero(status.Running)
-	displayName := utils.FormDisplayName(utils.AppWordpress, deploymentReq.TestName)
-	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.RetryCount, utils.DeleteTimeout)
+	displayName := deploymentutils.FormDisplayName(deploymentutils.AppWordpress, deploymentReq.TestName)
+	err = deploymentutils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, deploymentutils.RetryCount, deploymentutils.DeleteTimeout)
 	s.NoError(err)
 }

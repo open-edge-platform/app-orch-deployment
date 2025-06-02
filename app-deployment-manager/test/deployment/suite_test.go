@@ -7,11 +7,13 @@ package deployment
 import (
 	"context"
 	"fmt"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/auth"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/portforwarding"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
 
 	"testing"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/utils"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -36,24 +38,24 @@ func (s *TestSuite) SetupTest() {
 
 func TestDeploymentSuite(t *testing.T) {
 	t.Parallel()
-	portForwardCmd, err := utils.BringUpPortForward()
+	portForwardCmd, err := portforwarding.StartPortForwarding()
 	if err != nil {
 		t.Fatalf("failed to bring up port forward: %v", err)
 	}
-	defer utils.TearDownPortForward(portForwardCmd)
+	defer portforwarding.TearDownPortForward(portForwardCmd)
 
-	token, err = utils.SetUpAccessToken(utils.KeycloakServer)
+	token, err = auth.SetUpAccessToken(types.KeycloakServer)
 	if err != nil {
 		t.Fatalf("failed to setup access token: %v", err)
 	}
 
-	projectID, err = utils.GetProjectID(context.TODO())
+	projectID, err = auth.GetProjectID(context.TODO())
 	if err != nil {
 		t.Fatalf("failed to get project id: %v", err)
 	}
 
-	deploymentRESTServerUrl = fmt.Sprintf("http://%s:%s", utils.RestAddressPortForward, utils.AdmPortForwardRemote)
-	admclient, err = utils.CreateClient(deploymentRESTServerUrl, token, projectID)
+	deploymentRESTServerUrl = fmt.Sprintf("http://%s:%s", types.RestAddressPortForward, types.AdmPortForwardRemote)
+	admclient, err = portforwarding.CreateClient(deploymentRESTServerUrl, token, projectID)
 	if err != nil {
 		t.Fatalf("failed to create client: %v", err)
 	}

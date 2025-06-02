@@ -9,6 +9,11 @@ import (
 	"fmt"
 	admClient "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 	armClient "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/auth"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/clients"
+	deploymentutils "github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/deployment"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/portforwarding"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"os"
@@ -17,8 +22,6 @@ import (
 	"testing"
 
 	"time"
-
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
 // TestSuite is the basic test suite
@@ -44,29 +47,29 @@ func (s *TestSuite) SetupSuite() {
 	}
 	s.KeycloakServer = fmt.Sprintf("keycloak.%s", s.OrchDomain)
 
-	s.Token, err = utils.SetUpAccessToken(s.KeycloakServer, fmt.Sprintf("%s-edge-mgr", utils.SampleProject), utils.DefaultPass)
+	s.Token, err = auth.SetUpAccessToken(s.KeycloakServer)
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
 
-	s.ProjectID, err = utils.GetProjectID(context.TODO())
+	s.ProjectID, err = auth.GetProjectID(context.TODO())
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
-	s.PortForwardCmd, err = utils.StartPortForwarding()
-	if err != nil {
-		s.T().Fatalf("error: %v", err)
-	}
-
-	s.ResourceRESTServerUrl = fmt.Sprintf("http://%s:%s", utils.RestAddressPortForward, utils.ArmPortForwardRemote)
-	s.ArmClient, err = utils.CreateArmClient(s.ResourceRESTServerUrl, s.Token, s.ProjectID)
+	s.PortForwardCmd, err = portforwarding.StartPortForwarding()
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
 
-	deploymentRESTServerUrl := fmt.Sprintf("http://%s:%s", utils.RestAddressPortForward, utils.AdmPortForwardRemote)
+	s.ResourceRESTServerUrl = fmt.Sprintf("http://%s:%s", types.RestAddressPortForward, types.ArmPortForwardRemote)
+	s.ArmClient, err = clients.CreateArmClient(s.ResourceRESTServerUrl, s.Token, s.ProjectID)
+	if err != nil {
+		s.T().Fatalf("error: %v", err)
+	}
+
+	deploymentRESTServerUrl := fmt.Sprintf("http://%s:%s", types.RestAddressPortForward, types.AdmPortForwardRemote)
 	s.AdmClient, err = admClient.NewClientWithResponses(deploymentRESTServerUrl, admClient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-		utils.AddRestAuthHeader(req, s.Token, s.ProjectID)
+		auth.AddRestAuthHeader(req, s.Token, s.ProjectID)
 		return nil
 	}))
 	if err != nil {
@@ -74,20 +77,20 @@ func (s *TestSuite) SetupSuite() {
 	}
 
 	// Create a deployment for the nginx app
-	nginxDeploymentRequest := utils.StartDeploymentRequest{
+	nginxDeploymentRequest := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
-		DpPackageName:     utils.NginxAppName,
-		DeploymentType:    utils.DeploymentTypeTargeted,
-		DeploymentTimeout: utils.DeploymentTimeout,
-		DeleteTimeout:     utils.DeleteTimeout,
+		DpPackageName:     deploymentutils.NginxAppName,
+		DeploymentType:    deploymentutils.DeploymentTypeTargeted,
+		DeploymentTimeout: deploymentutils.DeploymentTimeout,
+		DeleteTimeout:     deploymentutils.DeleteTimeout,
 		TestName:          "NginxDeployment",
 	}
 
-	deployID, _, err := utils.StartDeployment(nginxDeploymentRequest)
+	deployID, _, err := deploymentutils.StartDeployment(nginxDeploymentRequest)
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
-	s.DeployApps, err = utils.GetDeployApps(s.AdmClient, deployID)
+	s.DeployApps, err = deploymentutils.GetDeployApps(s.AdmClient, deployID)
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
@@ -102,9 +105,9 @@ func (s *TestSuite) SetupTest() {
 
 // TearDownSuite cleans up after the entire test suite
 func (s *TestSuite) TearDownSuite() {
-	err := utils.DeleteAndRetryUntilDeleted(s.AdmClient, utils.NginxAppName, 10, 10*time.Second)
+	err := deploymentutils.DeleteAndRetryUntilDeleted(s.AdmClient, deploymentutils.NginxAppName, 10, 10*time.Second)
 	s.NoError(err)
-	utils.TearDownPortForward(s.PortForwardCmd)
+	portforwarding.TearDownPortForward(s.PortForwardCmd)
 }
 
 func TestContainerTestSuite(t *testing.T) {

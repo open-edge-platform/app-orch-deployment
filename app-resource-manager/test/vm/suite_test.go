@@ -9,6 +9,13 @@ import (
 	"context"
 	"fmt"
 	admClient "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/auth"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/clients"
+	deploymentutils "github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/deployment"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/loader"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/portforwarding"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
+
 	"net/http"
 	"os"
 	"os/exec"
@@ -17,7 +24,6 @@ import (
 	"time"
 
 	armClient "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -54,70 +60,70 @@ func (s *TestSuite) SetupSuite() {
 	}
 	s.KeycloakServer = fmt.Sprintf("keycloak.%s", s.OrchDomain)
 
-	s.Token, err = utils.SetUpAccessToken(s.KeycloakServer, fmt.Sprintf("%s-edge-mgr", utils.SampleProject), utils.DefaultPass)
+	s.Token, err = auth.SetUpAccessToken(s.KeycloakServer)
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
 
-	s.ProjectID, err = utils.GetProjectID(context.TODO())
+	s.ProjectID, err = auth.GetProjectID(context.TODO())
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
-	s.PortForwardCmd, err = utils.StartPortForwarding()
-	if err != nil {
-		s.T().Fatalf("error: %v", err)
-	}
-
-	s.ResourceRESTServerUrl = fmt.Sprintf("http://%s:%s", utils.RestAddressPortForward, utils.ArmPortForwardRemote)
-	s.ArmClient, err = utils.CreateArmClient(s.ResourceRESTServerUrl, s.Token, s.ProjectID)
+	s.PortForwardCmd, err = portforwarding.StartPortForwarding()
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
 
-	deploymentRESTServerUrl := fmt.Sprintf("http://%s:%s", utils.RestAddressPortForward, utils.AdmPortForwardRemote)
+	s.ResourceRESTServerUrl = fmt.Sprintf("http://%s:%s", types.RestAddressPortForward, types.ArmPortForwardRemote)
+	s.ArmClient, err = clients.CreateArmClient(s.ResourceRESTServerUrl, s.Token, s.ProjectID)
+	if err != nil {
+		s.T().Fatalf("error: %v", err)
+	}
+
+	deploymentRESTServerUrl := fmt.Sprintf("http://%s:%s", types.RestAddressPortForward, types.AdmPortForwardRemote)
 	s.AdmClient, err = admClient.NewClientWithResponses(deploymentRESTServerUrl, admClient.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-		utils.AddRestAuthHeader(req, s.Token, s.ProjectID)
+		auth.AddRestAuthHeader(req, s.Token, s.ProjectID)
 		return nil
 	}))
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
 
-	err = utils.UploadCirrosVM()
+	err = loader.UploadCirrosVM()
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
 
 	// Start the virtualization extension deployment
-	virtDeploymentRequest := utils.StartDeploymentRequest{
+	virtDeploymentRequest := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
-		DpPackageName:     utils.VirtualizationExtensionAppName,
-		DeploymentType:    utils.DeploymentTypeTargeted,
-		DeploymentTimeout: utils.DeploymentTimeout,
-		DeleteTimeout:     utils.DeleteTimeout,
+		DpPackageName:     deploymentutils.VirtualizationExtensionAppName,
+		DeploymentType:    deploymentutils.DeploymentTypeTargeted,
+		DeploymentTimeout: deploymentutils.DeploymentTimeout,
+		DeleteTimeout:     deploymentutils.DeleteTimeout,
 		TestName:          "VirtExtDep",
 	}
-	_, _, err = utils.StartDeployment(virtDeploymentRequest)
+	_, _, err = deploymentutils.StartDeployment(virtDeploymentRequest)
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 
 	}
 
 	// Create a deployment for the cirros app
-	cirrosDeploymentRequest := utils.StartDeploymentRequest{
+	cirrosDeploymentRequest := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
-		DpPackageName:     utils.CirrosAppName,
-		DeploymentType:    utils.DeploymentTypeTargeted,
-		DeploymentTimeout: utils.DeploymentTimeout,
-		DeleteTimeout:     utils.DeleteTimeout,
+		DpPackageName:     deploymentutils.CirrosAppName,
+		DeploymentType:    deploymentutils.DeploymentTypeTargeted,
+		DeploymentTimeout: deploymentutils.DeploymentTimeout,
+		DeleteTimeout:     deploymentutils.DeleteTimeout,
 		TestName:          "CirrosDeployment",
 	}
 
-	deployID, _, err := utils.StartDeployment(cirrosDeploymentRequest)
+	deployID, _, err := deploymentutils.StartDeployment(cirrosDeploymentRequest)
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
-	s.DeployApps, err = utils.GetDeployApps(s.AdmClient, deployID)
+	s.DeployApps, err = deploymentutils.GetDeployApps(s.AdmClient, deployID)
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
@@ -126,11 +132,11 @@ func (s *TestSuite) SetupSuite() {
 
 // TearDownSuite cleans up after the entire test suite
 func (s *TestSuite) TearDownSuite() {
-	err := utils.DeleteAndRetryUntilDeleted(s.AdmClient, utils.CirrosAppName, 10, 10*time.Second)
+	err := deploymentutils.DeleteAndRetryUntilDeleted(s.AdmClient, deploymentutils.CirrosAppName, 10, 10*time.Second)
 	s.NoError(err)
-	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, utils.VirtualizationExtensionAppName, 10, 10*time.Second)
+	err = deploymentutils.DeleteAndRetryUntilDeleted(s.AdmClient, deploymentutils.VirtualizationExtensionAppName, 10, 10*time.Second)
 	s.NoError(err)
-	utils.TearDownPortForward(s.PortForwardCmd)
+	portforwarding.TearDownPortForward(s.PortForwardCmd)
 
 }
 
