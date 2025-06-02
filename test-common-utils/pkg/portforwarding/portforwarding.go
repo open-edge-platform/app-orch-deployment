@@ -38,6 +38,7 @@ func PortForward(scenario string, portForwardCmd map[string]*exec.Cmd) (map[stri
 		return portForwardCmd, nil
 	}
 
+	// #nosec G204 -- Arguments are controlled and validated within the application context.
 	cmd := exec.Command("kubectl", "port-forward", "-n", types.PortForwardServiceNamespace, service, portPort, "--address", types.PortForwardAddress)
 	if cmd == nil {
 		return portForwardCmd, fmt.Errorf("failed to create kubectl command")

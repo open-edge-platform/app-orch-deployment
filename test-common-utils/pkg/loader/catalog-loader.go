@@ -27,13 +27,7 @@ func Upload(paths []string) error {
 		orchProject = orchProjectEnv
 	}
 
-	// todo: remove hardcode
-	orchUser := "sample-project-edge-mgr"
-	if orchUserEnv := os.Getenv("ORCH_USER"); orchUserEnv != "" {
-		orchUser = orchUserEnv
-	}
-
-	err = UploadFiles(paths, orchDomain, orchProject, orchUser)
+	err = UploadFiles(paths, orchDomain, orchProject)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
@@ -42,7 +36,7 @@ func Upload(paths []string) error {
 	return nil
 }
 
-func UploadFiles(paths []string, domain string, projectName string, orchUser string) error {
+func UploadFiles(paths []string, domain string, projectName string) error {
 	apiBaseURL := "https://api." + domain
 	keycloakServer := fmt.Sprintf("keycloak.%s", domain)
 
