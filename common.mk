@@ -275,7 +275,7 @@ go-test: $(OUT_DIR) $(GO_TEST_DEPS) ## Run go test and calculate code coverage
 common-component-test: ## Run component tests
 	#$(GOCMD) test -p 1 -timeout 30m -count=1 -v -json \
 	#-covermode $(COMP_TEST_COVER) | tee test-report.json || true
-	go run $(GOTESTSUM_PKG) --format=standard-verbose --jsonfile=test-report.json -- -p 4 -timeout 30m -count=1 \
+	go run $(GOTESTSUM_PKG) --format=standard-verbose --jsonfile=test-report.json -- -p 1 -timeout 30m -count=1 \
 	-covermode $(COMP_TEST_COVER)
 
 common-go-fuzz-test: ## GO fuzz tests

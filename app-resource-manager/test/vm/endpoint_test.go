@@ -6,7 +6,7 @@ package vm
 
 import (
 	armClient "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/container"
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 	"net/http"
 
 	"fmt"
@@ -23,7 +23,7 @@ import (
 //   - error: Any error that occurred during the state transition
 func (s *TestSuite) ensureVMState(appID string, workloadID string, desiredState string) error {
 	// Get current VM state using AppWorkloadsList
-	appWorkloads, _, err := container.AppWorkloadsList(s.armClient, appID)
+	appWorkloads, _, err := utils.AppWorkloadsList(s.ArmClient, appID)
 	if err != nil {
 		return err
 	}
@@ -53,20 +53,20 @@ func (s *TestSuite) ensureVMState(appID string, workloadID string, desiredState 
 	switch desiredState {
 	case VMRunning:
 		// Start the VM if we need it to be running
-		retCode, err := StartVirtualMachine(s.armClient, appID, workloadID)
+		retCode, err := utils.StartVirtualMachine(s.ArmClient, appID, workloadID)
 		if err != nil || retCode != http.StatusOK {
 			return err
 		}
 	case VMStopped:
 		// Stop the VM if we need it to be stopped
-		retCode, err := StopVirtualMachine(s.armClient, appID, workloadID)
+		retCode, err := utils.StopVirtualMachine(s.ArmClient, appID, workloadID)
 		if err != nil || retCode != http.StatusOK {
 			return err
 		}
 	}
 
 	// Wait for the VM to reach the desired state and verify
-	return GetVMStatus(s.armClient, appID, workloadID, desiredState)
+	return utils.GetVMStatus(s.ArmClient, appID, workloadID, desiredState)
 }
 
 // performVMAction performs the specified action on a VM and verifies the result
@@ -90,13 +90,13 @@ func (s *TestSuite) performVMAction(appID string, workloadID string, workloadNam
 	// Perform the requested action based on the action parameter
 	switch action {
 	case "start":
-		retCode, err = StartVirtualMachine(s.armClient, appID, workloadID)
+		retCode, err = utils.StartVirtualMachine(s.ArmClient, appID, workloadID)
 		s.T().Logf("start VM pod %s\n", workloadName)
 	case "stop":
-		retCode, err = StopVirtualMachine(s.armClient, appID, workloadID)
+		retCode, err = utils.StopVirtualMachine(s.ArmClient, appID, workloadID)
 		s.T().Logf("stop VM pod %s\n", workloadName)
 	case "restart":
-		retCode, err = RestartVirtualMachine(s.armClient, appID, workloadID)
+		retCode, err = utils.RestartVirtualMachine(s.ArmClient, appID, workloadID)
 		s.T().Logf("restart VM pod %s\n", workloadName)
 	}
 
@@ -105,16 +105,16 @@ func (s *TestSuite) performVMAction(appID string, workloadID string, workloadNam
 	s.NoError(err)
 
 	// Wait and verify that the VM reached the expected state after the action
-	err = GetVMStatus(s.armClient, appID, workloadID, expectedState)
+	err = utils.GetVMStatus(s.ArmClient, appID, workloadID, expectedState)
 	s.NoError(err)
 }
 
 // TestGetVNC tests get vnc endpoint
 // This test verifies that the VNC endpoint returns a successful response
 func (s *TestSuite) TestGetVNC() {
-	for _, app := range s.deployApps {
+	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -123,7 +123,7 @@ func (s *TestSuite) TestGetVNC() {
 		s.Assert().Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		for _, appWorkload := range *appWorkloads {
-			retCode, err = GetVNC(s.armClient, appID, appWorkload.Id)
+			retCode, err = utils.GetVNC(s.ArmClient, appID, appWorkload.Id)
 			s.Equal(retCode, 200)
 			s.NoError(err)
 			s.T().Logf("get VM pod %s\n", appWorkload.Name)
@@ -136,10 +136,10 @@ func (s *TestSuite) TestGetVNC() {
 // 1. The VM can be started successfully from a stopped state
 // 2. The VM reaches the running state after being started
 func (s *TestSuite) TestVMStart() {
-	for _, app := range s.deployApps {
+	for _, app := range s.DeployApps {
 		appID := *app.Id
 		// Get all workloads for the application
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, http.StatusOK)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -159,10 +159,10 @@ func (s *TestSuite) TestVMStart() {
 // 1. The VM can be stopped successfully from a running state
 // 2. The VM reaches the stopped state after being stopped
 func (s *TestSuite) TestVMStop() {
-	for _, app := range s.deployApps {
+	for _, app := range s.DeployApps {
 		appID := *app.Id
 		// Get all workloads for the application
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, http.StatusOK)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -182,10 +182,10 @@ func (s *TestSuite) TestVMStop() {
 // 1. The VM can be restarted successfully from a running state
 // 2. The VM remains in a running state after being restarted
 func (s *TestSuite) TestVMRestart() {
-	for _, app := range s.deployApps {
+	for _, app := range s.DeployApps {
 		appID := *app.Id
 		// Get all workloads for the application
-		appWorkloads, retCode, err := container.AppWorkloadsList(s.armClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, http.StatusOK)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)

@@ -4,6 +4,8 @@
 
 package utils
 
+import "time"
+
 const (
 	RestAddressPortForward      = "127.0.0.1"
 	PortForwardServiceNamespace = "orch-app"
@@ -34,36 +36,51 @@ const InvalidJWT = "eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9.ey" +
 
 const (
 	TestClusterID                  = "demo-cluster"
-	retryCount                     = 10
+	retryCount                     = 20
 	NginxAppName                   = "nginx"
 	CirrosAppName                  = "cirros-container-disk"
 	WordpressAppName               = "wordpress"
 	VirtualizationExtensionAppName = "virtualization-extension"
 )
+const (
+	retryDelay = 10 * time.Second
+)
 
-var dpConfigs = map[string]any{
+var DpConfigs = map[string]any{
 	NginxAppName: map[string]any{
 		"appNames":             []string{"nginx"},
 		"deployPackage":        "nginx-app",
 		"deployPackageVersion": "0.1.0",
 		"profileName":          "testing-default",
+		"clusterId":            TestClusterID,
+		"labels":               map[string]string{"color": "blue"},
+		"overrideValues":       []map[string]any{},
 	},
 	CirrosAppName: map[string]any{
 		"appNames":             []string{"cirros-container-disk"},
 		"deployPackage":        "cirros-container-disk",
 		"deployPackageVersion": "0.1.0",
 		"profileName":          "default",
+		"clusterId":            TestClusterID,
+		"labels":               map[string]string{"color": "blue"},
+		"overrideValues":       []map[string]any{},
 	},
 	VirtualizationExtensionAppName: map[string]any{
 		"appNames":             []string{"kubevirt", "cdi", "kube-helper"},
 		"deployPackage":        "virtualization",
 		"deployPackageVersion": "0.3.7",
 		"profileName":          "with-software-emulation-profile-nosm",
+		"clusterId":            TestClusterID,
+		"labels":               map[string]string{"color": "blue"},
+		"overrideValues":       []map[string]any{},
 	},
 	WordpressAppName: map[string]any{
 		"appNames":             []string{"wordpress"},
 		"deployPackage":        "wordpress",
-		"deployPackageVersion": "0.1.1",
+		"deployPackageVersion": "0.1.0",
 		"profileName":          "testing",
+		"clusterId":            TestClusterID,
+		"labels":               map[string]string{"color": "blue"},
+		"overrideValues":       []map[string]any{},
 	},
 }
