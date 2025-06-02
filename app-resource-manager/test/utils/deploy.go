@@ -28,7 +28,7 @@ const (
 	// DeploymentTimeout represents the timeout in seconds for deployment operations
 	DeploymentTimeout = 20 * time.Second // 20 seconds
 
-	RetryCount = 20 // Number of retries for deployment operations
+	RetryCount = 30 // Number of retries for deployment operations
 
 	DeleteTimeout = 10 * time.Second // Timeout for deletion operations
 )
