@@ -5,14 +5,14 @@
 package deployment
 
 import (
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/clients"
 	deploymentutils "github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/deployment"
-	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/portforwarding"
 	"net/http"
 )
 
 // TestListDeploymentsAuthProjectID tests the list deployments method with invalid project ID
 func (s *TestSuite) TestListDeploymentsAuthProjectID() {
-	admClient, err := portforwarding.CreateClient(deploymentRESTServerUrl, token, "invalidprojectid")
+	admClient, err := clients.CreateAdmClient(deploymentRESTServerUrl, token, "invalidprojectid")
 	s.NoError(err)
 
 	deployments, retCode, err := deploymentutils.DeploymentsList(admClient)
@@ -40,7 +40,7 @@ func (s *TestSuite) TestGetDeploymentAuthProjectID() {
 	s.Equal(retCode, http.StatusOK)
 	s.NoError(err)
 
-	admClient, err := portforwarding.CreateClient(deploymentRESTServerUrl, token, "invalidprojectid")
+	admClient, err := clients.CreateAdmClient(deploymentRESTServerUrl, token, "invalidprojectid")
 	s.NoError(err)
 
 	deployment, retCode, err := deploymentutils.GetDeployment(admClient, deployID)

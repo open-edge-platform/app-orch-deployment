@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/auth"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/clients"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/portforwarding"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
 
@@ -55,7 +56,7 @@ func TestDeploymentSuite(t *testing.T) {
 	}
 
 	deploymentRESTServerUrl = fmt.Sprintf("http://%s:%s", types.RestAddressPortForward, types.AdmPortForwardRemote)
-	admclient, err = portforwarding.CreateClient(deploymentRESTServerUrl, token, projectID)
+	admclient, err = clients.CreateAdmClient(deploymentRESTServerUrl, token, projectID)
 	if err != nil {
 		t.Fatalf("failed to create client: %v", err)
 	}

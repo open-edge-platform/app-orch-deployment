@@ -5,9 +5,7 @@
 package portforwarding
 
 import (
-	"context"
 	"fmt"
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/auth"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
 	"net/http"
@@ -104,16 +102,4 @@ func CallMethod(url, verb, token, projectID string) (*http.Response, error) {
 	}
 
 	return res, err
-}
-
-func CreateClient(restServerURL, token, projectID string) (*restClient.ClientWithResponses, error) {
-	armClient, err := restClient.NewClientWithResponses(restServerURL, restClient.WithRequestEditorFn(func(_ context.Context, req *http.Request) error {
-		auth.AddRestAuthHeader(req, token, projectID)
-		return nil
-	}))
-	if err != nil {
-		return nil, err
-	}
-
-	return armClient, err
 }
