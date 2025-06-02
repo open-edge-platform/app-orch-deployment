@@ -73,37 +73,17 @@ func (s *TestSuite) SetupSuite() {
 		s.T().Fatalf("error: %v", err)
 	}
 
-	err = utils.UploadCirrosVM()
-	if err != nil {
-		s.T().Fatalf("error: %v", err)
-	}
-
-	// Start the virtualization extension deployment
-	virtDeploymentRequest := utils.StartDeploymentRequest{
-		AdmClient:         s.AdmClient,
-		DpPackageName:     utils.VirtualizationExtensionAppName,
-		DeploymentType:    utils.DeploymentTypeTargeted,
-		DeploymentTimeout: utils.DeploymentTimeout,
-		DeleteTimeout:     utils.DeleteTimeout,
-		TestName:          "VirtualizationExtensionDeployment",
-	}
-	_, _, err = utils.StartDeployment(virtDeploymentRequest)
-	if err != nil {
-		s.T().Fatalf("error: %v", err)
-
-	}
-
 	// Create a deployment for the cirros app
-	cirrosDeploymentRequest := utils.StartDeploymentRequest{
+	nginxDeploymentRequest := utils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
-		DpPackageName:     utils.CirrosAppName,
+		DpPackageName:     utils.NginxAppName,
 		DeploymentType:    utils.DeploymentTypeTargeted,
 		DeploymentTimeout: utils.DeploymentTimeout,
 		DeleteTimeout:     utils.DeleteTimeout,
-		TestName:          "CirrosDeployment",
+		TestName:          "NginxDeployment",
 	}
 
-	deployID, _, err := utils.StartDeployment(cirrosDeploymentRequest)
+	deployID, _, err := utils.StartDeployment(nginxDeploymentRequest)
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
 	}
