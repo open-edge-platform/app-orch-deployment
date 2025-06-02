@@ -61,6 +61,9 @@ var DpConfigs = map[string]any{
 		"deployPackage":        "cirros-container-disk",
 		"deployPackageVersion": "0.1.0",
 		"profileName":          "default",
+		"clusterId":            TestClusterID,
+		"labels":               map[string]string{"color": "blue"},
+		"overrideValues":       []map[string]any{},
 	},
 	VirtualizationExtensionAppName: map[string]any{
 		"appNames":             []string{"kubevirt", "cdi", "kube-helper"},
