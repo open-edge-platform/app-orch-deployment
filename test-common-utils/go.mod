@@ -10,7 +10,7 @@ require (
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 v2.4.3
 	github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 v2.0.0-20250602150811-eac18c424a6d
 	github.com/open-edge-platform/orch-library/go v0.6.1
-	github.com/open-edge-platform/orch-utils/tenancy-datamodel v1.1.5
+	github.com/open-edge-platform/orch-utils/tenancy-datamodel v0.0.0-20250401180309-9c2571c45857
 	sigs.k8s.io/controller-runtime v0.21.0
 )
 

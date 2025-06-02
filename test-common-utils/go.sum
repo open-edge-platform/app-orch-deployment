@@ -76,8 +76,8 @@ github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v
 github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 v2.0.0-20250602150811-eac18c424a6d/go.mod h1:yZYQ0gc24x1z2oWeCu96Z/udfy615+Nanq+v6ZsjKCY=
 github.com/open-edge-platform/orch-library/go v0.6.1 h1:IGR2ic73f3obnhlxTRfHcyYMbPbYu7BSqa9UYyEZ78Q=
 github.com/open-edge-platform/orch-library/go v0.6.1/go.mod h1:3Tes/GJfwYbnQa/1scbKiLbjZrL4fJEouFk28oo5/c8=
-github.com/open-edge-platform/orch-utils/tenancy-datamodel v1.1.5 h1:XuY9zv5OXRAiI9oqboIGAa3q/3or/ar5WKWqEcw4pwQ=
-github.com/open-edge-platform/orch-utils/tenancy-datamodel v1.1.5/go.mod h1:dshRhRSIazosRzSsjP0uddwKbQuq6ObGlDoBeBHY164=
+github.com/open-edge-platform/orch-utils/tenancy-datamodel v0.0.0-20250401180309-9c2571c45857 h1:MWbL6C74qWMO4MPNqus03bebOyT9eCL9RszghnHKSms=
+github.com/open-edge-platform/orch-utils/tenancy-datamodel v0.0.0-20250401180309-9c2571c45857/go.mod h1:dshRhRSIazosRzSsjP0uddwKbQuq6ObGlDoBeBHY164=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
