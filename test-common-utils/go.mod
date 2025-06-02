@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+//
+// SPDX-License-Identifier: Apache-2.0
+
 module github.com/open-edge-platform/app-orch-deployment/test-common-utils
 
 go 1.24.0
