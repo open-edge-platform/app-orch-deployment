@@ -49,7 +49,7 @@ func PortForward(scenario string, portForwardCmd map[string]*exec.Cmd) (map[stri
 		return portForwardCmd, fmt.Errorf("failed to start kubectl command: %v", err)
 	}
 
-	time.Sleep(30 * time.Second) // Give some time for port-forwarding to establish
+	time.Sleep(20 * time.Second) // Give some time for port-forwarding to establish
 	portForwardCmd[scenario] = cmd
 
 	return portForwardCmd, err

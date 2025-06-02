@@ -67,7 +67,7 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 
 	displayName := FormDisplayName(opts.DpPackageName, opts.TestName)
 	// Check if virt-extension DP is already running, do not recreate a new one
-	if opts.DpPackageName == "virt-extension" {
+	if opts.DpPackageName == VirtualizationExtensionAppName {
 		deployments, retCode, err := getDeploymentPerCluster(opts.AdmClient)
 		if err != nil || retCode != 200 {
 			return "", retCode, fmt.Errorf("failed to get deployments per cluster: %v, status code: %d", err, retCode)
