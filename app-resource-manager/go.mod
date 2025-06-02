@@ -6,8 +6,6 @@ module github.com/open-edge-platform/app-orch-deployment/app-resource-manager
 
 go 1.24.0
 
-toolchain go1.24.1
-
 replace (
 	github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 => ./api/nbi/v2
 	github.com/open-edge-platform/app-orch-deployment/test-common-utils => ../test-common-utils
@@ -58,7 +56,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.24.0
 	github.com/lib/pq v1.10.7
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 v2.4.3
-	github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 v2.0.0-00010101000000-000000000000
+	github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 v2.0.0-20250602150811-eac18c424a6d
 	github.com/open-edge-platform/app-orch-deployment/test-common-utils v0.0.0-00010101000000-000000000000
 	github.com/open-edge-platform/orch-library/go v0.6.1
 	github.com/open-edge-platform/orch-library/go/dazl v0.5.4
