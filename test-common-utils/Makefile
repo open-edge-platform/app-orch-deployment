@@ -1,6 +1,4 @@
-# Makefile for Interconnect
-
-# SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 .DEFAULT_GOAL := help
@@ -13,11 +11,11 @@ TOOL_VERSION_CHECK ?= 1
 
 # Required Go Dependencies
 GOLINT        := true
-
+GOCMD             ?= go
 
 # Versioning variables
 VERSION            := $(shell cat VERSION)
-GOCMD             ?= go
+
 
 # Include shared makefile
 include ../common.mk
@@ -27,19 +25,11 @@ GOEXTRAFLAGS += $(COMMON_GOEXTRAFLAGS)
 #### Development Targets ####
 
 build: go-build ## Build local binaries
-
-
-# when COPYing --from a named build context
-lint: license go-lint #hadolint #mdlint ## Run license, helmlint, go-lint lint tools
-
-
-
-#### Sub-targets ####
-
-go-build: ## Build deployment manager binaries
+go-build:
 go-build:
 	$(GOCMD) build ./...
 
+lint: license go-lint # Run license, helmlint, go-lint lint tools
 
 clean: clean-all common-clean ## Delete all build artifacts
 
