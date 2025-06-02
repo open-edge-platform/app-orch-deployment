@@ -65,7 +65,7 @@ var DpConfigs = map[string]any{
 		"labels":               map[string]string{"color": "blue"},
 		"overrideValues":       []map[string]any{},
 	},
-	"virt-extension": map[string]any{
+	"virtualization-extension": map[string]any{
 		"appNames":             []string{"kubevirt", "cdi", "kube-helper"},
 		"deployPackage":        "virtualization",
 		"deployPackageVersion": "0.3.7",
