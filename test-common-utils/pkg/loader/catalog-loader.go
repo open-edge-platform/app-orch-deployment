@@ -12,22 +12,16 @@ import (
 	catalogloader "github.com/open-edge-platform/orch-library/go/pkg/loader"
 	"os"
 	"path/filepath"
-	"strconv"
 )
 
 func Upload(paths []string) error {
-	autoCert, err := strconv.ParseBool(os.Getenv("AUTO_CERT"))
-	orchDomain := os.Getenv("ORCH_DOMAIN")
-	if err != nil || !autoCert || orchDomain == "" {
-		orchDomain = "kind.internal"
-	}
-
+	orchDomain := auth.GetOrchDomain()
 	orchProject := "sample-project"
 	if orchProjectEnv := os.Getenv("ORCH_PROJECT"); orchProjectEnv != "" {
 		orchProject = orchProjectEnv
 	}
 
-	err = UploadFiles(paths, orchDomain, orchProject)
+	err := UploadFiles(paths, orchDomain, orchProject)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}

@@ -113,10 +113,15 @@ func GetProjectID(ctx context.Context) (string, error) {
 }
 
 func GetKeycloakServer() string {
+	orchDomain := GetOrchDomain()
+	return fmt.Sprintf("keycloak.%s", orchDomain)
+}
+
+func GetOrchDomain() string {
 	autoCert, err := strconv.ParseBool(os.Getenv("AUTO_CERT"))
 	orchDomain := os.Getenv("ORCH_DOMAIN")
 	if err != nil || !autoCert || orchDomain == "" {
 		orchDomain = "kind.internal"
 	}
-	return fmt.Sprintf("keycloak.%s", orchDomain)
+	return orchDomain
 }
