@@ -23,7 +23,7 @@ PROJECT_NAME    := app-deployment-manager
 BINARY_NAME     := app-deployment-manager
 REST_PROXY_NAME := rest-proxy
 CHART_PATH      := deployment/charts/app-deployment-manager
-TMP_DIR         := /tmp
+TMP_DIR                     = /tmp
 
 # Versioning variables
 VERSION            := $(shell cat VERSION)
