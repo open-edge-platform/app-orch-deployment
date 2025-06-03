@@ -3,7 +3,7 @@
 
 package deploymentv1
 
-test_has_write_access {
+test_has_write_access if {
 	hasWriteAccess with input as {
 		"request": {
 			"displayName": "test display name",
@@ -30,7 +30,7 @@ test_has_write_access {
 	}
 }
 
-test_has_read_access {
+test_has_read_access if {
 	hasReadAccess with input as {
 		"request": {"depl_id": "5d0cef5c-9981-4987-a67e-3e207783218b"},
 		"metadata": {"realm_access/roles": [

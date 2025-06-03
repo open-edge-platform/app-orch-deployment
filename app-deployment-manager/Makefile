@@ -23,6 +23,7 @@ PROJECT_NAME    := app-deployment-manager
 BINARY_NAME     := app-deployment-manager
 REST_PROXY_NAME := rest-proxy
 CHART_PATH      := deployment/charts/app-deployment-manager
+TMP_DIR                     = /tmp
 
 # Versioning variables
 VERSION            := $(shell cat VERSION)
@@ -88,7 +89,7 @@ PKG_LIST := ./cmd/... ./controllers/... ./webhooks/... ./pkg/... ./internal/...
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 ENVTEST_K8S_VERSION = 1.25.0
 OPA_FILE_PATH ?= deployment/charts/app-deployment-manager/files/openpolicyagent
-OPA_IMAGE_VER       = 0.67.1-static
+OPA_IMAGE_VER       = 1.5.0-static
 GOLANG_GOCOV_VERSION := latest
 GOLANG_GOCOV_XML_VERSION := latest
 
@@ -136,10 +137,20 @@ build: go-build ## Build local binaries
 # FIXME: Fix the markdown linting errors and then re-enable the mdlint tool
 # FIXME: Enable hadolint for Dockerfile linting (disabled due to false positive
 # when COPYing --from a named build context
-lint: license helmlint go-lint #hadolint #mdlint  ## Run license, helmlint, go-lint lint tools
+lint: license helmlint go-lint opa-lint rego-service-write-rule-match #hadolint #mdlint  ## Run license, helmlint, go-lint lint tools
 
 docker-opa:
 	docker pull openpolicyagent/opa:$(OPA_IMAGE_VER)
+
+opa-lint: docker-opa
+	docker run -v $(shell pwd)/${CHART_PATH}/files/openpolicyagent:/policies openpolicyagent/opa:$(OPA_IMAGE_VER) check  policies/
+
+.PHONY: rego-service-write-rule-match
+rego-service-write-rule-match: ## For every service request in Proto we expect a corresponding REGO rule
+	@egrep -oh "\((Create|Update|Delete|List|Get).*Request" api/nbi/v2/deployment/v1/service.proto | awk -F'(' '{print $$2}' > ${TMP_DIR}/list_service_requests_out;
+	@egrep -oh "\((Create|Update|Delete|List|Get).*Request" api/nbi/v2/deployment/v1/cluster_service.proto | awk -F'(' '{print $$2}' >> ${TMP_DIR}/list_service_requests_out;
+	@egrep -oh "(Create|Update|Delete|List|Get).*Request if {" ${CHART_PATH}/files/openpolicyagent/*.rego | awk '{print $$1}' | sort > ${TMP_DIR}/list_rego_rules_out;
+	sort ${TMP_DIR}/list_service_requests_out | diff - ${TMP_DIR}/list_rego_rules_out;
 
 opa-test: docker-opa ## Test OPA policies
 	docker run -v $(shell pwd)/$(OPA_FILE_PATH):/policies openpolicyagent/opa:$(OPA_IMAGE_VER) test --coverage policies -vv

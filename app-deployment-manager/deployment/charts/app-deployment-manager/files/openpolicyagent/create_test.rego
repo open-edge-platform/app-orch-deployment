@@ -4,7 +4,7 @@
 package deploymentv1
 
 # create a deployment with ao-m2m-rw
-test_create_deployment_write_role {
+test_create_deployment_write_role if {
 	CreateDeploymentRequest with input as {
 		"request": {
 			"displayName": "test display name",
@@ -32,7 +32,7 @@ test_create_deployment_write_role {
 }
 
 # create a deployment with ao-m2m-rw
-test_create_deployment_read_role {
+test_create_deployment_read_role if {
 	not CreateDeploymentRequest with input as {
 		"request": {
 			"displayName": "test display name",
