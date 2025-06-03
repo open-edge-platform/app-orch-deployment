@@ -5,10 +5,10 @@ package deploymentv1
 
 import future.keywords.in
 
-ListDeploymentClustersRequest {
+ListDeploymentClustersRequest if {
 	hasReadAccess
 }
 
-ListDeploymentsPerClusterRequest {
+ListDeploymentsPerClusterRequest if {
 	hasReadAccess
 }
