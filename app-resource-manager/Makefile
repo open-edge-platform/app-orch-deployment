@@ -113,9 +113,7 @@ rest-client-gen: common-rest-client-gen ## Generate REST client code
 
 build: go-build ## Build local binaries
 
-# FIXME: Enable hadolint for Dockerfile linting (disabled due to false positive
-# when COPYing --from a named build context
-lint: license helmlint go-lint lint-html lint-css lint-js opa-lint rego-service-write-rule-match mdlint #hadolint ## Run license, helmlint, go-lint lint tools
+lint: license helmlint go-lint lint-html lint-css lint-js opa-lint rego-service-write-rule-match mdlint hadolint ## Run license, helmlint, go-lint lint tools
 
 test: go-test opa-test ## Run all unit tests
 
