@@ -4,7 +4,7 @@
 package deploymentv1
 
 # delete deployment with app-deployment-manager-write role
-test_delete_deployment_write_role {
+test_delete_deployment_write_role if {
 	DeleteDeploymentRequest with input as {
 		"request": {"depl_id": "5d0cef5c-9981-4987-a67e-3e207783218b"},
 		"metadata": {"realm_access/roles": [

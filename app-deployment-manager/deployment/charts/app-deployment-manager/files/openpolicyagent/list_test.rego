@@ -4,7 +4,7 @@
 package deploymentv1
 
 # list deployments with ao-m2m-rw
-test_list_deployments_read_role {
+test_list_deployments_read_role if {
 	ListDeploymentsRequest with input as {
 		"request": {"labels": "customer=test"},
 		"metadata": {"realm_access/roles": [
