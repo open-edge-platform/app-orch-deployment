@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package deployment
+package methods
 
 import (
 	"context"
@@ -53,7 +53,7 @@ func (s *TestSuite) SetupSuite() {
 	}
 }
 
-func TestDeploymentSuite(t *testing.T) {
+func TestMethodSuite(t *testing.T) {
 	suite.Run(t, new(TestSuite))
 }
 
