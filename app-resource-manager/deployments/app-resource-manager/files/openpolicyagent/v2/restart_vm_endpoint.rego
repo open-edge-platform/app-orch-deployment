@@ -3,6 +3,6 @@
 
 package resourcev2
 
-RestartVirtualMachineRequest {
+RestartVirtualMachineRequest if {
 	hasWriteAccess
 }

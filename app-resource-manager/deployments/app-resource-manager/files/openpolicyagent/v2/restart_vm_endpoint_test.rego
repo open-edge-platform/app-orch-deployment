@@ -3,7 +3,7 @@
 
 package resourcev2
 
-test_not_allow_restart_vm_read_role {
+test_not_allow_restart_vm_read_role if {
 	not RestartVirtualMachineRequest with input as {
 		"request": {
 			"app_id": "testapp",
@@ -21,7 +21,7 @@ test_not_allow_restart_vm_read_role {
 	}
 }
 
-test_restart_vm_read_write_role {
+test_restart_vm_read_write_role if {
 	RestartVirtualMachineRequest with input as {
 		"request": {
 			"app_id": "testapp",

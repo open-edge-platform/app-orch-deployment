@@ -3,7 +3,7 @@
 
 package resourcev2
 
-test_has_write_access {
+test_has_write_access if {
 	hasWriteAccess with input as {
 		"request": {
 			"app_id": "testapp",
@@ -22,7 +22,7 @@ test_has_write_access {
 	}
 }
 
-test_has_read_access {
+test_has_read_access if {
 	hasReadAccess with input as {
 		"request": {
 			"app_id": "testapp",
@@ -41,7 +41,7 @@ test_has_read_access {
 	}
 }
 
-test_has_vm_console_access {
+test_has_vm_console_access if {
 	hasVMConsoleAccess with input as {
 		"request": {
 			"app_id": "testapp",

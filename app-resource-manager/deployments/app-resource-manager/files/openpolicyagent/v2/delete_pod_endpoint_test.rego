@@ -3,7 +3,7 @@
 
 package resourcev2
 
-test_delete_pod_write_role {
+test_delete_pod_write_role if {
 	DeletePodRequest with input as {
 		"request": {
 			"app_id": "testapp",
@@ -22,7 +22,7 @@ test_delete_pod_write_role {
 	}
 }
 
-test_not_allow_delete_pod_read_role {
+test_not_allow_delete_pod_read_role if {
 	not DeletePodRequest with input as {
 		"request": {
 			"app_id": "testapp",

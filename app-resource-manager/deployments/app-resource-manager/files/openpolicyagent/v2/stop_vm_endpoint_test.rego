@@ -3,7 +3,7 @@
 
 package resourcev2
 
-test_not_allow_stop_vm_read_role {
+test_not_allow_stop_vm_read_role if {
 	not StopVirtualMachineRequest with input as {
 		"request": {
 			"app_id": "testapp",
@@ -21,7 +21,7 @@ test_not_allow_stop_vm_read_role {
 	}
 }
 
-test_stop_vm_write_role {
+test_stop_vm_write_role if {
 	StopVirtualMachineRequest with input as {
 		"request": {
 			"app_id": "testapp",

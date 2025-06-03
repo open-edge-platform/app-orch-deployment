@@ -7,7 +7,6 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-
 ## Overview
 
 The App Resource Manager (ARM) is a microservice within the Application Orchestration architecture.
@@ -19,7 +18,7 @@ Edge Orchestrator [Application Orchestration Developer Guide](https://docs.opene
 
 ## Get Started
 
-The AppResource Manager is deployed as a microservice in the Edge Orchestrator environment. It is 
+The AppResource Manager is deployed as a microservice in the Edge Orchestrator environment. It is
 deployed as a Docker image. The image is published to the Edge Orchestrator Release Service OCI registry.
 
 ## Develop
@@ -60,9 +59,6 @@ For support, start with [Troubleshooting] or [Contact us].
 
 The Application Orchestration Catalog is licensed under [Apache 2.0 License]
 
-[Application Orchestration Deployment]: https://github.com/open-edge-platform/app-orch-deployment
-[Tenant Controller]: https://github.com/open-edge-platform/app-orch-tenant-controller
-[Cluster Extensions]: https://github.com/open-edge-platform/cluster-extensions
 [Foundational Platform]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/platform/index.html
 [Contributor Guide]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/contributor_guide/index.html
 [Troubleshooting]: https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/troubleshooting/index.html

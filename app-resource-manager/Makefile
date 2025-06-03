@@ -24,6 +24,9 @@ BINARY_NAME     := app-resource-manager
 VNC_PROXY_NAME  := vnc-proxy
 REST_PROXY_NAME := rest-proxy
 CHART_PATH      := deployments/app-resource-manager
+OPA_FILE_PATH   := ${CHART_PATH}/files/openpolicyagent/v2
+OPA_IMAGE_VER   := 1.5.0-static
+TMP_DIR         := /tmp
 
 # Deployment variables
 ARM_HELM_CHART_NAME	   ?= app-resource-manager
@@ -110,12 +113,11 @@ rest-client-gen: common-rest-client-gen ## Generate REST client code
 
 build: go-build ## Build local binaries
 
-# FIXME: Fix the markdown linting errors and then re-enable the mdlint tool
 # FIXME: Enable hadolint for Dockerfile linting (disabled due to false positive
 # when COPYing --from a named build context
-lint: license helmlint go-lint lint-html lint-css lint-js #hadolint #mdlint ## Run license, helmlint, go-lint lint tools
+lint: license helmlint go-lint lint-html lint-css lint-js opa-lint rego-service-write-rule-match mdlint #hadolint ## Run license, helmlint, go-lint lint tools
 
-test: go-test ## Run all unit tests
+test: go-test opa-test ## Run all unit tests
 
 # todo: re-enable vm tests once vm extension and vm app are ready in catalog
 # COMP_TEST_COVER := atomic $(shell go list ./test/... | grep -v "utils")
@@ -215,6 +217,25 @@ lint-css:
 lint-js:
 	@# Help: Lint JS files
 	npx standard vnc-proxy-web-ui/vnc-proxy-main.js
+
+docker-opa:
+	docker pull openpolicyagent/opa:$(OPA_IMAGE_VER)
+
+opa-lint: docker-opa
+	docker run -v $(shell pwd)/${OPA_FILE_PATH}:/policies openpolicyagent/opa:$(OPA_IMAGE_VER) check  policies/
+
+.PHONY: rego-service-write-rule-match
+rego-service-write-rule-match: ## For every service request in Proto we expect a corresponding REGO rule
+	@egrep -oh "\((Create|Update|Delete|List|Get).*Request" api/nbi/v2/resource/v2/app_workload_service.proto | awk -F'(' '{print $$2}' > ${TMP_DIR}/list_service_requests_out;
+	@egrep -oh "\((Create|Update|Delete|List|Get).*Request" api/nbi/v2/resource/v2/endpoint_service.proto | awk -F'(' '{print $$2}' >> ${TMP_DIR}/list_service_requests_out;
+	@egrep -oh "\((Create|Update|Delete|List|Get).*Request" api/nbi/v2/resource/v2/pod_service.proto | awk -F'(' '{print $$2}' >> ${TMP_DIR}/list_service_requests_out;
+	@egrep -oh "\((Create|Update|Delete|List|Get).*Request" api/nbi/v2/resource/v2/vm_service.proto | awk -F'(' '{print $$2}' >> ${TMP_DIR}/list_service_requests_out;
+	@egrep -oh "(Create|Update|Delete|List|Get).*Request if {" ${OPA_FILE_PATH}/*.rego | awk '{print $$1}' | sort > ${TMP_DIR}/list_rego_rules_out;
+	sort ${TMP_DIR}/list_service_requests_out | diff - ${TMP_DIR}/list_rego_rules_out;
+
+opa-test: docker-opa ## Test OPA policies
+	docker run -v $(shell pwd)/$(OPA_FILE_PATH):/policies openpolicyagent/opa:$(OPA_IMAGE_VER) test --coverage policies -vv
+
 
 ## Coder targets for testing
 
