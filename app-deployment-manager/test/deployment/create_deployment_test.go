@@ -5,83 +5,83 @@
 package deployment
 
 import (
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/utils"
+	deploymentutils "github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/deployment"
 	"net/http"
 )
 
 func (s *TestSuite) TestCreateTargetedDeployment() {
 	testName := "CreateTargetedDeployment"
-	for _, app := range []string{utils.AppWordpress, utils.AppNginx} {
-		deploymentReq := utils.StartDeploymentRequest{
+	for _, app := range []string{deploymentutils.AppWordpress, deploymentutils.AppNginx} {
+		deploymentReq := deploymentutils.StartDeploymentRequest{
 			AdmClient:         s.AdmClient,
 			DpPackageName:     app,
-			DeploymentType:    utils.DeploymentTypeTargeted,
-			DeploymentTimeout: utils.DeploymentTimeout,
-			DeleteTimeout:     utils.DeleteTimeout,
+			DeploymentType:    deploymentutils.DeploymentTypeTargeted,
+			DeploymentTimeout: deploymentutils.DeploymentTimeout,
+			DeleteTimeout:     deploymentutils.DeleteTimeout,
 			TestName:          testName,
 		}
-		_, code, err := utils.StartDeployment(deploymentReq)
+		_, code, err := deploymentutils.StartDeployment(deploymentReq)
 		s.Equal(http.StatusOK, code)
-		s.NoError(err, "Failed to create '"+app+"-"+utils.DeploymentTypeTargeted+"' deployment")
+		s.NoError(err, "Failed to create '"+app+"-"+deploymentutils.DeploymentTypeTargeted+"' deployment")
 	}
 
-	for _, app := range []string{utils.AppWordpress, utils.AppNginx} {
-		displayName := utils.FormDisplayName(app, testName)
-		err := utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.RetryCount, utils.DeleteTimeout)
+	for _, app := range []string{deploymentutils.AppWordpress, deploymentutils.AppNginx} {
+		displayName := deploymentutils.FormDisplayName(app, testName)
+		err := deploymentutils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, deploymentutils.RetryCount, deploymentutils.DeleteTimeout)
 		s.NoError(err)
 	}
 }
 
 func (s *TestSuite) TestCreateAutoScaleDeployment() {
 	testName := "CreateAutoScaleDeployment"
-	for _, app := range []string{utils.AppWordpress, utils.AppNginx} {
-		deploymentReq := utils.StartDeploymentRequest{
+	for _, app := range []string{deploymentutils.AppWordpress, deploymentutils.AppNginx} {
+		deploymentReq := deploymentutils.StartDeploymentRequest{
 			AdmClient:         s.AdmClient,
 			DpPackageName:     app,
-			DeploymentType:    utils.DeploymentTypeAutoScaling,
-			DeploymentTimeout: utils.DeploymentTimeout,
-			DeleteTimeout:     utils.DeleteTimeout,
+			DeploymentType:    deploymentutils.DeploymentTypeAutoScaling,
+			DeploymentTimeout: deploymentutils.DeploymentTimeout,
+			DeleteTimeout:     deploymentutils.DeleteTimeout,
 			TestName:          testName,
 		}
-		_, code, err := utils.StartDeployment(deploymentReq)
+		_, code, err := deploymentutils.StartDeployment(deploymentReq)
 		s.Equal(http.StatusOK, code)
-		s.NoError(err, "Failed to create '"+app+"-"+utils.DeploymentTypeAutoScaling+"' deployment")
+		s.NoError(err, "Failed to create '"+app+"-"+deploymentutils.DeploymentTypeAutoScaling+"' deployment")
 	}
-	for _, app := range []string{utils.AppWordpress, utils.AppNginx} {
-		displayName := utils.FormDisplayName(app, testName)
-		err := utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.RetryCount, utils.DeleteTimeout)
+	for _, app := range []string{deploymentutils.AppWordpress, deploymentutils.AppNginx} {
+		displayName := deploymentutils.FormDisplayName(app, testName)
+		err := deploymentutils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, deploymentutils.RetryCount, deploymentutils.DeleteTimeout)
 		s.NoError(err)
 	}
 }
 
 func (s *TestSuite) TestCreateDiffDataDeployment() {
-	originalDpConfigs := CopyOriginalDpConfig(utils.DpConfigs)
-	defer func() { utils.DpConfigs = CopyOriginalDpConfig(originalDpConfigs) }()
+	originalDpConfigs := deploymentutils.CopyOriginalDpConfig(deploymentutils.DpConfigs)
+	defer func() { deploymentutils.DpConfigs = deploymentutils.CopyOriginalDpConfig(originalDpConfigs) }()
 
 	overrideValues := []map[string]any{
 		{
-			"appName":         utils.AppWordpress,
+			"appName":         deploymentutils.AppWordpress,
 			"targetNamespace": "",
 			"targetValues":    map[string]any{"service": map[string]any{"type": "NodePort"}},
 		},
 	}
 	testName := "CreateDiffDataDeployment"
-	err := ResetThenChangeDpConfig(utils.AppWordpress, "overrideValues", overrideValues, originalDpConfigs)
+	err := deploymentutils.ResetThenChangeDpConfig(deploymentutils.AppWordpress, "overrideValues", overrideValues, originalDpConfigs)
 	s.NoError(err, "Failed to reset and change deployment configuration")
-	deploymentReq := utils.StartDeploymentRequest{
+	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
-		DpPackageName:     utils.AppWordpress,
-		DeploymentType:    utils.DeploymentTypeTargeted,
-		DeploymentTimeout: utils.DeploymentTimeout,
-		DeleteTimeout:     utils.DeleteTimeout,
+		DpPackageName:     deploymentutils.AppWordpress,
+		DeploymentType:    deploymentutils.DeploymentTypeTargeted,
+		DeploymentTimeout: deploymentutils.DeploymentTimeout,
+		DeleteTimeout:     deploymentutils.DeleteTimeout,
 		TestName:          testName,
 	}
 
-	_, code, err := utils.StartDeployment(deploymentReq)
+	_, code, err := deploymentutils.StartDeployment(deploymentReq)
 	s.Equal(http.StatusOK, code)
-	s.NoError(err, "Failed to create '"+utils.AppWordpress+"-"+utils.DeploymentTypeTargeted+"' deployment")
+	s.NoError(err, "Failed to create '"+deploymentutils.AppWordpress+"-"+deploymentutils.DeploymentTypeTargeted+"' deployment")
 
-	displayName := utils.FormDisplayName(utils.AppWordpress, testName)
-	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.RetryCount, utils.DeleteTimeout)
+	displayName := deploymentutils.FormDisplayName(deploymentutils.AppWordpress, testName)
+	err = deploymentutils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, deploymentutils.RetryCount, deploymentutils.DeleteTimeout)
 	s.NoError(err)
 }

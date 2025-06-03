@@ -2,37 +2,30 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package utils
+package portforwarding
 
 import (
-	"context"
 	"fmt"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/auth"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
 	"net/http"
 	"os/exec"
 	"time"
-
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 )
 
 var portForwardCmd = make(map[string]*exec.Cmd)
 
-const (
-	PortForwardServiceNamespace = "orch-app"
-	AdmPortForwardService       = "svc/app-deployment-api-rest-proxy"
-	AdmPortForwardLocal         = "8081"
-	PortForwardAddress          = "0.0.0.0"
-	AdmPortForwardRemote        = "8081"
-)
-
-const (
-	RestAddressPortForward = "127.0.0.1"
-	KeycloakServer         = "keycloak.kind.internal"
-)
-
 func PortForward(scenario string, portForwardCmd map[string]*exec.Cmd) (map[string]*exec.Cmd, error) {
-	service := AdmPortForwardService
-	localPort := AdmPortForwardLocal
-	remotePort := AdmPortForwardRemote
+
+	service := types.AdmPortForwardService
+	localPort := types.AdmPortForwardLocal
+	remotePort := types.AdmPortForwardRemote
+
+	if scenario == "arm" {
+		service = types.ArmPortForwardService
+		localPort = types.ArmPortForwardLocal
+		remotePort = types.ArmPortForwardRemote
+	}
 
 	portPort := fmt.Sprintf("%s:%s", remotePort, localPort)
 
@@ -44,7 +37,8 @@ func PortForward(scenario string, portForwardCmd map[string]*exec.Cmd) (map[stri
 		return portForwardCmd, nil
 	}
 
-	cmd := exec.Command("kubectl", "port-forward", "-n", PortForwardServiceNamespace, service, portPort, "--address", PortForwardAddress)
+	// #nosec G204 -- Arguments are controlled and validated within the application context.
+	cmd := exec.Command("kubectl", "port-forward", "-n", types.PortForwardServiceNamespace, service, portPort, "--address", types.PortForwardAddress)
 	if cmd == nil {
 		return portForwardCmd, fmt.Errorf("failed to create kubectl command")
 	}
@@ -54,7 +48,7 @@ func PortForward(scenario string, portForwardCmd map[string]*exec.Cmd) (map[stri
 		return portForwardCmd, fmt.Errorf("failed to start kubectl command: %v", err)
 	}
 
-	time.Sleep(5 * time.Second) // Give some time for port-forwarding to establish
+	time.Sleep(15 * time.Second) // Give some time for port-forwarding to establish
 	portForwardCmd[scenario] = cmd
 
 	return portForwardCmd, err
@@ -68,18 +62,28 @@ func KillPortForward(scenario string, portForwardCmd map[string]*exec.Cmd) error
 	return nil
 }
 
-func BringUpPortForward() (map[string]*exec.Cmd, error) {
+func StartPortForwarding() (map[string]*exec.Cmd, error) {
 	portForwardCmd, err := PortForward("adm", portForwardCmd)
 	if err != nil {
 		return nil, fmt.Errorf("error: %v", err)
 	}
 
+	portForwardCmd, err = PortForward("arm", portForwardCmd)
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
+	}
 	return portForwardCmd, nil
 }
 
 func TearDownPortForward(portForwardCmd map[string]*exec.Cmd) {
 	scenario := "adm"
 	err := KillPortForward(scenario, portForwardCmd)
+	if err == nil {
+		fmt.Printf("%s port-forward process killed\n", scenario)
+	}
+
+	scenario = "arm"
+	err = KillPortForward(scenario, portForwardCmd)
 	if err == nil {
 		fmt.Printf("%s port-forward process killed\n", scenario)
 	}
@@ -91,7 +95,7 @@ func CallMethod(url, verb, token, projectID string) (*http.Response, error) {
 		return nil, err
 	}
 
-	AddRestAuthHeader(req, token, projectID)
+	auth.AddRestAuthHeader(req, token, projectID)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -99,16 +103,4 @@ func CallMethod(url, verb, token, projectID string) (*http.Response, error) {
 	}
 
 	return res, err
-}
-
-func CreateClient(restServerURL, token, projectID string) (*restClient.ClientWithResponses, error) {
-	armClient, err := restClient.NewClientWithResponses(restServerURL, restClient.WithRequestEditorFn(func(_ context.Context, req *http.Request) error {
-		AddRestAuthHeader(req, token, projectID)
-		return nil
-	}))
-	if err != nil {
-		return nil, err
-	}
-
-	return armClient, err
 }

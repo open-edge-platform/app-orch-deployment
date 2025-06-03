@@ -6,11 +6,13 @@ package container
 
 import (
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/auth"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/clients"
 )
 
 // TestAppWorkloadsListInvalidProjectID tests list app workload with invalid project id
 func (s *TestSuite) TestAppWorkloadsListInvalidProjectID() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.Token, "invalidprojectid")
+	armClient, err := clients.CreateArmClient(s.ResourceRESTServerUrl, s.Token, "invalidprojectid")
 	s.NoError(err)
 
 	for _, app := range s.DeployApps {
@@ -25,7 +27,7 @@ func (s *TestSuite) TestAppWorkloadsListInvalidProjectID() {
 
 // TestAppWorkloadsListInvalidJWT tests list app workload with invalid JWT
 func (s *TestSuite) TestAppWorkloadsListInvalidJWT() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.ProjectID)
+	armClient, err := clients.CreateArmClient(s.ResourceRESTServerUrl, auth.InvalidJWT, s.ProjectID)
 	s.NoError(err)
 
 	for _, app := range s.DeployApps {
@@ -40,7 +42,7 @@ func (s *TestSuite) TestAppWorkloadsListInvalidJWT() {
 
 // TestAppEndpointsListInvalidProjectID tests list app endpoints with invalid project id
 func (s *TestSuite) TestAppEndpointsListInvalidProjectID() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.Token, "invalidprojectid")
+	armClient, err := clients.CreateArmClient(s.ResourceRESTServerUrl, s.Token, "invalidprojectid")
 	s.NoError(err)
 
 	for _, app := range s.DeployApps {
@@ -55,7 +57,7 @@ func (s *TestSuite) TestAppEndpointsListInvalidProjectID() {
 
 // TestAppEndpointsListInvalidJWT tests list app endpoints with invalid JWT
 func (s *TestSuite) TestAppEndpointsListInvalidJWT() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.ProjectID)
+	armClient, err := clients.CreateArmClient(s.ResourceRESTServerUrl, auth.InvalidJWT, s.ProjectID)
 	s.NoError(err)
 
 	for _, app := range s.DeployApps {
@@ -70,7 +72,7 @@ func (s *TestSuite) TestAppEndpointsListInvalidJWT() {
 
 // TestDeletePodAuthInvalidProjectID tests delete pod with invalid project id
 func (s *TestSuite) TestDeletePodAuthInvalidProjectID() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, s.Token, "invalidprojectid")
+	armClient, err := clients.CreateArmClient(s.ResourceRESTServerUrl, s.Token, "invalidprojectid")
 	s.NoError(err)
 
 	retCode, err := utils.PodDelete(armClient, "namespace", "podname", "appID")
@@ -81,7 +83,7 @@ func (s *TestSuite) TestDeletePodAuthInvalidProjectID() {
 
 // TestDeletePodAuthInvalidJWT tests delete pod with invalid jwt
 func (s *TestSuite) TestDeletePodAuthInvalidJWT() {
-	armClient, err := utils.CreateArmClient(s.ResourceRESTServerUrl, utils.InvalidJWT, s.ProjectID)
+	armClient, err := clients.CreateArmClient(s.ResourceRESTServerUrl, auth.InvalidJWT, s.ProjectID)
 	s.NoError(err)
 
 	retCode, err := utils.PodDelete(armClient, "namespace", "podname", "appID")

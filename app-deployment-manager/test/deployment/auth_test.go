@@ -5,16 +5,17 @@
 package deployment
 
 import (
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/utils"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/clients"
+	deploymentutils "github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/deployment"
 	"net/http"
 )
 
 // TestListDeploymentsAuthProjectID tests the list deployments method with invalid project ID
 func (s *TestSuite) TestListDeploymentsAuthProjectID() {
-	admClient, err := utils.CreateClient(deploymentRESTServerUrl, token, "invalidprojectid")
+	admClient, err := clients.CreateAdmClient(s.deploymentRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
-	deployments, retCode, err := DeploymentsList(admClient)
+	deployments, retCode, err := deploymentutils.DeploymentsList(admClient)
 	s.Equal(retCode, http.StatusForbidden)
 	s.Error(err)
 	s.Empty(deployments)
@@ -27,22 +28,22 @@ func (s *TestSuite) TestListDeploymentsAuthProjectID() {
 // TestGetDeploymentAuthProjectID tests the get deployment method with invalid project ID
 func (s *TestSuite) TestGetDeploymentAuthProjectID() {
 
-	deploymentReq := utils.StartDeploymentRequest{
+	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
-		DpPackageName:     utils.AppNginx,
-		DeploymentType:    utils.DeploymentTypeTargeted,
-		DeploymentTimeout: utils.DeploymentTimeout,
-		DeleteTimeout:     utils.DeleteTimeout,
+		DpPackageName:     deploymentutils.AppNginx,
+		DeploymentType:    deploymentutils.DeploymentTypeTargeted,
+		DeploymentTimeout: deploymentutils.DeploymentTimeout,
+		DeleteTimeout:     deploymentutils.DeleteTimeout,
 		TestName:          "GetDeploymentAuthProjectID",
 	}
-	deployID, retCode, err := utils.StartDeployment(deploymentReq)
+	deployID, retCode, err := deploymentutils.StartDeployment(deploymentReq)
 	s.Equal(retCode, http.StatusOK)
 	s.NoError(err)
 
-	admClient, err := utils.CreateClient(deploymentRESTServerUrl, token, "invalidprojectid")
+	admClient, err := clients.CreateAdmClient(s.deploymentRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
-	deployment, retCode, err := utils.GetDeployment(admClient, deployID)
+	deployment, retCode, err := deploymentutils.GetDeployment(admClient, deployID)
 	s.Equal(retCode, http.StatusForbidden)
 	s.Error(err)
 	s.Empty(deployment)
@@ -50,8 +51,9 @@ func (s *TestSuite) TestGetDeploymentAuthProjectID() {
 	if !s.T().Failed() {
 		s.T().Logf("successfully handled invalid projectid to get deployment\n")
 	}
+
 	// Clean up the deployment created for this test
-	displayName := utils.FormDisplayName(utils.AppNginx, deploymentReq.TestName)
-	err = utils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, utils.RetryCount, utils.DeleteTimeout)
+	displayName := deploymentutils.FormDisplayName(deploymentutils.AppNginx, deploymentReq.TestName)
+	err = deploymentutils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, deploymentutils.RetryCount, deploymentutils.DeleteTimeout)
 	s.NoError(err)
 }

@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package utils
+package deployment
 
 import (
 	"context"
 	"fmt"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
 	"maps"
 	"net/http"
 	"time"
@@ -14,50 +15,51 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 )
 
-const (
-	TestClusterID = "demo-cluster"
-	retryCount    = 20
-)
-
 var DpConfigs = map[string]any{
-	"nginx": map[string]any{
+	NginxAppName: map[string]any{
 		"appNames":             []string{"nginx"},
 		"deployPackage":        "nginx-app",
 		"deployPackageVersion": "0.1.0",
 		"profileName":          "testing-default",
-		"clusterId":            TestClusterID,
-		"labels":               map[string]string{"color": "blue"},
-
-		"overrideValues": []map[string]any{},
-	},
-	"vm": map[string]any{
-		"appNames":             []string{"librespeed-vm"},
-		"deployPackage":        "librespeed-app",
-		"deployPackageVersion": "1.0.0",
-		"profileName":          "virtual-cluster",
-		"clusterId":            TestClusterID,
+		"clusterId":            types.TestClusterID,
 		"labels":               map[string]string{"color": "blue"},
 		"overrideValues":       []map[string]any{},
 	},
-	"virt-extension": map[string]any{
+	CirrosAppName: map[string]any{
+		"appNames":             []string{"cirros-container-disk"},
+		"deployPackage":        "cirros-container-disk",
+		"deployPackageVersion": "0.1.0",
+		"profileName":          "default",
+		"clusterId":            types.TestClusterID,
+		"labels":               map[string]string{"color": "blue"},
+		"overrideValues":       []map[string]any{},
+	},
+	VirtualizationExtensionAppName: map[string]any{
 		"appNames":             []string{"kubevirt", "cdi", "kube-helper"},
 		"deployPackage":        "virtualization",
-		"deployPackageVersion": "0.3.6",
+		"deployPackageVersion": "0.3.7",
 		"profileName":          "with-software-emulation-profile-nosm",
-		"clusterId":            TestClusterID,
+		"clusterId":            types.TestClusterID,
 		"labels":               map[string]string{"color": "blue"},
 		"overrideValues":       []map[string]any{},
 	},
-	"wordpress": map[string]any{
+	WordpressAppName: map[string]any{
 		"appNames":             []string{"wordpress"},
 		"deployPackage":        "wordpress",
 		"deployPackageVersion": "0.1.0",
 		"profileName":          "testing",
-		"clusterId":            TestClusterID,
+		"clusterId":            types.TestClusterID,
 		"labels":               map[string]string{"color": "blue"},
 		"overrideValues":       []map[string]any{},
 	},
 }
+
+const (
+	NginxAppName                   = "nginx"
+	CirrosAppName                  = "cirros-container-disk"
+	WordpressAppName               = "wordpress"
+	VirtualizationExtensionAppName = "virtualization-extension"
+)
 
 const (
 	// DeploymentTypeTargeted represents the targeted deployment type
@@ -119,13 +121,13 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 		}
 		for _, deployment := range deployments {
 			if *deployment.DeploymentDisplayName == displayName && *deployment.Status.State == "RUNNING" {
-				fmt.Printf("%s deployment already exists in cluster %s, skipping creation\n", useDP["deployPackage"], TestClusterID)
+				fmt.Printf("%s deployment already exists in cluster %s, skipping creation\n", useDP["deployPackage"], types.TestClusterID)
 				return "", retCode, nil
 			}
 		}
 	}
 
-	err := DeleteAndRetryUntilDeleted(opts.AdmClient, displayName, retryCount, opts.DeleteTimeout)
+	err := DeleteAndRetryUntilDeleted(opts.AdmClient, displayName, types.RetryCount, opts.DeleteTimeout)
 	if err != nil {
 		return "", retCode, err
 	}
@@ -151,7 +153,7 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 
 	fmt.Printf("Created %s deployment successfully, deployment id %s\n", displayName, deployID)
 
-	err = waitForDeploymentStatus(opts.AdmClient, displayName, restClient.RUNNING, retryCount, opts.DeploymentTimeout)
+	err = waitForDeploymentStatus(opts.AdmClient, displayName, restClient.RUNNING, types.RetryCount, opts.DeploymentTimeout)
 	if err != nil {
 		return "", retCode, err
 	}
@@ -178,7 +180,7 @@ func deploymentExists(deployments []restClient.Deployment, displayName string) b
 }
 
 func getDeploymentPerCluster(client *restClient.ClientWithResponses) ([]restClient.DeploymentInstancesCluster, int, error) {
-	resp, err := client.DeploymentServiceListDeploymentsPerClusterWithResponse(context.TODO(), TestClusterID, nil)
+	resp, err := client.DeploymentServiceListDeploymentsPerClusterWithResponse(context.TODO(), types.TestClusterID, nil)
 	if err != nil || resp == nil || resp.StatusCode() != 200 {
 		if err != nil {
 			if resp != nil {
@@ -389,4 +391,70 @@ func GetDeploymentsStatus(admClient *restClient.ClientWithResponses, labels *[]s
 
 func FormDisplayName(dpPackageName, testName string) string {
 	return fmt.Sprintf("%s-%s", dpPackageName, testName)
+}
+
+func DeploymentsList(admClient *restClient.ClientWithResponses) (*[]restClient.Deployment, int, error) {
+	resp, err := admClient.DeploymentServiceListDeploymentsWithResponse(context.TODO(), nil)
+	if err != nil || resp.StatusCode() != 200 {
+		if err != nil {
+			return &[]restClient.Deployment{}, resp.StatusCode(), fmt.Errorf("%v", err)
+		}
+		return &[]restClient.Deployment{}, resp.StatusCode(), fmt.Errorf("failed to list deployments: %v", string(resp.Body))
+	}
+
+	return &resp.JSON200.Deployments, resp.StatusCode(), nil
+}
+
+func CopyOriginalDpConfig(originalDpConfigs map[string]any) map[string]any {
+	tempDpConfigs := make(map[string]any)
+	for key, value := range originalDpConfigs {
+		if nestedMap, ok := value.(map[string]any); ok {
+			deepCopy := make(map[string]any)
+			for nestedKey, nestedValue := range nestedMap {
+				if slice, ok := nestedValue.([]string); ok {
+					copiedSlice := make([]string, len(slice))
+					copy(copiedSlice, slice)
+					deepCopy[nestedKey] = copiedSlice
+				} else {
+					deepCopy[nestedKey] = nestedValue
+				}
+			}
+			tempDpConfigs[key] = deepCopy
+		} else {
+			tempDpConfigs[key] = value
+		}
+	}
+
+	return tempDpConfigs
+}
+
+func ResetThenChangeDpConfig(dpConfigName string, key string, value any, originalDpConfigs map[string]any) error {
+	DpConfigs = CopyOriginalDpConfig(originalDpConfigs)
+
+	if dpConfig, ok := DpConfigs[dpConfigName].(map[string]any); ok {
+		dpConfig[key] = value
+		DpConfigs[dpConfigName] = dpConfig
+	} else {
+		return fmt.Errorf("failed to assert type of deploy.DpConfigs[%s] as map[string]any", dpConfigName)
+	}
+	return nil
+}
+
+func GetDeployApps(client *restClient.ClientWithResponses, deployID string) ([]*restClient.App, error) {
+	deployments, retCode, err := getDeploymentPerCluster(client)
+	if err != nil || retCode != 200 {
+		return []*restClient.App{}, fmt.Errorf("failed to get deployments: %v", err)
+	}
+
+	for _, d := range deployments {
+		if *d.DeploymentUid == deployID {
+			apps := make([]*restClient.App, len(*d.Apps))
+			for i, app := range *d.Apps {
+				apps[i] = &app
+			}
+			return apps, nil
+		}
+	}
+
+	return []*restClient.App{}, fmt.Errorf("did not find deployment id %s", deployID)
 }
