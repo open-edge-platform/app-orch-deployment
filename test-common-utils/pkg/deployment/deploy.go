@@ -46,7 +46,7 @@ var DpConfigs = map[string]any{
 	WordpressAppName: map[string]any{
 		"appNames":             []string{"wordpress"},
 		"deployPackage":        "wordpress",
-		"deployPackageVersion": "0.1.0",
+		"deployPackageVersion": "0.1.1",
 		"profileName":          "testing",
 		"clusterId":            types.TestClusterID,
 		"labels":               map[string]string{"color": "blue"},

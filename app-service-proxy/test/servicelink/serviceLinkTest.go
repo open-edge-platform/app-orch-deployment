@@ -5,12 +5,12 @@
 package servicelink
 
 import (
-// "io/ioutil"
-// "net/http"
+ "io/ioutil"
+ "net/http"
 )
 
 func (s *TestSuite) TestHarborCliSecret() {
-	for _, app := range s.deployApps {
+	for _, app := range s.DeployApps {
 		appID := *app.Id
 		appEndPoints, retCode, err := AppEndpointsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
@@ -21,7 +21,7 @@ func (s *TestSuite) TestHarborCliSecret() {
 				for _, port := range *appEndPoint.Ports {
 					serviceUrl := port.ServiceProxyUrl
 					if serviceUrl != nil && *serviceUrl != "" {
-						secret, _ := getCliSecretHarbor("https://registry-oci.kind.internal", s.token)
+						secret, _ := getCliSecretHarbor("https://registry-oci.kind.internal", s.Token)
 						s.T().Logf("harbor secret %s", secret)
 
 					}
@@ -35,7 +35,7 @@ func (s *TestSuite) TestHarborCliSecret() {
 
 // TestServiceLink checks if http get for service link works.
 func (s *TestSuite) TestServiceLinkPageAccess() {
-	for _, app := range s.deployApps {
+	for _, app := range s.DeployApps {
 		appID := *app.Id
 		appEndPoints, retCode, err := AppEndpointsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
@@ -47,7 +47,7 @@ func (s *TestSuite) TestServiceLinkPageAccess() {
 					serviceUrl := port.ServiceProxyUrl
 					if serviceUrl != nil && *serviceUrl != "" {
 						searchStr := "Études is a pioneering firm"
-						found, err := openPageInHeadlessChrome(*serviceUrl, searchStr, s.token)
+						found, err := openPageInHeadlessChrome(*serviceUrl, searchStr, s.Token)
 						if err != nil || found == false {
 							s.T().Errorf("Failed to open wordpress page : %s", err)
 						}
@@ -62,7 +62,7 @@ func (s *TestSuite) TestServiceLinkPageAccess() {
 
 // TestServiceLink checks if http get for service link works.
 func (s *TestSuite) TestServiceLink() {
-	for _, app := range s.deployApps {
+	for _, app := range s.DeployApps {
 		appID := *app.Id
 		appEndPoints, retCode, err := AppEndpointsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
@@ -101,7 +101,7 @@ func (s *TestSuite) TestServiceLink() {
 }
 
 func (s *TestSuite) TestKeycloakRedirect() {
-	for _, app := range s.deployApps {
+	for _, app := range s.DeployApps {
 		appID := *app.Id
 		appEndPoints, retCode, err := AppEndpointsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)

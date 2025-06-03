@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"strings"
 	"time"
 	//"os"
@@ -19,8 +18,7 @@ import (
 	"github.com/chromedp/cdproto/runtime"
 	"github.com/chromedp/chromedp"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
-	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/test/deploy"
-	"github.com/open-edge-platform/app-orch-deployment/app-service-proxy/test/utils"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
 )
 
 const (
@@ -328,7 +326,9 @@ func openPageInHeadlessChrome(url, search, token string) (bool, error) {
 }
 
 func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppEndpoint, int, error) {
-	resp, err := armClient.EndpointsServiceListAppEndpointsWithResponse(context.TODO(), appID, deploy.TestClusterID)
+	resp, err :=
+        armClient.EndpointsServiceListAppEndpointsWithResponse(context.TODO(),
+                                                               appID, types.TestClusterID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return &[]restClient.AppEndpoint{}, resp.StatusCode(), fmt.Errorf("%v", err)
@@ -339,22 +339,3 @@ func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (
 	return resp.JSON200.AppEndpoints, resp.StatusCode(), nil
 }
 
-func MethodAppWorkloadsList(verb, restServerURL, appID, token, projectID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/%s/%s", restServerURL, appID, deploy.TestClusterID)
-	res, err := utils.CallMethod(url, verb, token, projectID)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, err
-}
-
-func MethodAppEndpointsList(verb, restServerURL, appID, token, projectID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/endpoints/%s/%s", restServerURL, appID, deploy.TestClusterID)
-	res, err := utils.CallMethod(url, verb, token, projectID)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, err
-}
