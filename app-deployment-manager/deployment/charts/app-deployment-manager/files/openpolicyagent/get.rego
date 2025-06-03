@@ -5,14 +5,14 @@ package deploymentv1
 
 import future.keywords.in
 
-GetDeploymentRequest {
+GetDeploymentRequest if {
 	hasReadAccess
 }
 
-GetDeploymentsStatusRequest {
+GetDeploymentsStatusRequest if {
 	hasReadAccess
 }
 
-GetClusterRequest {
+GetClusterRequest if {
 	hasReadAccess
 }

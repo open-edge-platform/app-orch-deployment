@@ -5,6 +5,6 @@ package deploymentv1
 
 import future.keywords.in
 
-ListDeploymentsRequest {
+ListDeploymentsRequest if {
 	hasReadAccess
 }

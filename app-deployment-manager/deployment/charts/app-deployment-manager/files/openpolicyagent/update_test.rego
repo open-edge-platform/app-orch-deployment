@@ -4,7 +4,7 @@
 package deploymentv1
 
 # update deployment with ao-m2m-rw
-test_update_deployment_write_role {
+test_update_deployment_write_role if {
 	UpdateDeploymentRequest with input as {
 		"request": {
 			"displayName": "test display name",
@@ -33,7 +33,7 @@ test_update_deployment_write_role {
 }
 
 # update deployment with ao-m2m-rw
-test_update_deployment_read_role {
+test_update_deployment_read_role if {
 	not UpdateDeploymentRequest with input as {
 		"request": {
 			"displayName": "test display name",
