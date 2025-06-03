@@ -59,6 +59,6 @@ func TestDeploymentSuite(t *testing.T) {
 
 // TearDownSuite cleans up after the entire test suite
 func (s *TestSuite) TearDownSuite() {
-	portforwarding.TearDownPortForward(s.PortForwardCmd)
+	//portforwarding.TearDownPortForward(s.PortForwardCmd)
 
 }
