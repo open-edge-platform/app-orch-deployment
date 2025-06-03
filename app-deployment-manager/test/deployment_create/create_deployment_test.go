@@ -10,6 +10,7 @@ import (
 )
 
 func (s *TestSuite) TestCreateTargetedDeployment() {
+	s.T().Parallel()
 	testName := "CreateTargetedDeployment"
 	for _, app := range []string{deploymentutils.AppWordpress, deploymentutils.AppNginx} {
 		deploymentReq := deploymentutils.StartDeploymentRequest{
@@ -33,6 +34,7 @@ func (s *TestSuite) TestCreateTargetedDeployment() {
 }
 
 func (s *TestSuite) TestCreateAutoScaleDeployment() {
+	s.T().Parallel()
 	testName := "CreateAutoScaleDeployment"
 	for _, app := range []string{deploymentutils.AppWordpress, deploymentutils.AppNginx} {
 		deploymentReq := deploymentutils.StartDeploymentRequest{
@@ -55,6 +57,7 @@ func (s *TestSuite) TestCreateAutoScaleDeployment() {
 }
 
 func (s *TestSuite) TestCreateDiffDataDeployment() {
+	s.T().Parallel()
 	originalDpConfigs := deploymentutils.CopyOriginalDpConfig(deploymentutils.DpConfigs)
 	defer func() { deploymentutils.DpConfigs = deploymentutils.CopyOriginalDpConfig(originalDpConfigs) }()
 
