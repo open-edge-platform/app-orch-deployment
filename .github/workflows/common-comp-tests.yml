@@ -165,7 +165,7 @@ jobs:
 
       - name: Upload Test Report
         if: always()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: test-report
           path: app-orch-deployment/${{ inputs.component }}/${{ github.event_name }}-${{ github.event.number }}-test-report.html
@@ -179,7 +179,7 @@ jobs:
 
       - name: Upload Argo diagnostic artifacts
         if: ${{ failure() && steps.get-argo-diag-info.conclusion == 'success' }}
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: argo-diag-logs
           path: |
@@ -215,7 +215,7 @@ jobs:
 
       - name: Upload ENiC diagnostic artifacts
         if: ${{ failure() && steps.get-enic-diag-info.conclusion == 'success' }}
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: pods-logs
           path: |
@@ -238,7 +238,7 @@ jobs:
 
       - name: Upload Pods diagnostic artifacts
         if: ${{ failure() && steps.get-pods-diag-info.conclusion == 'success' }}
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: pods-logs
           path: |
