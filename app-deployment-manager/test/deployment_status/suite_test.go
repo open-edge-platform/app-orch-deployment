@@ -53,7 +53,7 @@ func (s *TestSuite) SetupSuite() {
 	}
 }
 
-func TestDeploymentSuite(t *testing.T) {
+func TestDeploymentStatusSuite(t *testing.T) {
 	suite.Run(t, new(TestSuite))
 }
 
