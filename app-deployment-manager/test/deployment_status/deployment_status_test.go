@@ -11,6 +11,7 @@ import (
 )
 
 func (s *TestSuite) TestDeploymentStatusWithNoLabels() {
+	s.T().Parallel()
 	testName := "DeploymentStatusWithNoLabels"
 	deployemntReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
@@ -35,6 +36,7 @@ func (s *TestSuite) TestDeploymentStatusWithNoLabels() {
 }
 
 func (s *TestSuite) TestDeploymentStatusWithLabels() {
+	s.T().Parallel()
 	var labelsList []string
 
 	deploymentReq := deploymentutils.StartDeploymentRequest{

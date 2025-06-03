@@ -12,6 +12,7 @@ import (
 
 // TestListDeploymentsAuthProjectID tests the list deployments method with invalid project ID
 func (s *TestSuite) TestListDeploymentsAuthProjectID() {
+	s.T().Parallel()
 	admClient, err := clients.CreateAdmClient(s.deploymentRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
@@ -27,7 +28,7 @@ func (s *TestSuite) TestListDeploymentsAuthProjectID() {
 
 // TestGetDeploymentAuthProjectID tests the get deployment method with invalid project ID
 func (s *TestSuite) TestGetDeploymentAuthProjectID() {
-
+	s.T().Parallel()
 	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
 		DpPackageName:     deploymentutils.AppNginx,

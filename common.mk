@@ -272,9 +272,10 @@ go-test: $(OUT_DIR) $(GO_TEST_DEPS) ## Run go test and calculate code coverage
 	$(GOCMD) tool cover -html=$(OUT_DIR)/coverage.out -o $(OUT_DIR)/coverage.html
 	$(GOCMD) tool cover -func=$(OUT_DIR)/coverage.out -o $(OUT_DIR)/function_coverage.log
 
-PARALLEL_TESTS ?= 1
+PARALLEL_SUITES ?= 1
+PARALLEL_TESTS ?= 0
 common-component-test: ## Run component tests
-	go run $(GOTESTSUM_PKG) --format=standard-verbose --jsonfile=test-report.json -- -p $(PARALLEL_TESTS) -parallel 10 -timeout 30m -count=1 \
+	go run $(GOTESTSUM_PKG) --format=standard-verbose --jsonfile=test-report.json -- -p $(PARALLEL_SUITES) -parallel $(PARALLEL_TESTS) -timeout 30m -count=1 \
 	-covermode $(COMP_TEST_COVER)
 
 common-go-fuzz-test: ## GO fuzz tests

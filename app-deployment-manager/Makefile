@@ -170,6 +170,7 @@ test: manifests fmt vet envtest opa-test ## Run tests
 
 COMP_TEST_COVER := atomic ./test/...
 PARALLEL_TESTS := 10
+PARALLEL_SUITES := 10
 component-test: common-component-test ## Run component tests
 
 go-fuzz: FUZZ_FUNCS ?= FuzzCreateDeployment FuzzListDeployments$$ FuzzGetDeployment FuzzDeleteDeployment \
