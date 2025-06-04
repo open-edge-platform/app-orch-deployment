@@ -54,6 +54,8 @@ spec:
             - /opt/vnc-proxy/rego/v2
             - "--log-level"
             - {{ .Values.openpolicyagent.loglevel }}
+            - "--addr"
+            - ":{{ .Values.openpolicyagent.port }}"
           livenessProbe:
             httpGet:
               path: /health?bundle=true  # Include bundle activation in readiness
