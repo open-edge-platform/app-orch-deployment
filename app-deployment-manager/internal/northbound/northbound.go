@@ -199,6 +199,47 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 
 	log.Infof("[DEBUG] OverrideValuesMasked before checkParameterTemplate: %+v", d.OverrideValuesMasked)
 	log.Infof("[DEBUG] OverrideValues before checkParameterTemplate: %+v", d.OverrideValues)
+	// if update scenario, then check override values
+	// if any secret value is masked. then
+	// search for secrets and find the value that matches this value name
+	// and replace in overridekeys struct.
+
+	if scenario == "update" {
+
+		for _, app := range *d.HelmApps {
+			secretName := fmt.Sprintf("%s-%s-%s-secret", d.Name, app.Name, d.ProfileName)
+			secretValue, err := utils.GetSecretValue(ctx, s.k8sClient, d.Namespace, secretName)
+			if err != nil {
+				utils.LogActivity(ctx, "get", "ADM", fmt.Sprintf("cannot get secret %s, error: %v", secretName, err))
+				continue
+			}
+
+			val, err := yaml2.YAMLToJSON(secretValue.Data["values"])
+			if err != nil {
+				utils.LogActivity(ctx, "get", "ADM", fmt.Sprintf("cannot convert values to JSON %v", err))
+				continue
+			}
+
+			var valuesStrPb *structpb.Struct
+			_ = json.Unmarshal(val, &valuesStrPb)
+
+			for _, val := range app.ParameterTemplates {
+
+				// Convert to correct value type
+				for _, k := range allOverrideKeys[app.Name] {
+					if k == val.Name {
+						var secretVal string
+						for _, oVal := range d.OverrideValues {
+							if oVal.AppName == app.Name {
+								_ = replaceMaskedPbValue(oVal.Values, valuesStrPb, secretVal, 0)
+
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 
 	d, err = checkParameterTemplate(d, allOverrideKeys)
 	if err != nil {

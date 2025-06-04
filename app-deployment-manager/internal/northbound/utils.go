@@ -696,6 +696,42 @@ func updatePbValue(s *structpb.Struct, structKeys []string, inValInt int, inValS
 	return inValInt, inValStr
 }
 
+func replaceMaskedPbValue(s, replace *structpb.Struct, inValStr string, currentDepth int) string {
+	// Check if the current depth exceeds the maximum depth
+	if currentDepth > maxDepth {
+		fmt.Println("Maximum recursion depth reached")
+		return inValStr
+	}
+
+	for k := range s.Fields {
+		v := s.Fields[k]
+		if v.Kind == nil {
+			continue
+		}
+
+		switch v.Kind.(type) {
+		case *structpb.Value_StringValue:
+			inValStr = v.GetStringValue()
+			if inValStr == "********" {
+				fmt.Println("Value recieved %s", inValStr)
+				for key := range replace.Fields {
+					if key == k {
+						fmt.Println("key found %s", key)
+						val := replace.Fields[key]
+						_, ok := val.GetKind().(*structpb.Value_StringValue)
+						if ok {
+							s.Fields[k] = val
+							fmt.Println("Value updated %s", val.GetStringValue())
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return inValStr
+}
+
 func maskPbValue(s *structpb.Struct, structKeys []string, inValStr string, currentDepth int) string {
 	// Check if the current depth exceeds the maximum depth
 	if currentDepth > maxDepth {
