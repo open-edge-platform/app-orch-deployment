@@ -4,3 +4,4 @@
 out/
 vendor/
 venv_app-service-proxy/
+node_modules/
