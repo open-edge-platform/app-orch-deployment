@@ -18,7 +18,7 @@ func (s *TestSuite) TestListDeploymentsInvalidProjectID() {
 
 	deployments, retCode, err := deploymentutils.DeploymentsList(admClient)
 	s.Equal(retCode, http.StatusForbidden)
-	s.Error(err)
+	s.NoError(err)
 	s.Empty(deployments)
 
 	if !s.T().Failed() {
@@ -46,7 +46,7 @@ func (s *TestSuite) TestGetDeploymentInvalidProjectID() {
 
 	deployment, retCode, err := deploymentutils.GetDeployment(admClient, deployID)
 	s.Equal(retCode, http.StatusForbidden)
-	s.Error(err)
+	s.NoError(err)
 	s.Empty(deployment)
 
 	if !s.T().Failed() {
@@ -79,7 +79,7 @@ func (s *TestSuite) TestDeleteDeploymentInvalidProjectID() {
 	status, err = deploymentutils.DeleteDeployment(admClient, deploymentID)
 	s.T().Log(err)
 	s.Equal(http.StatusForbidden, status)
-	s.Error(err)
+	s.NoError(err)
 
 	// Clean up the deployment created for this test
 	displayName := deploymentutils.FormDisplayName(deploymentutils.AppNginx, deploymentReq.TestName)
