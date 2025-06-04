@@ -9,6 +9,29 @@ import (
 	"net/http"
 )
 
+func (s *TestSuite) TestDeleteExistingDeployment() {
+	s.T().Parallel()
+	// Create a deployment to be deleted
+	deploymentReq := deploymentutils.StartDeploymentRequest{
+		AdmClient:         s.AdmClient,
+		DpPackageName:     deploymentutils.AppNginx,
+		DeploymentType:    deploymentutils.DeploymentTypeTargeted,
+		DeploymentTimeout: deploymentutils.DeploymentTimeout,
+		DeleteTimeout:     deploymentutils.DeleteTimeout,
+		TestName:          "DeleteExistingDeployment",
+	}
+	deploymentID, status, err := deploymentutils.StartDeployment(deploymentReq)
+	s.NoError(err)
+	s.Equal(http.StatusOK, status, "Expected HTTP status 200 for successful deployment creation")
+
+	// Delete the created deployment
+	status, err = deploymentutils.DeleteDeployment(s.AdmClient, deploymentID)
+	s.NoError(err)
+	s.Equal(http.StatusOK, status, "Expected HTTP status 200 for successful deletion")
+
+	s.T().Logf("successfully deleted deployment with ID: %s", deploymentID)
+}
+
 func (s *TestSuite) TestDeleteNonExistentDeployment() {
 	s.T().Parallel()
 	// Attempt to delete a deployment that does not exist
