@@ -54,7 +54,6 @@ func (s *TestSuite) SetupSuite() {
 }
 
 func TestNegativeSuite(t *testing.T) {
-	t.Skip()
 	suite.Run(t, new(TestSuite))
 }
 
