@@ -238,7 +238,7 @@ func GetDeployment(client *restClient.ClientWithResponses, deployID string) (res
 		if err != nil {
 			return restClient.Deployment{}, resp.StatusCode(), fmt.Errorf("%v", err)
 		}
-		return restClient.Deployment{}, resp.StatusCode(), fmt.Errorf("failed to get deployment: %v", string(resp.Body))
+		return restClient.Deployment{}, resp.StatusCode(), err
 	}
 
 	return resp.JSON200.Deployment, resp.StatusCode(), nil
@@ -416,7 +416,7 @@ func DeploymentsList(admClient *restClient.ClientWithResponses) (*[]restClient.D
 		if err != nil {
 			return &[]restClient.Deployment{}, resp.StatusCode(), fmt.Errorf("%v", err)
 		}
-		return &[]restClient.Deployment{}, resp.StatusCode(), fmt.Errorf("failed to list deployments: %v", string(resp.Body))
+		return &[]restClient.Deployment{}, resp.StatusCode(), err
 	}
 
 	return &resp.JSON200.Deployments, resp.StatusCode(), nil
