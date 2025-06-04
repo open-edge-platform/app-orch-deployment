@@ -6,15 +6,15 @@ package deployment
 
 import (
 	deploymentutils "github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/deployment"
-	"github.com/open-edge-platform/orch-library/go/pkg/errors"
+	"net/http"
 )
 
 func (s *TestSuite) TestDeleteNonExistentDeployment() {
 	s.T().Parallel()
 	// Attempt to delete a deployment that does not exist
 	deploymentID := "non-existent-deployment"
-	err := deploymentutils.DeleteDeployment(s.AdmClient, deploymentID)
-	s.T().Log(err)
-	s.Equal(true, errors.IsNotFound(err))
+	status, err := deploymentutils.DeleteDeployment(s.AdmClient, deploymentID)
+	s.NoError(err)
+	s.Equal(http.StatusNotFound, status, "Expected HTTP status 404 for non-existent deployment deletion")
 	s.T().Logf("successfully handled deletion of non-existent deployment with ID: %s", deploymentID)
 }

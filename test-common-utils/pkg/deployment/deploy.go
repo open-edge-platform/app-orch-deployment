@@ -162,12 +162,16 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 	return deployID, retCode, nil
 }
 
-func DeleteDeployment(client *restClient.ClientWithResponses, deployID string) error {
+func DeleteDeployment(client *restClient.ClientWithResponses, deployID string) (int, error) {
 	resp, err := client.DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployID, nil)
-	if err != nil || resp.StatusCode() != 200 {
-		return fmt.Errorf("failed to delete deployment: %v, status: %d", err, resp.StatusCode())
+	if err != nil || resp == nil || resp.StatusCode() != http.StatusOK {
+		status := 0
+		if resp != nil {
+			status = resp.StatusCode()
+		}
+		return status, fmt.Errorf("failed to delete deployment: %v, status: %d", err, status)
 	}
-	return nil
+	return resp.StatusCode(), nil
 }
 
 func deploymentExists(deployments []restClient.Deployment, displayName string) bool {
@@ -271,7 +275,7 @@ func FindDeploymentIDByDisplayName(client *restClient.ClientWithResponses, displ
 
 func deleteDeploymentByDisplayName(client *restClient.ClientWithResponses, displayName string) error {
 	if deployID := FindDeploymentIDByDisplayName(client, displayName); deployID != "" {
-		err := DeleteDeployment(client, deployID)
+		_, err := DeleteDeployment(client, deployID)
 		if err != nil {
 			return fmt.Errorf("failed to delete deployment %s: %v", displayName, err)
 		}
