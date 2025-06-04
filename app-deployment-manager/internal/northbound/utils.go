@@ -789,7 +789,8 @@ func checkParameterTemplate(d *Deployment, allOverrideKeys map[string][]string) 
 
 	// Make copy of original OverrideValues values with masking
 	// to use for GetDeployments to mask any secrets
-	// d.OverrideValuesMasked = d.OverrideValues
+	d.OverrideValuesMasked = d.OverrideValues
+	//d.OverrideValuesMasked = MaskSecretsForUI(d.OverrideValues, *d.HelmApps)
 
 	// Make copy of original OverrideValues values without masking
 	// to add to fleet's overrides.yaml
@@ -804,16 +805,16 @@ func checkParameterTemplate(d *Deployment, allOverrideKeys map[string][]string) 
 	d.OverrideValues = OverrideValuesNotMasked
 
 	// Unmask all secrets in OverrideValues using OverrideValuesMasked
-	for i, oVal := range d.OverrideValues {
-		for _, origVal := range d.OverrideValuesMasked {
-			if oVal.AppName == origVal.AppName {
-				unmaskSecrets(oVal.Values, origVal.Values)
-				d.OverrideValues[i].Values = oVal.Values
-				log.Infof("[DEBUG] After unmaskSecrets: %v", d.OverrideValues[i].Values)
-				break
-			}
-		}
-	}
+	// for i, oVal := range d.OverrideValues {
+	// 	for _, origVal := range d.OverrideValuesMasked {
+	// 		if oVal.AppName == origVal.AppName {
+	// 			unmaskSecrets(oVal.Values, origVal.Values)
+	// 			d.OverrideValues[i].Values = oVal.Values
+	// 			log.Infof("[DEBUG] After unmaskSecrets: %v", d.OverrideValues[i].Values)
+	// 			break
+	// 		}
+	// 	}
+	// }
 
 	log.Infof("[DEBUG] Entering checkParameterTemplate for deployment: %s", d.Name)
 	for _, app := range *d.HelmApps {
@@ -824,7 +825,7 @@ func checkParameterTemplate(d *Deployment, allOverrideKeys map[string][]string) 
 		log.Infof("[DEBUG] Processing app: %s", app.Name)
 		for _, val := range app.ParameterTemplates {
 			log.Infof("[DEBUG] Processing param: %s (secret=%v)", val.Name, val.Secret)
-			// Type conversion for values (if needed)
+			// Convert to correct value type
 			for _, k := range allOverrideKeys[app.Name] {
 				log.Infof("[DEBUG] allOverrideKey: %s, val.Name: %s", k, val.Name)
 				if k == val.Name {
@@ -839,27 +840,32 @@ func checkParameterTemplate(d *Deployment, allOverrideKeys map[string][]string) 
 				}
 			}
 
-			// Check for missing mandatory values
 			foundMandatory := false
+			// Search in override values input to confirm mandatory value was provided
 			if val.Mandatory {
 				for _, k := range allOverrideKeys[app.Name] {
 					if k == val.Name {
 						foundMandatory = true
 					}
 				}
-				if !foundMandatory && !addedToNotFoundApp {
+				// Mandatory value not found in override values so append which app has missing value
+				// Prevent duplicate in notFoundApp slice by setting addedToNotFoundApp
+				if !(foundMandatory) && !(addedToNotFoundApp) {
 					addedToNotFoundApp = true
 					notFoundApp = append(notFoundApp, app.Name)
 				}
 			}
 
-			// Prepare masked secrets for UI (not for storage/deployment)
+			// Search in override values input to confirm mandatory value was provided
 			if val.Secret {
 				for _, k := range allOverrideKeys[app.Name] {
 					if k == val.Name {
 						var secretVal string
 						for _, oVal := range d.OverrideValuesMasked {
+							// Make sure values belong to same app
+							// ie 2 apps can share same key
 							if oVal.AppName == app.Name {
+								// will update new values with masking to output to user
 								secretVal = maskPbValue(oVal.Values, strings.Split(val.Name, "."), secretVal, 0)
 								appSecretVals[val.Name] = secretVal
 							}
@@ -869,7 +875,7 @@ func checkParameterTemplate(d *Deployment, allOverrideKeys map[string][]string) 
 			}
 		}
 
-		// Only set ParameterTemplateSecrets if secrets found (for UI masking)
+		// Only set ParameterTemplateSecrets if secrets found
 		if len(appSecretVals) > 0 {
 			jsonAppSecretVals, err := json.Marshal(appSecretVals)
 			if err != nil {
@@ -1042,9 +1048,100 @@ func unmaskSecrets(current, previous *structpb.Struct) {
 		case *structpb.Value_StructValue:
 			if prevVal, ok := previous.Fields[k]; ok {
 				if prevStruct, ok := prevVal.Kind.(*structpb.Value_StructValue); ok {
+					// RECURSE into nested struct!
 					unmaskSecrets(val.StructValue, prevStruct.StructValue)
+				}
+			}
+		case *structpb.Value_ListValue:
+			if prevVal, ok := previous.Fields[k]; ok {
+				if prevList, ok := prevVal.Kind.(*structpb.Value_ListValue); ok {
+					for i, item := range val.ListValue.Values {
+						if i < len(prevList.ListValue.Values) {
+							if itemStruct, ok := item.Kind.(*structpb.Value_StructValue); ok {
+								if prevItemStruct, ok := prevList.ListValue.Values[i].Kind.(*structpb.Value_StructValue); ok {
+									unmaskSecrets(itemStruct.StructValue, prevItemStruct.StructValue)
+								}
+							}
+						}
+					}
 				}
 			}
 		}
 	}
 }
+
+// func MaskSecretsForUI(overrideValues []*deploymentpb.OverrideValues, helmApps []catalogclient.HelmApp) []*deploymentpb.OverrideValues {
+// 	masked := []*deploymentpb.OverrideValues{}
+// 	for _, oVal := range overrideValues {
+// 		if oVal == nil || oVal.Values == nil {
+// 			masked = append(masked, oVal)
+// 			continue
+// 		}
+// 		clone := &deploymentpb.OverrideValues{
+// 			AppName:         oVal.AppName,
+// 			TargetNamespace: oVal.TargetNamespace,
+// 			Values:          proto.Clone(oVal.Values).(*structpb.Struct),
+// 		}
+// 		for _, app := range helmApps {
+// 			if app.Name == oVal.AppName {
+// 				for _, val := range app.ParameterTemplates {
+// 					if val.Secret {
+// 						keys := strings.Split(val.Name, ".")
+// 						maskPbValue(clone.Values, keys, "", 0)
+// 					}
+// 				}
+// 			}
+// 		}
+// 		masked = append(masked, clone)
+// 	}
+// 	return masked
+// }
+
+// func MaskSecretsForUIWithCount(overrideValues []*deploymentpb.OverrideValues, helmApps []catalogclient.HelmApp) ([]*deploymentpb.OverrideValues, int) {
+// 	masked := []*deploymentpb.OverrideValues{}
+// 	maskedCount := 0
+// 	for _, oVal := range overrideValues {
+// 		if oVal == nil || oVal.Values == nil {
+// 			masked = append(masked, oVal)
+// 			continue
+// 		}
+// 		clone := &deploymentpb.OverrideValues{
+// 			AppName:         oVal.AppName,
+// 			TargetNamespace: oVal.TargetNamespace,
+// 			Values:          proto.Clone(oVal.Values).(*structpb.Struct),
+// 		}
+// 		for _, app := range helmApps {
+// 			if app.Name == oVal.AppName {
+// 				for _, val := range app.ParameterTemplates {
+// 					if val.Secret {
+// 						keys := strings.Split(val.Name, ".")
+// 						maskedCount += maskPbValueWithCount(clone.Values, keys, "", 0)
+// 					}
+// 				}
+// 			}
+// 		}
+// 		masked = append(masked, clone)
+// 	}
+// 	return masked, maskedCount
+// }
+
+// // Helper to count how many values are masked
+// func maskPbValueWithCount(s *structpb.Struct, keys []string, parent string, idx int) int {
+// 	if idx >= len(keys) {
+// 		return 0
+// 	}
+// 	key := keys[idx]
+// 	field, ok := s.Fields[key]
+// 	if !ok {
+// 		return 0
+// 	}
+// 	if idx == len(keys)-1 {
+// 		// Mask and count
+// 		s.Fields[key] = structpb.NewStringValue("********")
+// 		return 1
+// 	}
+// 	if sub, ok := field.Kind.(*structpb.Value_StructValue); ok {
+// 		return maskPbValueWithCount(sub.StructValue, keys, key, idx+1)
+// 	}
+// 	return 0
+// }
