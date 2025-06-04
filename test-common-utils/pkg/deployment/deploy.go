@@ -169,7 +169,7 @@ func DeleteDeployment(client *restClient.ClientWithResponses, deployID string) (
 		if resp != nil {
 			status = resp.StatusCode()
 		}
-		return status, fmt.Errorf("failed to delete deployment: %v, status: %d", err, status)
+		return status, err
 	}
 	return resp.StatusCode(), nil
 }
