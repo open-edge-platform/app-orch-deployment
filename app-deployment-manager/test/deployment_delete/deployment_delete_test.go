@@ -14,6 +14,7 @@ func (s *TestSuite) TestDeleteNonExistentDeployment() {
 	// Attempt to delete a deployment that does not exist
 	deploymentID := "non-existent-deployment"
 	err := deploymentutils.DeleteDeployment(s.AdmClient, deploymentID)
+	s.T().Log(err)
 	s.Equal(true, errors.IsNotFound(err))
 	s.T().Logf("successfully handled deletion of non-existent deployment with ID: %s", deploymentID)
 }
