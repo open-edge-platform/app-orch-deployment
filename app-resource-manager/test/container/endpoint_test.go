@@ -74,7 +74,7 @@ func (s *TestSuite) TestEndpointResponseDetails() {
 			s.NotEmpty(appEndpoint.Ports, "Endpoint port should not be empty")
 
 			// Additional checks can be added here based on expected values
-			s.T().Logf("Endpoint details: %+v\n", appEndpoint)
+			s.T().Logf("Endpoint details: %#v\n", appEndpoint)
 		}
 	}
 }
