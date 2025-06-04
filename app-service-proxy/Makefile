@@ -31,11 +31,12 @@ DOCKER_IMG_NAME      := app-service-proxy
 DOCKER_NAME          := $(DOCKER_IMG_NAME)
 ASP_DOCKER_NAME      := $(DOCKER_IMG_NAME)
 DOCKER_IMG_VERSION   ?= ${VERSION}
-OPA_IMAGE_VER        = 0.67.1-static
+OPA_IMAGE_VER        = 1.5.0-static
 GIT_COMMIT           ?= $(shell git rev-parse --short HEAD)
 HELM_CHART_NAME	     ?= app-service-proxy
 HELM_CHART_PATH	     ?= ./deployments/${HELM_CHART_NAME}
 HELM_DIRS            ?= $(HELM_CHART_PATH)
+OPA_FILE_PATH        ?= $(HELM_CHART_PATH)/files/openpolicyagent
 
 # Add an identifying suffix for `-dev` builds only.
 # Release build versions are verified as unique by the CI build process.
@@ -104,9 +105,7 @@ GOEXTRAFLAGS += $(COMMON_GOEXTRAFLAGS)
 
 build: go-build ## Build local binaries
 
-## TODO: Re-enable the mdlint tool
-## TODO: Re-enable the hadolint tool
-lint: helmlint go-lint yamllint lint-html lint-css lint-js # hadolint mdlint ## Run helmlint, go-lint, yamllint lint tools
+lint: helmlint go-lint yamllint lint-html lint-css lint-js opa-lint hadolint mdlint ## Run helmlint, go-lint, yamllint lint tools
 
 lint-html:
 	@# Help: Lint HTML files
@@ -121,7 +120,16 @@ lint-js:
 	@# Help: Lint JS files
 	npx standard web-login/app-service-proxy-main.js
 
-test: go-test ## Run all unit tests
+test: go-test opa-test ## Run all unit tests
+
+docker-opa:
+	docker pull openpolicyagent/opa:$(OPA_IMAGE_VER)
+
+opa-lint: docker-opa
+	docker run -v $(shell pwd)/${CHART_PATH}/files/openpolicyagent:/policies openpolicyagent/opa:$(OPA_IMAGE_VER) check  policies/
+
+opa-test: docker-opa ## Test OPA policies
+	docker run -v $(shell pwd)/$(OPA_FILE_PATH):/policies openpolicyagent/opa:$(OPA_IMAGE_VER) test --coverage policies -vv
 
 COMP_TEST_COVER := atomic $(shell go list ./test/... )
 component-test: common-component-test ## Run component tests

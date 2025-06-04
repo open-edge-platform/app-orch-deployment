@@ -94,6 +94,8 @@ spec:
           - "/opt/app-service-proxy/rego"
           - "--log-level"
           - {{ .Values.openpolicyagent.loglevel }}
+          - "--addr"
+          - ":{{ .Values.openpolicyagent.port }}"
         securityContext:
           {{- toYaml .Values.containerSecurityContext | nindent 10 }}
         {{- if .Values.resources }}
