@@ -77,6 +77,7 @@ func (s *TestSuite) TestDeleteDeploymentInvalidProjectID() {
 	s.NoError(err)
 
 	status, err = deploymentutils.DeleteDeployment(admClient, deploymentID)
+	s.T().Log(err)
 	s.Equal(http.StatusForbidden, status)
 	s.Error(err)
 
