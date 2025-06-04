@@ -161,6 +161,19 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 
 	return deployID, retCode, nil
 }
+func DeleteDeploymentWithDeleteType(client *restClient.ClientWithResponses, deployID string, deleteType restClient.DeploymentServiceDeleteDeploymentParamsDeleteType) (int, error) {
+	resp, err := client.DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployID, &restClient.DeploymentServiceDeleteDeploymentParams{
+		DeleteType: &deleteType,
+	})
+	if err != nil || resp == nil || resp.StatusCode() != http.StatusOK {
+		status := 0
+		if resp != nil {
+			status = resp.StatusCode()
+		}
+		return status, err
+	}
+	return resp.StatusCode(), nil
+}
 
 func DeleteDeployment(client *restClient.ClientWithResponses, deployID string) (int, error) {
 	resp, err := client.DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployID, nil)
