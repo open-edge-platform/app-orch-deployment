@@ -10,8 +10,8 @@ import (
 	"net/http"
 )
 
-// TestListDeploymentsAuthProjectID tests the list deployments method with invalid project ID
-func (s *TestSuite) TestListDeploymentsAuthProjectID() {
+// TestListDeploymentsInvalidProjectID tests the list deployments method with invalid project ID
+func (s *TestSuite) TestListDeploymentsInvalidProjectID() {
 	s.T().Parallel()
 	admClient, err := clients.CreateAdmClient(s.deploymentRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
@@ -26,8 +26,8 @@ func (s *TestSuite) TestListDeploymentsAuthProjectID() {
 	}
 }
 
-// TestGetDeploymentAuthProjectID tests the get deployment method with invalid project ID
-func (s *TestSuite) TestGetDeploymentAuthProjectID() {
+// TestGetDeploymentInvalidProjectID tests the get deployment method with invalid project ID
+func (s *TestSuite) TestGetDeploymentInvalidProjectID() {
 	s.T().Parallel()
 	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
@@ -57,4 +57,34 @@ func (s *TestSuite) TestGetDeploymentAuthProjectID() {
 	displayName := deploymentutils.FormDisplayName(deploymentutils.AppNginx, deploymentReq.TestName)
 	err = deploymentutils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, deploymentutils.RetryCount, deploymentutils.DeleteTimeout)
 	s.NoError(err)
+}
+func (s *TestSuite) TestDeleteDeploymentInvalidProjectID() {
+	s.T().Parallel()
+	// Create a deployment to be deleted
+	deploymentReq := deploymentutils.StartDeploymentRequest{
+		AdmClient:         s.AdmClient,
+		DpPackageName:     deploymentutils.AppNginx,
+		DeploymentType:    deploymentutils.DeploymentTypeTargeted,
+		DeploymentTimeout: deploymentutils.DeploymentTimeout,
+		DeleteTimeout:     deploymentutils.DeleteTimeout,
+		TestName:          "DeleteDeploymentAuthProjectID",
+	}
+	deploymentID, status, err := deploymentutils.StartDeployment(deploymentReq)
+	s.NoError(err)
+	s.Equal(http.StatusOK, status, "Expected HTTP status 200 for successful deployment creation")
+
+	admClient, err := clients.CreateAdmClient(s.deploymentRESTServerUrl, s.token, "invalidprojectid")
+	s.NoError(err)
+
+	status, err = deploymentutils.DeleteDeployment(admClient, deploymentID)
+	s.Equal(http.StatusForbidden, status)
+	s.Error(err)
+
+	// Clean up the deployment created for this test
+	displayName := deploymentutils.FormDisplayName(deploymentutils.AppNginx, deploymentReq.TestName)
+	err = deploymentutils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, deploymentutils.RetryCount, deploymentutils.DeleteTimeout)
+	s.NoError(err)
+
+	s.T().Logf("successfully handled invalid projectid to delete deployment\n")
+
 }
