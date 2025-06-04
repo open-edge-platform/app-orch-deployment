@@ -3,7 +3,7 @@
 
 package resourcev2
 
-test_not_allow_get_vnc_vm_read_role {
+test_not_allow_get_vnc_vm_read_role if {
 	not GetVNCRequest with input as {
 		"request": {
 			"app_id": "testapp",
@@ -21,7 +21,7 @@ test_not_allow_get_vnc_vm_read_role {
 	}
 }
 
-test_not_allowed_get_vnc_vm_write_role {
+test_not_allowed_get_vnc_vm_write_role if {
 	not GetVNCRequest with input as {
 		"request": {
 			"app_id": "testapp",
@@ -39,7 +39,7 @@ test_not_allowed_get_vnc_vm_write_role {
 	}
 }
 
-test_get_vnc_vm_console_write_role {
+test_get_vnc_vm_console_write_role if {
 	GetVNCRequest with input as {
 		"request": {
 			"app_id": "testapp",

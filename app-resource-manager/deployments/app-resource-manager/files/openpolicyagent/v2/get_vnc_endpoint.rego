@@ -3,6 +3,6 @@
 
 package resourcev2
 
-GetVNCRequest {
+GetVNCRequest if {
 	hasVMConsoleAccess
 }

@@ -3,7 +3,7 @@
 
 package resourcev2
 
-test_not_allow_start_vm_read_role {
+test_not_allow_start_vm_read_role if {
 	not StartVirtualMachineRequest with input as {
 		"request": {
 			"app_id": "testapp",
@@ -21,7 +21,7 @@ test_not_allow_start_vm_read_role {
 	}
 }
 
-test_start_vm_write_role {
+test_start_vm_write_role if {
 	StartVirtualMachineRequest with input as {
 		"request": {
 			"app_id": "testapp",

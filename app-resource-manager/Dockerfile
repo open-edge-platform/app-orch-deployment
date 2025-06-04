@@ -13,6 +13,7 @@ ARG VERSION
 ARG REVISION
 ARG BUILD_DATE
 
+# hadolint ignore=DL3022
 COPY --from=root common.mk version.mk /go/src/github.com/open-edge-platform/app-orch-deployment/
 
 WORKDIR /go/src/github.com/open-edge-platform/app-orch-deployment/app-resource-manager

@@ -3,7 +3,7 @@
 
 package resourcev2
 
-test_allow_list_endpoints_read_role {
+test_allow_list_endpoints_read_role if {
 	ListAppEndpointsRequest with input as {
 		"request": {
 			"app_id": "testapp",
@@ -21,7 +21,7 @@ test_allow_list_endpoints_read_role {
 	}
 }
 
-test_not_allow_list_endpoints_write_role {
+test_not_allow_list_endpoints_write_role if {
 	not ListAppEndpointsRequest with input as {
 		"request": {
 			"app_id": "testapp",
