@@ -25,12 +25,7 @@ In production, the ASP serves up this HTML and JavaScript, but you can run it lo
 python3 -m http.server 3000
 ```
 
-You can also run your own Keycloak server - see https://github.com/open-edge-platform/app-orch-catalog and after setting
-up a KinD cluster use `make keycloak-install-kind` and port forward like: 
-
-```shell
-kubectl -n orch-app port-forward service/keycloak 8090:80
-```
+You can also use a Keycloak server running locally or in a dev environment
 
 > You will have to add a temporary redirect on the Keycloak `webui-client` for `http://localhost:3000/app-service-proxy-index.html/*`
 
@@ -40,5 +35,5 @@ If any of the query parameters are missing, the page will display an error messa
 
 ## Keycloak Client
 
-Keycloak client library is used to handle the login process. The client library is included in the HTML page using a script tag.
-The minified file was pulled from https://cdn.jsdelivr.net/npm/keycloak-js@25.0.5/dist/keycloak.min.js
+Keycloak client library is used to handle the login process. The client library is included in the HTML page using a
+script tag. The minified file was pulled from [https://cdn.jsdelivr.net/npm/keycloak-js@25.0.5/dist/keycloak.min.js](https://cdn.jsdelivr.net/npm/keycloak-js@25.0.5/dist/keycloak.min.js)

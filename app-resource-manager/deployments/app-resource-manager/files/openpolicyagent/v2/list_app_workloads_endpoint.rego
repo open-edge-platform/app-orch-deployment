@@ -3,6 +3,6 @@
 
 package resourcev2
 
-ListAppWorkloadsRequest {
+ListAppWorkloadsRequest if {
 	hasReadAccess
 }

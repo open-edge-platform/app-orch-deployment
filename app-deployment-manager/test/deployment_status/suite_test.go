@@ -53,12 +53,11 @@ func (s *TestSuite) SetupSuite() {
 	}
 }
 
-func TestDeploymentSuite(t *testing.T) {
+func TestDeploymentStatusSuite(t *testing.T) {
 	suite.Run(t, new(TestSuite))
 }
 
 // TearDownSuite cleans up after the entire test suite
 func (s *TestSuite) TearDownSuite() {
-	portforwarding.TearDownPortForward(s.PortForwardCmd)
 
 }

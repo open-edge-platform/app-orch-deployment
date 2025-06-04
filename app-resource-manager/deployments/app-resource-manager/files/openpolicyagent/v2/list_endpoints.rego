@@ -3,6 +3,6 @@
 
 package resourcev2
 
-ListAppEndpointsRequest {
+ListAppEndpointsRequest if {
 	hasReadAccess
 }

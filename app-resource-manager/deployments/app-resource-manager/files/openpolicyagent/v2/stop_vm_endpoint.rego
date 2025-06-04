@@ -3,6 +3,6 @@
 
 package resourcev2
 
-StopVirtualMachineRequest {
+StopVirtualMachineRequest if {
 	hasWriteAccess
 }
