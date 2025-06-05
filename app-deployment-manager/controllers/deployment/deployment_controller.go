@@ -1014,7 +1014,11 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 				// If the job is not completed, we are still waiting for it to finish
 				if job.Status.Succeeded == 0 {
 					gitRepoInTransitionStatus = true
-					message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, gitrepo.Status.Display.Message))
+					if gitrepo.Status.Display.Message != "" {
+						message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, gitrepo.Status.Display.Message))
+					} else {
+						message = ""
+					}
 					break
 				}
 
@@ -1097,7 +1101,9 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			newState = v1beta1.NoTargetClusters
 			if gitRepoInTransitionStatus {
 				fmt.Println("Test no target clusters set message:", d.Status.Message)
-				message = d.Status.Message
+				if message == "" {
+					message = d.Status.Message
+				}
 			}
 		} else {
 			// If deployment was already running and cluster went down
@@ -1105,7 +1111,9 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			if d.Status.DeployInProgress {
 				if gitRepoInTransitionStatus {
 					fmt.Println("Test deploying set message:", d.Status.Message)
-					message = d.Status.Message
+					if message == "" {
+						message = d.Status.Message
+					}
 				}
 				newState = v1beta1.Deploying
 			} else {
