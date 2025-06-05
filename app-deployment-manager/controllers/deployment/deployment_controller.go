@@ -1094,6 +1094,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		if time.Now().After(d.CreationTimestamp.Time.Add(noTargetClustersWait)) {
 			newState = v1beta1.NoTargetClusters
 			if gitRepoInTransitionStatus {
+				fmt.Println("Test no target clusters set message:", d.Status.Message)
 				message = d.Status.Message
 			}
 		} else {
@@ -1101,6 +1102,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			// before (d.CreationTimestamp.Time.Add(noTargetClustersWait)) then set NoTargetClusters
 			if d.Status.DeployInProgress {
 				if gitRepoInTransitionStatus {
+					fmt.Println("Test deploying set message:", d.Status.Message)
 					message = d.Status.Message
 				}
 				newState = v1beta1.Deploying
