@@ -19,7 +19,7 @@ on:
         description: 'The branch, tag or SHA to checkout EMF'
         required: true
         type: string
-        default: 'b3c4815fe5a221d827886bba0563dacc26f2ae2a'
+        default: '51d847c5b3a831454981f5fce7cecbbe1ade5e87'
 permissions:
   contents: read
 
@@ -32,5 +32,5 @@ jobs:
     with:
       component: app-deployment-manager
       use-enic: true
-      emf-branch: ${{ inputs.emf-branch || 'b3c4815fe5a221d827886bba0563dacc26f2ae2a' }}
+      emf-branch: ${{ inputs.emf-branch || '51d847c5b3a831454981f5fce7cecbbe1ade5e87' }}
     secrets: inherit # zizmor: ignore[secrets-inherit]
