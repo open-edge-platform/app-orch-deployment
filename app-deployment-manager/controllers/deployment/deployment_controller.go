@@ -990,7 +990,7 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 
 		if d.Status.DeployInProgress {
 			// Check if GitRepo is not ready for processing yet
-			if gitrepo.Status.Summary.DesiredReady == 0 && gitrepo.Status.GitJobStatus != "Failed" {
+			if gitrepo.Status.Summary.DesiredReady == 0 && gitrepo.Status.GitJobStatus != "Failed" && gitrepo.Status.UpdateGeneration != 0 {
 				gitRepoInTransitionStatus = true
 			}
 
