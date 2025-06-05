@@ -1010,15 +1010,11 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			}
 
 			for _, job := range jobs.Items {
-				for _, ownerRef := range job.OwnerReferences {
-					if ownerRef.UID == gitrepo.UID {
-						fmt.Println("Test Jobs", job.Name)
-						// If the job is not completed, we are still waiting for it to finish
-						if job.Status.Succeeded == 0 && job.Status.Failed == 0 {
-							gitRepoInTransitionStatus = true
-						}
-						break
-					}
+				fmt.Println("Test Jobs", job.Name)
+				// If the job is not completed, we are still waiting for it to finish
+				if job.Status.Succeeded == 0 && job.Status.Failed == 0 {
+					gitRepoInTransitionStatus = true
+					break
 				}
 			}
 
