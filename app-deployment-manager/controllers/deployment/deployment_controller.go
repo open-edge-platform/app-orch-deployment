@@ -975,6 +975,8 @@ func updateStatusMetrics(d *v1beta1.Deployment, deleteMetrics bool) {
 }
 
 func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Deployment, grlist []fleetv1alpha1.GitRepo, dclist []v1beta1.DeploymentCluster) {
+	log := log.FromContext(ctx)
+
 	var newState v1beta1.StateType
 	stalledApps := false
 	gitRepoInTransitionStatus := false
@@ -989,12 +991,13 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		appName := getAppNameForGitRepo(&gitrepo, d.GetId())
 
 		if d.Status.DeployInProgress {
-			// Check if GitRepo is not ready for processing yet
 			// Use r.Client to get a Kubernetes Job owned by this GitRepo
 			var jobs batchv1.JobList
 			if err := r.Client.List(ctx, &jobs, client.MatchingFields{jobOwnerKey: gitrepo.Name}); err != nil {
-				// handle error
+				log.Error(err, "Failed to list jobs for GitRepo", "GitRepo", gitrepo.Name)
+				return
 			}
+			log.Info("Test:", jobs)
 			for _, job := range jobs.Items {
 				for _, ownerRef := range job.OwnerReferences {
 					if ownerRef.UID == gitrepo.UID {
