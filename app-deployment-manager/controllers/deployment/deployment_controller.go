@@ -992,7 +992,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		if d.Status.DeployInProgress {
 			// Use r.Client to get a Kubernetes Job owned by this GitRepo
 			var jobs batchv1.JobList
-			if err := r.Client.List(ctx, &jobs, client.MatchingFields{jobOwnerKey: gitrepo.Name}); err != nil {
+			if err := r.Client.List(ctx, &jobs); err != nil {
 				fmt.Println("Test Error", err)
 				return
 			}
