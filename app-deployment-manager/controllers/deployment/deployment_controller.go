@@ -992,7 +992,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		if d.Status.DeployInProgress {
 			// Use r.Client to get a Kubernetes Job owned by this GitRepo
 			var jobs batchv1.JobList
-			if err := r.Client.List(ctx, &jobs); err != nil {
+			if err := r.Client.List(ctx, &jobs, client.MatchingFields{"ownerReferences.name": gitrepo.Name}); err != nil {
 				fmt.Println("Test Error", err)
 				return
 			}
@@ -1000,7 +1000,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			for _, job := range jobs.Items {
 				for _, ownerRef := range job.OwnerReferences {
 					if ownerRef.UID == gitrepo.UID {
-						fmt.Println("Test Jobs", job)
+						fmt.Println("Test Jobs", job.Name)
 						// If the job is not completed, we are still waiting for it to finish
 						if job.Status.Succeeded == 0 && job.Status.Failed == 0 {
 							gitRepoInTransitionStatus = true
