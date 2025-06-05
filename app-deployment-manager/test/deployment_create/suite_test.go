@@ -15,7 +15,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	"os/exec"
 	"testing"
-	"time"
 )
 
 // TestSuite is the basic test suite
@@ -34,7 +33,6 @@ func (s *TestSuite) SetupSuite() {
 	if err != nil {
 		s.T().Fatalf("failed to bring up port forward: %v", err)
 	}
-	time.Sleep(5 * time.Second) // Give some time for port-forwarding to establish
 
 	s.token, err = auth.SetUpAccessToken(auth.GetKeycloakServer())
 	if err != nil {
