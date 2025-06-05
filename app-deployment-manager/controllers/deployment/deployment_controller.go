@@ -1096,7 +1096,11 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			newState = v1beta1.NoTargetClusters
 			if gitRepoInTransitionStatus {
 				fmt.Println("Test no target clusters set message:", d.Status.Message)
-				message = utils.AppendMessage(message, d.Status.Message) // Retain and append the current message
+				if d.Status.Message != "" {
+					message = d.Status.Message
+				} else {
+					return
+				}
 
 			}
 		} else {
@@ -1105,7 +1109,11 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			if d.Status.DeployInProgress {
 				if gitRepoInTransitionStatus {
 					fmt.Println("Test deploying set message:", d.Status.Message)
-					message = utils.AppendMessage(message, d.Status.Message) // Retain and append the current message
+					if d.Status.Message != "" {
+						message = d.Status.Message
+					} else {
+						return
+					}
 
 				}
 				newState = v1beta1.Deploying
