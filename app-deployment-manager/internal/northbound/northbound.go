@@ -197,56 +197,10 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 		}
 	}
 
-	log.Infof("[DEBUG] OverrideValuesMasked before checkParameterTemplate: %+v", d.OverrideValuesMasked)
-	log.Infof("[DEBUG] OverrideValues before checkParameterTemplate: %+v", d.OverrideValues)
-	// if update scenario, then check override values
-	// if any secret value is masked. then
-	// search for secrets and find the value that matches this value name
-	// and replace in overridekeys struct.
-
-	if scenario == "update" {
-
-		for _, app := range *d.HelmApps {
-			secretName := fmt.Sprintf("%s-%s-%s-secret", d.Name, app.Name, d.ProfileName)
-			secretValue, err := utils.GetSecretValue(ctx, s.k8sClient, d.Namespace, secretName)
-			if err != nil {
-				utils.LogActivity(ctx, "get", "ADM", fmt.Sprintf("cannot get secret %s, error: %v", secretName, err))
-				continue
-			}
-
-			val, err := yaml2.YAMLToJSON(secretValue.Data["values"])
-			if err != nil {
-				utils.LogActivity(ctx, "get", "ADM", fmt.Sprintf("cannot convert values to JSON %v", err))
-				continue
-			}
-
-			var valuesStrPb *structpb.Struct
-			_ = json.Unmarshal(val, &valuesStrPb)
-
-			for _, val := range app.ParameterTemplates {
-
-				// Convert to correct value type
-				for _, k := range allOverrideKeys[app.Name] {
-					if k == val.Name {
-						var secretVal string
-						for _, oVal := range d.OverrideValues {
-							if oVal.AppName == app.Name {
-								_ = replaceMaskedPbValue(oVal.Values, valuesStrPb, secretVal, 0)
-
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
 	d, err = checkParameterTemplate(d, allOverrideKeys)
 	if err != nil {
 		return d, err
 	}
-
-	log.Infof("[DEBUG] OverrideValues after checkParameterTemplate: %+v", d.OverrideValues)
 
 	// if no profilename was provided, use default profilename from dp
 	if d.ProfileName == "" {
@@ -893,43 +847,6 @@ func (s *DeploymentSvc) GetDeployment(ctx context.Context, in *deploymentpb.GetD
 	c.deployment = deployment
 	deployResponse, _ := c.createDeploymentObject(ctx, s)
 
-	// --- MASK SECRETS FOR UI ---
-	// log.Infof("[DEBUG] About to mask secrets for UI")
-	// if deployResponse != nil && deployResponse.OverrideValues != nil &&
-	// 	c.deployment != nil && c.deployment.Spec.DeploymentPackageRef.Name != "" && c.deployment.Spec.DeploymentPackageRef.Version != "" {
-
-	// 	catalogClient, err := catalogclient.NewCatalogClient()
-	// 	log.Infof("[DEBUG] CatalogClient created: %v", catalogClient != nil)
-	// 	if err != nil {
-	// 		log.Warnf("Failed to create CatalogClient: %v", err)
-	// 		// Do NOT mask all, just log and return as-is
-	// 	} else {
-	// 		_, helmApps, _, err := catalogclient.CatalogLookupDPAndHelmApps(ctx, catalogClient,
-	// 			c.deployment.Spec.DeploymentPackageRef.Name,
-	// 			c.deployment.Spec.DeploymentPackageRef.Version,
-	// 			c.deployment.Spec.DeploymentPackageRef.ProfileName)
-
-	// 		//log.Infof("[DEBUG] Get HelmApps lookup result: %v, error: %v", helmApps, err)
-	// 		//log.Infof("[DEBUG] Get HelmApps length: %d", len(*helmApps))
-	// 		log.Infof("[DEBUG] Get OverrideValues before masking: %+v", deployResponse.OverrideValues)
-	// 		log.Infof("[DEBUG] Get Deployment Package: %s, Version: %s, Profile: %s",
-	// 			c.deployment.Spec.DeploymentPackageRef.Name,
-	// 			c.deployment.Spec.DeploymentPackageRef.Version,
-	// 			c.deployment.Spec.DeploymentPackageRef.ProfileName)
-
-	// 		if err != nil || helmApps == nil || len(*helmApps) == 0 {
-	// 			log.Warnf("HelmApps lookup error or empty, cannot mask secrets for Get")
-	// 			// Do NOT mask all, just log and return as-is
-	// 		} else {
-	// 			maskedCount := 0
-	// 			deployResponse.OverrideValues, maskedCount = MaskSecretsForUIWithCount(deployResponse.OverrideValues, *helmApps)
-	// 			log.Infof("[DEBUG] Masked secrets for Get cal UI, total masked values: %d", maskedCount)
-	// 			// deployResponse.OverrideValues = MaskSecretsForUI(deployResponse.OverrideValues, *helmApps)
-	// 			// log.Infof("[DEBUG] Masked secrets for Get call UI")
-	// 		}
-	// 	}
-	// }
-
 	utils.LogActivity(ctx, "list", "ADM", "deployment name "+name, "deploy id "+UID, "deployment app version "+deployResponse.AppVersion)
 	log.Infof("[DEBUG] [GetDeployment] OverrideValues stored in DB for deployment %s: %+v", deployResponse.Name, deployResponse.OverrideValues)
 	return &deploymentpb.GetDeploymentResponse{
@@ -1139,44 +1056,6 @@ func (s *DeploymentSvc) ListDeployments(ctx context.Context, in *deploymentpb.Li
 	}
 
 	totalNumDeployments := len(deployList)
-
-	// --- MASK SECRETS FOR UI ---
-	// log.Infof("[DEBUG] About to mask secrets for UI in ListDeployments")
-	// for i, deployResponse := range deployList {
-	// 	if deployResponse != nil && deployResponse.OverrideValues != nil &&
-	// 		deployResponse.AppName != "" && deployResponse.AppVersion != "" {
-
-	// 		catalogClient, err := catalogclient.NewCatalogClient()
-	// 		log.Infof("[DEBUG] CatalogClient created: %v", catalogClient != nil)
-	// 		if err != nil {
-	// 			log.Warnf("Failed to create CatalogClient: %v", err)
-	// 			// Do NOT mask all, just log and continue
-	// 			continue
-	// 		}
-	// 		_, helmApps, _, err := catalogclient.CatalogLookupDPAndHelmApps(ctx, catalogClient,
-	// 			deployResponse.AppName,
-	// 			deployResponse.AppVersion,
-	// 			deployResponse.ProfileName)
-
-	// 		//log.Infof("[DEBUG] List HelmApps lookup result: %v, error: %v", helmApps, err)
-	// 		//log.Infof("[DEBUG] List HelmApps length: %d", len(*helmApps))
-	// 		log.Infof("[DEBUG] List OverrideValues before masking: %+v", deployResponse.OverrideValues)
-	// 		log.Infof("[DEBUG] List Deployment Package: %s, Version: %s, Profile: %s",
-	// 			deployResponse.AppName,
-	// 			deployResponse.AppVersion,
-	// 			deployResponse.ProfileName)
-
-	// 		if err != nil || helmApps == nil || len(*helmApps) == 0 {
-	// 			log.Warnf("HelmApps lookup error or empty, cannot mask secrets for List")
-	// 			// Do NOT mask all, just log and continue
-	// 			continue
-	// 		}
-	// 		maskedCount := 0
-	// 		deployResponse.OverrideValues, maskedCount = MaskSecretsForUIWithCount(deployResponse.OverrideValues, *helmApps)
-	// 		log.Infof("[DEBUG] Masked secrets for List UI call, total masked values: %d", maskedCount)
-	// 		deployList[i] = deployResponse
-	// 	}
-	// }
 
 	// Paginate, sort, and filter list of deployments
 	selectedDeployments, err := selectDeployments(in, deployList)
@@ -1397,46 +1276,6 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 
 	d.Name = deployment.ObjectMeta.Name
 
-	// // Set OverrideValuesMasked to previous real values
-	// var prevOverrideValues []*deploymentpb.OverrideValues
-	// for _, app := range deployment.Spec.Applications {
-	// 	if app.ValueSecretName != "" {
-	// 		secretValue, err := utils.GetSecretValue(ctx, s.k8sClient, deployment.ObjectMeta.Namespace, app.ValueSecretName+"-masked")
-	// 		if err != nil {
-	// 			if apierrors.IsNotFound(err) {
-	// 				secretValue, err = utils.GetSecretValue(ctx, s.k8sClient, deployment.ObjectMeta.Namespace, app.ValueSecretName)
-	// 				if err != nil {
-	// 					utils.LogActivity(ctx, "get", "ADM", fmt.Sprintf("cannot get secret %s, error: %v", app.ValueSecretName, err))
-	// 					continue
-	// 				}
-	// 			} else {
-	// 				utils.LogActivity(ctx, "get", "ADM", fmt.Sprintf("cannot get secret %s-masked, error: %v", app.ValueSecretName, err))
-	// 				continue
-	// 			}
-	// 		}
-
-	// 		val, err := yaml2.YAMLToJSON(secretValue.Data["values"])
-	// 		if err != nil {
-	// 			utils.LogActivity(ctx, "get", "ADM", fmt.Sprintf("cannot convert values to JSON %v", err))
-	// 			continue
-	// 		}
-
-	// 		var valuesStrPb *structpb.Struct
-	// 		_ = json.Unmarshal(val, &valuesStrPb)
-
-	// 		prevOverrideValues = append(prevOverrideValues, &deploymentpb.OverrideValues{
-	// 			AppName:         app.Name,
-	// 			TargetNamespace: app.Namespace,
-	// 			Values:          valuesStrPb,
-	// 		})
-	// 	}
-	// }
-	// if len(prevOverrideValues) > 0 {
-	// 	d.OverrideValuesMasked = prevOverrideValues
-	// } else {
-	// 	d.OverrideValuesMasked = nil
-	// }
-
 	if d.DisplayName == "" {
 		d.DisplayName = deployment.Spec.DisplayName
 	}
@@ -1476,6 +1315,37 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 	}
 
 	// case 3
+
+	// --- Unmask secrets before createSecrets (fix for masked value overwrite) ---
+
+	for _, app := range *d.HelmApps {
+		secretName := fmt.Sprintf("%s-%s-%s-secret", d.Name, app.Name, d.ProfileName)
+		log.Infof("[DEBUG] [Unmask] Attempting to fetch secret for app: %s, secretName: %s, namespace: %s", app.Name, secretName, d.Namespace)
+		secretValue, err := utils.GetSecretValue(ctx, s.k8sClient, d.Namespace, secretName)
+		if err != nil {
+			log.Warnf("[DEBUG] [Unmask] Failed to get secret %s for app %s: %v", secretName, app.Name, err)
+			continue
+		}
+		val, err := yaml2.YAMLToJSON(secretValue.Data["values"])
+		if err != nil {
+			log.Warnf("[DEBUG] [Unmask] Failed to convert secret %s values to JSON for app %s: %v", secretName, app.Name, err)
+			continue
+		}
+		var valuesStrPb *structpb.Struct
+		if err := json.Unmarshal(val, &valuesStrPb); err != nil {
+			log.Warnf("[DEBUG] [Unmask] Failed to unmarshal secret %s JSON for app %s: %v", secretName, app.Name, err)
+			continue
+		}
+		log.Infof("[DEBUG] [Unmask] Fetched secret values for app %s: %+v", app.Name, valuesStrPb)
+		for _, oVal := range d.OverrideValues {
+			if oVal.AppName == app.Name && oVal.Values != nil && valuesStrPb != nil {
+				log.Infof("[DEBUG] [Unmask] Before unmask: AppName=%s, Values=%+v", oVal.AppName, oVal.Values)
+				UnmaskSecrets(oVal.Values, valuesStrPb, "")
+				log.Infof("[DEBUG] [Unmask] After unmask: AppName=%s, Values=%+v", oVal.AppName, oVal.Values)
+			}
+		}
+	}
+
 	err = deleteSecrets(ctx, s.k8sClient, deployment)
 	if err != nil {
 		log.Warnf("cannot update deployment: %v", err)
@@ -1516,98 +1386,6 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 	c.deployment = deployment
 	deployResponse, _ := c.createDeploymentObject(ctx, s)
 
-	// // --- MASK SECRETS FOR UI ---
-	// log.Infof("[DEBUG] About to mask secrets for UI")
-	// if deployResponse != nil && deployResponse.OverrideValues != nil &&
-	// 	c.deployment != nil && c.deployment.Spec.DeploymentPackageRef.Name != "" {
-
-	// 	catalogClient, err := catalogclient.NewCatalogClient()
-	// 	if err != nil {
-	// 		log.Warnf("Failed to create CatalogClient: %v", err)
-	// 		// Do NOT mask all, just log and return as-is
-	// 	} else {
-	// 		_, helmApps, _, err := catalogclient.CatalogLookupDPAndHelmApps(ctx, catalogClient,
-	// 			c.deployment.Spec.DeploymentPackageRef.Name,
-	// 			c.deployment.Spec.DeploymentPackageRef.Version,
-	// 			c.deployment.Spec.DeploymentPackageRef.ProfileName)
-
-	// 		log.Infof("[DEBUG] Update HelmApps lookup result: %v, error: %v", helmApps, err)
-	// 		log.Infof("[DEBUG] Update HelmApps length: %d", len(*helmApps))
-	// 		log.Infof("[DEBUG] Update OverrideValues before masking: %+v", deployResponse.OverrideValues)
-	// 		log.Infof("[DEBUG] Update Deployment Package: %s, Version: %s, Profile: %s",
-	// 			c.deployment.Spec.DeploymentPackageRef.Name,
-	// 			c.deployment.Spec.DeploymentPackageRef.Version,
-	// 			c.deployment.Spec.DeploymentPackageRef.ProfileName)
-
-	// 		if err != nil || helmApps == nil || len(*helmApps) == 0 {
-	// 			log.Warnf("HelmApps lookup error or empty, cannot mask secrets for Update")
-	// 			// Do NOT mask all, just log and return as-is
-	// 		} else {
-	// 			// maskedCount := 0
-	// 			// deployResponse.OverrideValues, maskedCount = MaskSecretsForUIWithCount(deployResponse.OverrideValues, *helmApps)
-	// 			// log.Infof("[DEBUG] Masked secrets for Update UI call, total masked values: %d", maskedCount)
-	// 			deployResponse.OverrideValues = MaskSecretsForUI(deployResponse.OverrideValues, *helmApps)
-	// 			log.Infof("[DEBUG] Masked secrets for Update call UI")
-	// 		}
-	// 	}
-	// }
-	// In your UpdateDeployment handler, before saving:
-
-	// Restore real values for masked fields ("********") in OverrideValues from the stored deployment values.
-	// Fetch previous real values from the existing deployment CR (already loaded as `deployment`)
-	var prevOverrideValues []*deploymentpb.OverrideValues
-	for _, app := range deployment.Spec.Applications {
-		if app.ValueSecretName != "" {
-			secretValue, err := utils.GetSecretValue(ctx, s.k8sClient, deployment.ObjectMeta.Namespace, app.ValueSecretName)
-			if err != nil {
-				utils.LogActivity(ctx, "get", "ADM", fmt.Sprintf("cannot get secret %s, error: %v", app.ValueSecretName, err))
-				continue
-			}
-			val, err := yaml2.YAMLToJSON(secretValue.Data["values"])
-			if err != nil {
-				utils.LogActivity(ctx, "get", "ADM", fmt.Sprintf("cannot convert values to JSON %v", err))
-				continue
-			}
-			var valuesStrPb *structpb.Struct
-			_ = json.Unmarshal(val, &valuesStrPb)
-			prevOverrideValues = append(prevOverrideValues, &deploymentpb.OverrideValues{
-				AppName:         app.Name,
-				TargetNamespace: app.Namespace,
-				Values:          valuesStrPb,
-			})
-		}
-	}
-
-	log.Infof("[DEBUG] Incoming OverrideValues app names: %v", func() []string {
-		var names []string
-		for _, o := range d.OverrideValues {
-			names = append(names, o.AppName)
-		}
-		return names
-	}())
-	log.Infof("[DEBUG] Stored OverrideValues app names: %v", func() []string {
-		var names []string
-		for _, o := range prevOverrideValues {
-			names = append(names, o.AppName)
-		}
-		return names
-	}())
-	log.Infof("[DEBUG] Previous OverrideValues fetched from store for update: %+v", prevOverrideValues)
-
-	// Restore real values for masked fields ("********") in OverrideValues from the stored deployment values.
-	for i, oVal := range d.OverrideValues {
-		for _, storedVal := range prevOverrideValues {
-			if oVal.AppName == storedVal.AppName && oVal.Values != nil && storedVal.Values != nil {
-				log.Infof("[DEBUG] Incoming (possibly masked) values for app %s: %v", oVal.AppName, oVal.Values)
-				log.Infof("[DEBUG] Stored (real) values for app %s: %v", storedVal.AppName, storedVal.Values)
-				unmaskSecrets(oVal.Values, storedVal.Values)
-				log.Infof("[DEBUG] After unmask for app %s: %v", oVal.AppName, oVal.Values)
-				d.OverrideValues[i].Values = oVal.Values
-				break
-			}
-		}
-	}
-	// Now save incoming.OverrideValues (with real values restored)
 	log.Infof("[DEBUG] Final OverrideValues to be stored for deployment %s: %+v", d.Name, d.OverrideValues)
 
 	utils.LogActivity(ctx, "update", "ADM", "deployment name "+d.Name, "deploy id "+d.DeployID, "deployment app version "+in.Deployment.AppVersion)

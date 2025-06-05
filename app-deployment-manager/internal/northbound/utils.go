@@ -696,42 +696,6 @@ func updatePbValue(s *structpb.Struct, structKeys []string, inValInt int, inValS
 	return inValInt, inValStr
 }
 
-func replaceMaskedPbValue(s, replace *structpb.Struct, inValStr string, currentDepth int) string {
-	// Check if the current depth exceeds the maximum depth
-	if currentDepth > maxDepth {
-		fmt.Println("Maximum recursion depth reached")
-		return inValStr
-	}
-
-	for k := range s.Fields {
-		v := s.Fields[k]
-		if v.Kind == nil {
-			continue
-		}
-
-		switch v.Kind.(type) {
-		case *structpb.Value_StringValue:
-			inValStr = v.GetStringValue()
-			if inValStr == "********" {
-				fmt.Println("Value recieved %s", inValStr)
-				for key := range replace.Fields {
-					if key == k {
-						fmt.Println("key found %s", key)
-						val := replace.Fields[key]
-						_, ok := val.GetKind().(*structpb.Value_StringValue)
-						if ok {
-							s.Fields[k] = val
-							fmt.Println("Value updated %s", val.GetStringValue())
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return inValStr
-}
-
 func maskPbValue(s *structpb.Struct, structKeys []string, inValStr string, currentDepth int) string {
 	// Check if the current depth exceeds the maximum depth
 	if currentDepth > maxDepth {
@@ -840,30 +804,14 @@ func checkParameterTemplate(d *Deployment, allOverrideKeys map[string][]string) 
 	}
 	d.OverrideValues = OverrideValuesNotMasked
 
-	// Unmask all secrets in OverrideValues using OverrideValuesMasked
-	// for i, oVal := range d.OverrideValues {
-	// 	for _, origVal := range d.OverrideValuesMasked {
-	// 		if oVal.AppName == origVal.AppName {
-	// 			unmaskSecrets(oVal.Values, origVal.Values)
-	// 			d.OverrideValues[i].Values = oVal.Values
-	// 			log.Infof("[DEBUG] After unmaskSecrets: %v", d.OverrideValues[i].Values)
-	// 			break
-	// 		}
-	// 	}
-	// }
-
-	log.Infof("[DEBUG] Entering checkParameterTemplate for deployment: %s", d.Name)
 	for _, app := range *d.HelmApps {
 		addedToNotFoundApp := false
 		appSecretVals := make(map[string]string)
 
 		// Validate parameter template and create secret if needed
-		log.Infof("[DEBUG] Processing app: %s", app.Name)
 		for _, val := range app.ParameterTemplates {
-			log.Infof("[DEBUG] Processing param: %s (secret=%v)", val.Name, val.Secret)
 			// Convert to correct value type
 			for _, k := range allOverrideKeys[app.Name] {
-				log.Infof("[DEBUG] allOverrideKey: %s, val.Name: %s", k, val.Name)
 				if k == val.Name {
 					var inValInt int
 					var inValStr string
@@ -1070,114 +1018,29 @@ func configureRsProxy(ctx context.Context, s *kubernetes.Clientset, nsName strin
 	return nil
 }
 
-func unmaskSecrets(current, previous *structpb.Struct) {
+func UnmaskSecrets(current *structpb.Struct, previous *structpb.Struct, prefix string) {
 	for k, v := range current.Fields {
+		fullKey := k
+		if prefix != "" {
+			fullKey = prefix + "." + k
+		}
 		switch val := v.Kind.(type) {
 		case *structpb.Value_StringValue:
 			if val.StringValue == "********" {
-				if prevVal, ok := previous.Fields[k]; ok {
+				if prevVal, ok := previous.Fields[fullKey]; ok {
 					if prevStr, ok := prevVal.Kind.(*structpb.Value_StringValue); ok {
 						current.Fields[k] = structpb.NewStringValue(prevStr.StringValue)
 					}
 				}
 			}
 		case *structpb.Value_StructValue:
-			if prevVal, ok := previous.Fields[k]; ok {
-				if prevStruct, ok := prevVal.Kind.(*structpb.Value_StructValue); ok {
-					// RECURSE into nested struct!
-					unmaskSecrets(val.StructValue, prevStruct.StructValue)
-				}
-			}
+			UnmaskSecrets(val.StructValue, previous, fullKey)
 		case *structpb.Value_ListValue:
-			if prevVal, ok := previous.Fields[k]; ok {
-				if prevList, ok := prevVal.Kind.(*structpb.Value_ListValue); ok {
-					for i, item := range val.ListValue.Values {
-						if i < len(prevList.ListValue.Values) {
-							if itemStruct, ok := item.Kind.(*structpb.Value_StructValue); ok {
-								if prevItemStruct, ok := prevList.ListValue.Values[i].Kind.(*structpb.Value_StructValue); ok {
-									unmaskSecrets(itemStruct.StructValue, prevItemStruct.StructValue)
-								}
-							}
-						}
-					}
+			for i, item := range val.ListValue.Values {
+				if itemStruct, ok := item.Kind.(*structpb.Value_StructValue); ok {
+					UnmaskSecrets(itemStruct.StructValue, previous, fullKey+fmt.Sprintf("[%d]", i))
 				}
 			}
 		}
 	}
 }
-
-// func MaskSecretsForUI(overrideValues []*deploymentpb.OverrideValues, helmApps []catalogclient.HelmApp) []*deploymentpb.OverrideValues {
-// 	masked := []*deploymentpb.OverrideValues{}
-// 	for _, oVal := range overrideValues {
-// 		if oVal == nil || oVal.Values == nil {
-// 			masked = append(masked, oVal)
-// 			continue
-// 		}
-// 		clone := &deploymentpb.OverrideValues{
-// 			AppName:         oVal.AppName,
-// 			TargetNamespace: oVal.TargetNamespace,
-// 			Values:          proto.Clone(oVal.Values).(*structpb.Struct),
-// 		}
-// 		for _, app := range helmApps {
-// 			if app.Name == oVal.AppName {
-// 				for _, val := range app.ParameterTemplates {
-// 					if val.Secret {
-// 						keys := strings.Split(val.Name, ".")
-// 						maskPbValue(clone.Values, keys, "", 0)
-// 					}
-// 				}
-// 			}
-// 		}
-// 		masked = append(masked, clone)
-// 	}
-// 	return masked
-// }
-
-// func MaskSecretsForUIWithCount(overrideValues []*deploymentpb.OverrideValues, helmApps []catalogclient.HelmApp) ([]*deploymentpb.OverrideValues, int) {
-// 	masked := []*deploymentpb.OverrideValues{}
-// 	maskedCount := 0
-// 	for _, oVal := range overrideValues {
-// 		if oVal == nil || oVal.Values == nil {
-// 			masked = append(masked, oVal)
-// 			continue
-// 		}
-// 		clone := &deploymentpb.OverrideValues{
-// 			AppName:         oVal.AppName,
-// 			TargetNamespace: oVal.TargetNamespace,
-// 			Values:          proto.Clone(oVal.Values).(*structpb.Struct),
-// 		}
-// 		for _, app := range helmApps {
-// 			if app.Name == oVal.AppName {
-// 				for _, val := range app.ParameterTemplates {
-// 					if val.Secret {
-// 						keys := strings.Split(val.Name, ".")
-// 						maskedCount += maskPbValueWithCount(clone.Values, keys, "", 0)
-// 					}
-// 				}
-// 			}
-// 		}
-// 		masked = append(masked, clone)
-// 	}
-// 	return masked, maskedCount
-// }
-
-// // Helper to count how many values are masked
-// func maskPbValueWithCount(s *structpb.Struct, keys []string, parent string, idx int) int {
-// 	if idx >= len(keys) {
-// 		return 0
-// 	}
-// 	key := keys[idx]
-// 	field, ok := s.Fields[key]
-// 	if !ok {
-// 		return 0
-// 	}
-// 	if idx == len(keys)-1 {
-// 		// Mask and count
-// 		s.Fields[key] = structpb.NewStringValue("********")
-// 		return 1
-// 	}
-// 	if sub, ok := field.Kind.(*structpb.Value_StructValue); ok {
-// 		return maskPbValueWithCount(sub.StructValue, keys, key, idx+1)
-// 	}
-// 	return 0
-// }
