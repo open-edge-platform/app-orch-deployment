@@ -1079,7 +1079,9 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 			// before (d.CreationTimestamp.Time.Add(noTargetClustersWait)) then set NoTargetClusters
 			if d.Status.DeployInProgress {
 				if gitRepoInTransitionStatus {
-					message = d.Status.Message
+					if strings.Contains("failed to process bundle", d.Status.Message) {
+						message = d.Status.Message
+					}
 				}
 				newState = v1beta1.Deploying
 			} else {
