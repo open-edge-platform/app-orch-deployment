@@ -53,60 +53,9 @@ const (
 )
 
 var (
-	IgnoreConfigMapOp = []Operation{
+	IgnoreOp = []Operation{
 		{
-			Op:   "remove",
-			Path: "/metadata/annotations",
-		},
-		{
-			Op:   "remove",
-			Path: "/data",
-		},
-	}
-	IgnoreVWCOp = []Operation{
-		{
-			Op:   "remove",
-			Path: "/webhooks",
-		},
-	}
-	IgnoreMWCOp = []Operation{
-		{
-			Op:   "remove",
-			Path: "/webhooks",
-		},
-	}
-	IgnoreSecretOp = []Operation{
-		{
-			Op:   "remove",
-			Path: "/data",
-		},
-		{
-			Op:   "remove",
-			Path: "/metadata",
-		},
-	}
-	IgnoreCRDOp = []Operation{
-		{
-			Op:   "remove",
-			Path: "/spec",
-		},
-	}
-	IgnoreEnvoyOp = []Operation{
-		{
-			Op:   "remove",
-			Path: "/spec/configPatches",
-		},
-	}
-	IgnoreDeploymentOp = []Operation{
-		{
-			Op:   "remove",
-			Path: "/spec/template/spec",
-		},
-	}
-	IgnoreJobOp = []Operation{
-		{
-			Op:   "remove",
-			Path: "/spec/template/spec",
+			Op:   "ignore",
 		},
 	}
 )
@@ -273,7 +222,10 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 			return err
 		}
 		// Create Config
-		fleetConf := newFleetConfig(app.Name, appMap, d.GetId(), d.GetName(), d.GetGeneration(), namespace)
+		fleetConf, err := newFleetConfig(app.Name, appMap, d.GetId(), d.GetName(), d.GetGeneration(), namespace)
+		if err != nil {
+			return err
+		}
 		fleetPath := filepath.Join(baseDir, app.Name)
 
 		// Generate profile.yaml with profile contents
@@ -482,14 +434,14 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 	return nil
 }
 
-func newFleetConfig(appName string, appMap map[string]v1beta1.Application, depID string, depName string, generation int64, namespace string) Config {
+func newFleetConfig(appName string, appMap map[string]v1beta1.Application, depID string, depName string, generation int64, namespace string) (Config, error) {
 	app := appMap[appName]
 	bundlename := BundleName(app, depName)
 
 	repo := app.HelmApp.Repo
 	u, err := url.Parse(repo)
 	if err != nil {
-		return Config{}
+		return Config{}, err
 	}
 
 	repoURL := app.HelmApp.Repo
@@ -542,47 +494,35 @@ func newFleetConfig(appName string, appMap map[string]v1beta1.Application, depID
 		}
 
 		switch res.Kind {
-		//Check for case ValidatingWebhookConfiguration
-		case "ConfigMap":
+		case "Secret", "ConfigMap":
 			patch := ComparePatch{
 				Kind:       res.Kind,
 				APIVersion: "v1",
 				Name:       res.Name,
 				Namespace:  ns,
-				Operations: IgnoreConfigMapOp,
+				Operations: IgnoreOp,
 			}
 			fleetConf.Diff.ComparePatches = append(fleetConf.Diff.ComparePatches, patch)
-		case "ValidatingWebhookConfiguration":
+		case "ValidatingWebhookConfiguration", "MutatingWebhookConfiguration":
+			if res.Namespace != "" {
+				return Config{}, fmt.Errorf("namespace is not supported for %s kind in diff configuration", res.Kind)
+			}
 			patch := ComparePatch{
 				Kind:       res.Kind,
 				APIVersion: "admissionregistration.k8s.io/v1",
 				Name:       res.Name,
-				Operations: IgnoreVWCOp,
-			}
-			fleetConf.Diff.ComparePatches = append(fleetConf.Diff.ComparePatches, patch)
-		case "MutatingWebhookConfiguration":
-			patch := ComparePatch{
-				Kind:       res.Kind,
-				APIVersion: "admissionregistration.k8s.io/v1",
-				Name:       res.Name,
-				Operations: IgnoreMWCOp,
-			}
-			fleetConf.Diff.ComparePatches = append(fleetConf.Diff.ComparePatches, patch)
-		case "Secret":
-			patch := ComparePatch{
-				Kind:       res.Kind,
-				APIVersion: "v1",
-				Name:       res.Name,
-				Namespace:  ns,
-				Operations: IgnoreSecretOp,
+				Operations: IgnoreOp,
 			}
 			fleetConf.Diff.ComparePatches = append(fleetConf.Diff.ComparePatches, patch)
 		case "CustomResourceDefinition":
+			if res.Namespace != "" {
+				return Config{}, fmt.Errorf("namespace is not supported for %s kind in diff configuration", res.Kind)
+			}
 			patch := ComparePatch{
 				Kind:       res.Kind,
 				APIVersion: "apiextensions.k8s.io/v1",
 				Name:       res.Name,
-				Operations: IgnoreCRDOp,
+				Operations: IgnoreOp,
 			}
 			fleetConf.Diff.ComparePatches = append(fleetConf.Diff.ComparePatches, patch)
 		case "EnvoyFilter":
@@ -591,7 +531,7 @@ func newFleetConfig(appName string, appMap map[string]v1beta1.Application, depID
 				APIVersion: "networking.istio.io/v1beta1",
 				Name:       res.Name,
 				Namespace:  ns,
-				Operations: IgnoreEnvoyOp,
+				Operations: IgnoreOp,
 			}
 			fleetConf.Diff.ComparePatches = append(fleetConf.Diff.ComparePatches, patch)
 		case "Deployment":
@@ -600,7 +540,7 @@ func newFleetConfig(appName string, appMap map[string]v1beta1.Application, depID
 				APIVersion: "apps/v1",
 				Name:       res.Name,
 				Namespace:  ns,
-				Operations: IgnoreDeploymentOp,
+				Operations: IgnoreOp,
 			}
 			fleetConf.Diff.ComparePatches = append(fleetConf.Diff.ComparePatches, patch)
 		case "Job":
@@ -609,14 +549,15 @@ func newFleetConfig(appName string, appMap map[string]v1beta1.Application, depID
 				APIVersion: "batch/v1",
 				Name:       res.Name,
 				Namespace:  ns,
-				Operations: IgnoreJobOp,
+				Operations: IgnoreOp,
 			}
 			fleetConf.Diff.ComparePatches = append(fleetConf.Diff.ComparePatches, patch)
 		default:
+			return Config{}, fmt.Errorf("unsupported: Kind %s not supported in diff configuration", res.Kind)
 		}
 	}
 
-	return fleetConf
+	return fleetConf, nil
 }
 
 func valuesFromSecret(secretName string, namespace string, kc client.Client) (string, error) {
