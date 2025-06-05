@@ -51,7 +51,7 @@ func (s *TestSuite) SetupSuite() {
 	}
 }
 
-func TestDeploymentStatusSuite(t *testing.T) {
+func TestDeleteDeploymentSuite(t *testing.T) {
 	suite.Run(t, new(TestSuite))
 }
 
