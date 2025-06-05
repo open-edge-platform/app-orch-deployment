@@ -1012,18 +1012,9 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			for _, job := range jobs.Items {
 				fmt.Println("Test Jobs", job.Name)
 				// If the job is not completed, we are still waiting for it to finish
-				/*if job.Status.Succeeded == 0 {
+				if job.Status.Succeeded == 0 {
 					gitRepoInTransitionStatus = true
 					break
-				}*/
-				if job.Status.Conditions != nil {
-					for _, cond := range job.Status.Conditions {
-						if cond.Type == batchv1.JobComplete && cond.Status == corev1.ConditionFalse {
-							fmt.Println("Test Job Complete False", cond.Message)
-							gitRepoInTransitionStatus = true
-							break
-						}
-					}
 				}
 
 			}
