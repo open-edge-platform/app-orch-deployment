@@ -1014,6 +1014,9 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 				// If the job is not completed, we are still waiting for it to finish
 				if job.Status.Succeeded == 0 {
 					gitRepoInTransitionStatus = true
+					/*if gitrepo.Status.GitJobStatus == "Failed" {
+						message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, gitrepo.Status.Display.Message))
+					}*/
 					break
 				}
 
