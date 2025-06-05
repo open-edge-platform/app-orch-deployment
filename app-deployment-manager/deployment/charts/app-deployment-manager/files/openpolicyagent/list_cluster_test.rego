@@ -4,7 +4,7 @@
 package deploymentv1
 
 #  list clusters with ao-m2m-rw
-test_list_clusters_write_role {
+test_list_clusters_write_role if {
 	not ListClustersRequest with input as {
 		"request": {"labels": "customer=test"},
 		"metadata": {"realm_access/roles": [
@@ -16,7 +16,7 @@ test_list_clusters_write_role {
 }
 
 # list clusters with ao-m2m-rw
-test_list_clusters_read_role {
+test_list_clusters_read_role if {
 	ListClustersRequest with input as {
 		"request": {"labels": "customer=test"},
 		"metadata": {"realm_access/roles": [

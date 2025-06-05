@@ -6,7 +6,7 @@ package deploymentv1
 import future.keywords.in
 
 # ao-m2m-rw
-test_list_deployment_clusters_read_write_role {
+test_list_deployment_clusters_read_write_role if {
 	not ListDeploymentClustersRequest with input as {
 		"request": {"deplId": "deployment-1"},
 		"metadata": {"realm_access/roles": [
@@ -18,7 +18,7 @@ test_list_deployment_clusters_read_write_role {
 }
 
 # ao-m2m-rw
-test_list_deployment_clusters_read_role {
+test_list_deployment_clusters_read_role if {
 	ListDeploymentClustersRequest with input as {
 		"request": {"deplId": "deployment-2"},
 		"metadata": {"realm_access/roles": [

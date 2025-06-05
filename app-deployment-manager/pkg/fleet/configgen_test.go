@@ -99,7 +99,7 @@ var _ = Describe("Fleet config generator", func() {
 		overValues []byte
 		globValues *ExtraValues
 
-		imageRegistry = "https://test.registry.intel.com/"
+		imageRegistry = "oci://test.registry.intel.com/catalog-apps-mock-org-1-mock-project-1-in-mock-org-1"
 		imageRegUser  = "user"
 		imageRegPass  = "pass"
 
@@ -175,7 +175,7 @@ var _ = Describe("Fleet config generator", func() {
 					Namespace: "default",
 				},
 				Data: map[string][]byte{
-					"values": []byte(`{"image": "%ImageRegistryURL%/%RegistryProjectName%/some-image"}`),
+					"values": []byte(`{"image": "%ImageRegistryURL%/some-image", "current-org": "%OrgName%","current-project": "%ProjectName%"}`),
 				},
 			},
 		}
@@ -241,9 +241,11 @@ var _ = Describe("Fleet config generator", func() {
 			},
 		}
 
+		imageRegistryURL, err := url.Parse(imageRegistry)
+		Expect(err).To(BeNil())
 		credjson, err := json.Marshal(map[string]interface{}{
 			"auths": map[string]interface{}{
-				imageRegistry: map[string]string{
+				imageRegistryURL.Host: map[string]string{
 					"username": imageRegUser,
 					"password": imageRegPass,
 				},
@@ -693,7 +695,7 @@ var _ = Describe("Fleet config generator", func() {
 			})
 		})
 
-		Context("ImageRegistryURL% and %RegistryProjectName are provided", func() {
+		Context("ImageRegistryURL% is provided", func() {
 			It("should replace them in values", func() {
 				app := &deployment.Spec.Applications[0]
 				app.HelmApp.ImageRegistry = imageRegistry
@@ -712,7 +714,8 @@ var _ = Describe("Fleet config generator", func() {
 				Expect(err).To(BeNil())
 
 				Expect(string(contents)).To(
-					Equal("{\"image\": \"test.registry.intel.com/catalog-apps-mock-org-1-mock-project-1-in-mock-org-1/some-image\"}"))
+					Equal(
+						`{"image": "test.registry.intel.com/catalog-apps-mock-org-1-mock-project-1-in-mock-org-1/some-image", "current-org": "mock-org-1","current-project": "mock-project-1-in-mock-org-1"}`))
 			})
 		})
 

@@ -3,12 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Package auth contains utilities for keycloak authentication
-package utils
+package auth
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
+	"os"
+	"strconv"
 
 	nexus_client "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/nexus-client"
 	"io"
@@ -28,20 +31,14 @@ const InvalidJWT = "eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9.ey" +
 	"vLS2YPiBTZ8xbB3axdM99LhES-n52lVkiX5AWg2JJkEROZzLMpaacA" +
 	"_xlbUz_zbIaOaoqk8gB5oO7kI6sZej3QAdGigQy-hXiRnW_L98d4GQ"
 
-const (
-	SampleOrg     = "sample-org"
-	SampleProject = "sample-project"
-	kcPass        = "ChangeMeOn1stLogin!"
-)
-
 func SetUpAccessToken(server string) (string, error) {
 	c := &http.Client{
 		Transport: &http.Transport{},
 	}
 	data := url.Values{}
 	data.Set("client_id", "system-client")
-	data.Set("username", fmt.Sprintf("%s-edge-mgr", SampleProject))
-	data.Set("password", kcPass)
+	data.Set("username", fmt.Sprintf("%s-edge-mgr", types.SampleProject))
+	data.Set("password", types.KCPass)
 	data.Set("grant_type", "password")
 	url := "https://" + server + "/realms/master/protocol/openid-connect/token"
 	req, err := http.NewRequest(http.MethodPost,
@@ -88,29 +85,43 @@ func GetProjectID(ctx context.Context) (string, error) {
 	config := ctrl.GetConfigOrDie()
 	nexusClient, err := nexus_client.NewForConfig(config)
 	if err != nil {
-		return "", fmt.Errorf("\nerror retrieving the project (%s): %w", SampleProject, err)
+		return "", fmt.Errorf("\nerror retrieving the project (%s): %w", types.SampleProject, err)
 	}
 	configNode := nexusClient.TenancyMultiTenancy().Config()
 	if configNode == nil {
-		return "", fmt.Errorf("\nerror retrieving the project (%s): %w", SampleProject, err)
+		return "", fmt.Errorf("\nerror retrieving the project (%s): %w", types.SampleProject, err)
 	}
 
-	org := configNode.Orgs(SampleOrg)
+	org := configNode.Orgs(types.SampleOrg)
 	if org == nil {
-		fmt.Printf("org %s does not exist.\n", SampleOrg)
+		fmt.Printf("org %s does not exist.\n", types.SampleOrg)
 		return "", nil
 	}
 
 	folder := org.Folders("default")
 	if folder == nil {
-		return "", fmt.Errorf("\nerror retrieving the project (%s): %w", SampleProject, err)
+		return "", fmt.Errorf("\nerror retrieving the project (%s): %w", types.SampleProject, err)
 	}
 
-	project := folder.Projects(SampleProject)
+	project := folder.Projects(types.SampleProject)
 	projectStatus, err := project.GetProjectStatus(ctx)
 	if projectStatus == nil || err != nil {
-		return "", fmt.Errorf("\nerror retrieving the project (%s): %w", SampleProject, err)
+		return "", fmt.Errorf("\nerror retrieving the project (%s): %w", types.SampleProject, err)
 	}
 
 	return projectStatus.UID, nil
+}
+
+func GetKeycloakServer() string {
+	orchDomain := GetOrchDomain()
+	return fmt.Sprintf("keycloak.%s", orchDomain)
+}
+
+func GetOrchDomain() string {
+	autoCert, err := strconv.ParseBool(os.Getenv("AUTO_CERT"))
+	orchDomain := os.Getenv("ORCH_DOMAIN")
+	if err != nil || !autoCert || orchDomain == "" {
+		orchDomain = "kind.internal"
+	}
+	return orchDomain
 }

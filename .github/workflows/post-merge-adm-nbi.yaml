@@ -21,7 +21,7 @@ jobs:
       contents: read
       security-events: write
       id-token: write
-    uses: open-edge-platform/orch-ci/.github/workflows/post-merge.yml@31986a986cab0a87721ecb694388029e94e55ff7 # v0.1.8
+    uses: open-edge-platform/orch-ci/.github/workflows/post-merge.yml@31624c09a11515551519a32de36ed9ffa28ae8fb  # 0.1.23
     with:
       run_version_check: false
       run_dep_version_check: false
@@ -29,10 +29,14 @@ jobs:
       run_docker_build: false
       run_docker_push: false
       run_version_tag: true
-      run_artifact: false
       run_helm_build: false
       run_helm_push: false
       prefix_tag_separator: "/v"
       project_folder: "app-deployment-manager/api/nbi"
     secrets:
-      inherit # zizmor: ignore[secrets-inherit]
+      SYS_ORCH_GITHUB: ${{ secrets.SYS_ORCH_GITHUB }}
+      COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+      COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+      NO_AUTH_ECR_PUSH_USERNAME: ${{ secrets.NO_AUTH_ECR_PUSH_USERNAME }}
+      NO_AUTH_ECR_PUSH_PASSWD: ${{ secrets.NO_AUTH_ECR_PUSH_PASSWD }}
+      MSTEAMS_WEBHOOK: ${{ secrets.TEAMS_WEBHOOK }}

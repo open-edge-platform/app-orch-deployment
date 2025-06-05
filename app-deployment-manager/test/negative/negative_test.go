@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package deployment
+package negative
 
 import (
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/test/utils"
+	deploymentutils "github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/deployment"
 	"net/http"
 )
 
 func (s *TestSuite) TestNegativeCreateDeployment() {
-	originalDpConfigs := CopyOriginalDpConfig(utils.DpConfigs)
-	defer func() { utils.DpConfigs = CopyOriginalDpConfig(originalDpConfigs) }()
+	originalDpConfigs := deploymentutils.CopyOriginalDpConfig(deploymentutils.DpConfigs)
+	defer func() { deploymentutils.DpConfigs = deploymentutils.CopyOriginalDpConfig(originalDpConfigs) }()
 
 	tests := []struct {
 		configKey   string
@@ -26,10 +26,18 @@ func (s *TestSuite) TestNegativeCreateDeployment() {
 	}
 
 	for _, test := range tests {
-		err := ResetThenChangeDpConfig("nginx", test.configKey, test.configValue, originalDpConfigs)
+		err := deploymentutils.ResetThenChangeDpConfig("nginx", test.configKey, test.configValue, originalDpConfigs)
 		s.NoError(err, "failed to reset "+test.configKey+" in deployment config")
 
-		deployID, retCode, err := utils.StartDeployment(s.AdmClient, "nginx", test.deployment, 10)
+		deploymentReq := deploymentutils.StartDeploymentRequest{
+			AdmClient:         s.AdmClient,
+			DpPackageName:     "nginx",
+			DeploymentType:    test.deployment,
+			DeploymentTimeout: deploymentutils.DeploymentTimeout,
+			DeleteTimeout:     deploymentutils.DeleteTimeout,
+			TestName:          "NegativeCreateDeployment",
+		}
+		deployID, retCode, err := deploymentutils.StartDeployment(deploymentReq)
 		s.Equal(retCode, http.StatusBadRequest)
 		s.Error(err)
 		s.Contains(err.Error(), test.expectedErr)

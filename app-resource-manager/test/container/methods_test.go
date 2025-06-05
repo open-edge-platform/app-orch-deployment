@@ -5,6 +5,7 @@
 package container
 
 import (
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 	"net/http"
 )
 
@@ -34,18 +35,18 @@ var deleteMethods = map[string]int{
 
 // TestListMethods tests both app workload and endpoint service with different HTTP methods
 func (s *TestSuite) TestListMethods() {
-	for _, app := range s.deployApps {
+	for _, app := range s.DeployApps {
 		appID := *app.Id
 
 		for method, expectedStatus := range appWorkloadsMethods {
-			res, err := MethodAppWorkloadsList(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID)
+			res, err := utils.MethodAppWorkloadsList(method, s.ResourceRESTServerUrl, appID, s.Token, s.ProjectID)
 			s.NoError(err)
 			s.Equal(expectedStatus, res.StatusCode)
 			s.T().Logf("list app workloads method: %s (%d)\n", method, res.StatusCode)
 		}
 
 		for method, expectedStatus := range appEndpointsMethods {
-			res, err := MethodAppEndpointsList(method, s.ResourceRESTServerUrl, appID, s.token, s.projectID)
+			res, err := utils.MethodAppEndpointsList(method, s.ResourceRESTServerUrl, appID, s.Token, s.ProjectID)
 			s.NoError(err)
 			s.Equal(expectedStatus, res.StatusCode)
 			s.T().Logf("list app endpoints method: %s (%d)\n", method, res.StatusCode)
@@ -55,9 +56,9 @@ func (s *TestSuite) TestListMethods() {
 
 // TestDeletePodMethod tests delete pod with different HTTP methods
 func (s *TestSuite) TestDeletePodMethod() {
-	for _, app := range s.deployApps {
+	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := AppWorkloadsList(s.armClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, 200)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -73,16 +74,16 @@ func (s *TestSuite) TestDeletePodMethod() {
 
 			for method, expectedStatus := range deleteMethods {
 				if expectedStatus == 200 {
-					err = GetPodStatus(s.armClient, appID, appWorkload.Id, "STATE_RUNNING")
+					err = utils.GetPodStatus(s.ArmClient, appID, appWorkload.Id, "STATE_RUNNING")
 					s.NoError(err)
 				}
 
-				res, err := MethodPodDelete(method, s.ResourceRESTServerUrl, namespace, podName, s.token, s.projectID)
+				res, err := utils.MethodPodDelete(method, s.ResourceRESTServerUrl, namespace, podName, s.Token, s.ProjectID)
 				s.NoError(err)
 				s.Equal(expectedStatus, res.StatusCode)
 
 				if expectedStatus == 200 {
-					err = WaitPodDelete(s.armClient, appID)
+					err = utils.WaitPodDelete(s.ArmClient, appID)
 					s.NoError(err)
 				}
 

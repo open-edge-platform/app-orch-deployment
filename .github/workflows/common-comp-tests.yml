@@ -39,7 +39,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: open-edge-platform/edge-manageability-framework
           persist-credentials: false
@@ -55,10 +55,15 @@ jobs:
           git config --global url."https://${GH_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
       - name: Setup asdf and install dependencies
-        uses: open-edge-platform/orch-utils/.github/actions/setup-asdf@ef4477dd6974c58a987f646eff1bc81c485c9c9a
+        uses: open-edge-platform/orch-utils/.github/actions/setup-asdf@0b88f07fe95e1e69b36a821181e7ac0522aac36c
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.24
 
       - name: Checkout app-orch-deployment repository
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: open-edge-platform/app-orch-deployment
           persist-credentials: false
@@ -151,6 +156,20 @@ jobs:
           make component-test
           echo "${{ inputs.component }} component tests done!"
 
+      - name: Report
+        uses: becheran/go-testreport@90efc1ce13c872f23d6bc8a069527c26288b8f9c
+        with:
+          input: app-orch-deployment/${{ inputs.component }}/test-report.json
+          output: app-orch-deployment/${{ inputs.component }}/${{ github.event_name }}-${{ github.event.number }}-test-report.html
+          template: app-orch-deployment/${{ inputs.component }}/test/template.html
+
+      - name: Upload Test Report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-report
+          path: app-orch-deployment/${{ inputs.component }}/${{ github.event_name }}-${{ github.event.number }}-test-report.html
+
       - name: Get Argo diagnostic information
         if: ${{ failure() }}
         id: get-argo-diag-info
@@ -160,7 +179,7 @@ jobs:
 
       - name: Upload Argo diagnostic artifacts
         if: ${{ failure() && steps.get-argo-diag-info.conclusion == 'success' }}
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: argo-diag-logs
           path: |
@@ -196,7 +215,7 @@ jobs:
 
       - name: Upload ENiC diagnostic artifacts
         if: ${{ failure() && steps.get-enic-diag-info.conclusion == 'success' }}
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: pods-logs
           path: |
@@ -219,7 +238,7 @@ jobs:
 
       - name: Upload Pods diagnostic artifacts
         if: ${{ failure() && steps.get-pods-diag-info.conclusion == 'success' }}
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: pods-logs
           path: |

@@ -4,13 +4,16 @@
 
 package container
 
-import "net/http"
+import (
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
+	"net/http"
+)
 
 // TestListWorkloads tests listing app workloads
 func (s *TestSuite) TestListWorkloads() {
-	for _, app := range s.deployApps {
+	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := AppWorkloadsList(s.armClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, http.StatusOK)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -23,9 +26,9 @@ func (s *TestSuite) TestListWorkloads() {
 
 // TestListEndpoints tests listing app endpoints
 func (s *TestSuite) TestListEndpoints() {
-	for _, app := range s.deployApps {
+	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appEndpoints, retCode, err := AppEndpointsList(s.armClient, appID)
+		appEndpoints, retCode, err := utils.AppEndpointsList(s.ArmClient, appID)
 		s.Equal(retCode, http.StatusOK)
 		s.NoError(err)
 		s.NotEmpty(appEndpoints)
@@ -34,9 +37,9 @@ func (s *TestSuite) TestListEndpoints() {
 
 // TestDeletePod tests delete pod endpoint
 func (s *TestSuite) TestDeletePod() {
-	for _, app := range s.deployApps {
+	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appWorkloads, retCode, err := AppWorkloadsList(s.armClient, appID)
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
 		s.Equal(retCode, http.StatusOK)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
@@ -45,7 +48,7 @@ func (s *TestSuite) TestDeletePod() {
 		s.Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		for _, appWorkload := range *appWorkloads {
-			retCode, err := PodDelete(s.armClient, *appWorkload.Namespace, appWorkload.Name, appID)
+			retCode, err := utils.PodDelete(s.ArmClient, *appWorkload.Namespace, appWorkload.Name, appID)
 			s.Equal(retCode, http.StatusOK)
 			s.NoError(err)
 
