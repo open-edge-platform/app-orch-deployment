@@ -782,7 +782,7 @@ var _ = Describe("Fleet config generator", func() {
 			})
 		})
 
-		Context("IgnoreResources is provided", func() {
+		Context("IgnoredResources is provided", func() {
 			It("should create fleet.yaml with diff configuration", func() {
 				app := &deployment.Spec.Applications[0]
 				app.IgnoreResources = []v1beta1.IgnoreResource{
@@ -821,6 +821,16 @@ var _ = Describe("Fleet config generator", func() {
 						Kind:      "EnvoyFilter",
 						Namespace: "istio-ns",
 					},
+					{
+						Name:      "someDeployment",
+						Kind:      "Deployment",
+						Namespace: "test-ns",
+					},
+					{
+						Name:      "someJob",
+						Kind:      "Job",
+						Namespace: "test-ns",
+					},
 				}
 
 				basedir := "/tmp/fleet0"
@@ -838,6 +848,44 @@ var _ = Describe("Fleet config generator", func() {
 				Expect(err).To(BeNil())
 				Expect(yamlv3.Unmarshal(fleetconf, &fleetConfigStruct)).To(Succeed())
 				Expect(&fleetConfigStruct.Diff.ComparePatches).NotTo(BeNil())
+
+				comparePatches := fleetConfigStruct.Diff.ComparePatches
+				Expect(comparePatches).To(HaveLen(len(app.IgnoreResources)))
+
+				for _, ignoreResource := range app.IgnoreResources {
+					for _, patch := range comparePatches {
+						if patch.Name == ignoreResource.Name && patch.Kind == ignoreResource.Kind {
+							Expect(patch.Operations).To(HaveLen(1))
+							Expect(patch.Operations[0].Op).To(Equal("ignore"))
+
+							switch patch.Kind {
+							case "ConfigMap", "Secret":
+								Expect(patch.APIVersion).To(Equal("v1"))
+								if patch.Name == "cfg" && patch.Kind == "ConfigMap" {
+									Expect(patch.Namespace).To(Equal("apps"))
+								} else if patch.Name == "cfg2" && patch.Kind == "ConfigMap" {
+									Expect(patch.Namespace).To(Equal("test-ns"))
+								}
+							case "ValidatingWebhookConfiguration", "MutatingWebhookConfiguration":
+								Expect(patch.APIVersion).To(Equal("admissionregistration.k8s.io/v1"))
+								Expect(patch.Namespace).To(BeEmpty())
+							case "CustomResourceDefinition":
+								Expect(patch.APIVersion).To(Equal("apiextensions.k8s.io/v1"))
+								Expect(patch.Namespace).To(BeEmpty())
+							case "EnvoyFilter":
+								Expect(patch.APIVersion).To(Equal("networking.istio.io/v1beta1"))
+								Expect(patch.Namespace).To(Not(BeEmpty()))
+							case "Deployment":
+								Expect(patch.APIVersion).To(Equal("apps/v1"))
+								Expect(patch.Namespace).To(Not(BeEmpty()))
+							case "Job":
+								Expect(patch.APIVersion).To(Equal("batch/v1"))
+								Expect(patch.Namespace).To(Not(BeEmpty()))
+							}
+							continue
+						}
+					}
+				}
 
 				// Validate profile.yaml is empty
 				yaml = filepath.Join(fleetdir, "profile.yaml")
@@ -861,6 +909,41 @@ var _ = Describe("Fleet config generator", func() {
 				contentInExtraValues := &ExtraValues{}
 				Expect(yamlv3.Unmarshal(contents, contentInExtraValues)).To(Succeed())
 				Expect(contentInExtraValues).To(Equal(globValues))
+			})
+		})
+
+		Context("IgnoredResources has invalid Kind", func() {
+			It("should throw error when creating diff configuration", func() {
+				app := &deployment.Spec.Applications[0]
+				app.IgnoreResources = []v1beta1.IgnoreResource{
+					{
+						Name: "testResource",
+						Kind: "UnsupportedKind",
+					},
+				}
+
+				basedir := "/tmp/fleet0"
+				Expect(os.RemoveAll(basedir)).To(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).
+					To(MatchError("unsupported: Kind UnsupportedKind not supported in diff configuration"))
+			})
+		})
+
+		Context("IgnoredResources has unnecessary namespace", func() {
+			It("should throw error when creating diff configuration", func() {
+				app := &deployment.Spec.Applications[0]
+				app.IgnoreResources = []v1beta1.IgnoreResource{
+					{
+						Name: "testWebHook",
+						Kind: "ValidatingWebhookConfiguration",
+						Namespace: "test-ns", // ValidatingWebhookConfiguration should not have namespace
+					},
+				}
+
+				basedir := "/tmp/fleet0"
+				Expect(os.RemoveAll(basedir)).To(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).
+					To(MatchError("namespace is not supported for ValidatingWebhookConfiguration kind in diff configuration"))
 			})
 		})
 	})
