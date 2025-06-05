@@ -990,7 +990,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 
 	var newState v1beta1.StateType
 	stalledApps := false
-	//gitRepoInTransitionStatus := false
+	gitRepoInTransitionStatus := false
 	apps := 0
 	message := ""
 	r.requeueStatus = false
@@ -1013,8 +1013,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 				fmt.Println("Test Jobs", job.Name)
 				// If the job is not completed, we are still waiting for it to finish
 				if job.Status.Succeeded == 0 && gitrepo.Status.GitJobStatus != "Failed" {
-					//gitRepoInTransitionStatus = true
-					r.requeueStatus = true
+					gitRepoInTransitionStatus = true
 					return
 				}
 
@@ -1095,18 +1094,18 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		// to give Fleet + ADM a chance to bootstrap the Deployment.
 		if time.Now().After(d.CreationTimestamp.Time.Add(noTargetClustersWait)) {
 			newState = v1beta1.NoTargetClusters
-			/*if gitRepoInTransitionStatus {
+			if gitRepoInTransitionStatus {
 				fmt.Println("Test no target clusters set message:", d.Status.Message)
 				message = d.Status.Message
-			}*/
+			}
 		} else {
 			// If deployment was already running and cluster went down
 			// before (d.CreationTimestamp.Time.Add(noTargetClustersWait)) then set NoTargetClusters
 			if d.Status.DeployInProgress {
-				/*if gitRepoInTransitionStatus {
+				if gitRepoInTransitionStatus {
 					fmt.Println("Test deploying set message:", d.Status.Message)
 					message = d.Status.Message
-				}*/
+				}
 				newState = v1beta1.Deploying
 			} else {
 				newState = v1beta1.NoTargetClusters
