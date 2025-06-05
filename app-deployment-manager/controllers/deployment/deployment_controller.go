@@ -977,7 +977,7 @@ func updateStatusMetrics(d *v1beta1.Deployment, deleteMetrics bool) {
 func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []fleetv1alpha1.GitRepo, dclist []v1beta1.DeploymentCluster) {
 	var newState v1beta1.StateType
 	stalledApps := false
-	gitRepoInTransitionStatus := false
+	//gitRepoInTransitionStatus := false
 	apps := 0
 	message := ""
 	r.requeueStatus = false
@@ -991,7 +991,7 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 		if d.Status.DeployInProgress {
 			// Check if GitRepo is not ready for processing yet
 			if gitrepo.Status.Summary.DesiredReady == 0 && gitrepo.Status.GitJobStatus != "Failed" {
-				gitRepoInTransitionStatus = true
+				//gitRepoInTransitionStatus = true
 			}
 
 			// Check if the GitRepo is in Stalled state
