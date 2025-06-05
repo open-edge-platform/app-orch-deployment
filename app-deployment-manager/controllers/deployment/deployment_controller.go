@@ -171,6 +171,18 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) (err error) {
 		return err
 	}
 
+	// Add field indexer for ownerReferences.name
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &batchv1.Job{}, "ownerReferences.name", func(rawObj client.Object) []string {
+		job := rawObj.(*batchv1.Job)
+		names := []string{}
+		for _, ownerRef := range job.OwnerReferences {
+			names = append(names, ownerRef.Name)
+		}
+		return names
+	}); err != nil {
+		return err
+	}
+
 	_, err = ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{
 			RateLimiter: workqueue.NewTypedWithMaxWaitRateLimiter(workqueue.DefaultTypedControllerRateLimiter[reconcile.Request](), maxErrorBackoff),
