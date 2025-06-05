@@ -977,7 +977,7 @@ func updateStatusMetrics(d *v1beta1.Deployment, deleteMetrics bool) {
 func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []fleetv1alpha1.GitRepo, dclist []v1beta1.DeploymentCluster) {
 	var newState v1beta1.StateType
 	stalledApps := false
-	//gitRepoInTransitionStatus := false
+	gitRepoInTransitionStatus := false
 	apps := 0
 	message := ""
 	r.requeueStatus = false
@@ -990,8 +990,8 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 
 		if d.Status.DeployInProgress {
 			// Check if GitRepo is not ready for processing yet
-			if gitrepo.Status.Summary.DesiredReady == 0 && gitrepo.Status.GitJobStatus != "Failed" {
-				//gitRepoInTransitionStatus = true
+			if gitrepo.Status.Summary.DesiredReady == 0 && gitrepo.Status.GitJobStatus == "InProgress" {
+				gitRepoInTransitionStatus = true
 			}
 
 			// Check if the GitRepo is in Stalled state
@@ -1069,16 +1069,16 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 		// to give Fleet + ADM a chance to bootstrap the Deployment.
 		if time.Now().After(d.CreationTimestamp.Time.Add(noTargetClustersWait)) {
 			newState = v1beta1.NoTargetClusters
-			/*if gitRepoInTransitionStatus {
+			if gitRepoInTransitionStatus {
 				message = d.Status.Message
-			}*/
+			}
 		} else {
 			// If deployment was already running and cluster went down
 			// before (d.CreationTimestamp.Time.Add(noTargetClustersWait)) then set NoTargetClusters
 			if d.Status.DeployInProgress {
-				/*if gitRepoInTransitionStatus {
+				if gitRepoInTransitionStatus {
 					message = d.Status.Message
-				}*/
+				}
 				newState = v1beta1.Deploying
 			} else {
 				newState = v1beta1.NoTargetClusters
