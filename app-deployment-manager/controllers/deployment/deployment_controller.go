@@ -990,7 +990,7 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 
 		if d.Status.DeployInProgress {
 			// Check if GitRepo is not ready for processing yet
-			if gitrepo.Status.Summary.DesiredReady == 0 && gitrepo.Status.GitJobStatus != "Failed" && gitrepo.Status.UpdateGeneration != 0 {
+			if gitrepo.Status.Summary.DesiredReady == 0 && gitrepo.Status.GitJobStatus != "Failed" {
 				gitRepoInTransitionStatus = true
 			}
 
@@ -1070,7 +1070,9 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 		if time.Now().After(d.CreationTimestamp.Time.Add(noTargetClustersWait)) {
 			newState = v1beta1.NoTargetClusters
 			if gitRepoInTransitionStatus {
-				message = d.Status.Message
+				if strings.Contains("failed to process bundle", d.Status.Message) {
+					message = d.Status.Message
+				}
 			}
 		} else {
 			// If deployment was already running and cluster went down
