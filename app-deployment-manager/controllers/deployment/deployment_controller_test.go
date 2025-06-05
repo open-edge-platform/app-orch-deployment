@@ -5,6 +5,7 @@
 package deployment
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	nexusApi "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/apis/runtimeproject.edge-orchestrator.intel.com/v1"
@@ -960,7 +961,7 @@ var _ = Describe("Deployment controller", func() {
 				d.Status.DeployInProgress = true
 				grslice := []fleetv1alpha1.GitRepo{gr1, gr2}
 				dcslice := []v1beta1.DeploymentCluster{}
-				r.updateDeploymentStatus(&d, grslice, dcslice)
+				r.updateDeploymentStatus(context.TODO(), &d, grslice, dcslice)
 				Expect(d.Status.State).To(Equal(v1beta1.NoTargetClusters))
 				Expect(d.Status.DeployInProgress).To(BeTrue())
 				Expect(d.Status.Summary).To(Equal(v1beta1.ClusterSummary{
@@ -984,7 +985,7 @@ var _ = Describe("Deployment controller", func() {
 				}
 				grslice := []fleetv1alpha1.GitRepo{gr1, gr2}
 				dcslice := []v1beta1.DeploymentCluster{}
-				r.updateDeploymentStatus(&d, grslice, dcslice)
+				r.updateDeploymentStatus(context.TODO(), &d, grslice, dcslice)
 				Expect(d.Status.State).To(Equal(v1beta1.Error))
 				Expect(d.Status.Message).To(Equal("App app2: An error message"))
 				Expect(d.Status.DeployInProgress).To(BeTrue())
@@ -1004,7 +1005,7 @@ var _ = Describe("Deployment controller", func() {
 				dc2.Status.Status.Message = "Progress deadline exceeded"
 				grslice := []fleetv1alpha1.GitRepo{gr1, gr2}
 				dcslice := []v1beta1.DeploymentCluster{dc1, dc2}
-				r.updateDeploymentStatus(&d, grslice, dcslice)
+				r.updateDeploymentStatus(context.TODO(), &d, grslice, dcslice)
 				Expect(d.Status.State).To(Equal(v1beta1.Error))
 				Expect(d.Status.Message).To(Equal("Progress deadline exceeded"))
 				Expect(d.Status.DeployInProgress).To(BeTrue())
@@ -1022,7 +1023,7 @@ var _ = Describe("Deployment controller", func() {
 				d.Status.DeployInProgress = true
 				grslice := []fleetv1alpha1.GitRepo{gr1, gr2}
 				dcslice := []v1beta1.DeploymentCluster{dc1, dc2}
-				r.updateDeploymentStatus(&d, grslice, dcslice)
+				r.updateDeploymentStatus(context.TODO(), &d, grslice, dcslice)
 				Expect(d.Status.State).To(Equal(v1beta1.Running))
 				Expect(d.Status.DeployInProgress).To(BeFalse())
 				Expect(d.Status.Summary).To(Equal(v1beta1.ClusterSummary{
@@ -1042,7 +1043,7 @@ var _ = Describe("Deployment controller", func() {
 				dc2.Status.Apps[1].Status.State = v1beta1.Down
 				grslice := []fleetv1alpha1.GitRepo{gr1, gr2}
 				dcslice := []v1beta1.DeploymentCluster{dc1, dc2}
-				r.updateDeploymentStatus(&d, grslice, dcslice)
+				r.updateDeploymentStatus(context.TODO(), &d, grslice, dcslice)
 				Expect(d.Status.State).To(Equal(v1beta1.Deploying))
 				Expect(d.Status.Message).To(Equal("App app2: In progress"))
 				Expect(d.Status.DeployInProgress).To(BeTrue())
@@ -1064,7 +1065,7 @@ var _ = Describe("Deployment controller", func() {
 				dc2.Status.Apps[0].DeploymentGeneration = generation + 1
 				grslice := []fleetv1alpha1.GitRepo{gr1, gr2}
 				dcslice := []v1beta1.DeploymentCluster{dc1, dc2}
-				r.updateDeploymentStatus(&d, grslice, dcslice)
+				r.updateDeploymentStatus(context.TODO(), &d, grslice, dcslice)
 				Expect(d.Status.State).To(Equal(v1beta1.Updating))
 				Expect(d.Status.DeployInProgress).To(BeTrue())
 				Expect(d.Status.Summary).To(Equal(v1beta1.ClusterSummary{
@@ -1081,7 +1082,7 @@ var _ = Describe("Deployment controller", func() {
 				d.Status.DeployInProgress = false
 				grslice := []fleetv1alpha1.GitRepo{gr1, gr2}
 				dcslice := []v1beta1.DeploymentCluster{dc1, dc2}
-				r.updateDeploymentStatus(&d, grslice, dcslice)
+				r.updateDeploymentStatus(context.TODO(), &d, grslice, dcslice)
 				Expect(d.Status.State).To(Equal(v1beta1.Running))
 				Expect(d.Status.DeployInProgress).To(BeFalse())
 				Expect(d.Status.Summary).To(Equal(v1beta1.ClusterSummary{
@@ -1101,7 +1102,7 @@ var _ = Describe("Deployment controller", func() {
 				dc2.Status.Apps[1].Status.State = v1beta1.Down
 				grslice := []fleetv1alpha1.GitRepo{gr1, gr2}
 				dcslice := []v1beta1.DeploymentCluster{dc1, dc2}
-				r.updateDeploymentStatus(&d, grslice, dcslice)
+				r.updateDeploymentStatus(context.TODO(), &d, grslice, dcslice)
 				Expect(d.Status.State).To(Equal(v1beta1.Down))
 				Expect(d.Status.Message).To(Equal("App app2: In progress"))
 				Expect(d.Status.DeployInProgress).To(BeFalse())

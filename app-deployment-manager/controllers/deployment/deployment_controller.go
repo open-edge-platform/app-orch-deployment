@@ -809,7 +809,7 @@ func (r *Reconciler) updateStatus(ctx context.Context, d *v1beta1.Deployment) er
 		}
 	}
 
-	r.updateDeploymentStatus(d, childGitRepos.Items, deploymentClusters.Items)
+	r.updateDeploymentStatus(ctx, d, childGitRepos.Items, deploymentClusters.Items)
 	return nil
 }
 
@@ -974,7 +974,7 @@ func updateStatusMetrics(d *v1beta1.Deployment, deleteMetrics bool) {
 	}
 }
 
-func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []fleetv1alpha1.GitRepo, dclist []v1beta1.DeploymentCluster) {
+func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Deployment, grlist []fleetv1alpha1.GitRepo, dclist []v1beta1.DeploymentCluster) {
 	var newState v1beta1.StateType
 	stalledApps := false
 	gitRepoInTransitionStatus := false
@@ -990,8 +990,21 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 
 		if d.Status.DeployInProgress {
 			// Check if GitRepo is not ready for processing yet
-			if gitrepo.Status.Summary.DesiredReady == 0 && gitrepo.Status.GitJobStatus != "Failed" {
-				gitRepoInTransitionStatus = true
+			// Use r.Client to get a Kubernetes Job owned by this GitRepo
+			var jobs batchv1.JobList
+			if err := r.Client.List(ctx, &jobs, client.MatchingFields{jobOwnerKey: gitrepo.Name}); err != nil {
+				// handle error
+			}
+			for _, job := range jobs.Items {
+				for _, ownerRef := range job.OwnerReferences {
+					if ownerRef.UID == gitrepo.UID {
+						// If the job is not completed, we are still waiting for it to finish
+						if job.Status.Succeeded == 0 && job.Status.Failed == 0 {
+							gitRepoInTransitionStatus = true
+						}
+						break
+					}
+				}
 			}
 
 			// Check if the GitRepo is in Stalled state
