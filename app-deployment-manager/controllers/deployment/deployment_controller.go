@@ -990,7 +990,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 	fmt.Println("Test updateDeploymentStatus called")
 	var newState v1beta1.StateType
 	stalledApps := false
-	gitRepoInTransitionStatus := false
+	//gitRepoInTransitionStatus := false
 	apps := 0
 	message := ""
 	r.requeueStatus = false
@@ -1016,7 +1016,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 					fmt.Println("Test git repo status message:", gitrepo.Status.Display.Message)
 					fmt.Println("Test git repo status condition message:", gitrepo.Status.GitJobStatus)
 					fmt.Println("Test deployment status message:", d.Status.Message)
-					gitRepoInTransitionStatus = true
+					//gitRepoInTransitionStatus = true
 					r.requeueStatus = true
 					return
 				}
