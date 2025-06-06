@@ -990,6 +990,8 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 	var newState v1beta1.StateType
 	stalledApps := false
 	gitRepoInTransitionStatus := false
+	gitRepoStatus := ""
+	jobStatus := ""
 	apps := 0
 	message := ""
 	r.requeueStatus = false
@@ -1011,10 +1013,12 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			for _, job := range jobs.Items {
 				fmt.Println("Test Jobs", job.Name)
 				fmt.Println("Test gitRepo Status:", gitrepo.Status.GitJobStatus)
+				gitRepoStatus = gitrepo.Status.GitJobStatus
 				if len(job.Status.Conditions) == 0 {
 					if job.Status.Active > 0 && gitrepo.Status.GitJobStatus != "Failed" {
 						fmt.Println("Test job is active")
 						gitRepoInTransitionStatus = true
+						jobStatus = "Active"
 					}
 				} else {
 					for _, cond := range job.Status.Conditions {
@@ -1022,6 +1026,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 						if cond.Type == batchv1.JobComplete && cond.Status == corev1.ConditionFalse && gitrepo.Status.GitJobStatus != "Failed" {
 							fmt.Println("Test job complete condition false")
 							gitRepoInTransitionStatus = true
+							jobStatus = "NotComplete"
 						}
 					}
 				}
@@ -1164,7 +1169,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		d.Status.Summary = clustercounts
 		d.Status.State = newState
 	}
-	fmt.Println("Test2 Transition Final message:", d.Status.Message)
+	fmt.Println("Test2 Transition Final message:", d.Status.Message, ":", gitRepoStatus, ":", jobStatus)
 
 }
 
