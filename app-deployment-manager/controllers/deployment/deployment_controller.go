@@ -992,7 +992,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 	stalledApps := false
 	gitRepoInTransitionStatus := false
 	apps := 0
-	message := ""
+	message := "Tesssssssssssss"
 	r.requeueStatus = false
 
 	// Walk GitRepos for the Deployment to extract any error conditions
