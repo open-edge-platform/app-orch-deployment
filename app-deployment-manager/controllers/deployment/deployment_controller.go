@@ -1005,7 +1005,6 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			// Use r.Client to get a Kubernetes Job owned by this GitRepo
 			var jobs batchv1.JobList
 			if err := r.Client.List(ctx, &jobs, client.MatchingFields{"ownerReferences.name": gitrepo.Name}); err != nil {
-				fmt.Println("Test Error", err)
 				return
 			}
 
@@ -1141,10 +1140,12 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		}
 	}
 	if gitRepoInTransitionStatus {
+		fmt.Println("Test git repo in transition status", d.Status.Message)
 		d.Status.Display = fmt.Sprintf("Clusters: %v/%v/%v/%v, Apps: %v", clustercounts.Total, clustercounts.Running, clustercounts.Down, clustercounts.Unknown, apps)
 		d.Status.Summary = clustercounts
 		d.Status.State = newState
 	} else {
+		fmt.Println("Test git repo not in transition status", d.Status.Message)
 		d.Status.Display = fmt.Sprintf("Clusters: %v/%v/%v/%v, Apps: %v", clustercounts.Total, clustercounts.Running,
 			clustercounts.Down, clustercounts.Unknown, apps)
 		d.Status.Message = message
