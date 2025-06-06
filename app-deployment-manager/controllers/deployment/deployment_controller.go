@@ -1012,7 +1012,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 				fmt.Println("Test Jobs", job.Name)
 				fmt.Println("Test gitRepo Status:", gitrepo.Status.GitJobStatus)
 				if len(job.Status.Conditions) == 0 {
-					if job.Status.Active > 0 {
+					if job.Status.Active > 0 && gitrepo.Status.GitJobStatus != "Failed" {
 						fmt.Println("Test job is active")
 						gitRepoInTransitionStatus = true
 					}
@@ -1147,16 +1147,14 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			orchLibMetrics.CalculateTimeDifference(projectID, d.GetId(), d.Spec.DisplayName, "start", "CreateDeployment", string(v1beta1.Running), "status-change")
 		}
 	}
-	fmt.Println("Test before final message:", d.Status.Message)
 	if gitRepoInTransitionStatus {
 		fmt.Println("Test git repo in transition status, returning", d.Status.Message)
-		return
-		/*if d.Status.Message != "" {
+		if d.Status.Message != "" {
 			fmt.Println("Test git repo in transition status", d.Status.Message)
 			d.Status.Display = fmt.Sprintf("Clusters: %v/%v/%v/%v, Apps: %v", clustercounts.Total, clustercounts.Running, clustercounts.Down, clustercounts.Unknown, apps)
 			d.Status.Summary = clustercounts
 			d.Status.State = newState
-		}*/
+		}
 	} else {
 		fmt.Println("Test git repo not in transition status", d.Status.Message)
 		d.Status.Display = fmt.Sprintf("Clusters: %v/%v/%v/%v, Apps: %v", clustercounts.Total, clustercounts.Running,
