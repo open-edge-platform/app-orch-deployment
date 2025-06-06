@@ -990,7 +990,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 	fmt.Println("Test updateDeploymentStatus called")
 	var newState v1beta1.StateType
 	stalledApps := false
-	//gitRepoInTransitionStatus := false
+	gitRepoInTransitionStatus := false
 	apps := 0
 	message := ""
 	r.requeueStatus = false
@@ -1016,9 +1016,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 					fmt.Println("Test git repo status message:", gitrepo.Status.Display.Message)
 					fmt.Println("Test git repo status condition message:", gitrepo.Status.GitJobStatus)
 					fmt.Println("Test deployment status message:", d.Status.Message)
-					//gitRepoInTransitionStatus = true
-					r.requeueStatus = true
-					return
+					gitRepoInTransitionStatus = true
 				}
 
 			}
@@ -1142,11 +1140,17 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			orchLibMetrics.CalculateTimeDifference(projectID, d.GetId(), d.Spec.DisplayName, "start", "CreateDeployment", string(v1beta1.Running), "status-change")
 		}
 	}
-	d.Status.Display = fmt.Sprintf("Clusters: %v/%v/%v/%v, Apps: %v", clustercounts.Total, clustercounts.Running,
-		clustercounts.Down, clustercounts.Unknown, apps)
-	d.Status.Message = message
-	d.Status.Summary = clustercounts
-	d.Status.State = newState
+	if gitRepoInTransitionStatus {
+		d.Status.Display = fmt.Sprintf("Clusters: %v/%v/%v/%v, Apps: %v", clustercounts.Total, clustercounts.Running, clustercounts.Down, clustercounts.Unknown, apps)
+		d.Status.Summary = clustercounts
+		d.Status.State = newState
+	} else {
+		d.Status.Display = fmt.Sprintf("Clusters: %v/%v/%v/%v, Apps: %v", clustercounts.Total, clustercounts.Running,
+			clustercounts.Down, clustercounts.Unknown, apps)
+		d.Status.Message = message
+		d.Status.Summary = clustercounts
+		d.Status.State = newState
+	}
 
 }
 
