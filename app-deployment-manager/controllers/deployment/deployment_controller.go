@@ -1083,6 +1083,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		}
 	}
 
+	fmt.Println("Test before switch case:", d.Status.Message)
 	// Calculate the Deployment's state
 	switch {
 	case stalledApps:
@@ -1138,6 +1139,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			orchLibMetrics.CalculateTimeDifference(projectID, d.GetId(), d.Spec.DisplayName, "start", "CreateDeployment", string(v1beta1.Running), "status-change")
 		}
 	}
+	fmt.Println("Test before final message:", d.Status.Message)
 	if gitRepoInTransitionStatus {
 		if d.Status.Message != "" {
 			fmt.Println("Test git repo in transition status", d.Status.Message)
