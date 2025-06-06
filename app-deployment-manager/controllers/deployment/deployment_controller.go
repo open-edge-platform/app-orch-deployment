@@ -1034,13 +1034,13 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 				message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, sc.Message))
 			}
 		}
-		fmt.Println("Test here")
+		fmt.Println("Test here stalledApps:", stalledApps)
 
 		// Record the message if there is one
 		if gitrepo.Status.Display.Message != "" {
 			message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, gitrepo.Status.Display.Message))
 		}
-		fmt.Println("Test here2")
+		fmt.Println("Test here2:", stalledApps)
 	}
 	fmt.Println("Test Stalled apps after git repo loop:", stalledApps)
 
