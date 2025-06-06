@@ -990,6 +990,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 	var newState v1beta1.StateType
 	stalledApps := false
 	gitRepoInTransitionStatus := false
+
 	apps := 0
 	message := ""
 	r.requeueStatus = false
@@ -1009,6 +1010,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 
 			for _, job := range jobs.Items {
 				fmt.Println("Test Jobs", job.Name)
+				fmt.Println("Test gitRepo Status:", gitrepo.Status.GitJobStatus)
 				// If the job is not completed, we are still waiting for it to finish
 				if job.Status.Succeeded == 0 && gitrepo.Status.GitJobStatus != "Failed" {
 					/*fmt.Println("Test git repo status message:", gitrepo.Status.Display.Message)
