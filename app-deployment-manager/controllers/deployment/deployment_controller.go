@@ -1021,6 +1021,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 				} else {
 					fmt.Println("Test else job status:", job.Status.Succeeded)
 					fmt.Println("Test else git repo status:", gitrepo.Status.GitJobStatus)
+					fmt.Println("Test else git repo message:", gitrepo.Status.Display.Message)
 				}
 
 			}
