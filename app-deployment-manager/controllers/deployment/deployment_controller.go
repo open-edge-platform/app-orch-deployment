@@ -999,6 +999,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		gitrepo := grlist[i]
 		apps++
 		appName := getAppNameForGitRepo(&gitrepo, d.GetId())
+		fmt.Println("Test deployment Status:", d.Status.DeployInProgress)
 
 		if d.Status.DeployInProgress {
 			// Use r.Client to get a Kubernetes Job owned by this GitRepo
