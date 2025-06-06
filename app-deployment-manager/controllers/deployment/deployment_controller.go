@@ -1017,13 +1017,14 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 					fmt.Println("Test git repo status condition message:", gitrepo.Status.GitJobStatus)
 					fmt.Println("Test deployment status message:", d.Status.Message)
 					gitRepoInTransitionStatus = true
+					r.requeueStatus = true
+					return
 				}
 
 			}
 
 			// Check if the GitRepo is in Stalled state
 			if sc, ok := utils.GetGenericCondition(&gitrepo.Status.Conditions, "Stalled"); ok && sc.Status == corev1.ConditionTrue {
-				fmt.Println("Test Stalled condition found for app:", gitrepo.Status.GitJobStatus)
 				stalledApps = true
 				message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, sc.Message))
 			}
@@ -1097,24 +1098,24 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		// to give Fleet + ADM a chance to bootstrap the Deployment.
 		if time.Now().After(d.CreationTimestamp.Time.Add(noTargetClustersWait)) {
 			newState = v1beta1.NoTargetClusters
-			if gitRepoInTransitionStatus {
+			/*if gitRepoInTransitionStatus {
 				fmt.Println("Test no target clusters set message:", d.Status.Message)
 				if d.Status.Message != "" {
 					message = d.Status.Message
 				}
 
-			}
+			}*/
 		} else {
 			// If deployment was already running and cluster went down
 			// before (d.CreationTimestamp.Time.Add(noTargetClustersWait)) then set NoTargetClusters
 			if d.Status.DeployInProgress {
-				if gitRepoInTransitionStatus {
+				/*if gitRepoInTransitionStatus {
 					fmt.Println("Test deploying set message:", d.Status.Message)
 					if d.Status.Message != "" {
 						message = d.Status.Message
 					}
 
-				}
+				}*/
 				newState = v1beta1.Deploying
 			} else {
 				newState = v1beta1.NoTargetClusters
@@ -1141,13 +1142,12 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			orchLibMetrics.CalculateTimeDifference(projectID, d.GetId(), d.Spec.DisplayName, "start", "CreateDeployment", string(v1beta1.Running), "status-change")
 		}
 	}
-	if !gitRepoInTransitionStatus {
-		d.Status.Display = fmt.Sprintf("Clusters: %v/%v/%v/%v, Apps: %v", clustercounts.Total, clustercounts.Running,
-			clustercounts.Down, clustercounts.Unknown, apps)
-		d.Status.Message = message
-		d.Status.Summary = clustercounts
-		d.Status.State = newState
-	}
+	d.Status.Display = fmt.Sprintf("Clusters: %v/%v/%v/%v, Apps: %v", clustercounts.Total, clustercounts.Running,
+		clustercounts.Down, clustercounts.Unknown, apps)
+	d.Status.Message = message
+	d.Status.Summary = clustercounts
+	d.Status.State = newState
+
 }
 
 func getGitRepoName(appName string, depID string) string {
