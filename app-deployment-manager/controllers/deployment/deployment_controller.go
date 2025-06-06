@@ -1012,7 +1012,6 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 
 			for _, job := range jobs.Items {
 				fmt.Println("Test Jobs", job.Name)
-				fmt.Println("Test gitRepo Status:", gitrepo.Status.GitJobStatus)
 				gitRepoStatus = gitrepo.Status.GitJobStatus
 				if len(job.Status.Conditions) == 0 {
 					if job.Status.Active > 0 && gitrepo.Status.GitJobStatus != "Failed" {
@@ -1022,11 +1021,11 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 					}
 				} else {
 					for _, cond := range job.Status.Conditions {
-						fmt.Println("Test Job condition:", cond.Type, cond.Status)
 						if cond.Type == batchv1.JobComplete && cond.Status == corev1.ConditionFalse && gitrepo.Status.GitJobStatus != "Failed" {
-							fmt.Println("Test job complete condition false")
 							gitRepoInTransitionStatus = true
 							jobStatus = "NotComplete"
+						} else if cond.Type == batchv1.JobComplete && cond.Status == corev1.ConditionFalse && gitrepo.Status.GitJobStatus == "Failed" {
+							jobStatus = "Failed"
 						}
 					}
 				}
@@ -1035,13 +1034,8 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 
 			// Check if the GitRepo is in Stalled state
 			if sc, ok := utils.GetGenericCondition(&gitrepo.Status.Conditions, "Stalled"); ok && sc.Status == corev1.ConditionTrue {
-				if !gitRepoInTransitionStatus {
-					stalledApps = true
-					message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, sc.Message))
-				} else {
-					fmt.Println("Test2 git repo in transition status, setting error message")
-					message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, sc.Message))
-				}
+				stalledApps = true
+				message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, sc.Message))
 			}
 		}
 
