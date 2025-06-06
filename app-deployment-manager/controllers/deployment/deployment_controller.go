@@ -1011,13 +1011,18 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			for _, job := range jobs.Items {
 				fmt.Println("Test Jobs", job.Name)
 				fmt.Println("Test gitRepo Status:", gitrepo.Status.GitJobStatus)
-				fmt.Println("Test condition length:", len(job.Status.Conditions))
-
-				for _, cond := range job.Status.Conditions {
-					fmt.Println("Test Job condition:", cond.Type, cond.Status)
-					if cond.Type == batchv1.JobComplete && cond.Status == corev1.ConditionFalse && gitrepo.Status.GitJobStatus != "Failed" {
-						fmt.Println("Test job complete condition false")
+				if len(job.Status.Conditions) == 0 {
+					if job.Status.Active > 0 {
+						fmt.Println("Test job is active")
 						gitRepoInTransitionStatus = true
+					}
+				} else {
+					for _, cond := range job.Status.Conditions {
+						fmt.Println("Test Job condition:", cond.Type, cond.Status)
+						if cond.Type == batchv1.JobComplete && cond.Status == corev1.ConditionFalse && gitrepo.Status.GitJobStatus != "Failed" {
+							fmt.Println("Test job complete condition false")
+							gitRepoInTransitionStatus = true
+						}
 					}
 				}
 
@@ -1087,7 +1092,6 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		}
 	}
 
-	fmt.Println("Test before switch case:", d.Status.Message)
 	// Calculate the Deployment's state
 	switch {
 	case stalledApps:
