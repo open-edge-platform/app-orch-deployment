@@ -1017,6 +1017,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 					fmt.Println("Test git repo status message:", gitrepo.Status.Display.Message)
 					fmt.Println("Test git repo status condition message:", gitrepo.Status.GitJobStatus)
 					gitRepoInTransitionStatus = true
+					message = d.Status.Message
 				}
 
 			}
