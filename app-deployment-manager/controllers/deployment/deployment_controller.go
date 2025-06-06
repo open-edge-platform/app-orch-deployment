@@ -1022,12 +1022,14 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 					fmt.Println("Test else job status:", job.Status.Succeeded)
 					fmt.Println("Test else git repo status:", gitrepo.Status.GitJobStatus)
 					fmt.Println("Test else git repo message:", gitrepo.Status.Display.Message)
+
 				}
 
 			}
 
 			// Check if the GitRepo is in Stalled state
 			if sc, ok := utils.GetGenericCondition(&gitrepo.Status.Conditions, "Stalled"); ok && sc.Status == corev1.ConditionTrue {
+				fmt.Println("Test Stalled condition found for app:", gitrepo.Status.GitJobStatus)
 				stalledApps = true
 				message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, sc.Message))
 			}
