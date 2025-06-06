@@ -987,7 +987,7 @@ func updateStatusMetrics(d *v1beta1.Deployment, deleteMetrics bool) {
 }
 
 func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Deployment, grlist []fleetv1alpha1.GitRepo, dclist []v1beta1.DeploymentCluster) {
-
+	fmt.Println("Test updateDeploymentStatus called")
 	var newState v1beta1.StateType
 	stalledApps := false
 	gitRepoInTransitionStatus := false
