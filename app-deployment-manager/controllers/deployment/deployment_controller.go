@@ -1009,10 +1009,10 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			if err := r.Client.List(ctx, &jobs, client.MatchingFields{"ownerReferences.name": gitrepo.Name}); err != nil {
 				return
 			}
+			gitRepoStatus = gitrepo.Status.GitJobStatus
 
 			for _, job := range jobs.Items {
 				fmt.Println("Test Jobs", job.Name)
-				gitRepoStatus = gitrepo.Status.GitJobStatus
 				if len(job.Status.Conditions) == 0 {
 					if job.Status.Active > 0 && gitrepo.Status.GitJobStatus != "Failed" {
 						fmt.Println("Test job is active")
@@ -1026,8 +1026,11 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 							jobStatus = "NotComplete"
 						} else if cond.Type == batchv1.JobComplete && cond.Status == corev1.ConditionFalse && gitrepo.Status.GitJobStatus == "Failed" {
 							jobStatus = "Failed"
+						} else {
+							fmt.Println("Test None of the conditions matched", cond.Type, cond.Status)
 						}
 					}
+
 				}
 
 			}
