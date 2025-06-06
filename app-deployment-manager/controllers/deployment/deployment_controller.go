@@ -1149,10 +1149,11 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 	}
 	if gitRepoInTransitionStatus {
 		fmt.Println("Test2 git repo in transition status, returning", d.Status.Message)
-		if d.Status.Message != "" {
+		if message != "" {
 			fmt.Println("Test2 git repo in transition status", d.Status.Message)
 			d.Status.Display = fmt.Sprintf("Clusters: %v/%v/%v/%v, Apps: %v", clustercounts.Total, clustercounts.Running, clustercounts.Down, clustercounts.Unknown, apps)
 			d.Status.Summary = clustercounts
+			d.Status.Message = message
 			d.Status.State = newState
 		}
 	} else {
