@@ -1012,6 +1012,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 				fmt.Println("Test gitRepo Status:", gitrepo.Status.GitJobStatus)
 
 				for _, cond := range job.Status.Conditions {
+					fmt.Println("Test Job condition:", cond.Type, cond.Status)
 					if cond.Type == batchv1.JobComplete && cond.Status == corev1.ConditionFalse && gitrepo.Status.GitJobStatus != "Failed" {
 						fmt.Println("Test job complete condition false")
 						gitRepoInTransitionStatus = true
