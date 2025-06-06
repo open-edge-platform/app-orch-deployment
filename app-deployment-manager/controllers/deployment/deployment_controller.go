@@ -1001,15 +1001,16 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		gitrepo := grlist[i]
 		apps++
 		appName := getAppNameForGitRepo(&gitrepo, d.GetId())
+		var jobs batchv1.JobList
+		if err := r.Client.List(ctx, &jobs, client.MatchingFields{"ownerReferences.name": gitrepo.Name}); err != nil {
+			return
+		}
+		fmt.Println("Test Len jobs:", len(jobs.Items), "GitRepo Status:", gitRepoStatus, d.Status.DeployInProgress)
 
 		if d.Status.DeployInProgress {
 			// Use r.Client to get a Kubernetes Job owned by this GitRepo
-			var jobs batchv1.JobList
-			if err := r.Client.List(ctx, &jobs, client.MatchingFields{"ownerReferences.name": gitrepo.Name}); err != nil {
-				return
-			}
-			gitRepoStatus = gitrepo.Status.GitJobStatus
 
+			gitRepoStatus = gitrepo.Status.GitJobStatus
 			for _, job := range jobs.Items {
 				fmt.Println("Test Jobs", job.Name)
 				if len(job.Status.Conditions) == 0 {
