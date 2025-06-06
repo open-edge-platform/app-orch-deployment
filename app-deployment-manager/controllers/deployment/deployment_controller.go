@@ -1035,8 +1035,13 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 
 			// Check if the GitRepo is in Stalled state
 			if sc, ok := utils.GetGenericCondition(&gitrepo.Status.Conditions, "Stalled"); ok && sc.Status == corev1.ConditionTrue {
-				stalledApps = true
-				message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, sc.Message))
+				if !gitRepoInTransitionStatus {
+					stalledApps = true
+					message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, sc.Message))
+				} else {
+					fmt.Println("Test2 git repo in transition status, setting error message")
+					message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, sc.Message))
+				}
 			}
 		}
 
