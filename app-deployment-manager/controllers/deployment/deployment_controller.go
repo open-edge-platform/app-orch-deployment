@@ -992,6 +992,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 	gitRepoInTransitionStatus := false
 	gitRepoStatus := ""
 	jobStatus := ""
+	jobLen := 0
 	apps := 0
 	message := ""
 	r.requeueStatus = false
@@ -1007,6 +1008,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		}
 		gitRepoStatus = gitrepo.Status.GitJobStatus
 		fmt.Println("Test Len jobs:", len(jobs.Items), "GitRepo Status:", gitRepoStatus, d.Status.DeployInProgress)
+		jobLen = len(jobs.Items)
 
 		if d.Status.DeployInProgress {
 			// Use r.Client to get a Kubernetes Job owned by this GitRepo
@@ -1172,7 +1174,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		d.Status.Summary = clustercounts
 		d.Status.State = newState
 	}
-	fmt.Println("Test2 Final message:", d.Status.Message, ":", gitRepoStatus, ":", jobStatus)
+	fmt.Println("Test2 Final message:", d.Status.Message, ":", gitRepoStatus, ":", jobStatus, ":", jobLen)
 
 }
 
