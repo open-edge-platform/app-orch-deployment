@@ -1001,7 +1001,6 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		gitrepo := grlist[i]
 		apps++
 		appName := getAppNameForGitRepo(&gitrepo, d.GetId())
-		fmt.Println("Test deployment Status:", d.Status.DeployInProgress)
 
 		if d.Status.DeployInProgress {
 			// Use r.Client to get a Kubernetes Job owned by this GitRepo
@@ -1015,7 +1014,6 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 				fmt.Println("Test Jobs", job.Name)
 				if len(job.Status.Conditions) == 0 {
 					if job.Status.Active > 0 && gitrepo.Status.GitJobStatus != "Failed" {
-						fmt.Println("Test job is active")
 						gitRepoInTransitionStatus = true
 						jobStatus = "Active"
 					}
@@ -1047,6 +1045,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, gitrepo.Status.Display.Message))
 		}
 	}
+	fmt.Println("Test Job and gitRepo Status", gitRepoStatus, jobStatus)
 
 	// Check deployment ready condition to extract error message
 	if d.Status.DeployInProgress {
@@ -1172,7 +1171,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		d.Status.Summary = clustercounts
 		d.Status.State = newState
 	}
-	fmt.Println("Test2 Transition Final message:", d.Status.Message, ":", gitRepoStatus, ":", jobStatus)
+	fmt.Println("Test2 Final message:", d.Status.Message, ":", gitRepoStatus, ":", jobStatus)
 
 }
 
