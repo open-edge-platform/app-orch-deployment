@@ -1105,7 +1105,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 		// to give Fleet + ADM a chance to bootstrap the Deployment.
 		if time.Now().After(d.CreationTimestamp.Time.Add(noTargetClustersWait)) {
 			newState = v1beta1.NoTargetClusters
-			if gitRepoInTransitionStatus {
+			/*if gitRepoInTransitionStatus {
 				fmt.Println("Test no target clusters set message:", d.Status.Message)
 				if d.Status.Message != "" {
 					message = d.Status.Message
@@ -1113,18 +1113,18 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 
 			} else {
 				fmt.Println("Test gitRepoInTransitionStatus is false, no target clusters set message:")
-			}
+			}*/
 		} else {
 			// If deployment was already running and cluster went down
 			// before (d.CreationTimestamp.Time.Add(noTargetClustersWait)) then set NoTargetClusters
 			if d.Status.DeployInProgress {
-				if gitRepoInTransitionStatus {
+				/*if gitRepoInTransitionStatus {
 					fmt.Println("Test deploying set message:", d.Status.Message)
 					if d.Status.Message != "" {
 						message = d.Status.Message
 					}
 
-				}
+				}*/
 				newState = v1beta1.Deploying
 			} else {
 				newState = v1beta1.NoTargetClusters
@@ -1151,12 +1151,13 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			orchLibMetrics.CalculateTimeDifference(projectID, d.GetId(), d.Spec.DisplayName, "start", "CreateDeployment", string(v1beta1.Running), "status-change")
 		}
 	}
-
-	d.Status.Display = fmt.Sprintf("Clusters: %v/%v/%v/%v, Apps: %v", clustercounts.Total, clustercounts.Running,
-		clustercounts.Down, clustercounts.Unknown, apps)
-	d.Status.Message = message
-	d.Status.Summary = clustercounts
-	d.Status.State = newState
+	if !gitRepoInTransitionStatus {
+		d.Status.Display = fmt.Sprintf("Clusters: %v/%v/%v/%v, Apps: %v", clustercounts.Total, clustercounts.Running,
+			clustercounts.Down, clustercounts.Unknown, apps)
+		d.Status.Message = message
+		d.Status.Summary = clustercounts
+		d.Status.State = newState
+	}
 }
 
 func getGitRepoName(appName string, depID string) string {
