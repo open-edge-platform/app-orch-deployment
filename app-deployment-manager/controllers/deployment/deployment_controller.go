@@ -1018,7 +1018,9 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 					fmt.Println("Test git repo status condition message:", gitrepo.Status.GitJobStatus)
 					fmt.Println("Test deployment status message:", d.Status.Message)
 					gitRepoInTransitionStatus = true
-					message = d.Status.Message
+				} else {
+					fmt.Println("Test else job status:", job.Status.Succeeded)
+					fmt.Println("Test else git repo status:", gitrepo.Status.GitJobStatus)
 				}
 
 			}
@@ -1104,6 +1106,8 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 					message = d.Status.Message
 				}
 
+			} else {
+				fmt.Println("Test gitRepoInTransitionStatus is false, no target clusters set message:")
 			}
 		} else {
 			// If deployment was already running and cluster went down
