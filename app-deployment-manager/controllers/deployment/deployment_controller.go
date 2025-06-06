@@ -1024,7 +1024,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 						if cond.Type == batchv1.JobComplete && cond.Status == corev1.ConditionFalse && gitrepo.Status.GitJobStatus != "Failed" {
 							gitRepoInTransitionStatus = true
 							jobStatus = "NotComplete"
-						} else if cond.Type == batchv1.JobComplete && cond.Status == corev1.ConditionFalse && gitrepo.Status.GitJobStatus == "Failed" {
+						} else if cond.Type == batchv1.JobFailed && cond.Status == corev1.ConditionTrue && gitrepo.Status.GitJobStatus == "Failed" {
 							jobStatus = "Failed"
 						} else {
 							fmt.Println("Test None of the conditions matched", cond.Type, cond.Status)
