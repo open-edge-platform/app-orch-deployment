@@ -1040,6 +1040,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			message = utils.AppendMessage(logchecker.ProcessLog(message), fmt.Sprintf("App %s: %s", appName, gitrepo.Status.Display.Message))
 		}
 	}
+	fmt.Println("Test Stalled apps after git repo loop:", stalledApps)
 
 	// Check deployment ready condition to extract error message
 	if d.Status.DeployInProgress {
@@ -1091,6 +1092,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			}
 		}
 	}
+	fmt.Println("Test Stalled Apps:", stalledApps)
 
 	// Calculate the Deployment's state
 	switch {
