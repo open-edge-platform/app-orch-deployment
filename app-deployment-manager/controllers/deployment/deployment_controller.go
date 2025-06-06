@@ -1011,6 +1011,7 @@ func (r *Reconciler) updateDeploymentStatus(ctx context.Context, d *v1beta1.Depl
 			for _, job := range jobs.Items {
 				fmt.Println("Test Jobs", job.Name)
 				fmt.Println("Test gitRepo Status:", gitrepo.Status.GitJobStatus)
+				fmt.Println("Test condition length:", len(job.Status.Conditions))
 
 				for _, cond := range job.Status.Conditions {
 					fmt.Println("Test Job condition:", cond.Type, cond.Status)
