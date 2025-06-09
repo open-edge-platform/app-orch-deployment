@@ -37,7 +37,7 @@ var DpConfigs = map[string]any{
 	VirtualizationExtensionAppName: map[string]any{
 		"appNames":             []string{"kubevirt", "cdi", "kube-helper"},
 		"deployPackage":        "virtualization",
-		"deployPackageVersion": "0.3.7",
+		"deployPackageVersion": "0.5.1",
 		"profileName":          "with-software-emulation-profile-nosm",
 		"clusterId":            types.TestClusterID,
 		"labels":               map[string]string{"color": "blue"},
