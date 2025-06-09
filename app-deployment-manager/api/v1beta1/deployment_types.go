@@ -248,6 +248,9 @@ type DeploymentStatus struct {
 
 	// ParentDeploymentList is the list of parent deployment, which indicates deployment-level dependency
 	ParentDeploymentList map[string]DependentDeploymentRef `json:"parentDeploymentList,omitempty"`
+
+	// LastErrorTime is the time of the last error that occurred during deployment
+	LastErrorTime string `json:"lastErrorTime,omitempty"`
 }
 
 //+kubebuilder:object:root=true

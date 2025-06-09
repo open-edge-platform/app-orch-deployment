@@ -979,6 +979,7 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 	stalledApps := false
 	apps := 0
 	message := ""
+	const errorStickyDuration = 60 * time.Second
 	r.requeueStatus = false
 
 	// Walk GitRepos for the Deployment to extract any error conditions
@@ -1057,11 +1058,22 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 	switch {
 	case stalledApps:
 		newState = v1beta1.Error
+		d.Status.LastErrorTime = time.Now().Format(time.RFC3339)
 	case clustercounts.Unknown > 0:
 		newState = v1beta1.Unknown
 	case clustercounts.Total == 0:
 		// Wait specified interval after creation before showing NoTargetClusters,
 		// to give Fleet + ADM a chance to bootstrap the Deployment.
+
+		if d.Status.LastErrorTime != "" {
+			if lastErrTime, err := time.Parse(time.RFC3339, d.Status.LastErrorTime); err == nil {
+				if time.Since(lastErrTime) < errorStickyDuration {
+					newState = v1beta1.Error
+					break
+				}
+			}
+		}
+
 		if time.Now().After(d.CreationTimestamp.Time.Add(noTargetClustersWait)) {
 			newState = v1beta1.NoTargetClusters
 		} else {
@@ -1089,6 +1101,7 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 		newState = v1beta1.Running
 		d.Status.DeployInProgress = false
 		projectID := d.Labels[string(v1beta1.AppOrchActiveProjectID)]
+		d.Status.LastErrorTime = ""
 		orchLibMetrics.RecordTimestamp(projectID, d.GetId(), d.Spec.DisplayName, string(newState), "status-change")
 		if newState == v1beta1.Running {
 			orchLibMetrics.CalculateTimeDifference(projectID, d.GetId(), d.Spec.DisplayName, "start", "CreateDeployment", string(v1beta1.Running), "status-change")
