@@ -8,14 +8,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/open-edge-platform/orch-library/go/dazl"
-	"github.com/open-edge-platform/orch-library/go/pkg/errors"
-	"github.com/open-edge-platform/orch-library/go/pkg/openpolicyagent"
-	"google.golang.org/grpc/metadata"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/open-edge-platform/orch-library/go/dazl"
+	"github.com/open-edge-platform/orch-library/go/pkg/errors"
+	"github.com/open-edge-platform/orch-library/go/pkg/openpolicyagent"
+	"google.golang.org/grpc/metadata"
 )
 
 const (
@@ -72,9 +73,9 @@ func GetActiveProjectID(ctx context.Context) (string, error) {
 		return "", errors.NewInvalid("multiple ActiveProjectIDs are set - it should be one")
 	}
 
-	// TODO: will be removed once fully MT is integrated, as activeProjectID is mandatory field for the future but not now
+	// Enforce that activeProjectID is mandatory
 	if len(activeProjectIDs) == 0 {
-		return "", nil
+		return "", errors.NewInvalid("activeprojectid is not set")
 	}
 
 	return activeProjectIDs[0], nil

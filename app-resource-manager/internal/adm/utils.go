@@ -7,10 +7,11 @@ import (
 	"context"
 	"fmt"
 
+	"time"
+
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/internal/opa"
 	"github.com/open-edge-platform/orch-library/go/pkg/auth"
 	"google.golang.org/grpc/metadata"
-	"time"
 )
 
 func getCtxWithToken(ctx context.Context, vaultAuthClient auth.VaultAuth) (context.Context, error) {

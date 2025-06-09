@@ -24,10 +24,22 @@ func (s *Server) ListAppWorkloads(ctx context.Context, req *resourceapiv2.ListAp
 		return nil, errors.Status(errors.NewInvalid(err.Error())).Err()
 	}
 
+	// Validate ActiveProjectID is present and valid
+	activeProjectID, err := opa.GetActiveProjectID(ctx)
+	if err != nil {
+		log.Warnw("ActiveProjectID validation failed", dazl.Error(err))
+		return nil, errors.Status(errors.NewInvalid(err.Error())).Err()
+	}
+
 	if err := opa.IsAuthorized(ctx, req, s.opaClient); err != nil {
-		log.Warnw("Access denied by OPA rules", dazl.Error(err))
+		log.Warnw("Access denied by OPA rules",
+			dazl.String("AppID", req.AppId),
+			dazl.String("ClusterID", req.ClusterId),
+			dazl.String("ProjectID", activeProjectID),
+			dazl.Error(err))
 		return nil, errors.Status(errors.NewForbidden(err.Error())).Err()
 	}
+
 	appWorkloads, err := s.sbHandler.GetAppWorkLoads(ctx, req.AppId, req.ClusterId)
 	if err != nil {
 		log.Warnw("Failed to list application workloads", dazl.Stringer("request", req), dazl.Error(err))

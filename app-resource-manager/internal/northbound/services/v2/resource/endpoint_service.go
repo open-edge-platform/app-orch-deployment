@@ -25,8 +25,19 @@ func (s *Server) ListAppEndpoints(ctx context.Context, req *resourceapiv2.ListAp
 		return nil, errors.Status(errors.NewInvalid(err.Error())).Err()
 	}
 
+	// Validate ActiveProjectID is present and valid
+	activeProjectID, err := opa.GetActiveProjectID(ctx)
+	if err != nil {
+		log.Warnw("ActiveProjectID validation failed", dazl.Error(err))
+		return nil, errors.Status(errors.NewInvalid(err.Error())).Err()
+	}
+
 	if err := opa.IsAuthorized(ctx, req, s.opaClient); err != nil {
-		log.Warnw("Access denied by OPA rules", dazl.Error(err))
+		log.Warnw("Access denied by OPA rules",
+			dazl.String("AppID", req.AppId),
+			dazl.String("ClusterID", req.ClusterId),
+			dazl.String("ProjectID", activeProjectID),
+			dazl.Error(err))
 		return nil, errors.Status(errors.NewForbidden(err.Error())).Err()
 	}
 

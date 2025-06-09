@@ -5,6 +5,7 @@ package resource
 
 import (
 	"context"
+
 	resourceapiv2 "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/resource/v2"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/internal/opa"
 	"github.com/open-edge-platform/orch-library/go/dazl"
@@ -23,8 +24,21 @@ func (s *Server) DeletePod(ctx context.Context, req *resourceapiv2.DeletePodRequ
 		log.Warnw("Request validation is failed", dazl.Stringer("request", req), dazl.Error(err))
 		return nil, errors.Status(errors.NewInvalid(err.Error())).Err()
 	}
+
+	// Validate ActiveProjectID is present and valid
+	activeProjectID, err := opa.GetActiveProjectID(ctx)
+	if err != nil {
+		log.Warnw("ActiveProjectID validation failed", dazl.Error(err))
+		return nil, errors.Status(errors.NewInvalid(err.Error())).Err()
+	}
+
 	if err := opa.IsAuthorized(ctx, req, s.opaClient); err != nil {
-		log.Warnw("Access denied by OPA rules", dazl.Error(err))
+		log.Warnw("Access denied by OPA rules",
+			dazl.String("PodName", req.PodName),
+			dazl.String("Namespace", req.Namespace),
+			dazl.String("ClusterID", req.ClusterId),
+			dazl.String("ProjectID", activeProjectID),
+			dazl.Error(err))
 		return nil, errors.Status(errors.NewForbidden(err.Error())).Err()
 	}
 

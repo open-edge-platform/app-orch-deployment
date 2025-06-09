@@ -4,6 +4,8 @@
 package resource
 
 import (
+	"context"
+
 	resourceapiv2 "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/resource/v2"
 	"github.com/open-edge-platform/orch-library/go/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -54,4 +56,25 @@ func (s *NorthboundTestSuite) TestInvalidPodNameDeletePod() {
 	assert.Nil(s.T(), resp)
 	assert.Error(s.T(), err)
 
+}
+
+// TestDeletePod_MissingActiveProjectID tests the DeletePod API handler behavior when
+// the request context is missing the ActiveProjectID.
+func (s *NorthboundTestSuite) TestDeletePod_MissingActiveProjectID() {
+	// Create context without ActiveProjectID
+	ctxWithoutProjectID := context.Background()
+
+	// Convert to a test client context
+	testCtx := convertToTestContext(ctxWithoutProjectID)
+
+	resp, err := s.podServiceClient.DeletePod(testCtx, &resourceapiv2.DeletePodRequest{
+		ClusterId: testCluster1,
+		Namespace: testNamespace,
+		PodName:   testPodName,
+	})
+
+	assert.Error(s.T(), err)
+	assert.Nil(s.T(), resp)
+	assert.True(s.T(), errors.IsInvalid(errors.FromGRPC(err)))
+	assert.Contains(s.T(), err.Error(), "activeprojectid")
 }

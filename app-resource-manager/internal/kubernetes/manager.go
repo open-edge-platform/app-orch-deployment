@@ -251,9 +251,9 @@ func (m *manager) GetAppEndpointsV2(ctx context.Context, appID string, clusterID
 
 	activeProjectID, err := opa.GetActiveProjectID(ctx)
 	if err != nil {
-		// todo: return error after IAM is ready
-		log.Errorf("Failed to get active project ID: %v", err)
-		activeProjectID = "nil"
+		// Return error since ActiveProjectID is mandatory
+		log.Errorw("Failed to get active project ID", dazl.Error(err))
+		return nil, err
 	}
 
 	serviceEndpoints, err := getServiceAppEndpointsV2(ctx, k8sClient, activeProjectID, appID, appNamespace, clusterID)

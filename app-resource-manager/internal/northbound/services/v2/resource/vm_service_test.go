@@ -4,6 +4,8 @@
 package resource
 
 import (
+	"context"
+
 	resourceapiv2 "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/resource/v2"
 	"github.com/open-edge-platform/orch-library/go/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -204,4 +206,89 @@ func (s *NorthboundTestSuite) TestRestartVirtualMachineError() {
 	})
 
 	assert.Error(s.T(), err)
+}
+
+// Test MissingActiveProjectID for GetVNC, RestartVirtualMachine, StartVirtualMachine,
+// StopVirtualMachine functions verifies that the methods returns an appropriate error
+// when the request context does not contain an ActiveProjectID.
+func (s *NorthboundTestSuite) TestGetVNC_MissingActiveProjectID() {
+	// Create context without ActiveProjectID
+	ctxWithoutProjectID := context.Background()
+
+	// Convert to a test client context
+	testCtx := convertToTestContext(ctxWithoutProjectID)
+
+	resp, err := s.vmServiceClient.GetVNC(testCtx, &resourceapiv2.GetVNCRequest{
+		ClusterId:        testCluster1,
+		AppId:            testApp1,
+		VirtualMachineId: testVM1,
+	})
+
+	assert.Error(s.T(), err)
+	assert.Nil(s.T(), resp)
+	// Verify it's the right error type
+	assert.True(s.T(), errors.IsInvalid(errors.FromGRPC(err)))
+	// Verify error message
+	assert.Contains(s.T(), err.Error(), "activeprojectid")
+}
+
+func (s *NorthboundTestSuite) TestStartVirtualMachine_MissingActiveProjectID() {
+	// Create context without ActiveProjectID
+	ctxWithoutProjectID := context.Background()
+
+	// Convert to a test client context
+	testCtx := convertToTestContext(ctxWithoutProjectID)
+
+	resp, err := s.vmServiceClient.StartVirtualMachine(testCtx, &resourceapiv2.StartVirtualMachineRequest{
+		ClusterId:        testCluster1,
+		AppId:            testApp1,
+		VirtualMachineId: testVM1,
+	})
+
+	assert.Error(s.T(), err)
+	assert.Nil(s.T(), resp)
+	assert.True(s.T(), errors.IsInvalid(errors.FromGRPC(err)))
+	assert.Contains(s.T(), err.Error(), "activeprojectid")
+}
+
+func (s *NorthboundTestSuite) TestStopVirtualMachine_MissingActiveProjectID() {
+	// Create context without ActiveProjectID
+	ctxWithoutProjectID := context.Background()
+
+	// Convert to a test client context
+	testCtx := convertToTestContext(ctxWithoutProjectID)
+
+	resp, err := s.vmServiceClient.StopVirtualMachine(testCtx, &resourceapiv2.StopVirtualMachineRequest{
+		ClusterId:        testCluster1,
+		AppId:            testApp1,
+		VirtualMachineId: testVM1,
+	})
+
+	assert.Error(s.T(), err)
+	assert.Nil(s.T(), resp)
+	assert.True(s.T(), errors.IsInvalid(errors.FromGRPC(err)))
+	assert.Contains(s.T(), err.Error(), "activeprojectid")
+}
+
+func (s *NorthboundTestSuite) TestRestartVirtualMachine_MissingActiveProjectID() {
+	// Create context without ActiveProjectID
+	ctxWithoutProjectID := context.Background()
+
+	// Convert to a test client context
+	testCtx := convertToTestContext(ctxWithoutProjectID)
+
+	resp, err := s.vmServiceClient.RestartVirtualMachine(testCtx, &resourceapiv2.RestartVirtualMachineRequest{
+		ClusterId:        testCluster1,
+		AppId:            testApp1,
+		VirtualMachineId: testVM1,
+	})
+
+	assert.Error(s.T(), err)
+	assert.Nil(s.T(), resp)
+	assert.True(s.T(), errors.IsInvalid(errors.FromGRPC(err)))
+	assert.Contains(s.T(), err.Error(), "activeprojectid")
+}
+
+func convertToTestContext(ctx context.Context) context.Context {
+	return ctx
 }
