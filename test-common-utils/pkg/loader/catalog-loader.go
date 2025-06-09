@@ -11,8 +11,8 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/git"
 	catalogloader "github.com/open-edge-platform/orch-library/go/pkg/loader"
 	"os"
+	"os/exec"
 	"path/filepath"
-    "os/exec"
 )
 
 func Upload(paths []string) error {
@@ -50,9 +50,9 @@ func UploadFiles(paths []string, domain string, projectName string) error {
 }
 
 func UploadHttpbinHelm(path, harborPwd string) error {
-	chartPath := path + "/helm" // Path to your chart directory
-	registry := "registry-oci.kind.internal" // OCI registry URL (without oci:// prefix)
-	repo := "catalog-apps-sample-org-sample-project"               // Repository name in your OCI registry
+	chartPath := path + "/helm"                      // Path to your chart directory
+	registry := "registry-oci.kind.internal"         // OCI registry URL (without oci:// prefix)
+	repo := "catalog-apps-sample-org-sample-project" // Repository name in your OCI registry
 	username := "sample-project-edge-mgr"
 
 	// 1. Login to the OCI registry
@@ -72,7 +72,7 @@ func UploadHttpbinHelm(path, harborPwd string) error {
 	}
 
 	// 2. Package the Helm chart
-    version := "0.1.7"
+	version := "0.1.7"
 	pkgCmd := exec.Command("helm", "package", chartPath, "--version", version)
 	pkgCmd.Stdout = os.Stdout
 	pkgCmd.Stderr = os.Stderr
@@ -82,7 +82,7 @@ func UploadHttpbinHelm(path, harborPwd string) error {
 		os.Exit(1)
 	}
 
-    chartName := "httpbin"
+	chartName := "httpbin"
 	chartTGZ := fmt.Sprintf("%s-%s.tgz", chartName, version)
 
 	// 3. Push the chart to OCI registry
@@ -99,7 +99,7 @@ func UploadHttpbinHelm(path, harborPwd string) error {
 	// Optional: Cleanup the packaged file
 	os.Remove(filepath.Join(".", chartTGZ))
 	fmt.Println("Done!")
-    return nil
+	return nil
 }
 
 // UploadCirrosVM clones the cirros-vm repository and loads it into the catalog

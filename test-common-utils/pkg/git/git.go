@@ -53,6 +53,7 @@ func CloneHttpbin() (string, error) {
 
 	return httpbinPath, nil
 }
+
 // CloneCirrosVM clones the cirros-vm repository and returns the path to the repository
 func CloneCirrosVM() (string, error) {
 	repoURL := "https://github.com/open-edge-platform/app-orch-catalog.git"

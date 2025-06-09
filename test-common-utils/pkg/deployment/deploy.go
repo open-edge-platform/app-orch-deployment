@@ -113,7 +113,7 @@ type StartDeploymentRequest struct {
 	DeploymentTimeout time.Duration
 	DeleteTimeout     time.Duration
 	TestName          string
-    ReuseFlag         bool
+	ReuseFlag         bool
 }
 
 func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
@@ -137,18 +137,18 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 			}
 		}
 	}
-	
-    // Enable if you want to resue existing deployed app
-    if opts.ReuseFlag {
-        if deployID := FindDeploymentIDByDisplayName(opts.AdmClient, displayName); deployID != "" {
-            fmt.Printf("Deployment exists. use it")
-            _, err := GetDeployApps(opts.AdmClient, deployID)
-            if err != nil {
-                return "", retCode, err
-            }
-            return deployID, retCode, nil
-        }
-    }
+
+	// Enable if you want to resue existing deployed app
+	if opts.ReuseFlag {
+		if deployID := FindDeploymentIDByDisplayName(opts.AdmClient, displayName); deployID != "" {
+			fmt.Printf("Deployment exists. use it")
+			_, err := GetDeployApps(opts.AdmClient, deployID)
+			if err != nil {
+				return "", retCode, err
+			}
+			return deployID, retCode, nil
+		}
+	}
 
 	err := DeleteAndRetryUntilDeleted(opts.AdmClient, displayName, types.RetryCount, opts.DeleteTimeout)
 	if err != nil {
@@ -491,7 +491,7 @@ func GetDeployApps(client *restClient.ClientWithResponses, deployID string) ([]*
 			apps := make([]*restClient.App, len(*d.Apps))
 			for i, app := range *d.Apps {
 				apps[i] = &app
-                fmt.Println("app.Name : ", *app.Name)
+				fmt.Println("app.Name : ", *app.Name)
 			}
 			return apps, nil
 		}
