@@ -1057,6 +1057,7 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 	// Calculate the Deployment's state
 	switch {
 	case stalledApps:
+		fmt.Println("Test set last error time")
 		newState = v1beta1.Error
 		d.Status.LastErrorTime = time.Now().Format(time.RFC3339)
 	case clustercounts.Unknown > 0:
