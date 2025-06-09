@@ -251,6 +251,9 @@ type DeploymentStatus struct {
 
 	// LastErrorTime is the time of the last error that occurred during deployment
 	LastErrorTime string `json:"lastErrorTime,omitempty"`
+
+	// LastErrorMessage is the message of the last error that occurred during deployment
+	LastErrorMessage string `json:"lastErrorMessage,omitempty"`
 }
 
 //+kubebuilder:object:root=true

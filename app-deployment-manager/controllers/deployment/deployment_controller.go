@@ -1058,6 +1058,7 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 	case stalledApps:
 		newState = v1beta1.Error
 		d.Status.LastErrorTime = time.Now().Format(time.RFC3339)
+		d.Status.LastErrorMessage = message
 	case clustercounts.Unknown > 0:
 		newState = v1beta1.Unknown
 	case clustercounts.Total == 0:
@@ -1065,11 +1066,10 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 		// Wait specified interval after creation before showing NoTargetClusters,
 		// to give Fleet + ADM a chance to bootstrap the Deployment.
 
-		if d.Status.LastErrorTime != "" {
-			if lastErrTime, err := time.Parse(time.RFC3339, d.Status.LastErrorTime); err == nil {
-				if time.Since(lastErrTime) < stickyErrorDuration {
-					newState = v1beta1.Error
-					break
+		if d.Status.Message == "" && d.Status.LastErrorMessage != "" && d.Status.LastErrorTime != "" {
+			if t, err := time.Parse(time.RFC3339, d.Status.LastErrorTime); err == nil {
+				if time.Since(t) < stickyErrorDuration {
+					d.Status.Message = d.Status.LastErrorMessage
 				}
 			}
 		}
