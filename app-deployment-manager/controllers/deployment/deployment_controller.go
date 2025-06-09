@@ -979,7 +979,7 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 	stalledApps := false
 	apps := 0
 	message := ""
-	const errorStickyDuration = 60 * time.Second
+	const errorStickyDuration = 80 * time.Second
 	r.requeueStatus = false
 
 	// Walk GitRepos for the Deployment to extract any error conditions
@@ -1065,6 +1065,7 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 	case clustercounts.Total == 0:
 		// Wait specified interval after creation before showing NoTargetClusters,
 		// to give Fleet + ADM a chance to bootstrap the Deployment.
+		fmt.Println("Test print last error time", d.Status.LastErrorTime)
 
 		if d.Status.LastErrorTime != "" {
 			if lastErrTime, err := time.Parse(time.RFC3339, d.Status.LastErrorTime); err == nil {
@@ -1108,7 +1109,7 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 			orchLibMetrics.CalculateTimeDifference(projectID, d.GetId(), d.Spec.DisplayName, "start", "CreateDeployment", string(v1beta1.Running), "status-change")
 		}
 	}
-
+	fmt.Println("Test set last error time", d.Status.LastErrorTime)
 	d.Status.Display = fmt.Sprintf("Clusters: %v/%v/%v/%v, Apps: %v", clustercounts.Total, clustercounts.Running,
 		clustercounts.Down, clustercounts.Unknown, apps)
 	d.Status.Message = message
