@@ -25,7 +25,7 @@ func (s *TestSuite) TestServiceLinkPageAccess() {
 						serviceUrl := port.ServiceProxyUrl
 						if serviceUrl != nil && *serviceUrl != "" {
 							searchStr := "Études is a pioneering firm"
-							found, err := openPageInHeadlessChrome(*serviceUrl, searchStr, s.Token)
+							found, err := OpenPageInHeadlessChrome(*serviceUrl, searchStr, s.Token)
 							if err != nil || found == false {
 								s.T().Errorf("Failed to open wordpress page : %s", err)
 							}

@@ -180,8 +180,6 @@ github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi
 github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 v2.4.3/go.mod h1:bG6RcGbU0K8msdb7MtFOKhPzNSjHWXtL6j8iHLzrx2w=
 github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 v2.0.0-20250602150811-eac18c424a6d h1:jJ+ZWQK1N5Gw88O2iAeaMp3f4UC8NGdrWabfnXAhEcs=
 github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 v2.0.0-20250602150811-eac18c424a6d/go.mod h1:yZYQ0gc24x1z2oWeCu96Z/udfy615+Nanq+v6ZsjKCY=
-github.com/open-edge-platform/app-orch-deployment/test-common-utils v0.0.0-20250603173621-1322dbfc7abc h1:jqf+1EFPhLWPE0wCvh099HzTTDId0DCioyMiW31z+eY=
-github.com/open-edge-platform/app-orch-deployment/test-common-utils v0.0.0-20250603173621-1322dbfc7abc/go.mod h1:SLracRIJeEv3hfwIAIg9Ch2BNxG2lBpkw+IDf/ov1Oc=
 github.com/open-edge-platform/orch-library/go v0.6.1 h1:IGR2ic73f3obnhlxTRfHcyYMbPbYu7BSqa9UYyEZ78Q=
 github.com/open-edge-platform/orch-library/go v0.6.1/go.mod h1:3Tes/GJfwYbnQa/1scbKiLbjZrL4fJEouFk28oo5/c8=
 github.com/open-edge-platform/orch-library/go/dazl v0.5.4 h1:Rx/bSAZiLjEEBjUiJEzBvT0fQv5huT5FQ2Ke3IMUhiE=

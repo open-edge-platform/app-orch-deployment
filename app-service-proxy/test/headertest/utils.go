@@ -21,12 +21,7 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
 )
 
-const (
-	retryDelay = 10 * time.Second
-	retryCount = 10
-)
-
-func getXAuthHeader(url, token string) (string, error) {
+func GetXAuthHeader(url, _ string) (string, error) {
 	// Create a user data dir for Chrome to persist cookies and session
 	//userDataDir := filepath.Join(os.TempDir(), "chromedp-user-data")
 	//os.MkdirAll(userDataDir, 0700)
@@ -120,14 +115,26 @@ func getXAuthHeader(url, token string) (string, error) {
 	//preText = responseBody
 	fmt.Println("html link : ", pageTitle)
 	fmt.Println("preText : ", preText)
-	if err := os.WriteFile("/tmp/httpbin.png", buf, 0644); err != nil {
+	tempDir := os.TempDir() // Uses the default OS temporary directory
+
+	// Create a temporary file with a .png extension
+	tempFile, err := os.CreateTemp(tempDir, "httpbin.png")
+	if err != nil {
+		fmt.Println("Error creating temp PNG file:", err)
+		return "", err
+	}
+	defer os.Remove(tempFile.Name()) // Clean up the file when done
+	defer tempFile.Close()
+
+	// Create the temporary file
+	if err := os.WriteFile(tempFile.Name(), buf, 0600); err != nil {
 		return "", fmt.Errorf("screenshot error: %w", err)
 	}
 
 	return preText, nil
 }
 
-func getCliSecretHarbor(url, token string) (string, error) {
+func GetCliSecretHarbor(url, token string) (string, error) {
 	// Create a user data dir for Chrome to persist cookies and session
 	//userDataDir := filepath.Join(os.TempDir(), "chromedp-user-data")
 	//os.MkdirAll(userDataDir, 0700)
@@ -242,7 +249,19 @@ func getCliSecretHarbor(url, token string) (string, error) {
 
 	fmt.Println("html link : ", pageTitle)
 	fmt.Println("secret : ", secret)
-	if err := os.WriteFile("/tmp/registry.png", buf, 0644); err != nil {
+	tempDir := os.TempDir() // Uses the default OS temporary directory
+
+	// Create a temporary file with a .png extension
+	tempFile, err := os.CreateTemp(tempDir, "registry.png")
+	if err != nil {
+		fmt.Println("Error creating temp PNG file:", err)
+		return "", err
+	}
+	defer os.Remove(tempFile.Name()) // Clean up the file when done
+	defer tempFile.Close()
+
+	// Create the temporary file
+	if err := os.WriteFile(tempFile.Name(), buf, 0600); err != nil {
 		return "", fmt.Errorf("screenshot error: %w", err)
 	}
 

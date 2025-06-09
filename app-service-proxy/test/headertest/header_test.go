@@ -25,7 +25,7 @@ func (s *TestSuite) TestAuthorizationHeader() {
 					for _, port := range *appEndPoint.Ports {
 						serviceUrl := port.ServiceProxyUrl
 						if serviceUrl != nil && *serviceUrl != "" {
-							preText, err := getXAuthHeader(*serviceUrl, s.Token)
+							preText, err := GetXAuthHeader(*serviceUrl, s.Token)
 							if err != nil {
 								s.T().Errorf("Failed to open httbin page : %s", err)
 							}

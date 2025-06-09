@@ -96,9 +96,9 @@ func (s *TestSuite) SetupTest() {
 
 // TearDownSuite cleans up after the entire test suite
 func (s *TestSuite) TearDownSuite() {
-    depName := deploymentutils.WordpressAppName + "-dep"
+	depName := deploymentutils.WordpressAppName + "-dep"
 	err := deploymentutils.DeleteAndRetryUntilDeleted(s.AdmClient,
-                                depName, 10, 10*time.Second)
+		depName, 10, 10*time.Second)
 	s.NoError(err)
 	portforwarding.TearDownPortForward(s.PortForwardCmd)
 }
