@@ -74,7 +74,7 @@ func (s *TestSuite) SetupSuite() {
 		s.T().Fatalf("error: %v", err)
 	}
 	defer os.RemoveAll(filepath.Dir(filepath.Dir(httpbinPath))) // Clean up the temporary directory after upload
-	secret, _ := getCliSecretHarbor("https://registry-oci.kind.internal", s.Token)
+	secret, _ := GetCliSecretHarbor("https://registry-oci.kind.internal", s.Token)
 	err = loader.UploadHttpbinHelm(httpbinPath, secret)
 	if err != nil {
 		s.T().Fatalf("error: %v", err)
