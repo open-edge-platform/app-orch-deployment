@@ -52,12 +52,22 @@ var DpConfigs = map[string]any{
 		"labels":               map[string]string{"color": "blue"},
 		"overrideValues":       []map[string]any{},
 	},
+	HttpbinAppName: map[string]any{
+		"appNames":             []string{"httpbin"},
+		"deployPackage":        "httpbin",
+		"deployPackageVersion": "2.3.4",
+		"profileName":          "default",
+		"clusterId":            types.TestClusterID,
+		"labels":               map[string]string{"color": "blue"},
+		"overrideValues":       []map[string]any{},
+	},
 }
 
 const (
 	NginxAppName                   = "nginx"
 	CirrosAppName                  = "cirros-container-disk"
 	WordpressAppName               = "wordpress"
+	HttpbinAppName                 = "httpbin"
 	VirtualizationExtensionAppName = "virtualization-extension"
 )
 
@@ -103,6 +113,7 @@ type StartDeploymentRequest struct {
 	DeploymentTimeout time.Duration
 	DeleteTimeout     time.Duration
 	TestName          string
+    ReuseFlag         bool
 }
 
 func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
@@ -126,6 +137,18 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 			}
 		}
 	}
+	
+    // Enable if you want to resue existing deployed app
+    if opts.ReuseFlag {
+        if deployID := FindDeploymentIDByDisplayName(opts.AdmClient, displayName); deployID != "" {
+            fmt.Printf("Deployment exists. use it")
+            _, err := GetDeployApps(opts.AdmClient, deployID)
+            if err != nil {
+                return "", retCode, err
+            }
+            return deployID, retCode, nil
+        }
+    }
 
 	err := DeleteAndRetryUntilDeleted(opts.AdmClient, displayName, types.RetryCount, opts.DeleteTimeout)
 	if err != nil {
@@ -468,6 +491,7 @@ func GetDeployApps(client *restClient.ClientWithResponses, deployID string) ([]*
 			apps := make([]*restClient.App, len(*d.Apps))
 			for i, app := range *d.Apps {
 				apps[i] = &app
+                fmt.Println("app.Name : ", *app.Name)
 			}
 			return apps, nil
 		}

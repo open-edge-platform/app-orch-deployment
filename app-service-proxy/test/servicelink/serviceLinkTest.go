@@ -5,57 +5,35 @@
 package servicelink
 
 import (
-<<<<<<< HEAD
- "io/ioutil"
- "net/http"
+	"io/ioutil"
+	"net/http"
 )
-
-func (s *TestSuite) TestHarborCliSecret() {
-	for _, app := range s.DeployApps {
-		appID := *app.Id
-		appEndPoints, retCode, err := AppEndpointsList(s.ArmClient, appID)
-		s.Equal(retCode, 200)
-		s.NoError(err)
-		s.NotEmpty(appEndPoints)
-		for _, appEndPoint := range *appEndPoints {
-			if appEndPoint.Ports != nil {
-				for _, port := range *appEndPoint.Ports {
-					serviceUrl := port.ServiceProxyUrl
-					if serviceUrl != nil && *serviceUrl != "" {
-						secret, _ := getCliSecretHarbor("https://registry-oci.kind.internal", s.Token)
-						s.T().Logf("harbor secret %s", secret)
-
-					}
-				}
-			} else {
-				s.T().Logf("No ports in service")
-			}
-		}
-	}
-}
 
 // TestServiceLink checks if http get for service link works.
 func (s *TestSuite) TestServiceLinkPageAccess() {
 	for _, app := range s.DeployApps {
 		appID := *app.Id
-		appEndPoints, retCode, err := AppEndpointsList(s.ArmClient, appID)
-		s.Equal(retCode, 200)
-		s.NoError(err)
-		s.NotEmpty(appEndPoints)
-		for _, appEndPoint := range *appEndPoints {
-			if appEndPoint.Ports != nil {
-				for _, port := range *appEndPoint.Ports {
-					serviceUrl := port.ServiceProxyUrl
-					if serviceUrl != nil && *serviceUrl != "" {
-						searchStr := "Études is a pioneering firm"
-						found, err := openPageInHeadlessChrome(*serviceUrl, searchStr, s.Token)
-						if err != nil || found == false {
-							s.T().Errorf("Failed to open wordpress page : %s", err)
+		appName := *app.Name
+		if appName == "wordpress" {
+			appEndPoints, retCode, err := AppEndpointsList(s.ArmClient, appID)
+			s.Equal(retCode, 200)
+			s.NoError(err)
+			s.NotEmpty(appEndPoints)
+			for _, appEndPoint := range *appEndPoints {
+				if appEndPoint.Ports != nil {
+					for _, port := range *appEndPoint.Ports {
+						serviceUrl := port.ServiceProxyUrl
+						if serviceUrl != nil && *serviceUrl != "" {
+							searchStr := "Études is a pioneering firm"
+							found, err := openPageInHeadlessChrome(*serviceUrl, searchStr, s.Token)
+							if err != nil || found == false {
+								s.T().Errorf("Failed to open wordpress page : %s", err)
+							}
 						}
 					}
+				} else {
+					s.T().Logf("No ports in service")
 				}
-			} else {
-				s.T().Logf("No ports in service")
 			}
 		}
 	}

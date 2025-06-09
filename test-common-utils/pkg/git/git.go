@@ -33,6 +33,27 @@ func CloneRepository(repoURL, branch string) (string, error) {
 }
 
 // CloneCirrosVM clones the cirros-vm repository and returns the path to the repository
+func CloneHttpbin() (string, error) {
+	repoURL := "https://github.com/open-edge-platform/app-orch-catalog.git"
+	branch := "main"
+
+	tempDir, err := CloneRepository(repoURL, branch)
+	if err != nil {
+		return "", err
+	}
+
+	// The specific path to the cirros-vm directory within the cloned repository
+	httpbinPath := filepath.Join(tempDir, "app-orch-tutorials", "httpbin")
+
+	// Verify that the directory exists
+	if _, err := os.Stat(httpbinPath); os.IsNotExist(err) {
+		os.RemoveAll(tempDir) // Clean up
+		return "", fmt.Errorf("httpbin directory not found in cloned repository")
+	}
+
+	return httpbinPath, nil
+}
+// CloneCirrosVM clones the cirros-vm repository and returns the path to the repository
 func CloneCirrosVM() (string, error) {
 	repoURL := "https://github.com/open-edge-platform/app-orch-catalog.git"
 	branch := "main"

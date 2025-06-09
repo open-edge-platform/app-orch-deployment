@@ -148,29 +148,6 @@ jobs:
           echo "Redeploying and rebuilding component ${{ inputs.component }}"
           make coder-rebuild
           make coder-redeploy
-      - name: Check if Chrome is installed
-        id: chrome_check
-        run: |
-          if google-chrome --version; then
-            echo "Chrome is already installed."
-            echo "installed=true" >> $GITHUB_ENV
-          else
-            echo "Chrome is not installed."
-            echo "installed=false" >> $GITHUB_ENV
-          fi
-      - name: Install Chrome
-        if: env.installed == 'false'
-        run: |
-          echo "Installing Chrome..."
-          sudo apt-get update
-          sudo apt-get install -y wget
-          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get install -f -y
-          rm google-chrome-stable_current_amd64.deb
-          echo "Chrome installation complete."
-
-      - name: Verify Chrome installation
-        run: google-chrome --version
       - name: Run Component Tests
         working-directory: app-orch-deployment/${{ inputs.component }} # zizmor: ignore[template-injection]
         run: |

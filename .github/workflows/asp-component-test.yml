@@ -24,7 +24,37 @@ permissions:
   contents: read
 
 jobs:
-  component-test-arm:
+  initial-step:
+    runs-on: ubuntu-24.04-16core-64GB # ubuntu-24.04-4core-16GB ubuntu-22.04-32core-128GB & ubuntu-24.04-16core-64GB
+    steps:
+      - name: Initial step
+        run: echo "Running initial step of chrome installation"
+      - name: Check if Chrome is installed
+        id: chrome_check
+        run: |
+          if google-chrome --version; then
+            echo "Chrome is already installed."
+            echo "installed=true" >> $GITHUB_ENV
+          else
+            echo "Chrome is not installed."
+            echo "installed=false" >> $GITHUB_ENV
+          fi
+
+      - name: Install Chrome
+        if: env.installed == 'false'
+        run: |
+          echo "Installing Chrome..."
+          sudo apt-get update
+          sudo apt-get install -y wget
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get install -f -y
+          rm google-chrome-stable_current_amd64.deb
+          echo "Chrome installation complete."
+
+      - name: Verify Chrome installation
+        run: google-chrome --version
+
+  component-test-asp:
     if: ${{ inputs.run-asp || github.event_name == 'schedule' || github.event.label.name == 'run-asp-component-tests' }}
     name: ASP Component Test
     uses: ./.github/workflows/common-comp-tests.yml

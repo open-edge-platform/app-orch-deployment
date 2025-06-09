@@ -8,10 +8,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 	"time"
-	//"os"
 	//"path/filepath"
 
 	"github.com/chromedp/cdproto/network"
@@ -141,7 +140,7 @@ func getCliSecretHarbor(url, token string) (string, error) {
 
 	fmt.Println("html link : ", pageTitle)
 	fmt.Println("secret : ", secret)
-	if err := ioutil.WriteFile("/home/seu/temp/registry.png", buf, 0644); err != nil {
+	if err := os.WriteFile("/tmp/registry.png", buf, 0644); err != nil {
 		return "", fmt.Errorf("screenshot error: %w", err)
 	}
 
@@ -298,7 +297,7 @@ func openPageInHeadlessChrome(url, search, token string) (bool, error) {
 		fmt.Println("String not found.")
 	}
 
-	if err := ioutil.WriteFile("/home/seu/temp/screenshot.png", buf, 0644); err != nil {
+	if err := os.WriteFile("/tmp/screenshot.png", buf, 0644); err != nil {
 		return false, fmt.Errorf("screenshot error: %w", err)
 	}
 
@@ -327,8 +326,8 @@ func openPageInHeadlessChrome(url, search, token string) (bool, error) {
 
 func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppEndpoint, int, error) {
 	resp, err :=
-        armClient.EndpointsServiceListAppEndpointsWithResponse(context.TODO(),
-                                                               appID, types.TestClusterID)
+		armClient.EndpointsServiceListAppEndpointsWithResponse(context.TODO(),
+			appID, types.TestClusterID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return &[]restClient.AppEndpoint{}, resp.StatusCode(), fmt.Errorf("%v", err)
@@ -338,4 +337,3 @@ func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (
 
 	return resp.JSON200.AppEndpoints, resp.StatusCode(), nil
 }
-

@@ -22,7 +22,7 @@ const (
 	SampleOrg     = "sample-org"
 	SampleProject = "sample-project"
 	KCPass        = "ChangeMeOn1stLogin!"
-	TestClusterID = "demo-cluster"
+	TestClusterID = "test2"
 )
 
 const (
