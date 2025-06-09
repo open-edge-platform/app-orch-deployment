@@ -769,7 +769,6 @@ func (s *DeploymentSvc) CreateDeployment(ctx context.Context, in *deploymentpb.C
 	}
 
 	utils.LogActivity(ctx, "create", "ADM", "deployment-name "+d.Name, "deploy-id "+d.DeployID, "deployment-app-version "+d.AppVersion)
-	log.Infof("[DEBUG] OverrideValues stored in DB for deployment %s: %+v", d.Name, d.OverrideValues)
 	return &deploymentpb.CreateDeploymentResponse{DeploymentId: d.DeployID}, nil
 }
 
@@ -848,7 +847,6 @@ func (s *DeploymentSvc) GetDeployment(ctx context.Context, in *deploymentpb.GetD
 	deployResponse, _ := c.createDeploymentObject(ctx, s)
 
 	utils.LogActivity(ctx, "list", "ADM", "deployment name "+name, "deploy id "+UID, "deployment app version "+deployResponse.AppVersion)
-	log.Infof("[DEBUG] [GetDeployment] OverrideValues stored in DB for deployment %s: %+v", deployResponse.Name, deployResponse.OverrideValues)
 	return &deploymentpb.GetDeploymentResponse{
 		Deployment: deployResponse,
 	}, nil
@@ -1051,7 +1049,6 @@ func (s *DeploymentSvc) ListDeployments(ctx context.Context, in *deploymentpb.Li
 	// After deployList is built and before selectDeployments:
 	for _, deployResponse := range deployList {
 		if deployResponse != nil {
-			log.Infof("[DEBUG] [ListDeployments] OverrideValues stored in DB for deployment %s: %+v", deployResponse.Name, deployResponse.OverrideValues)
 		}
 	}
 
@@ -1316,32 +1313,24 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 
 	// case 3
 
-	// --- Unmask secrets before createSecrets (fix for masked value overwrite) ---
-
+	// Unmask secrets before createSecrets
 	for _, app := range *d.HelmApps {
 		secretName := fmt.Sprintf("%s-%s-%s-secret", d.Name, app.Name, d.ProfileName)
-		log.Infof("[DEBUG] [Unmask] Attempting to fetch secret for app: %s, secretName: %s, namespace: %s", app.Name, secretName, d.Namespace)
 		secretValue, err := utils.GetSecretValue(ctx, s.k8sClient, d.Namespace, secretName)
 		if err != nil {
-			log.Warnf("[DEBUG] [Unmask] Failed to get secret %s for app %s: %v", secretName, app.Name, err)
 			continue
 		}
 		val, err := yaml2.YAMLToJSON(secretValue.Data["values"])
 		if err != nil {
-			log.Warnf("[DEBUG] [Unmask] Failed to convert secret %s values to JSON for app %s: %v", secretName, app.Name, err)
 			continue
 		}
 		var valuesStrPb *structpb.Struct
 		if err := json.Unmarshal(val, &valuesStrPb); err != nil {
-			log.Warnf("[DEBUG] [Unmask] Failed to unmarshal secret %s JSON for app %s: %v", secretName, app.Name, err)
 			continue
 		}
-		log.Infof("[DEBUG] [Unmask] Fetched secret values for app %s: %+v", app.Name, valuesStrPb)
 		for _, oVal := range d.OverrideValues {
 			if oVal.AppName == app.Name && oVal.Values != nil && valuesStrPb != nil {
-				log.Infof("[DEBUG] [Unmask] Before unmask: AppName=%s, Values=%+v", oVal.AppName, oVal.Values)
 				UnmaskSecrets(oVal.Values, valuesStrPb, "")
-				log.Infof("[DEBUG] [Unmask] After unmask: AppName=%s, Values=%+v", oVal.AppName, oVal.Values)
 			}
 		}
 	}
@@ -1385,8 +1374,6 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 	var c DeploymentInstance
 	c.deployment = deployment
 	deployResponse, _ := c.createDeploymentObject(ctx, s)
-
-	log.Infof("[DEBUG] Final OverrideValues to be stored for deployment %s: %+v", d.Name, d.OverrideValues)
 
 	utils.LogActivity(ctx, "update", "ADM", "deployment name "+d.Name, "deploy id "+d.DeployID, "deployment app version "+in.Deployment.AppVersion)
 	return &deploymentpb.UpdateDeploymentResponse{

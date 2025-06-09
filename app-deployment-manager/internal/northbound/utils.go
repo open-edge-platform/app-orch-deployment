@@ -31,6 +31,10 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/vault"
 )
 
+const (
+	MaskedValuePlaceholder = "********"
+)
+
 const maxDepth = 20
 
 func deploymentType(s string) deploymentv1beta1.DeploymentType {
@@ -340,23 +344,22 @@ func createSecrets(ctx context.Context, k8sClient *kubernetes.Clientset, d *Depl
 	rsRepoSec := os.Getenv("RS_PROXY_REPO_SECRET")
 	rsRemoteNs := os.Getenv("RS_PROXY_REMOTE_NS")
 
-	// Get the values from user input OverrideValues
+	// Get the values from user input OverrideValues - these should already have masked values replaced
+	// with real values from the UnmaskSecrets call in UpdateDeployment
 	for _, value := range d.OverrideValues {
 		notRawMsg, err := json.Marshal(value.Values)
 		if err == nil {
 			contents = string(notRawMsg)
 		}
-
 		overrideValues[value.AppName] = contents
 	}
 
-	// Get the values including masked secrets from user input OverrideValues
+	// Get the values including masked secrets from user input OverrideValuesMasked
 	for _, value := range d.OverrideValuesMasked {
 		notRawMsg, err := json.Marshal(value.Values)
 		if err == nil {
 			contentsMasked = string(notRawMsg)
 		}
-
 		overrideValuesMasked[value.AppName] = contentsMasked
 	}
 
@@ -365,6 +368,7 @@ func createSecrets(ctx context.Context, k8sClient *kubernetes.Clientset, d *Depl
 	d.ValueSecretName = make(map[string]string)
 	d.RepoSecretName = make(map[string]string)
 	d.ImageRegistrySecretName = make(map[string]string)
+
 	for _, app := range *d.HelmApps {
 		contents = ""
 		// ProfileSecretName contains the override values at run-time per application.
@@ -397,6 +401,10 @@ func createSecrets(ctx context.Context, k8sClient *kubernetes.Clientset, d *Depl
 
 			data := map[string]string{}
 			data["values"] = contents
+
+			// Check if the contents contain any masked values that weren't properly unmasked
+			if strings.Contains(contents, "\""+MaskedValuePlaceholder+"\"") {
+			}
 
 			err = utils.CreateSecret(ctx, k8sClient, d.Namespace, secretName, data, false)
 			if err != nil {
@@ -442,8 +450,13 @@ func createSecrets(ctx context.Context, k8sClient *kubernetes.Clientset, d *Depl
 			}
 		}
 
+		// Handle parameter template secrets - these contain the real secret values
 		if d.ParameterTemplateSecrets[app.Name] != "" {
 			secretName := fmt.Sprintf("%s-%s-%s-secret", d.Name, app.Name, d.ProfileName)
+
+			// Check if the parameter template secret contains any masked values that weren't properly unmasked
+			if strings.Contains(d.ParameterTemplateSecrets[app.Name], MaskedValuePlaceholder) {
+			}
 
 			data := map[string]string{}
 			data["values"] = d.ParameterTemplateSecrets[app.Name]
@@ -453,6 +466,7 @@ func createSecrets(ctx context.Context, k8sClient *kubernetes.Clientset, d *Depl
 				return d, err
 			}
 
+			// Create masked override secret for UI display
 			if overrides, ok := overrideValuesMasked[app.Name]; ok {
 				val, err := yaml2.JSONToYAML([]byte(overrides))
 				if err != nil {
@@ -717,7 +731,7 @@ func maskPbValue(s *structpb.Struct, structKeys []string, inValStr string, curre
 		case *structpb.Value_StringValue:
 			inValStr = v.GetStringValue()
 
-			s.Fields[k] = structpb.NewStringValue("********")
+			s.Fields[k] = structpb.NewStringValue(MaskedValuePlaceholder)
 		case *structpb.Value_StructValue:
 			removeIndex(structKeys, 0)
 			inValStr = maskPbValue(v.GetStructValue(), removeIndex(structKeys, 0), inValStr, currentDepth+1)
@@ -790,7 +804,6 @@ func checkParameterTemplate(d *Deployment, allOverrideKeys map[string][]string) 
 	// Make copy of original OverrideValues values with masking
 	// to use for GetDeployments to mask any secrets
 	d.OverrideValuesMasked = d.OverrideValues
-	//d.OverrideValuesMasked = MaskSecretsForUI(d.OverrideValues, *d.HelmApps)
 
 	// Make copy of original OverrideValues values without masking
 	// to add to fleet's overrides.yaml
@@ -1026,7 +1039,7 @@ func UnmaskSecrets(current *structpb.Struct, previous *structpb.Struct, prefix s
 		}
 		switch val := v.Kind.(type) {
 		case *structpb.Value_StringValue:
-			if val.StringValue == "********" {
+			if val.StringValue == MaskedValuePlaceholder {
 				if prevVal, ok := previous.Fields[fullKey]; ok {
 					if prevStr, ok := prevVal.Kind.(*structpb.Value_StringValue); ok {
 						current.Fields[k] = structpb.NewStringValue(prevStr.StringValue)
