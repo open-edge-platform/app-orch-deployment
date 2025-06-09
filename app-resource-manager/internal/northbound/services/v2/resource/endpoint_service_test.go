@@ -4,6 +4,8 @@
 package resource
 
 import (
+	"context"
+
 	resourceapiv2 "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/resource/v2"
 	"github.com/open-edge-platform/orch-library/go/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -102,4 +104,22 @@ func (s *NorthboundTestSuite) TestAppEndpointsError() {
 	assert.Nil(s.T(), resp)
 	assert.Error(s.T(), err)
 
+}
+
+func (s *NorthboundTestSuite) TestListAppEndpoints_MissingActiveProjectID() {
+	// Create context without ActiveProjectID
+	ctxWithoutProjectID := context.Background()
+
+	// Convert to a test client context
+	testCtx := convertToTestContext(ctxWithoutProjectID)
+
+	resp, err := s.endpointServiceClient.ListAppEndpoints(testCtx, &resourceapiv2.ListAppEndpointsRequest{
+		ClusterId: testCluster1,
+		AppId:     testApp1,
+	})
+
+	assert.Error(s.T(), err)
+	assert.Nil(s.T(), resp)
+	assert.True(s.T(), errors.IsInvalid(errors.FromGRPC(err)))
+	assert.Contains(s.T(), err.Error(), "activeprojectid")
 }
