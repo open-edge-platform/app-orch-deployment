@@ -1057,11 +1057,23 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 	switch {
 	case stalledApps:
 		newState = v1beta1.Error
+		d.Status.LastErrorTime = time.Now().Format(time.RFC3339)
 	case clustercounts.Unknown > 0:
 		newState = v1beta1.Unknown
 	case clustercounts.Total == 0:
+		const stickyErrorDuration = 70 * time.Second
 		// Wait specified interval after creation before showing NoTargetClusters,
 		// to give Fleet + ADM a chance to bootstrap the Deployment.
+
+		if d.Status.LastErrorTime != "" {
+			if lastErrTime, err := time.Parse(time.RFC3339, d.Status.LastErrorTime); err == nil {
+				if time.Since(lastErrTime) < stickyErrorDuration {
+					newState = v1beta1.Error
+					break
+				}
+			}
+		}
+
 		if time.Now().After(d.CreationTimestamp.Time.Add(noTargetClustersWait)) {
 			newState = v1beta1.NoTargetClusters
 		} else {
@@ -1088,6 +1100,7 @@ func (r *Reconciler) updateDeploymentStatus(d *v1beta1.Deployment, grlist []flee
 	default:
 		newState = v1beta1.Running
 		d.Status.DeployInProgress = false
+		d.Status.LastErrorTime = ""
 		projectID := d.Labels[string(v1beta1.AppOrchActiveProjectID)]
 		orchLibMetrics.RecordTimestamp(projectID, d.GetId(), d.Spec.DisplayName, string(newState), "status-change")
 		if newState == v1beta1.Running {
