@@ -211,8 +211,8 @@ func (m *manager) GetVNCAddress(ctx context.Context, appID string, clusterID str
 
 	activeProjectID, err := opa.GetActiveProjectID(ctx)
 	if err != nil {
-		log.Errorf("failed to get active project ID, error: %v", err)
-		activeProjectID = "nil"
+		log.Warnw("ActiveProjectID validation failed", dazl.Error(err))
+		return "", err  // Return error instead of setting to "nil" and continuing
 	}
 
 	if tokenString == "" {

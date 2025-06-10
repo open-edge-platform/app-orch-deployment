@@ -5,6 +5,7 @@ package resource
 
 import (
 	"context"
+
 	resourceapiv2 "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/resource/v2"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/internal/opa"
 	"github.com/open-edge-platform/orch-library/go/dazl"
@@ -25,8 +26,18 @@ func (s *Server) GetVNC(ctx context.Context, req *resourceapiv2.GetVNCRequest) (
 		return nil, errors.Status(errors.NewInvalid(err.Error())).Err()
 	}
 
+	// Validate ActiveProjectID is present and valid
+	activeProjectID, err := opa.GetActiveProjectID(ctx)
+	if err != nil {
+		log.Warnw("ActiveProjectID validation failed", dazl.Error(err))
+		return nil, errors.Status(errors.NewInvalid(err.Error())).Err()
+	}
+
 	if err := opa.IsAuthorized(ctx, req, s.opaClient); err != nil {
-		log.Warnw("Access denied by OPA rules", dazl.Error(err))
+		log.Warnw("Access denied by OPA rules",
+			dazl.String("AppID", req.AppId),
+			dazl.String("ProjectID", activeProjectID),
+			dazl.Error(err))
 		return nil, errors.Status(errors.NewForbidden(err.Error())).Err()
 	}
 
@@ -55,8 +66,18 @@ func (s *Server) RestartVirtualMachine(ctx context.Context, req *resourceapiv2.R
 		return nil, errors.Status(errors.NewInvalid(err.Error())).Err()
 	}
 
+	// Validate ActiveProjectID is present and valid
+	activeProjectID, err := opa.GetActiveProjectID(ctx)
+	if err != nil {
+		log.Warnw("ActiveProjectID validation failed", dazl.Error(err))
+		return nil, errors.Status(errors.NewInvalid(err.Error())).Err()
+	}
+
 	if err := opa.IsAuthorized(ctx, req, s.opaClient); err != nil {
-		log.Warnw("Access denied by OPA rules", dazl.Error(err))
+		log.Warnw("Access denied by OPA rules",
+			dazl.String("AppID", req.AppId),
+			dazl.String("ProjectID", activeProjectID),
+			dazl.Error(err))
 		return nil, errors.Status(errors.NewForbidden(err.Error())).Err()
 	}
 
@@ -83,8 +104,18 @@ func (s *Server) StartVirtualMachine(ctx context.Context, req *resourceapiv2.Sta
 		return nil, errors.Status(errors.NewInvalid(err.Error())).Err()
 	}
 
+	// Validate ActiveProjectID is present and valid
+	activeProjectID, err := opa.GetActiveProjectID(ctx)
+	if err != nil {
+		log.Warnw("ActiveProjectID validation failed", dazl.Error(err))
+		return nil, errors.Status(errors.NewInvalid(err.Error())).Err()
+	}
+
 	if err := opa.IsAuthorized(ctx, req, s.opaClient); err != nil {
-		log.Warnw("Access denied by OPA rules", dazl.Error(err))
+		log.Warnw("Access denied by OPA rules",
+			dazl.String("AppID", req.AppId),
+			dazl.String("ProjectID", activeProjectID),
+			dazl.Error(err))
 		return nil, errors.Status(errors.NewForbidden(err.Error())).Err()
 	}
 
@@ -113,8 +144,18 @@ func (s *Server) StopVirtualMachine(ctx context.Context, req *resourceapiv2.Stop
 		return nil, errors.Status(errors.NewInvalid(err.Error())).Err()
 	}
 
+	// Validate ActiveProjectID is present and valid
+	activeProjectID, err := opa.GetActiveProjectID(ctx)
+	if err != nil {
+		log.Warnw("ActiveProjectID validation failed", dazl.Error(err))
+		return nil, errors.Status(errors.NewInvalid(err.Error())).Err()
+	}
+
 	if err := opa.IsAuthorized(ctx, req, s.opaClient); err != nil {
-		log.Warnw("Access denied by OPA rules", dazl.Error(err))
+		log.Warnw("Access denied by OPA rules",
+			dazl.String("AppID", req.AppId),
+			dazl.String("ProjectID", activeProjectID),
+			dazl.Error(err))
 		return nil, errors.Status(errors.NewForbidden(err.Error())).Err()
 	}
 
