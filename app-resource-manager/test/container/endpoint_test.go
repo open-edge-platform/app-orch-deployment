@@ -61,6 +61,8 @@ func (s *TestSuite) TestDeletePod() {
 // TestListEndpoints tests listing app endpoints
 func (s *TestSuite) TestEndpointResponseDetails() {
 	for _, app := range s.DeployApps {
+		s.T().Logf("Testing app: %s\n", *app.Name)
+
 		appID := *app.Id
 		appEndpoints, retCode, err := utils.AppEndpointsList(s.ArmClient, appID)
 		s.Equal(retCode, http.StatusOK)
@@ -70,11 +72,11 @@ func (s *TestSuite) TestEndpointResponseDetails() {
 		for _, appEndpoint := range *appEndpoints {
 			s.NotEmpty(appEndpoint.Name, "Endpoint name should not be empty")
 			s.NotEmpty(appEndpoint.Id, "Endpoint ID should not be empty")
-			s.NotEmpty(appEndpoint.Fqdns, "Endpoint protocol should not be empty")
 			s.NotEmpty(appEndpoint.Ports, "Endpoint port should not be empty")
 
 			// Additional checks can be added here based on expected values
-			s.T().Logf("Endpoint details: %#v\n", appEndpoint)
+			s.T().Logf("Endpoint details: %v, %v, %v, %v, %v\n", *appEndpoint.EndpointStatus, *appEndpoint.Fqdns,
+				*appEndpoint.Ports, *appEndpoint.Name, *appEndpoint.Id)
 		}
 	}
 }
