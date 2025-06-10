@@ -855,32 +855,44 @@ var _ = Describe("Fleet config generator", func() {
 				for _, ignoreResource := range app.IgnoreResources {
 					for _, patch := range comparePatches {
 						if patch.Name == ignoreResource.Name && patch.Kind == ignoreResource.Kind {
-							Expect(patch.Operations).To(HaveLen(1))
-							Expect(patch.Operations[0].Op).To(Equal("ignore"))
-
+							Expect(patch.Operations).To(ContainElement(Operation{Op: "ignore"}))
 							switch patch.Kind {
-							case "ConfigMap", "Secret":
+							case "ConfigMap":
 								Expect(patch.APIVersion).To(Equal("v1"))
-								if patch.Name == "cfg" && patch.Kind == "ConfigMap" {
+								if patch.Name == "cfg" {
 									Expect(patch.Namespace).To(Equal("apps"))
-								} else if patch.Name == "cfg2" && patch.Kind == "ConfigMap" {
+								} else if patch.Name == "cfg2" {
 									Expect(patch.Namespace).To(Equal("test-ns"))
 								}
+								Expect(patch.Operations).To(HaveLen(3))
+							case "Secret":
+								Expect(patch.APIVersion).To(Equal("v1"))
+								if patch.Name == "secretVal" {
+									Expect(patch.Namespace).To(Equal("apps"))
+								} else if patch.Name == "secretVal2" {
+									Expect(patch.Namespace).To(Equal("test-ns"))
+								}
+								Expect(patch.Operations).To(HaveLen(3))
 							case "ValidatingWebhookConfiguration", "MutatingWebhookConfiguration":
 								Expect(patch.APIVersion).To(Equal("admissionregistration.k8s.io/v1"))
 								Expect(patch.Namespace).To(BeEmpty())
+								Expect(patch.Operations).To(HaveLen(2))
 							case "CustomResourceDefinition":
 								Expect(patch.APIVersion).To(Equal("apiextensions.k8s.io/v1"))
 								Expect(patch.Namespace).To(BeEmpty())
+								Expect(patch.Operations).To(HaveLen(2))
 							case "EnvoyFilter":
 								Expect(patch.APIVersion).To(Equal("networking.istio.io/v1beta1"))
 								Expect(patch.Namespace).To(Not(BeEmpty()))
+								Expect(patch.Operations).To(HaveLen(2))
 							case "Deployment":
 								Expect(patch.APIVersion).To(Equal("apps/v1"))
 								Expect(patch.Namespace).To(Not(BeEmpty()))
+								Expect(patch.Operations).To(HaveLen(2))
 							case "Job":
 								Expect(patch.APIVersion).To(Equal("batch/v1"))
 								Expect(patch.Namespace).To(Not(BeEmpty()))
+								Expect(patch.Operations).To(HaveLen(2))
 							}
 							continue
 						}
@@ -934,8 +946,8 @@ var _ = Describe("Fleet config generator", func() {
 				app := &deployment.Spec.Applications[0]
 				app.IgnoreResources = []v1beta1.IgnoreResource{
 					{
-						Name: "testWebHook",
-						Kind: "ValidatingWebhookConfiguration",
+						Name:      "testWebHook",
+						Kind:      "ValidatingWebhookConfiguration",
 						Namespace: "test-ns", // ValidatingWebhookConfiguration should not have namespace
 					},
 				}
