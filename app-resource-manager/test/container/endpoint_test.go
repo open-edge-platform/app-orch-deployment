@@ -58,6 +58,28 @@ func (s *TestSuite) TestDeletePod() {
 	}
 }
 
+// TestListWorkloads tests listing app workloads
+func (s *TestSuite) TestListWorkloadsResponseDetails() {
+	for _, app := range s.DeployApps {
+		s.T().Logf("Testing app: %s\n", *app.Name)
+
+		appID := *app.Id
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
+		s.Equal(retCode, http.StatusOK)
+		s.NoError(err)
+		s.NotEmpty(appWorkloads)
+
+		for _, appWorkload := range *appWorkloads {
+			s.NotEmpty(appWorkload.Name, "Workload name should not be empty")
+			s.NotEmpty(appWorkload.Id, "Workload ID should not be empty")
+			s.NotEmpty(appWorkload.Namespace, "Namespace should not be empty")
+
+			// Additional checks can be added here based on expected values
+			s.T().Logf("Workload details: %#v\n", appWorkload)
+		}
+	}
+}
+
 // TestListEndpoints tests listing app endpoints
 func (s *TestSuite) TestEndpointResponseDetails() {
 	for _, app := range s.DeployApps {
