@@ -92,12 +92,14 @@ func (s *TestSuite) TestEndpointResponseDetails() {
 		s.NotEmpty(appEndpoints)
 
 		for _, appEndpoint := range *appEndpoints {
+			s.NotEmpty(appEndpoint.EndpointStatus, "Endpoint status should not be empty")
 			s.NotEmpty(appEndpoint.Name, "Endpoint name should not be empty")
 			s.NotEmpty(appEndpoint.Id, "Endpoint ID should not be empty")
 			s.NotEmpty(appEndpoint.Ports, "Endpoint port should not be empty")
+			// Fqdns can be empty
 
 			// Additional checks can be added here based on expected values
-			s.T().Logf("Endpoint details: %v, %v, %v, %v, %v\n", *appEndpoint.EndpointStatus, *appEndpoint.Fqdns,
+			s.T().Logf("Endpoint details: %v, %v, %v, %v, %v\n", *appEndpoint.EndpointStatus.State, *appEndpoint.Fqdns,
 				*appEndpoint.Ports, *appEndpoint.Name, *appEndpoint.Id)
 		}
 	}
