@@ -73,6 +73,10 @@ func (s *TestSuite) TestListWorkloadsResponseDetails() {
 			s.NotEmpty(appWorkload.Name, "Workload name should not be empty")
 			s.NotEmpty(appWorkload.Id, "Workload ID should not be empty")
 			s.NotEmpty(appWorkload.Namespace, "Namespace should not be empty")
+			s.NotEmpty(appWorkload.CreateTime, "Workload create time should not be empty")
+			s.NotEmpty(appWorkload.Pod, "Workload pod should not be empty")
+			s.NotEmpty(appWorkload.Type, "Workload type should not be empty")
+			s.NotEmpty(appWorkload.WorkloadReady, "Workload ready status should not be empty")
 
 			// Additional checks can be added here based on expected values
 			s.T().Logf("Workload details: %#v\n", appWorkload)
