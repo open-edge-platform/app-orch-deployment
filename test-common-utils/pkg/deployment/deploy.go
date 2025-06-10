@@ -55,7 +55,7 @@ var DpConfigs = map[string]any{
 	HttpbinAppName: map[string]any{
 		"appNames":             []string{"httpbin"},
 		"deployPackage":        "httpbin",
-		"deployPackageVersion": "2.3.4",
+		"deployPackageVersion": "2.3.5",
 		"profileName":          "default",
 		"clusterId":            types.TestClusterID,
 		"labels":               map[string]string{"color": "blue"},

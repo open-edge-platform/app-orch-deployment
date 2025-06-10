@@ -72,7 +72,7 @@ func UploadHttpbinHelm(path, harborPwd string) error {
 	}
 
 	// 2. Package the Helm chart
-	version := "0.1.7"
+	version := "0.1.8"
 	pkgCmd := exec.Command("helm", "package", chartPath, "--version", version)
 	pkgCmd.Stdout = os.Stdout
 	pkgCmd.Stderr = os.Stderr
