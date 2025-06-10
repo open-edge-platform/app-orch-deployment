@@ -3,6 +3,6 @@
 
 package resourcev2
 
-DeletePodRequest {
+DeletePodRequest if {
 	hasWriteAccess
 }

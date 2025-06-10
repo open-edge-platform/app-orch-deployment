@@ -6,8 +6,8 @@ apiVersion: v2
 description: App Deployment CustomResourceDefinitions
 name: app-deployment-crd
 # Correct version will be added by "make helm-package" from VERSION
-version: 2.4.13
+version: 2.4.17
 annotations:
-  revision: "3e99885"
-  created: "2025-05-28T14:32:27Z"
-appVersion: 2.4.13
+  revision: "ccef4a4"
+  created: "2025-06-09T14:15:06Z"
+appVersion: 2.4.17

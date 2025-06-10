@@ -55,7 +55,7 @@ jobs:
           git config --global url."https://${GH_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
       - name: Setup asdf and install dependencies
-        uses: open-edge-platform/orch-utils/.github/actions/setup-asdf@2b14d3ac351c09b086252c5989566333ef96bb6d
+        uses: open-edge-platform/orch-utils/.github/actions/setup-asdf@db63c95f611d6d493458b80769d0d01d4f7ddce0
 
       - name: Setup Go
         uses: actions/setup-go@v5
