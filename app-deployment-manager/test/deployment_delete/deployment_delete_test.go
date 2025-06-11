@@ -43,6 +43,7 @@ func (s *TestSuite) TestDeleteNonExistentDeployment() {
 	s.Equal(http.StatusNotFound, status, "Expected HTTP status 404 for non-existent deployment deletion")
 	s.T().Logf("successfully handled deletion of non-existent deployment with ID: %s", deploymentID)
 }
+
 func (s *TestSuite) TestDeleteDeploymentParentOnlyDeleteType() {
 	s.T().Parallel()
 	// Create a deployment to be deleted
@@ -60,6 +61,29 @@ func (s *TestSuite) TestDeleteDeploymentParentOnlyDeleteType() {
 
 	// Delete the created deployment with delete type
 	status, err = deploymentutils.DeleteDeploymentWithDeleteType(s.AdmClient, deploymentID, restClient.PARENTONLY)
+	s.NoError(err)
+	s.Equal(http.StatusOK, status, "Expected HTTP status 200 for successful deletion with delete type")
+
+	s.T().Logf("successfully deleted deployment with ID: %s using delete type", deploymentID)
+}
+
+func (s *TestSuite) TestDeleteDeploymentAllDeleteType() {
+	s.T().Parallel()
+	// Create a deployment to be deleted
+	deploymentReq := deploymentutils.StartDeploymentRequest{
+		AdmClient:         s.AdmClient,
+		DpPackageName:     deploymentutils.AppNginx,
+		DeploymentType:    deploymentutils.DeploymentTypeTargeted,
+		DeploymentTimeout: deploymentutils.DeploymentTimeout,
+		DeleteTimeout:     deploymentutils.DeleteTimeout,
+		TestName:          "DelDeploymentAll",
+	}
+	deploymentID, status, err := deploymentutils.StartDeployment(deploymentReq)
+	s.NoError(err)
+	s.Equal(http.StatusOK, status, "Expected HTTP status 200 for successful deployment creation")
+
+	// Delete the created deployment with delete type
+	status, err = deploymentutils.DeleteDeploymentWithDeleteType(s.AdmClient, deploymentID, restClient.ALL)
 	s.NoError(err)
 	s.Equal(http.StatusOK, status, "Expected HTTP status 200 for successful deletion with delete type")
 
