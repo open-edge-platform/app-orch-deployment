@@ -31,7 +31,7 @@ func (s *TestSuite) TestUpdateDeploymentValidParams() {
 	s.Equal(http.StatusOK, code, "Expected HTTP status 200 for getting deployment details")
 	s.NoError(err, "Failed to get deployment details")
 
-	depl.AppVersion = "v2.0.0" // Update the app version to a new valid version
+	// depl.AppVersion = "v2.0.0" // Update the app version to a new valid version
 
 	code, err = deploymentutils.UpdateDeployment(s.AdmClient, deployID, depl)
 	s.Equal(http.StatusOK, code, "Expected HTTP status 200 for updating deployment")
@@ -80,28 +80,38 @@ func (s *TestSuite) TestUpdateDeploymentValidParams() {
 	}
 }
 
-// func (s *TestSuite) TestUpdateDeploymentInvalidParams() {
-// 	s.T().Parallel()
-// 	testName := "TestUpdateDeploymentInvalidParams"
-// 	for _, app := range []string{deploymentutils.AppWordpress, deploymentutils.AppNginx} {
-// 		deploymentReq := deploymentutils.StartDeploymentRequest{
-// 			AdmClient:         s.AdmClient,
-// 			DpPackageName:     app,
-// 			DeploymentType:    deploymentutils.DeploymentTypeAutoScaling,
-// 			DeploymentTimeout: deploymentutils.DeploymentTimeout,
-// 			DeleteTimeout:     deploymentutils.DeleteTimeout,
-// 			TestName:          testName,
-// 		}
-// 		_, code, err := deploymentutils.StartDeployment(deploymentReq)
-// 		s.Equal(http.StatusOK, code)
-// 		s.NoError(err, "Failed to create '"+app+"-"+deploymentutils.DeploymentTypeAutoScaling+"' deployment")
-// 	}
-// 	for _, app := range []string{deploymentutils.AppWordpress, deploymentutils.AppNginx} {
-// 		displayName := deploymentutils.FormDisplayName(app, testName)
-// 		err := deploymentutils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, deploymentutils.RetryCount, deploymentutils.DeleteTimeout)
-// 		s.NoError(err)
-// 	}
-// }
+func (s *TestSuite) TestUpdateDeploymentInvalidParams() {
+	s.T().Parallel()
+	testName := "TestUpdateDeploymentInvalidParams"
+	deploymentReq := deploymentutils.StartDeploymentRequest{
+		AdmClient:         s.AdmClient,
+		DpPackageName:     deploymentutils.AppNginx, //app,
+		DeploymentType:    deploymentutils.DeploymentTypeTargeted,
+		DeploymentTimeout: deploymentutils.DeploymentTimeout,
+		DeleteTimeout:     deploymentutils.DeleteTimeout,
+		TestName:          testName,
+	}
+	deployID, code, err := deploymentutils.StartDeployment(deploymentReq)
+	s.Equal(http.StatusOK, code)
+	s.NoError(err, "Failed to create '"+deploymentutils.AppNginx+"-"+deploymentutils.DeploymentTypeTargeted+"' deployment")
+
+	depl, code, err := deploymentutils.GetDeployment(s.AdmClient, deployID)
+	s.Equal(http.StatusOK, code, "Expected HTTP status 200 for getting deployment details")
+	s.NoError(err, "Failed to get deployment details")
+
+	depl.TargetClusters = nil
+	depl.AllAppTargetClusters = nil
+
+	code, err = deploymentutils.UpdateDeployment(s.AdmClient, deployID, depl)
+	s.Equal(http.StatusBadRequest, code, "Expected HTTP status 400 for updating deployment")
+	s.Error(err, "Failed to update deployment with valid parameters")
+
+	for _, app := range []string{deploymentutils.AppWordpress, deploymentutils.AppNginx} {
+		displayName := deploymentutils.FormDisplayName(app, testName)
+		err := deploymentutils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, deploymentutils.RetryCount, deploymentutils.DeleteTimeout)
+		s.NoError(err)
+	}
+}
 
 // func (s *TestSuite) TestUpdateNonExistentDeployment() {
 // 	s.T().Parallel()
