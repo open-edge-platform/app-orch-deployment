@@ -7,12 +7,12 @@ package deployment
 import (
 	"context"
 	"fmt"
-	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
 	"maps"
 	"net/http"
 	"time"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
 )
 
 var DpConfigs = map[string]any{
@@ -184,6 +184,7 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 
 	return deployID, retCode, nil
 }
+
 func DeleteDeploymentWithDeleteType(client *restClient.ClientWithResponses, deployID string, deleteType restClient.DeploymentServiceDeleteDeploymentParamsDeleteType) (int, error) {
 	resp, err := client.DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployID, &restClient.DeploymentServiceDeleteDeploymentParams{
 		DeleteType: &deleteType,
@@ -292,6 +293,24 @@ func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName
 	}
 
 	return fmt.Errorf("deployment %s did not reach status %s after %d retries", displayName, status, retries)
+}
+
+func UpdateDeployment(client *restClient.ClientWithResponses, deployID string, params restClient.DeploymentServiceUpdateDeploymentJSONRequestBody) (int, error) {
+	resp, err := client.DeploymentServiceUpdateDeploymentWithResponse(context.TODO(), deployID, params)
+	if err != nil || resp == nil || resp.StatusCode() != 200 {
+		if err != nil {
+			if resp != nil {
+				return resp.StatusCode(), fmt.Errorf("%v", err)
+			}
+			return 0, fmt.Errorf("%v", err)
+		}
+		if resp != nil {
+			return resp.StatusCode(), fmt.Errorf("failed to update deployment: %v", string(resp.Body))
+		}
+		return 0, fmt.Errorf("failed to update deployment: response is nil")
+	}
+
+	return resp.StatusCode(), nil
 }
 
 func FindDeploymentIDByDisplayName(client *restClient.ClientWithResponses, displayName string) string {
