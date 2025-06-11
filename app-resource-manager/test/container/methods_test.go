@@ -5,8 +5,9 @@
 package container
 
 import (
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 	"net/http"
+
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
 var appWorkloadsMethods = map[string]int{
@@ -59,7 +60,7 @@ func (s *TestSuite) TestDeletePodMethod() {
 	for _, app := range s.DeployApps {
 		appID := *app.Id
 		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
-		s.Equal(retCode, 200)
+		s.Equal(retCode, http.StatusOK)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -73,7 +74,7 @@ func (s *TestSuite) TestDeletePodMethod() {
 			podName := appWorkload.Name
 
 			for method, expectedStatus := range deleteMethods {
-				if expectedStatus == 200 {
+				if expectedStatus == http.StatusOK {
 					err = utils.GetPodStatus(s.ArmClient, appID, appWorkload.Id, "STATE_RUNNING")
 					s.NoError(err)
 				}
@@ -82,7 +83,7 @@ func (s *TestSuite) TestDeletePodMethod() {
 				s.NoError(err)
 				s.Equal(expectedStatus, res.StatusCode)
 
-				if expectedStatus == 200 {
+				if expectedStatus == http.StatusOK {
 					err = utils.WaitPodDelete(s.ArmClient, appID)
 					s.NoError(err)
 				}
