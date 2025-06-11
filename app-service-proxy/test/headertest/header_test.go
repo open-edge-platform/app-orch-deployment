@@ -5,7 +5,6 @@
 package headertest
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -13,7 +12,6 @@ func (s *TestSuite) TestAuthorizationHeader() {
 	for _, app := range s.DeployApps {
 		appID := *app.Id
 		appName := *app.Name
-		fmt.Println("Test header starting : ", appName)
 		s.T().Logf("appName : %s", appName)
 		if appName == "httpbin" {
 			appEndPoints, retCode, err := AppEndpointsList(s.ArmClient, appID)

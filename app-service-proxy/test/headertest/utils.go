@@ -28,7 +28,7 @@ func GetXAuthHeader(url, _ string) (string, error) {
 
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("ignore-certificate-errors", true),
-        chromedp.Flag("no-sandbox", true),
+		chromedp.Flag("no-sandbox", true),
 		//  chromedp.UserDataDir(userDataDir), // <-- this makes cookies persistent!
 	)
 
@@ -142,7 +142,7 @@ func GetCliSecretHarbor(url, token string) (string, error) {
 
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("ignore-certificate-errors", true),
-        chromedp.Flag("no-sandbox", true),
+		chromedp.Flag("no-sandbox", true),
 		//  chromedp.UserDataDir(userDataDir), // <-- this makes cookies persistent!
 	)
 

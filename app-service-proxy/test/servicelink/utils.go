@@ -27,7 +27,7 @@ func GetCliSecretHarbor(url, token string) (string, error) {
 
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("ignore-certificate-errors", true),
-        chromedp.Flag("no-sandbox", true),
+		chromedp.Flag("no-sandbox", true),
 		//  chromedp.UserDataDir(userDataDir), // <-- this makes cookies persistent!
 	)
 
@@ -163,7 +163,7 @@ func OpenPageInHeadlessChrome(url, search, _ string) (bool, error) {
 
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("ignore-certificate-errors", true),
-        chromedp.Flag("no-sandbox", true),
+		chromedp.Flag("no-sandbox", true),
 		//  chromedp.UserDataDir(userDataDir), // <-- this makes cookies persistent!
 	)
 
