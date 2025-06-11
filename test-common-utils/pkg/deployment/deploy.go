@@ -456,7 +456,11 @@ func FormDisplayName(dpPackageName, testName string) string {
 }
 
 func DeploymentsList(admClient *restClient.ClientWithResponses) (*[]restClient.Deployment, int, error) {
-	resp, err := admClient.DeploymentServiceListDeploymentsWithResponse(context.TODO(), nil)
+	return DeploymentsListWithParams(admClient, nil)
+}
+
+func DeploymentsListWithParams(admClient *restClient.ClientWithResponses, params *restClient.DeploymentServiceListDeploymentsParams) (*[]restClient.Deployment, int, error) {
+	resp, err := admClient.DeploymentServiceListDeploymentsWithResponse(context.TODO(), params)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return &[]restClient.Deployment{}, resp.StatusCode(), fmt.Errorf("%v", err)
