@@ -1098,12 +1098,6 @@ func (s *DeploymentSvc) ListDeployments(ctx context.Context, in *deploymentpb.Li
 	c.deploymentClusters = deploymentClusters
 	deployList, logFilter := c.queryFilter(ctx, in.Labels, s)
 
-	// After deployList is built and before selectDeployments:
-	for _, deployResponse := range deployList {
-		if deployResponse != nil {
-		}
-	}
-
 	totalNumDeployments := len(deployList)
 
 	// Paginate, sort, and filter list of deployments

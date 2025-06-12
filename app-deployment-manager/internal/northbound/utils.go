@@ -402,10 +402,6 @@ func createSecrets(ctx context.Context, k8sClient *kubernetes.Clientset, d *Depl
 			data := map[string]string{}
 			data["values"] = contents
 
-			// Check if the contents contain any masked values that weren't properly unmasked
-			if strings.Contains(contents, "\""+MaskedValuePlaceholder+"\"") {
-			}
-
 			err = utils.CreateSecret(ctx, k8sClient, d.Namespace, secretName, data, false)
 			if err != nil {
 				utils.LogActivity(ctx, "create", "ADM", "cannot create secret "+secretName+" "+fmt.Sprintf("%v", err))
@@ -453,10 +449,6 @@ func createSecrets(ctx context.Context, k8sClient *kubernetes.Clientset, d *Depl
 		// Handle parameter template secrets - these contain the real secret values
 		if d.ParameterTemplateSecrets[app.Name] != "" {
 			secretName := fmt.Sprintf("%s-%s-%s-secret", d.Name, app.Name, d.ProfileName)
-
-			// Check if the parameter template secret contains any masked values that weren't properly unmasked
-			if strings.Contains(d.ParameterTemplateSecrets[app.Name], MaskedValuePlaceholder) {
-			}
 
 			data := map[string]string{}
 			data["values"] = d.ParameterTemplateSecrets[app.Name]
