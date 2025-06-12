@@ -197,84 +197,57 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 		}
 	}
 
-	// Unmask secrets before createSecrets
+	// Unmask secrets before createSecrets for Update Deployment
 	if scenario == "update" {
-		// Set deployment ID from input if available
+		// Set deployment ID
 		if in.GetDeployId() != "" {
 			d.DeployID = in.GetDeployId()
 		}
-		
-		log.Warnf("[DEBUG UPDATE] Starting unmasking for deployment with name: %s and ID: %s",
-			d.Name, d.DeployID)
 
-		// First, ensure we have a valid deployment name or ID
+		// Ensuring have a valid deployment name or ID
 		if d.Name == "" && d.DeployID != "" {
-			// Always try to get the deployment by deployID in update scenario
 			deployment, err := matchUIDDeployment(ctx, d.DeployID, activeProjectID, s, metav1.ListOptions{})
 			if err != nil {
-				log.Warnf("[DEBUG UPDATE] Failed to get deployment by UID: %v", err)
+				log.Warnf("Failed to get deployment by UID: %v", err)
 			} else if deployment != nil && deployment.Name != "" {
 				d.Name = deployment.Name
 				// Set the namespace from the deployment
 				d.Namespace = deployment.Namespace
-				log.Warnf("[DEBUG UPDATE] Successfully retrieved deployment name: %s, namespace: %s", 
-                    d.Name, d.Namespace)
-            } else {
-                log.Warnf("[DEBUG UPDATE] Deployment found but name is empty: %s", d.DeployID)
-            }
-        }
+			}
+		}
 
-        // If namespace is still empty, set it to activeProjectID (same as later in the function)
-        if d.Namespace == "" {
-            d.Namespace = activeProjectID
-            log.Warnf("[DEBUG UPDATE] Setting namespace to activeProjectID: %s", d.Namespace)
-        }
+		// If namespace is still empty, set it to activeProjectID
+		if d.Namespace == "" {
+			d.Namespace = activeProjectID
+		}
 
-        // Now process each app with the deployment name already set
-        for _, app := range *d.HelmApps {
-            log.Warnf("[DEBUG UPDATE] Processing app: %s with deployment name: %s", app.Name, d.Name)
+		// Now process each app with the deployment name
+		for _, app := range *d.HelmApps {
+			secretName := fmt.Sprintf("%s-%s-%s-secret", d.Name, app.Name, d.ProfileName)
 
-            // Double-check that we have a name before forming the secret name
-            if d.Name == "" {
-                log.Warnf("[DEBUG UPDATE] Deployment name is still empty, skipping app %s", app.Name)
-                continue
-            }
+			secretValue, err := utils.GetSecretValue(ctx, s.k8sClient, d.Namespace, secretName)
+			if err != nil {
+				continue
+			}
 
-            // Now the secret name will contain the deployment name
-            secretName := fmt.Sprintf("%s-%s-%s-secret", d.Name, app.Name, d.ProfileName)
-            log.Warnf("[DEBUG UPDATE] Attempting to fetch secret: %s in namespace: %s",
-                secretName, d.Namespace)
+			// Convert data values back to JSON to unmarshal
+			val, err := yaml2.YAMLToJSON(secretValue.Data["values"])
+			if err != nil {
+				continue
+			}
 
-            secretValue, err := utils.GetSecretValue(ctx, s.k8sClient, d.Namespace, secretName)
-            if err != nil {
-                log.Warnf("[DEBUG UPDATE] Failed to get secret %s: %v", secretName, err)
-                continue
-            }
+			var valuesStrPb *structpb.Struct
+			if err := json.Unmarshal(val, &valuesStrPb); err != nil {
+				continue
+			}
 
-            // Convert data values back to JSON to unmarshal
-            val, err := yaml2.YAMLToJSON(secretValue.Data["values"])
-            if err != nil {
-                log.Warnf("[DEBUG UPDATE] Failed to convert secret data to JSON: %v", err)
-                continue
-            }
-
-            var valuesStrPb *structpb.Struct
-            if err := json.Unmarshal(val, &valuesStrPb); err != nil {
-                log.Warnf("[DEBUG UPDATE] Failed to unmarshal JSON to struct: %v", err)
-                continue
-            }
-
-            log.Warnf("[DEBUG UPDATE] Successfully fetched secret values for app %s", app.Name)
-
-            for _, oVal := range d.OverrideValues {
-                if oVal.AppName == app.Name && oVal.Values != nil && valuesStrPb != nil {
-                    log.Warnf("[DEBUG UPDATE] Before unmask - App: %s", oVal.AppName)
-                    UnmaskSecrets(oVal.Values, valuesStrPb, "")
-                    log.Warnf("[DEBUG UPDATE] After unmask - App: %s", oVal.AppName)
-                }
-            }
-        }
-    }
+			for _, oVal := range d.OverrideValues {
+				if oVal.AppName == app.Name && oVal.Values != nil && valuesStrPb != nil {
+					UnmaskSecrets(oVal.Values, valuesStrPb, "")
+				}
+			}
+		}
+	}
 
 	d, err = checkParameterTemplate(d, allOverrideKeys)
 	if err != nil {
@@ -1397,40 +1370,11 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 	}
 
 	// case 3
-	// for _, app := range *d.HelmApps {
-	// 	log.Infof("[DEBUG] update call came")
-	// 	secretName := fmt.Sprintf("%s-%s-%s-secret", d.Name, app.Name, d.ProfileName)
-	// 	log.Infof("[DEBUG] [Unmask] Attempting to fetch secret for app: %s, secretName: %s, namespace: %s", app.Name, secretName, d.Namespace)
-	// 	secretValue, err := utils.GetSecretValue(ctx, s.k8sClient, d.Namespace, secretName)
-	// 	if err != nil {
-	// 		log.Infof("[DEBUG] [Unmask] Failed to get secret %s for app %s: %v", secretName, app.Name, err)
-	// 		continue
-	// 	}
-	// 	val, err := yaml2.YAMLToJSON(secretValue.Data["values"])
-	// 	if err != nil {
-	// 		continue
-	// 	}
-	// 	var valuesStrPb *structpb.Struct
-	// 	if err := json.Unmarshal(val, &valuesStrPb); err != nil {
-	// 		continue
-	// 	}
-	// 	log.Infof("[DEBUG] [Unmask] Fetched secret values for app %s: %+v", app.Name, valuesStrPb)
-	// 	for _, oVal := range d.OverrideValues {
-	// 		if oVal.AppName == app.Name && oVal.Values != nil && valuesStrPb != nil {
-	// 			log.Infof("[DEBUG] [Unmask] Before unmask: AppName=%s, Values=%+v", oVal.AppName, oVal.Values)
-	// 			UnmaskSecrets(oVal.Values, valuesStrPb, "")
-	// 			log.Infof("[DEBUG] [Unmask] After unmask: AppName=%s, Values=%+v", oVal.AppName, oVal.Values)
-	// 		}
-	// 	}
-	// }
-
 	err = deleteSecrets(ctx, s.k8sClient, deployment)
 	if err != nil {
 		log.Warnf("cannot update deployment: %v", err)
 		return nil, errors.Status(err).Err()
 	}
-
-	log.Infof("[DEBUG] Required override value: ", d.OverrideValues)
 
 	d, err = createSecrets(ctx, s.k8sClient, d)
 	if err != nil {
@@ -1465,8 +1409,6 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 	var c DeploymentInstance
 	c.deployment = deployment
 	deployResponse, _ := c.createDeploymentObject(ctx, s)
-
-	log.Infof("[DEBUG] Final OverrideValues to be stored for deployment %s: %+v", d.Name, d.OverrideValues)
 
 	utils.LogActivity(ctx, "update", "ADM", "deployment name "+d.Name, "deploy id "+d.DeployID, "deployment app version "+in.Deployment.AppVersion)
 	return &deploymentpb.UpdateDeploymentResponse{
