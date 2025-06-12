@@ -92,7 +92,7 @@ func (s *TestSuite) SetupSuite() {
 		DeploymentTimeout: deploymentutils.DeploymentTimeout,
 		DeleteTimeout:     deploymentutils.DeleteTimeout,
 		TestName:          "dep",
-		ReuseFlag:         true,
+		ReuseFlag:         false,
 	}
 
 	deployID, _, err := deploymentutils.StartDeployment(httpbinDeploymentRequest)

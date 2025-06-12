@@ -8,7 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
+	//"os"
 	"strings"
 	"time"
 	//"path/filepath"
@@ -137,7 +137,7 @@ func GetCliSecretHarbor(url, token string) (string, error) {
 	fmt.Println("html link : ", pageTitle)
 	fmt.Println("secret : ", secret)
 
-	tempDir := os.TempDir() // Uses the default OS temporary directory
+	/*tempDir := os.TempDir() // Uses the default OS temporary directory
 
 	// Create a temporary file with a .png extension
 	tempFile, err := os.CreateTemp(tempDir, "registry.png")
@@ -151,8 +151,8 @@ func GetCliSecretHarbor(url, token string) (string, error) {
 	// Create the temporary file
 	if err := os.WriteFile(tempFile.Name(), buf, 0600); err != nil {
 		return "", fmt.Errorf("screenshot error: %w", err)
-	}
-
+	}*/
+	chromedp.Cancel(ctx)
 	return secret, nil
 }
 
@@ -307,7 +307,7 @@ func OpenPageInHeadlessChrome(url, search, _ string) (bool, error) {
 		fmt.Println("String not found.")
 	}
 
-	tempDir := os.TempDir() // Uses the default OS temporary directory
+	/*tempDir := os.TempDir() // Uses the default OS temporary directory
 
 	// Create a temporary file with a .png extension
 	tempFile, err := os.CreateTemp(tempDir, "screenshot.png")
@@ -321,7 +321,7 @@ func OpenPageInHeadlessChrome(url, search, _ string) (bool, error) {
 	// Create the temporary file
 	if err := os.WriteFile(tempFile.Name(), buf, 0600); err != nil {
 		return false, fmt.Errorf("screenshot error: %w", err)
-	}
+	}*/
 
 	fmt.Println("html link : ", pageTitle)
 	// Get all cookies visible to the current page
@@ -343,6 +343,8 @@ func OpenPageInHeadlessChrome(url, search, _ string) (bool, error) {
 		fmt.Printf("Name: %s\nValue: %s\nDomain: %s\nPath: %s\nExpires: %v\nSecure: %v\nHttpOnly: %v\n\n",
 			c.Name, c.Value, c.Domain, c.Path, c.Expires, c.Secure, c.HTTPOnly)
 	}
+
+	chromedp.Cancel(ctx)
 	return found, nil
 }
 
