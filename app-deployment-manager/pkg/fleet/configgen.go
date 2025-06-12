@@ -53,9 +53,35 @@ const (
 )
 
 var (
-	IgnoreOp = []Operation{
+	IgnoreDataOp = []Operation{
 		{
-			Op:   "ignore",
+			Op: "ignore",
+		},
+		{
+			Op:   "remove",
+			Path: "/metadata",
+		},
+		{
+			Op:   "remove",
+			Path: "/data",
+		},
+	}
+	IgnoreWHCOp = []Operation{
+		{
+			Op: "ignore",
+		},
+		{
+			Op:   "remove",
+			Path: "/webhooks",
+		},
+	}
+	IgnoreSpecOp = []Operation{
+		{
+			Op: "ignore",
+		},
+		{
+			Op:   "remove",
+			Path: "/spec",
 		},
 	}
 )
@@ -494,13 +520,13 @@ func newFleetConfig(appName string, appMap map[string]v1beta1.Application, depID
 		}
 
 		switch res.Kind {
-		case "Secret", "ConfigMap":
+		case "ConfigMap", "Secret":
 			patch := ComparePatch{
 				Kind:       res.Kind,
 				APIVersion: "v1",
 				Name:       res.Name,
 				Namespace:  ns,
-				Operations: IgnoreOp,
+				Operations: IgnoreDataOp,
 			}
 			fleetConf.Diff.ComparePatches = append(fleetConf.Diff.ComparePatches, patch)
 		case "ValidatingWebhookConfiguration", "MutatingWebhookConfiguration":
@@ -511,7 +537,7 @@ func newFleetConfig(appName string, appMap map[string]v1beta1.Application, depID
 				Kind:       res.Kind,
 				APIVersion: "admissionregistration.k8s.io/v1",
 				Name:       res.Name,
-				Operations: IgnoreOp,
+				Operations: IgnoreWHCOp,
 			}
 			fleetConf.Diff.ComparePatches = append(fleetConf.Diff.ComparePatches, patch)
 		case "CustomResourceDefinition":
@@ -522,7 +548,7 @@ func newFleetConfig(appName string, appMap map[string]v1beta1.Application, depID
 				Kind:       res.Kind,
 				APIVersion: "apiextensions.k8s.io/v1",
 				Name:       res.Name,
-				Operations: IgnoreOp,
+				Operations: IgnoreSpecOp,
 			}
 			fleetConf.Diff.ComparePatches = append(fleetConf.Diff.ComparePatches, patch)
 		case "EnvoyFilter":
@@ -531,7 +557,7 @@ func newFleetConfig(appName string, appMap map[string]v1beta1.Application, depID
 				APIVersion: "networking.istio.io/v1beta1",
 				Name:       res.Name,
 				Namespace:  ns,
-				Operations: IgnoreOp,
+				Operations: IgnoreSpecOp,
 			}
 			fleetConf.Diff.ComparePatches = append(fleetConf.Diff.ComparePatches, patch)
 		case "Deployment":
@@ -540,7 +566,7 @@ func newFleetConfig(appName string, appMap map[string]v1beta1.Application, depID
 				APIVersion: "apps/v1",
 				Name:       res.Name,
 				Namespace:  ns,
-				Operations: IgnoreOp,
+				Operations: IgnoreSpecOp,
 			}
 			fleetConf.Diff.ComparePatches = append(fleetConf.Diff.ComparePatches, patch)
 		case "Job":
@@ -549,7 +575,7 @@ func newFleetConfig(appName string, appMap map[string]v1beta1.Application, depID
 				APIVersion: "batch/v1",
 				Name:       res.Name,
 				Namespace:  ns,
-				Operations: IgnoreOp,
+				Operations: IgnoreSpecOp,
 			}
 			fleetConf.Diff.ComparePatches = append(fleetConf.Diff.ComparePatches, patch)
 		default:

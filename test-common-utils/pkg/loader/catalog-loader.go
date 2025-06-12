@@ -11,6 +11,7 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/git"
 	catalogloader "github.com/open-edge-platform/orch-library/go/pkg/loader"
 	"os"
+	"os/exec"
 	"path/filepath"
 )
 
@@ -48,6 +49,59 @@ func UploadFiles(paths []string, domain string, projectName string) error {
 	return nil
 }
 
+func UploadHttpbinHelm(path, harborPwd string) error {
+	chartPath := path + "/helm"                      // Path to your chart directory
+	registry := "registry-oci.kind.internal"         // OCI registry URL (without oci:// prefix)
+	repo := "catalog-apps-sample-org-sample-project" // Repository name in your OCI registry
+	username := "sample-project-edge-mgr"
+
+	// 1. Login to the OCI registry
+	regRef := fmt.Sprintf("https://%s/%s", registry, repo)
+	loginCmd := exec.Command(
+		"helm", "registry", "login",
+		"-u", username,
+		"--password", harborPwd,
+		regRef,
+	)
+	loginCmd.Stdout = os.Stdout
+	loginCmd.Stderr = os.Stderr
+	fmt.Println("Logging in to OCI registry...")
+	if err := loginCmd.Run(); err != nil {
+		fmt.Printf("Failed to login to OCI registry: %v\n", err)
+		os.Exit(1)
+	}
+
+	// 2. Package the Helm chart
+	version := "0.1.8"
+	pkgCmd := exec.Command("helm", "package", chartPath, "--version", version)
+	pkgCmd.Stdout = os.Stdout
+	pkgCmd.Stderr = os.Stderr
+	fmt.Println("Packaging chart...")
+	if err := pkgCmd.Run(); err != nil {
+		fmt.Printf("Failed to package chart: %v\n", err)
+		os.Exit(1)
+	}
+
+	chartName := "httpbin"
+	chartTGZ := fmt.Sprintf("%s-%s.tgz", chartName, version)
+
+	// 3. Push the chart to OCI registry
+	ociRef := fmt.Sprintf("oci://%s/%s", registry, repo)
+	pushCmd := exec.Command("helm", "push", chartTGZ, ociRef)
+	pushCmd.Stdout = os.Stdout
+	pushCmd.Stderr = os.Stderr
+	fmt.Println("Pushing chart to OCI registry...")
+	if err := pushCmd.Run(); err != nil {
+		fmt.Printf("Failed to push chart: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Optional: Cleanup the packaged file
+	os.Remove(filepath.Join(".", chartTGZ))
+	fmt.Println("Done!")
+	return nil
+}
+
 // UploadCirrosVM clones the cirros-vm repository and loads it into the catalog
 func UploadCirrosVM() error {
 	// Clone the repository and get the path to cirros-vm
@@ -61,6 +115,24 @@ func UploadCirrosVM() error {
 	err = Upload([]string{cirrosVMPath})
 	if err != nil {
 		return fmt.Errorf("failed to upload cirros-vm: %w", err)
+	}
+
+	return nil
+}
+
+// UploadHttpbin clones the httpbin repository and loads it into the catalog
+func UploadHttpbin() error {
+	// Clone the repository and get the path to cirros-vm
+	httpBinPath, err := git.CloneHttpbin()
+	if err != nil {
+		return fmt.Errorf("failed to clone httpbin repository: %w", err)
+	}
+	defer os.RemoveAll(filepath.Dir(filepath.Dir(httpBinPath))) // Clean up the temporary directory after upload
+
+	// Upload the cirros-vm to the catalog
+	err = Upload([]string{httpBinPath})
+	if err != nil {
+		return fmt.Errorf("failed to upload httpbin: %w", err)
 	}
 
 	return nil

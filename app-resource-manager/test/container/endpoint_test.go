@@ -5,8 +5,9 @@
 package container
 
 import (
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 	"net/http"
+
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
 // TestListWorkloads tests listing app workloads
@@ -53,6 +54,57 @@ func (s *TestSuite) TestDeletePod() {
 			s.NoError(err)
 
 			s.T().Logf("deleted pod %s\n", appWorkload.Name)
+		}
+	}
+}
+
+// TestListWorkloads tests listing app workloads
+func (s *TestSuite) TestListWorkloadsResponseDetails() {
+	for _, app := range s.DeployApps {
+		s.T().Logf("Testing app: %s\n", *app.Name)
+
+		appID := *app.Id
+		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
+		s.Equal(retCode, http.StatusOK)
+		s.NoError(err)
+		s.NotEmpty(appWorkloads)
+
+		for _, appWorkload := range *appWorkloads {
+			s.NotEmpty(appWorkload.Name, "Workload name should not be empty")
+			s.NotEmpty(appWorkload.Id, "Workload ID should not be empty")
+			s.NotEmpty(appWorkload.Namespace, "Namespace should not be empty")
+			s.NotEmpty(appWorkload.CreateTime, "Workload create time should not be empty")
+			s.NotEmpty(appWorkload.Pod, "Workload pod should not be empty")
+			s.NotEmpty(appWorkload.Type, "Workload type should not be empty")
+			s.NotEmpty(appWorkload.WorkloadReady, "Workload ready status should not be empty")
+
+			// Additional checks can be added here based on expected values
+			s.T().Logf("Workload details: %#v\n", appWorkload)
+		}
+	}
+}
+
+// TestListEndpoints tests listing app endpoints
+func (s *TestSuite) TestEndpointResponseDetails() {
+	for _, app := range s.DeployApps {
+		s.T().Logf("Testing app: %s\n", *app.Name)
+
+		appID := *app.Id
+		appEndpoints, retCode, err := utils.AppEndpointsList(s.ArmClient, appID)
+		s.Equal(retCode, http.StatusOK)
+		s.NoError(err)
+		s.NotEmpty(appEndpoints)
+
+		for _, appEndpoint := range *appEndpoints {
+			s.NotEmpty(appEndpoint.EndpointStatus, "Endpoint status should not be empty")
+			s.NotEmpty(appEndpoint.Name, "Endpoint name should not be empty")
+			s.NotEmpty(appEndpoint.Id, "Endpoint ID should not be empty")
+			s.NotEmpty(appEndpoint.Ports, "Endpoint port should not be empty")
+			// Fqdns can be empty
+
+			// Additional checks can be added here based on expected values
+			s.T().Logf("Endpoint details: %v, %v, %v, %v, %v\n", *appEndpoint.EndpointStatus.State, *appEndpoint.Fqdns,
+				*appEndpoint.Ports, *appEndpoint.Name, *appEndpoint.Id)
 		}
 	}
 }

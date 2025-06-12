@@ -5,8 +5,9 @@
 package vm
 
 import (
-	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 	"net/http"
+
+	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/test/utils"
 )
 
 // HTTP method maps for various VM operations
@@ -66,7 +67,7 @@ func (s *TestSuite) testVMMethod(appID string, appWorkloadID string, methods map
 
 		// If the operation should be successful (200) and we expect a state change,
 		// verify the VM reached the expected state
-		if expectedStatus == 200 && desiredState != "" {
+		if expectedStatus == http.StatusOK && desiredState != "" {
 			err = utils.GetVMStatus(s.ArmClient, appID, appWorkloadID, desiredState)
 			s.NoError(err)
 		}
@@ -97,7 +98,7 @@ func (s *TestSuite) TestGetVNCResponseCodeValidation() {
 		appID := *app.Id
 		// Get all workloads for the application
 		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
-		s.Equal(retCode, 200)
+		s.Equal(retCode, http.StatusOK)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -118,7 +119,7 @@ func (s *TestSuite) TestStartVMResponseCodeValidation() {
 		appID := *app.Id
 		// Get all workloads for the application
 		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
-		s.Equal(retCode, 200)
+		s.Equal(retCode, http.StatusOK)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -144,7 +145,7 @@ func (s *TestSuite) TestStopVMResponseCodeValidation() {
 		appID := *app.Id
 		// Get all workloads for the application
 		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
-		s.Equal(retCode, 200)
+		s.Equal(retCode, http.StatusOK)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
@@ -170,7 +171,7 @@ func (s *TestSuite) TestRestartVMResponseCodeValidation() {
 		appID := *app.Id
 		// Get all workloads for the application
 		appWorkloads, retCode, err := utils.AppWorkloadsList(s.ArmClient, appID)
-		s.Equal(retCode, 200)
+		s.Equal(retCode, http.StatusOK)
 		s.NoError(err)
 		s.NotEmpty(appWorkloads)
 
