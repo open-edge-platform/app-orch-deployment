@@ -300,8 +300,11 @@ func FindDeploymentIDByDisplayName(client *restClient.ClientWithResponses, displ
 		return ""
 	}
 
+	fmt.Printf("FindDeploymentIDByDisplayName displayName 1 : %s\n", displayName)
 	for _, d := range deployments {
+		fmt.Printf("FindDeploymentIDByDisplayName displayName 2 : %s\n", *d.DisplayName)
 		if *d.DisplayName == displayName {
+			fmt.Printf("FindDeploymentIDByDisplayName deployID : %s\n", *d.DeployId)
 			return *d.DeployId
 		}
 	}
