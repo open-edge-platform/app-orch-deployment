@@ -252,21 +252,6 @@ func GetCliSecretHarbor(url, token string) (string, error) {
 
 	fmt.Println("html link : ", pageTitle)
 	fmt.Println("secret : ", secret)
-	/*tempDir := os.TempDir() // Uses the default OS temporary directory
-
-	// Create a temporary file with a .png extension
-	tempFile, err := os.CreateTemp(tempDir, "registry.png")
-	if err != nil {
-		fmt.Println("Error creating temp PNG file:", err)
-		return "", err
-	}
-	defer os.Remove(tempFile.Name()) // Clean up the file when done
-	defer tempFile.Close()
-
-	// Create the temporary file
-	if err := os.WriteFile(tempFile.Name(), buf, 0600); err != nil {
-		return "", fmt.Errorf("screenshot error: %w", err)
-	}*/
 	err = chromedp.Cancel(ctx)
 	if err != nil {
 		fmt.Println("chromedp cancel failed")

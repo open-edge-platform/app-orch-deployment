@@ -88,14 +88,11 @@ func UploadHttpbinHelm(path, harborPwd string) error {
 
 	// 3. Push the chart to OCI registry
 	ociRef := fmt.Sprintf("oci://%s/%s", registry, repo)
-	pushCmd := exec.Command("helm", "push", chartTGZ, ociRef)
-	//pushCmd.Stdout = os.Stdout
-	//pushCmd.Stderr = os.Stderr
 	fmt.Println("Pushing chart to OCI registry...")
 	retries := 40
 	var err error
 	for i := 0; i < retries; i++ {
-		pushCmd = exec.Command("helm", "push", chartTGZ, ociRef)
+		pushCmd := exec.Command("helm", "push", chartTGZ, ociRef)
 		if err = pushCmd.Run(); err != nil {
 			fmt.Printf("retry count %d\n", i)
 			time.Sleep(1 * time.Second)
