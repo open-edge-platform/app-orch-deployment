@@ -34,6 +34,7 @@ import (
 )
 
 var log = dazl.GetPackageLogger()
+var matchUIDDeploymentFn = matchUIDDeployment
 
 type Deployment struct {
 	Name                       string                                             `yaml:"name"`
@@ -206,7 +207,7 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 
 		// Ensuring have a valid deployment name or ID
 		if d.Name == "" && d.DeployID != "" {
-			deployment, err := matchUIDDeployment(ctx, d.DeployID, activeProjectID, s, metav1.ListOptions{})
+			deployment, err := matchUIDDeploymentFn(ctx, d.DeployID, activeProjectID, s, metav1.ListOptions{})
 			if err != nil {
 				log.Warnf("Failed to get deployment by UID: %v", err)
 			} else if deployment != nil && deployment.Name != "" {
