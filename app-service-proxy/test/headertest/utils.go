@@ -129,7 +129,10 @@ func GetXAuthHeader(url, _ string) (string, error) {
 	if err := os.WriteFile(tempFile.Name(), buf, 0600); err != nil {
 		return "", fmt.Errorf("screenshot error: %w", err)
 	}*/
-	chromedp.Cancel(ctx)
+	err = chromedp.Cancel(ctx)
+	if err != nil {
+		fmt.Println("chromedp cancel failed")
+	}
 	return preText, nil
 }
 
@@ -264,7 +267,10 @@ func GetCliSecretHarbor(url, token string) (string, error) {
 	if err := os.WriteFile(tempFile.Name(), buf, 0600); err != nil {
 		return "", fmt.Errorf("screenshot error: %w", err)
 	}*/
-	chromedp.Cancel(ctx)
+	err = chromedp.Cancel(ctx)
+	if err != nil {
+		fmt.Println("chromedp cancel failed")
+	}
 	return secret, nil
 }
 

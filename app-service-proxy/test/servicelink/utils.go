@@ -152,7 +152,10 @@ func GetCliSecretHarbor(url, token string) (string, error) {
 	if err := os.WriteFile(tempFile.Name(), buf, 0600); err != nil {
 		return "", fmt.Errorf("screenshot error: %w", err)
 	}*/
-	chromedp.Cancel(ctx)
+	err = chromedp.Cancel(ctx)
+	if err != nil {
+		fmt.Println("chromedp cancel failed")
+	}
 	return secret, nil
 }
 
@@ -344,7 +347,10 @@ func OpenPageInHeadlessChrome(url, search, _ string) (bool, error) {
 			c.Name, c.Value, c.Domain, c.Path, c.Expires, c.Secure, c.HTTPOnly)
 	}
 
-	chromedp.Cancel(ctx)
+	err = chromedp.Cancel(ctx)
+	if err != nil {
+		fmt.Println("chromedp cancel failed")
+	}
 	return found, nil
 }
 
