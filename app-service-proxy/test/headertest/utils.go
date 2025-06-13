@@ -9,11 +9,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
-	"time"
-	//"path/filepath"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
@@ -116,7 +114,7 @@ func GetXAuthHeader(url, _ string) (string, error) {
 	//preText = responseBody
 	fmt.Println("html link : ", pageTitle)
 	fmt.Println("preText : ", preText)
-	tempDir := os.TempDir() // Uses the default OS temporary directory
+	/*tempDir := os.TempDir() // Uses the default OS temporary directory
 
 	// Create a temporary file with a .png extension
 	tempFile, err := os.CreateTemp(tempDir, "httpbin.png")
@@ -130,8 +128,11 @@ func GetXAuthHeader(url, _ string) (string, error) {
 	// Create the temporary file
 	if err := os.WriteFile(tempFile.Name(), buf, 0600); err != nil {
 		return "", fmt.Errorf("screenshot error: %w", err)
+	}*/
+	err = chromedp.Cancel(ctx)
+	if err != nil {
+		fmt.Println("chromedp cancel failed")
 	}
-
 	return preText, nil
 }
 
@@ -251,22 +252,10 @@ func GetCliSecretHarbor(url, token string) (string, error) {
 
 	fmt.Println("html link : ", pageTitle)
 	fmt.Println("secret : ", secret)
-	tempDir := os.TempDir() // Uses the default OS temporary directory
-
-	// Create a temporary file with a .png extension
-	tempFile, err := os.CreateTemp(tempDir, "registry.png")
+	err = chromedp.Cancel(ctx)
 	if err != nil {
-		fmt.Println("Error creating temp PNG file:", err)
-		return "", err
+		fmt.Println("chromedp cancel failed")
 	}
-	defer os.Remove(tempFile.Name()) // Clean up the file when done
-	defer tempFile.Close()
-
-	// Create the temporary file
-	if err := os.WriteFile(tempFile.Name(), buf, 0600); err != nil {
-		return "", fmt.Errorf("screenshot error: %w", err)
-	}
-
 	return secret, nil
 }
 
