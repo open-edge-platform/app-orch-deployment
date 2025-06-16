@@ -65,9 +65,9 @@ func (s *TestSuite) TestListDeploymentsWithFilter() {
 		s.Equal(http.StatusOK, code)
 		s.NoError(err, "Failed to create '"+app+"-"+deploymentutils.DeploymentTypeTargeted+"' deployment")
 	}
-
+	displayName := deploymentutils.FormDisplayName(deploymentutils.AppWordpress, testName)
 	deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
-		Filter: ptr("name=wordpress OR displayName=wordpress OR appName=wordpress OR appVersion=wordpress"),
+		Filter: ptr("displayName=" + displayName),
 	})
 	s.NoError(err, "Failed to list deployments with filter")
 	s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with filter")
