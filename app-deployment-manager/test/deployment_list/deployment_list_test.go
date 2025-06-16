@@ -67,7 +67,7 @@ func (s *TestSuite) TestListDeploymentsWithFilter() {
 	}
 
 	deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
-		Filter: ptr("name=wordpress*"),
+		Filter: ptr("name=wordpress OR displayName=wordpress OR appName=wordpress OR appVersion=wordpress"),
 	})
 	s.NoError(err, "Failed to list deployments with filter")
 	s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with filter")
