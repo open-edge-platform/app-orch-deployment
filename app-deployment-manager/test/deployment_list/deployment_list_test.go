@@ -6,6 +6,7 @@ package deployment_list
 
 import (
 	"net/http"
+	"testing"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 	deploymentutils "github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/deployment"
@@ -46,6 +47,31 @@ func (s *TestSuite) TestListDeploymentsWithPagination() {
 		displayName := deploymentutils.FormDisplayName(app, testName)
 		err := deploymentutils.DeleteAndRetryUntilDeleted(s.AdmClient, displayName, deploymentutils.RetryCount, deploymentutils.DeleteTimeout)
 		s.NoError(err)
+	}
+}
+
+func (s *TestSuite) TestListDeploymentsInvalidPaginationParameters() {
+	s.T().Parallel()
+	testCases := []struct {
+		pageSize int32
+		offset   int32
+	}{
+		{pageSize: -1, offset: 0},  // Invalid page size
+		{pageSize: 0, offset: -1},  // Invalid offset
+		{pageSize: 200, offset: 0}, // Page size exceeds maximum limit
+		// TODO: test orderBy?
+	}
+	for _, tt := range testCases {
+		s.T().Run("PageSize="+string(tt.pageSize)+"_Offset="+string(tt.offset), func(t *testing.T) {
+			deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
+				PageSize: &tt.pageSize,
+				Offset:   &tt.offset,
+			})
+			s.Error(err, "Failed to list deployments with pagination")
+			s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
+			s.NotNil(deps, "Expected non-nil deployments list")
+			s.Len(*deps, 0, "Expected no deployment in the list")
+		})
 	}
 }
 
