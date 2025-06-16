@@ -68,7 +68,7 @@ $(LOCALBIN):
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 
 # Tool Versions
-CONTROLLER_TOOLS_VERSION ?= v0.16.1
+CONTROLLER_TOOLS_VERSION ?= v0.16.3
 
 # Test variables
 # Set TEST_TARGET to '<testname1>' or '<testname1\|testname2>' to run specific tests or use regex '<testname.*>' - example:

@@ -8,17 +8,19 @@ import (
 	"context"
 	"fmt"
 
+	"net/http"
+	"net/http/httptest"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"net/http"
-	"net/http/httptest"
 
 	deploymentpb "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
 	deploymentv1beta1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/v1beta1"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 var _ = Describe("Gateway gRPC Service", func() {
@@ -374,5 +376,164 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(ok).To(BeTrue())
 		})
 
+		It("successfully unmasks simple secrets", func() {
+			// Create current struct with masked values
+			current := &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"password": structpb.NewStringValue(MaskedValuePlaceholder),
+					"username": structpb.NewStringValue("user123"),
+				},
+			}
+
+			// Create previous struct with real values
+			previous := &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"password": structpb.NewStringValue("realSecret123"),
+					"username": structpb.NewStringValue("user123"),
+				},
+			}
+
+			UnmaskSecrets(current, previous, "")
+
+			// Verify values were unmasked correctly
+			Expect(current.Fields["password"].GetStringValue()).To(Equal("realSecret123"))
+			Expect(current.Fields["username"].GetStringValue()).To(Equal("user123"))
+		})
+
+		It("successfully unmasks nested secrets", func() {
+			// Create nested struct with masked values
+			nestedStruct := &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"password": structpb.NewStringValue(MaskedValuePlaceholder),
+					"username": structpb.NewStringValue("dbuser"),
+				},
+			}
+
+			current := &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"database": structpb.NewStructValue(nestedStruct),
+				},
+			}
+
+			// Create previous struct with real values
+			previous := &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"database.password": structpb.NewStringValue("dbSecret456"),
+					"database.username": structpb.NewStringValue("dbuser"),
+				},
+			}
+
+			UnmaskSecrets(current, previous, "")
+
+			// Verify values were unmasked correctly
+			nestedResult := current.Fields["database"].GetStructValue()
+			Expect(nestedResult.Fields["password"].GetStringValue()).To(Equal("dbSecret456"))
+			Expect(nestedResult.Fields["username"].GetStringValue()).To(Equal("dbuser"))
+		})
+
+		It("handles missing values in previous struct", func() {
+			// Create current struct with masked values
+			current := &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"password": structpb.NewStringValue(MaskedValuePlaceholder),
+					"newField": structpb.NewStringValue(MaskedValuePlaceholder),
+				},
+			}
+
+			// Create previous struct with only some values
+			previous := &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"password": structpb.NewStringValue("realSecret123"),
+					// newField doesn't exist in previous
+				},
+			}
+
+			UnmaskSecrets(current, previous, "")
+
+			// Verify only existing values were unmasked
+			Expect(current.Fields["password"].GetStringValue()).To(Equal("realSecret123"))
+			Expect(current.Fields["newField"].GetStringValue()).To(Equal(MaskedValuePlaceholder))
+		})
+
+		It("handles prefix parameter correctly", func() {
+			// Create current struct with masked values
+			current := &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"password": structpb.NewStringValue(MaskedValuePlaceholder),
+				},
+			}
+
+			// Create previous struct with prefixed keys
+			previous := &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"app.password": structpb.NewStringValue("appSecret"),
+				},
+			}
+
+			// Call function with prefix
+			UnmaskSecrets(current, previous, "app")
+
+			// Verify values were unmasked correctly
+			Expect(current.Fields["password"].GetStringValue()).To(Equal("appSecret"))
+		})
+
+		It("handles deep nesting with multiple masked values", func() {
+			// Create deeply nested struct with masked values
+			primaryStruct := &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"password": structpb.NewStringValue(MaskedValuePlaceholder),
+					"username": structpb.NewStringValue("admin"),
+				},
+			}
+
+			replicaStruct := &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"password": structpb.NewStringValue(MaskedValuePlaceholder),
+					"username": structpb.NewStringValue("reader"),
+				},
+			}
+
+			dbStruct := &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"primary": structpb.NewStructValue(primaryStruct),
+					"replica": structpb.NewStructValue(replicaStruct),
+				},
+			}
+
+			configStruct := &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"database": structpb.NewStructValue(dbStruct),
+				},
+			}
+
+			current := &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"config": structpb.NewStructValue(configStruct),
+				},
+			}
+
+			// Create previous struct with real values
+			previous := &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"config.database.primary.password": structpb.NewStringValue("primarySecret"),
+					"config.database.primary.username": structpb.NewStringValue("admin"),
+					"config.database.replica.password": structpb.NewStringValue("replicaSecret"),
+					"config.database.replica.username": structpb.NewStringValue("reader"),
+				},
+			}
+
+			UnmaskSecrets(current, previous, "")
+
+			// Verify values were unmasked correctly
+			configResult := current.Fields["config"].GetStructValue()
+			dbResult := configResult.Fields["database"].GetStructValue()
+			primaryResult := dbResult.Fields["primary"].GetStructValue()
+			replicaResult := dbResult.Fields["replica"].GetStructValue()
+
+			Expect(primaryResult.Fields["password"].GetStringValue()).To(Equal("primarySecret"))
+			Expect(primaryResult.Fields["username"].GetStringValue()).To(Equal("admin"))
+			Expect(replicaResult.Fields["password"].GetStringValue()).To(Equal("replicaSecret"))
+			Expect(replicaResult.Fields["username"].GetStringValue()).To(Equal("reader"))
+		})
 	})
 })

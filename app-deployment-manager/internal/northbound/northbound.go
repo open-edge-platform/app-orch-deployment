@@ -34,6 +34,7 @@ import (
 )
 
 var log = dazl.GetPackageLogger()
+var matchUIDDeploymentFn = matchUIDDeployment
 
 type Deployment struct {
 	Name                       string                                             `yaml:"name"`
@@ -194,6 +195,58 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 				Labels:      ns.Labels,
 				Annotations: ns.Annotations,
 			})
+		}
+	}
+
+	// Unmask secrets before createSecrets for Update Deployment
+	if scenario == "update" {
+		// Set deployment ID
+		if in.GetDeployId() != "" {
+			d.DeployID = in.GetDeployId()
+		}
+
+		// Ensuring have a valid deployment name or ID
+		if d.Name == "" && d.DeployID != "" {
+			deployment, err := matchUIDDeploymentFn(ctx, d.DeployID, activeProjectID, s, metav1.ListOptions{})
+			if err != nil {
+				log.Warnf("Failed to get deployment by UID: %v", err)
+			} else if deployment != nil && deployment.Name != "" {
+				d.Name = deployment.Name
+				// Set the namespace from the deployment
+				d.Namespace = deployment.Namespace
+			}
+		}
+
+		// If namespace is still empty, set it to activeProjectID
+		if d.Namespace == "" {
+			d.Namespace = activeProjectID
+		}
+
+		// Now process each app with the deployment name
+		for _, app := range *d.HelmApps {
+			secretName := fmt.Sprintf("%s-%s-%s-secret", d.Name, app.Name, d.ProfileName)
+
+			secretValue, err := utils.GetSecretValue(ctx, s.k8sClient, d.Namespace, secretName)
+			if err != nil {
+				continue
+			}
+
+			// Convert data values back to JSON to unmarshal
+			val, err := yaml2.YAMLToJSON(secretValue.Data["values"])
+			if err != nil {
+				continue
+			}
+
+			var valuesStrPb *structpb.Struct
+			if err := json.Unmarshal(val, &valuesStrPb); err != nil {
+				continue
+			}
+
+			for _, oVal := range d.OverrideValues {
+				if oVal.AppName == app.Name && oVal.Values != nil && valuesStrPb != nil {
+					UnmaskSecrets(oVal.Values, valuesStrPb, "")
+				}
+			}
 		}
 	}
 
@@ -1244,6 +1297,11 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 	}
 	defer cancel()
 
+	// Explicitly set the deployment ID in the Deployment object
+	if in.Deployment != nil {
+		in.Deployment.DeployId = in.DeplId
+	}
+
 	dependentDepls := make(map[string]*Deployment)
 	d, err := initDeployment(ctx, s, "update", in.GetDeployment(), dependentDepls, activeProjectID)
 	if err != nil {
@@ -1251,6 +1309,7 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 		return nil, errors.Status(err).Err()
 	}
 
+	// Ensure the deployment ID is set from the request
 	d.DeployID = in.DeplId
 
 	deployment, err := matchUIDDeployment(ctx, d.DeployID, d.Namespace, s, listOpts)

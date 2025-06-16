@@ -9,8 +9,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	corev1 "k8s.io/api/core/v1"
 	"strconv"
+
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/open-edge-platform/orch-library/go/pkg/openpolicyagent"
 	"go.uber.org/mock/gomock"
@@ -45,6 +46,7 @@ import (
 	deploymentv1beta1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/v1beta1"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/catalogclient"
 	mockerymock "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/catalogclient/mockery"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
 const apiVersion = "v1.1"
@@ -57,6 +59,8 @@ const KIND_DC = "deploymentclusters"
 const KIND_C = "clusters"
 const VALID_CLUSTER_ID = "cluster-0123456789"
 const VALID_PROJECT_ID = "0000-1111-2222-3333-4444"
+
+var origMatchUIDDeploymentFn = matchUIDDeployment
 
 func TestGateway(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -2725,6 +2729,28 @@ var _ = Describe("Gateway gRPC Service", func() {
 			md := metadata.Pairs("activeprojectid", VALID_PROJECT_ID, "authorization", "test-token")
 			s.ctx = metadata.NewIncomingContext(context.Background(), md)
 			s.vaultAuthMock.On("GetM2MToken", s.ctx).Return("test-m2m-token", nil).Once()
+
+			// Mock the matchUIDDeployment function
+			matchUIDDeploymentFn = func(ctx context.Context, uid, activeProjectID string, s *DeploymentSvc, opts metav1.ListOptions) (*deploymentv1beta1.Deployment, error) {
+				// If we're using INVALID_UID, return an error
+				if uid == INVALID_UID {
+					return nil, fmt.Errorf("deployment %s not found", uid)
+				}
+
+				// Otherwise return a valid deployment
+				return &deploymentv1beta1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            "test-deployment",
+						Namespace:       "test-namespace",
+						ResourceVersion: "1",
+					},
+				}, nil
+			}
+		})
+
+		AfterEach(func() {
+			// Restore original function
+			matchUIDDeploymentFn = origMatchUIDDeploymentFn
 		})
 
 		It("successfully update deployment", func() {
@@ -2774,6 +2800,15 @@ var _ = Describe("Gateway gRPC Service", func() {
 		})
 
 		It("fails due to deployment resourceVersion not found", func() {
+			matchUIDDeploymentFn = func(ctx context.Context, uid, activeProjectID string, s *DeploymentSvc, opts metav1.ListOptions) (*deploymentv1beta1.Deployment, error) {
+				return &deploymentv1beta1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-deployment",
+						Namespace: "test-namespace",
+						// No ResourceVersion
+					},
+				}, nil
+			}
 			deploymentListSrc.Items[0].ObjectMeta.ResourceVersion = ""
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -2950,6 +2985,10 @@ var _ = Describe("Gateway gRPC Service", func() {
 			defer ts.Close()
 
 			k8sClient = &nbmocks.FakeDeploymentV1{}
+
+			matchUIDDeploymentFn = func(ctx context.Context, uid, activeProjectID string, s *DeploymentSvc, opts metav1.ListOptions) (*deploymentv1beta1.Deployment, error) {
+				return nil, apierrors.NewInternalError(fmt.Errorf("internal error"))
+			}
 
 			deploymentServer = NewDeployment(k8sClient, nil, s.kc, nil, s.catalogClient, s.protoValidator, s.vaultAuthMock)
 			deployInstance = SetDeployInstance(&deploymentListSrc, "")
