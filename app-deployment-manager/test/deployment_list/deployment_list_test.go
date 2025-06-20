@@ -33,15 +33,49 @@ func (s *TestSuite) TestListDeploymentsWithPagination() {
 		s.NoError(err, "Failed to create '"+app+"-"+deploymentutils.DeploymentTypeTargeted+"' deployment")
 	}
 
-	deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
-		PageSize: ptr(int32(1)),
-		Offset:   ptr(int32(0)),
-		OrderBy:  ptr("deployPackage"),
-	})
-	s.NoError(err, "Failed to list deployments with pagination")
-	s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
-	s.NotEmpty(deps, "Expected non-empty deployments list")
-	s.Len(*deps, 1, "Expected exactly one deployment in the list")
+	testCases := []struct {
+		pageSize int32
+		offset   int32
+	}{
+		{pageSize: 1, offset: 0}, // First page with one deployment
+		{pageSize: 2, offset: 0}, // First page with two deployments
+		{pageSize: 1, offset: 1}, // Second page with one deployment
+		{pageSize: 2, offset: 1}, // Second page with two deployments
+		{pageSize: 1, offset: 2}, // Third page (should be empty)
+		{pageSize: 2, offset: 2}, // Third page with two deployments (should be empty)
+	}
+	for _, tt := range testCases {
+		s.T().Run("PageSize="+string(tt.pageSize)+"_Offset="+string(tt.offset), func(t *testing.T) {
+			deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
+				PageSize: &tt.pageSize,
+				Offset:   &tt.offset,
+			})
+			s.NoError(err, "Failed to list deployments with pagination")
+			s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
+			if tt.pageSize == 1 && tt.offset < 2 {
+				s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
+				s.NotEmpty(deps, "Expected non-empty deployments list")
+				s.Len(*deps, 1, "Expected exactly one deployment in the list")
+			} else if tt.pageSize == 2 && tt.offset < 2 {
+				s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
+				s.NotEmpty(deps, "Expected non-empty deployments list")
+				s.Len(*deps, 2, "Expected exactly two deployments in the list")
+			} else {
+				s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
+				s.Empty(deps, "Expected empty deployments list for page size and offset combination")
+			}
+		})
+	}
+
+	// deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
+	// 	PageSize: ptr(int32(1)),
+	// 	Offset:   ptr(int32(0)),
+	// 	OrderBy:  ptr("deployPackage"),
+	// })
+	// s.NoError(err, "Failed to list deployments with pagination")
+	// s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
+	// s.NotEmpty(deps, "Expected non-empty deployments list")
+	// s.Len(*deps, 1, "Expected exactly one deployment in the list")
 
 	for _, app := range []string{deploymentutils.AppWordpress, deploymentutils.AppNginx} {
 		displayName := deploymentutils.FormDisplayName(app, testName)
