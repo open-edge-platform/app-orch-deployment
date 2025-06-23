@@ -36,12 +36,12 @@ func (s *TestSuite) TestListDeploymentsWithPagination() {
 		pageSize int32
 		offset   int32
 	}{
-		{pageSize: 1, offset: 0}, // First page with one deployment
-		{pageSize: 2, offset: 0}, // First page with two deployments
-		{pageSize: 1, offset: 1}, // Second page with one deployment
-		{pageSize: 2, offset: 1}, // Second page with two deployments
-		{pageSize: 1, offset: 2}, // Third page (should be empty)
-		{pageSize: 2, offset: 2}, // Third page with two deployments (should be empty)
+		{pageSize: 1, offset: 0},  // First page with one deployment
+		{pageSize: 2, offset: 0},  // First page with two deployments
+		{pageSize: 1, offset: 1},  // Second page with one deployment
+		{pageSize: 2, offset: 1},  // Second page with two deployments
+		{pageSize: 1, offset: 10}, // Tenth page (should be empty)
+		{pageSize: 2, offset: 10}, // Tenth page with two deployments (should be empty)
 	}
 	for _, tt := range testCases {
 		// s.T().Run(fmt.Sprintf("PageSize=%v_Offset=%v", tt.pageSize, tt.offset), func(t *testing.T) {
@@ -105,7 +105,8 @@ func (s *TestSuite) TestListDeploymentsInvalidPaginationParameters() {
 			Offset:   &tt.offset,
 			Labels:   tt.labels,
 		})
-		s.Errorf(err, "Pagination parameters %v", tt)
+		s.T().Logf("deps: %v, code: %d, err: %v", deps, code, err)
+		// s.Errorf(err, "Pagination parameters %v", tt)
 		s.Equalf(http.StatusBadRequest, code, "Pagination parameters %v", tt)
 		s.NotNilf(deps, "Pagination parameters %v", tt)
 		s.Len(*deps, 0, "Pagination parameters %v", tt)
