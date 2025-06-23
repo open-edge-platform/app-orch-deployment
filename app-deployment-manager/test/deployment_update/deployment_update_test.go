@@ -11,7 +11,7 @@ import (
 )
 
 func (s *TestSuite) TestUpdateDeploymentValidParams() {
-	s.T().Parallel()
+	// s.T().Parallel()
 	testName := "TestUpdateDeploymentValidParams"
 	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
@@ -46,7 +46,7 @@ func (s *TestSuite) TestUpdateDeploymentValidParams() {
 }
 
 func (s *TestSuite) TestUpdateDeploymentInvalidParams() {
-	s.T().Parallel()
+	// s.T().Parallel()
 	testName := "TestUpdateDeploymentInvalidParams"
 	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
@@ -79,7 +79,7 @@ func (s *TestSuite) TestUpdateDeploymentInvalidParams() {
 }
 
 func (s *TestSuite) TestUpdateNonExistentDeployment() {
-	s.T().Parallel()
+	// s.T().Parallel()
 	testName := "TestUpdateNonExistentDeployment"
 	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
