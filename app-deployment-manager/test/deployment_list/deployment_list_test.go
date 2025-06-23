@@ -6,7 +6,6 @@ package deployment_list
 
 import (
 	"net/http"
-	"testing"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 	deploymentutils "github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/deployment"
@@ -45,26 +44,26 @@ func (s *TestSuite) TestListDeploymentsWithPagination() {
 		{pageSize: 2, offset: 2}, // Third page with two deployments (should be empty)
 	}
 	for _, tt := range testCases {
-		s.T().Run("PageSize="+string(tt.pageSize)+"_Offset="+string(tt.offset), func(t *testing.T) {
-			deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
-				PageSize: &tt.pageSize,
-				Offset:   &tt.offset,
-			})
-			s.NoError(err, "Failed to list deployments with pagination")
-			s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
-			if tt.pageSize == 1 && tt.offset < 2 {
-				s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
-				s.NotEmpty(deps, "Expected non-empty deployments list")
-				s.Len(*deps, 1, "Expected exactly one deployment in the list")
-			} else if tt.pageSize == 2 && tt.offset < 2 {
-				s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
-				s.NotEmpty(deps, "Expected non-empty deployments list")
-				s.Len(*deps, 2, "Expected exactly two deployments in the list")
-			} else {
-				s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
-				s.Empty(deps, "Expected empty deployments list for page size and offset combination")
-			}
+		// s.T().Run(fmt.Sprintf("PageSize=%v_Offset=%v", tt.pageSize, tt.offset), func(t *testing.T) {
+		deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
+			PageSize: &tt.pageSize,
+			Offset:   &tt.offset,
 		})
+		s.NoError(err, "Failed to list deployments with pagination")
+		s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
+		if tt.pageSize == 1 && tt.offset < 2 {
+			s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
+			s.NotEmpty(deps, "Expected non-empty deployments list")
+			s.Len(*deps, 1, "Expected exactly one deployment in the list")
+		} else if tt.pageSize == 2 && tt.offset < 2 {
+			s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
+			s.NotEmpty(deps, "Expected non-empty deployments list")
+			s.Len(*deps, 2, "Expected exactly two deployments in the list")
+		} else {
+			s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
+			s.Empty(deps, "Expected empty deployments list for page size and offset combination")
+		}
+		// })
 	}
 
 	// deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
@@ -100,17 +99,17 @@ func (s *TestSuite) TestListDeploymentsInvalidPaginationParameters() {
 		// TODO: test orderBy?
 	}
 	for _, tt := range testCases {
-		s.T().Run("PageSize="+string(tt.pageSize)+"_Offset="+string(tt.offset), func(t *testing.T) {
-			deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
-				PageSize: &tt.pageSize,
-				Offset:   &tt.offset,
-				Labels:   tt.labels,
-			})
-			s.Error(err, "Failed to list deployments with pagination")
-			s.Equal(http.StatusBadRequest, code, "Expected HTTP status 400 for invalid pagination parameters")
-			s.NotNil(deps, "Expected non-nil deployments list")
-			s.Len(*deps, 0, "Expected no deployment in the list")
+		// s.T().Run(fmt.Sprintf("PageSize=%v_Offset=%v", tt.pageSize, tt.offset), func(t *testing.T) {
+		deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
+			PageSize: &tt.pageSize,
+			Offset:   &tt.offset,
+			Labels:   tt.labels,
 		})
+		s.Error(err, "Failed to list deployments with pagination")
+		s.Equal(http.StatusBadRequest, code, "Expected HTTP status 400 for invalid pagination parameters")
+		s.NotNil(deps, "Expected non-nil deployments list")
+		s.Len(*deps, 0, "Expected no deployment in the list")
+		// })
 	}
 }
 
