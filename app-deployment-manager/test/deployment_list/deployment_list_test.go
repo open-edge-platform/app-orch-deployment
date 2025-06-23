@@ -16,7 +16,7 @@ func ptr[T any](v T) *T {
 }
 
 func (s *TestSuite) TestListDeploymentsWithPagination() {
-	s.T().Parallel()
+	// s.T().Parallel()
 	testName := "ListDeploymentsWithPagination"
 	for _, app := range []string{deploymentutils.AppWordpress, deploymentutils.AppNginx} {
 		deploymentReq := deploymentutils.StartDeploymentRequest{
@@ -105,10 +105,10 @@ func (s *TestSuite) TestListDeploymentsInvalidPaginationParameters() {
 			Offset:   &tt.offset,
 			Labels:   tt.labels,
 		})
-		s.Error(err, "Failed to list deployments with pagination")
-		s.Equal(http.StatusBadRequest, code, "Expected HTTP status 400 for invalid pagination parameters")
-		s.NotNil(deps, "Expected non-nil deployments list")
-		s.Len(*deps, 0, "Expected no deployment in the list")
+		s.Errorf(err, "Pagination parameters %v", tt)
+		s.Equalf(http.StatusBadRequest, code, "Pagination parameters %v", tt)
+		s.NotNilf(deps, "Pagination parameters %v", tt)
+		s.Len(*deps, 0, "Pagination parameters %v", tt)
 		// })
 	}
 }
