@@ -44,7 +44,6 @@ func (s *TestSuite) TestListDeploymentsWithPagination() {
 		{pageSize: 2, offset: 10}, // Tenth page with two deployments (should be empty)
 	}
 	for _, tt := range testCases {
-		// s.T().Run(fmt.Sprintf("PageSize=%v_Offset=%v", tt.pageSize, tt.offset), func(t *testing.T) {
 		deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
 			PageSize: &tt.pageSize,
 			Offset:   &tt.offset,
@@ -63,18 +62,7 @@ func (s *TestSuite) TestListDeploymentsWithPagination() {
 			s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
 			s.Empty(deps, "Expected empty deployments list for page size and offset combination")
 		}
-		// })
 	}
-
-	// deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
-	// 	PageSize: ptr(int32(1)),
-	// 	Offset:   ptr(int32(0)),
-	// 	OrderBy:  ptr("deployPackage"),
-	// })
-	// s.NoError(err, "Failed to list deployments with pagination")
-	// s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
-	// s.NotEmpty(deps, "Expected non-empty deployments list")
-	// s.Len(*deps, 1, "Expected exactly one deployment in the list")
 
 	for _, app := range []string{deploymentutils.AppWordpress, deploymentutils.AppNginx} {
 		displayName := deploymentutils.FormDisplayName(app, testName)
@@ -99,18 +87,15 @@ func (s *TestSuite) TestListDeploymentsInvalidPaginationParameters() {
 		// TODO: test orderBy?
 	}
 	for _, tt := range testCases {
-		// s.T().Run(fmt.Sprintf("PageSize=%v_Offset=%v", tt.pageSize, tt.offset), func(t *testing.T) {
 		deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
 			PageSize: &tt.pageSize,
 			Offset:   &tt.offset,
 			Labels:   tt.labels,
 		})
-		s.T().Logf("deps: %v, code: %d, err: %v", deps, code, err)
-		// s.Errorf(err, "Pagination parameters %v", tt)
+		s.NoErrorf(err, "Pagination parameters %v", tt)
 		s.Equalf(http.StatusBadRequest, code, "Pagination parameters %v", tt)
 		s.NotNilf(deps, "Pagination parameters %v", tt)
-		s.Len(*deps, 0, "Pagination parameters %v", tt)
-		// })
+		s.Lenf(*deps, 0, "Pagination parameters %v", tt)
 	}
 }
 
