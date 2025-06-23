@@ -15,7 +15,7 @@ func (s *TestSuite) TestUpdateDeploymentValidParams() {
 	testName := "TestUpdateDeploymentValidParams"
 	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
-		DpPackageName:     deploymentutils.AppNginx,
+		DpPackageName:     deploymentutils.AppWordpress,
 		DeploymentType:    deploymentutils.DeploymentTypeTargeted,
 		DeploymentTimeout: deploymentutils.DeploymentTimeout,
 		DeleteTimeout:     deploymentutils.DeleteTimeout,
@@ -23,13 +23,16 @@ func (s *TestSuite) TestUpdateDeploymentValidParams() {
 	}
 	deployID, code, err := deploymentutils.StartDeployment(deploymentReq)
 	s.Equal(http.StatusOK, code)
-	s.NoError(err, "Failed to create '"+deploymentutils.AppNginx+"-"+deploymentutils.DeploymentTypeTargeted+"' deployment")
+	s.NoError(err, "Failed to create '"+deploymentutils.AppWordpress+"-"+deploymentutils.DeploymentTypeTargeted+"' deployment")
 
 	deployment, code, err := deploymentutils.GetDeployment(s.AdmClient, deployID)
 	s.Equal(http.StatusOK, code, "Expected HTTP status 200 for getting deployment details")
 	s.NoError(err, "Failed to get deployment details")
 
+	s.T().Logf("deployment: %+v", deployment)
+
 	// TODO: some modification the deployment object to update?
+	deployment.AppVersion = "0.1.1"
 
 	code, err = deploymentutils.UpdateDeployment(s.AdmClient, deployID, deployment)
 	s.Equal(http.StatusOK, code, "Expected HTTP status 200 for updating deployment")
