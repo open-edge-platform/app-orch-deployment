@@ -145,9 +145,9 @@ func ListBundles(ctx context.Context, client dynamic.Interface, namespace string
 	var list *unstructured.UnstructuredList
 	var err error
 	if namespace == "" {
-		list, err = client.Resource(bundleResource).Namespace(namespace).List(ctx, metav1.ListOptions{})
-	} else {
 		list, err = client.Resource(bundleResource).List(ctx, metav1.ListOptions{})
+	} else {
+		list, err = client.Resource(bundleResource).Namespace(namespace).List(ctx, metav1.ListOptions{})
 	}
 	if err != nil {
 		return nil, err
