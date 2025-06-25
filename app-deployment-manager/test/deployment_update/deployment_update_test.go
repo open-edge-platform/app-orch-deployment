@@ -11,7 +11,6 @@ import (
 )
 
 func (s *TestSuite) TestUpdateDeploymentValidParams() {
-	// s.T().Parallel()
 	testName := "TestUpdateDeplValidParams"
 	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
@@ -31,7 +30,7 @@ func (s *TestSuite) TestUpdateDeploymentValidParams() {
 
 	s.T().Logf("deployment: %+v", deployment)
 
-	// TODO: some modification the deployment object to update?
+	// TODO: some more modification the deployment object to update?
 	deployment.AppVersion = "0.1.1"
 
 	code, err = deploymentutils.UpdateDeployment(s.AdmClient, deployID, deployment)
@@ -79,7 +78,6 @@ func (s *TestSuite) TestUpdateDeploymentInvalidParams() {
 }
 
 func (s *TestSuite) TestUpdateNonExistentDeployment() {
-	// s.T().Parallel()
 	testName := "TestUpdateNonExistentDepl"
 	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,

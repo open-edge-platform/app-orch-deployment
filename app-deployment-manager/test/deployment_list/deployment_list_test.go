@@ -16,7 +16,6 @@ func ptr[T any](v T) *T {
 }
 
 func (s *TestSuite) TestListDeploymentsWithPagination() {
-	// s.T().Parallel()
 	testName := "ListDeploymentsWithPagination"
 	for _, app := range []string{deploymentutils.AppWordpress, deploymentutils.AppNginx} {
 		deploymentReq := deploymentutils.StartDeploymentRequest{
