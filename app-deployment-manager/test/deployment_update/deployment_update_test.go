@@ -12,7 +12,7 @@ import (
 
 func (s *TestSuite) TestUpdateDeploymentValidParams() {
 	// s.T().Parallel()
-	testName := "TestUpdateDeploymentValidParams"
+	testName := "TestUpdateDeplValidParams"
 	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
 		DpPackageName:     deploymentutils.AppWordpress,
@@ -47,7 +47,7 @@ func (s *TestSuite) TestUpdateDeploymentValidParams() {
 
 func (s *TestSuite) TestUpdateDeploymentInvalidParams() {
 	// s.T().Parallel()
-	testName := "TestUpdateDeploymentInvalidParams"
+	testName := "TestUpdateDeplInvalidParams"
 	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
 		DpPackageName:     deploymentutils.AppNginx,
@@ -80,7 +80,7 @@ func (s *TestSuite) TestUpdateDeploymentInvalidParams() {
 
 func (s *TestSuite) TestUpdateNonExistentDeployment() {
 	// s.T().Parallel()
-	testName := "TestUpdateNonExistentDeployment"
+	testName := "TestUpdateNonExistentDepl"
 	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
 		DpPackageName:     deploymentutils.AppNginx,
