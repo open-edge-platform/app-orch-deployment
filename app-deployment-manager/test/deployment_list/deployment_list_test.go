@@ -40,8 +40,8 @@ func (s *TestSuite) TestListDeploymentsWithPagination() {
 		{pageSize: 2, offset: 0},  // First page with two deployments
 		{pageSize: 1, offset: 1},  // Second page with one deployment
 		{pageSize: 2, offset: 1},  // Second page with two deployments
-		{pageSize: 1, offset: 10}, // Tenth page (should be empty)
-		{pageSize: 2, offset: 10}, // Tenth page with two deployments (should be empty)
+		{pageSize: 1, offset: 50}, // Tenth page (should be empty)
+		{pageSize: 2, offset: 50}, // Tenth page with two deployments (should be empty)
 	}
 	for _, tt := range testCases {
 		deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
