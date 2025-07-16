@@ -658,8 +658,11 @@ func deleteSecrets(ctx context.Context, k8sClient *kubernetes.Clientset, deploym
 }
 
 func removeIndex(s []string, index int) []string {
-	// NOTE: This function has side-effects. Not only does it return the modified slice, but it also alters the slice passed as the argument
-	return append(s[:index], s[index+1:]...)
+	// This function returns a new slice with the element at 'index' removed, without modifying the original slice.
+	result := make([]string, 0, len(s)-1)
+	result = append(result, s[:index]...)
+	result = append(result, s[index+1:]...)
+	return result
 }
 
 func updatePbValue(s *structpb.Struct, structKeys []string, inValInt int, inValStr string, inValType string, currentDepth int) (int, string) {
