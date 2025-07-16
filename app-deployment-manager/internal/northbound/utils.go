@@ -725,7 +725,6 @@ func maskPbValue(s *structpb.Struct, structKeys []string, inValStr string, curre
 
 			s.Fields[k] = structpb.NewStringValue(MaskedValuePlaceholder)
 		case *structpb.Value_StructValue:
-			removeIndex(structKeys, 0)
 			inValStr = maskPbValue(v.GetStructValue(), removeIndex(structKeys, 0), inValStr, currentDepth+1)
 		}
 	}
