@@ -658,6 +658,7 @@ func deleteSecrets(ctx context.Context, k8sClient *kubernetes.Clientset, deploym
 }
 
 func removeIndex(s []string, index int) []string {
+	// NOTE: This function has side-effects. Not only does it return the modified slice, but it also alters the slice passed as the argument
 	return append(s[:index], s[index+1:]...)
 }
 
@@ -694,7 +695,6 @@ func updatePbValue(s *structpb.Struct, structKeys []string, inValInt int, inValS
 				s.Fields[k] = structpb.NewBoolValue(boolVal)
 			}
 		case *structpb.Value_StructValue:
-			removeIndex(structKeys, 0)
 			inValInt, inValStr = updatePbValue(v.GetStructValue(), removeIndex(structKeys, 0), inValInt, inValStr, inValType, currentDepth+1)
 		}
 	}
