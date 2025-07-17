@@ -658,7 +658,11 @@ func deleteSecrets(ctx context.Context, k8sClient *kubernetes.Clientset, deploym
 }
 
 func removeIndex(s []string, index int) []string {
-	return append(s[:index], s[index+1:]...)
+	// This function returns a new slice with the element at 'index' removed, without modifying the original slice.
+	result := make([]string, 0, len(s)-1)
+	result = append(result, s[:index]...)
+	result = append(result, s[index+1:]...)
+	return result
 }
 
 func updatePbValue(s *structpb.Struct, structKeys []string, inValInt int, inValStr string, inValType string, currentDepth int) (int, string) {
@@ -694,7 +698,6 @@ func updatePbValue(s *structpb.Struct, structKeys []string, inValInt int, inValS
 				s.Fields[k] = structpb.NewBoolValue(boolVal)
 			}
 		case *structpb.Value_StructValue:
-			removeIndex(structKeys, 0)
 			inValInt, inValStr = updatePbValue(v.GetStructValue(), removeIndex(structKeys, 0), inValInt, inValStr, inValType, currentDepth+1)
 		}
 	}
@@ -725,7 +728,6 @@ func maskPbValue(s *structpb.Struct, structKeys []string, inValStr string, curre
 
 			s.Fields[k] = structpb.NewStringValue(MaskedValuePlaceholder)
 		case *structpb.Value_StructValue:
-			removeIndex(structKeys, 0)
 			inValStr = maskPbValue(v.GetStructValue(), removeIndex(structKeys, 0), inValStr, currentDepth+1)
 		}
 	}

@@ -535,5 +535,19 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(replicaResult.Fields["password"].GetStringValue()).To(Equal("replicaSecret"))
 			Expect(replicaResult.Fields["username"].GetStringValue()).To(Equal("reader"))
 		})
+
+		It("removes the indexed item without altering the original slide", func() {
+			// Create a slice with multiple items
+			items := []string{"item1", "item2", "item3", "item4"}
+
+			// Remove the item at index 2
+			updatedItems := removeIndex(items, 2)
+
+			// Verify the original slice is unchanged
+			Expect(items).To(Equal([]string{"item1", "item2", "item3", "item4"}))
+
+			// Verify the updated slice has the item removed
+			Expect(updatedItems).To(Equal([]string{"item1", "item2", "item4"}))
+		})
 	})
 })
