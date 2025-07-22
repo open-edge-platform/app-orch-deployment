@@ -19,6 +19,7 @@ paths:
                   description: Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel. Labels separated by a comma.
                   schema:
                     type: array
+                    maxItems: 100
                     items:
                         type: string
                 - name: orderBy
@@ -82,6 +83,7 @@ paths:
                   description: Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
                   schema:
                     type: array
+                    maxItems: 100
                     items:
                         type: string
                 - name: orderBy
@@ -147,6 +149,7 @@ paths:
                   description: Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
                   schema:
                     type: array
+                    maxItems: 100
                     items:
                         type: string
                 - name: orderBy
@@ -302,6 +305,7 @@ paths:
                   description: Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
                   schema:
                     type: array
+                    maxItems: 100
                     items:
                         type: string
             responses:
@@ -343,6 +347,7 @@ components:
                 apps:
                     readOnly: true
                     type: array
+                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/App'
                     description: Apps has per-app details.
@@ -412,11 +417,13 @@ components:
                     description: The id of the deployment.
                 overrideValues:
                     type: array
+                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/OverrideValues'
                     description: The Override values can be used to override any of the base profile values based on Deployment scenario.
                 targetClusters:
                     type: array
+                    maxItems: 200
                     items:
                         $ref: '#/components/schemas/TargetClusters'
                     description: Cluster labels on which we want to deploy the application.
@@ -425,6 +432,7 @@ components:
                 apps:
                     readOnly: true
                     type: array
+                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/App'
                     description: Application details.
@@ -436,6 +444,7 @@ components:
                     description: network_name is the name of the interconnect network that deployment be part of
                 serviceExports:
                     type: array
+                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/ServiceExport'
                 allAppTargetClusters:
@@ -460,6 +469,7 @@ components:
                 apps:
                     readOnly: true
                     type: array
+                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/App'
                     description: Apps has per-app details.
@@ -544,6 +554,7 @@ components:
             properties:
                 clusters:
                     type: array
+                    maxItems: 1000
                     items:
                         $ref: '#/components/schemas/ClusterInfo'
                     description: A list of Cluster Objects.
@@ -559,6 +570,7 @@ components:
             properties:
                 clusters:
                     type: array
+                    maxItems: 1000
                     items:
                         $ref: '#/components/schemas/Cluster'
                 totalElements:
@@ -573,6 +585,7 @@ components:
             properties:
                 deploymentInstancesCluster:
                     type: array
+                    maxItems: 1000
                     items:
                         $ref: '#/components/schemas/DeploymentInstancesCluster'
                     description: A list of Deployment Instance Cluster Objects.
@@ -588,6 +601,7 @@ components:
             properties:
                 deployments:
                     type: array
+                    maxItems: 1000
                     items:
                         $ref: '#/components/schemas/Deployment'
                     description: A list of Deployment Objects.
