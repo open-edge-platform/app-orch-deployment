@@ -423,7 +423,7 @@ components:
                     description: The Override values can be used to override any of the base profile values based on Deployment scenario.
                 targetClusters:
                     type: array
-                    maxItems: 200
+                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/TargetClusters'
                     description: Cluster labels on which we want to deploy the application.

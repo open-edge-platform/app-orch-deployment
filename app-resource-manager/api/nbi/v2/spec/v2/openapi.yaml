@@ -254,7 +254,7 @@ components:
                 ports:
                     readOnly: true
                     type: array
-                    maxItems: 50
+                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/Port'
                     description: List of ports exposed by a service for external access

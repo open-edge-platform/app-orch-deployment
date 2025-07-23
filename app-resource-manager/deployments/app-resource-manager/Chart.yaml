@@ -16,11 +16,11 @@ type: application
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
 
-version: 2.4.5-dev
+version: 2.4.5
 # Default appVersion will be overwritten by the build to use {repo}/VERSION. This
 # value is supplied only to enable local unbuilt deployment of default released
 # content.
-appVersion: 2.4.5-dev-36965e8
+appVersion: 2.4.5
 annotations:
-  revision: "36965e8"
-  created: "2025-06-10T14:34:07Z"
+  revision: "0779b30"
+  created: "2025-07-23T13:29:19Z"
