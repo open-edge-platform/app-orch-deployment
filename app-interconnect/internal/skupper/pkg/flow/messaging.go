@@ -4,9 +4,9 @@ import (
 	"log"
 	"sync"
 
+	amqp "github.com/interconnectedcloud/go-amqp"
 	"github.com/open-edge-platform/app-orch-deployment/app-interconnect/internal/skupper/pkg/event"
 	"github.com/open-edge-platform/app-orch-deployment/app-interconnect/internal/skupper/pkg/messaging"
-	amqp "github.com/interconnectedcloud/go-amqp"
 )
 
 const (

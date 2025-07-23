@@ -247,12 +247,14 @@ components:
                 fqdns:
                     readOnly: true
                     type: array
+                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/Fqdn'
                     description: Fully qualified domain name (FQDN) for external access.
                 ports:
                     readOnly: true
                     type: array
+                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/Port'
                     description: List of ports exposed by a service for external access
@@ -397,6 +399,7 @@ components:
                 appEndpoints:
                     readOnly: true
                     type: array
+                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/AppEndpoint'
                     description: List of services.
@@ -406,6 +409,7 @@ components:
             properties:
                 appWorkloads:
                     type: array
+                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/AppWorkload'
                     description: A list of virtual machines.
@@ -415,6 +419,7 @@ components:
             properties:
                 containers:
                     type: array
+                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/Container'
                     description: containers list of containers per pod

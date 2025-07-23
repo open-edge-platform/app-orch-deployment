@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
+	amqp "github.com/interconnectedcloud/go-amqp"
 	"github.com/open-edge-platform/app-orch-deployment/app-interconnect/internal/skupper/api/types"
 	"github.com/open-edge-platform/app-orch-deployment/app-interconnect/internal/skupper/pkg/config"
 	"github.com/open-edge-platform/app-orch-deployment/app-interconnect/internal/skupper/pkg/utils"
-	amqp "github.com/interconnectedcloud/go-amqp"
 )
 
 type RouterNode struct {
