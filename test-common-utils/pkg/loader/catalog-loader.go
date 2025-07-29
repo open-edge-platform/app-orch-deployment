@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 )
 
 func Upload(paths []string) error {
@@ -87,15 +88,21 @@ func UploadHttpbinHelm(path, harborPwd string) error {
 
 	// 3. Push the chart to OCI registry
 	ociRef := fmt.Sprintf("oci://%s/%s", registry, repo)
-	pushCmd := exec.Command("helm", "push", chartTGZ, ociRef)
-	pushCmd.Stdout = os.Stdout
-	pushCmd.Stderr = os.Stderr
 	fmt.Println("Pushing chart to OCI registry...")
-	if err := pushCmd.Run(); err != nil {
+	retries := 40
+	var err error
+	for i := 0; i < retries; i++ {
+		pushCmd := exec.Command("helm", "push", chartTGZ, ociRef)
+		if err = pushCmd.Run(); err != nil {
+			fmt.Printf("retry count %d\n", i)
+			time.Sleep(1 * time.Second)
+		}
+	}
+
+	if err != nil {
 		fmt.Printf("Failed to push chart: %v\n", err)
 		os.Exit(1)
 	}
-
 	// Optional: Cleanup the packaged file
 	os.Remove(filepath.Join(".", chartTGZ))
 	fmt.Println("Done!")

@@ -8,7 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
+	//"os"
 	"strings"
 	"time"
 	//"path/filepath"
@@ -137,22 +137,10 @@ func GetCliSecretHarbor(url, token string) (string, error) {
 	fmt.Println("html link : ", pageTitle)
 	fmt.Println("secret : ", secret)
 
-	tempDir := os.TempDir() // Uses the default OS temporary directory
-
-	// Create a temporary file with a .png extension
-	tempFile, err := os.CreateTemp(tempDir, "registry.png")
+	err = chromedp.Cancel(ctx)
 	if err != nil {
-		fmt.Println("Error creating temp PNG file:", err)
-		return "", err
+		fmt.Println("chromedp cancel failed")
 	}
-	defer os.Remove(tempFile.Name()) // Clean up the file when done
-	defer tempFile.Close()
-
-	// Create the temporary file
-	if err := os.WriteFile(tempFile.Name(), buf, 0600); err != nil {
-		return "", fmt.Errorf("screenshot error: %w", err)
-	}
-
 	return secret, nil
 }
 
@@ -307,22 +295,6 @@ func OpenPageInHeadlessChrome(url, search, _ string) (bool, error) {
 		fmt.Println("String not found.")
 	}
 
-	tempDir := os.TempDir() // Uses the default OS temporary directory
-
-	// Create a temporary file with a .png extension
-	tempFile, err := os.CreateTemp(tempDir, "screenshot.png")
-	if err != nil {
-		fmt.Println("Error creating temp PNG file:", err)
-		return false, err
-	}
-	defer os.Remove(tempFile.Name()) // Clean up the file when done
-	defer tempFile.Close()
-
-	// Create the temporary file
-	if err := os.WriteFile(tempFile.Name(), buf, 0600); err != nil {
-		return false, fmt.Errorf("screenshot error: %w", err)
-	}
-
 	fmt.Println("html link : ", pageTitle)
 	// Get all cookies visible to the current page
 	var cookies []*network.Cookie
@@ -342,6 +314,11 @@ func OpenPageInHeadlessChrome(url, search, _ string) (bool, error) {
 	for _, c := range cookies {
 		fmt.Printf("Name: %s\nValue: %s\nDomain: %s\nPath: %s\nExpires: %v\nSecure: %v\nHttpOnly: %v\n\n",
 			c.Name, c.Value, c.Domain, c.Path, c.Expires, c.Secure, c.HTTPOnly)
+	}
+
+	err = chromedp.Cancel(ctx)
+	if err != nil {
+		fmt.Println("chromedp cancel failed")
 	}
 	return found, nil
 }
