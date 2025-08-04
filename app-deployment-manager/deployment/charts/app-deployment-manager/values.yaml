@@ -88,7 +88,7 @@ adm:
   gitProvider: gitea
   gitUser:
   gitPassword:
-  gitServer: https://gitea.kind.internal
+  gitServer: https://gitea.orch-10-114-181-148.espdqa.infra-host.com
   gitProxy: ""
   gitUseCaCert: true
   gitCaCertSecret: gitea-ca-cert
