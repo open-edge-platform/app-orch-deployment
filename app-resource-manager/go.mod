@@ -1,10 +1,10 @@
-// SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+// SPDX-FileCopyrightText: (C) 2024 Intel Corporation
 //
 // SPDX-License-Identifier: Apache-2.0
 
 module github.com/open-edge-platform/app-orch-deployment/app-resource-manager
 
-go 1.24.0
+go 1.24.4
 
 toolchain go1.24.1
 
