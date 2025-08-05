@@ -31,6 +31,7 @@ plugins:
       - version=1.0.0
       - default_response=false
       - enum_type=string
+      - validate=true
       - description=App Resource Manager service providing operations for resource management
     strategy: all
   - local: protoc-gen-grpc-gateway

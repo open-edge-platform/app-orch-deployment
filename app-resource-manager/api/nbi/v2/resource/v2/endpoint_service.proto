@@ -43,5 +43,8 @@ message ListAppEndpointsRequest {
 // Response message for the ListAppEndpoints method.
 message ListAppEndpointsResponse {
   // List of services.
-  repeated resource.v2.AppEndpoint app_endpoints = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated resource.v2.AppEndpoint app_endpoints = 1 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (validate.rules).repeated.max_items = 1000
+  ];
 }

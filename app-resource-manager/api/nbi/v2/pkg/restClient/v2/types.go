@@ -5,36 +5,34 @@ package restClient
 
 import (
 	"time"
+
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // Defines values for AdminStatusState.
 const (
-	AdminStatusStateSTATEDOWN        AdminStatusState = "STATE_DOWN"
-	AdminStatusStateSTATEUNSPECIFIED AdminStatusState = "STATE_UNSPECIFIED"
-	AdminStatusStateSTATEUP          AdminStatusState = "STATE_UP"
+	STATEDOWN AdminStatusState = "STATE_DOWN"
+	STATEUP   AdminStatusState = "STATE_UP"
 )
 
 // Defines values for AppWorkloadType.
 const (
 	TYPEPOD            AppWorkloadType = "TYPE_POD"
-	TYPEUNSPECIFIED    AppWorkloadType = "TYPE_UNSPECIFIED"
 	TYPEVIRTUALMACHINE AppWorkloadType = "TYPE_VIRTUAL_MACHINE"
 )
 
 // Defines values for EndpointStatusState.
 const (
-	EndpointStatusStateSTATENOTREADY    EndpointStatusState = "STATE_NOT_READY"
-	EndpointStatusStateSTATEREADY       EndpointStatusState = "STATE_READY"
-	EndpointStatusStateSTATEUNSPECIFIED EndpointStatusState = "STATE_UNSPECIFIED"
+	STATENOTREADY EndpointStatusState = "STATE_NOT_READY"
+	STATEREADY    EndpointStatusState = "STATE_READY"
 )
 
 // Defines values for PodStatusState.
 const (
-	PodStatusStateSTATEFAILED      PodStatusState = "STATE_FAILED"
-	PodStatusStateSTATEPENDING     PodStatusState = "STATE_PENDING"
-	PodStatusStateSTATERUNNING     PodStatusState = "STATE_RUNNING"
-	PodStatusStateSTATESUCCEEDED   PodStatusState = "STATE_SUCCEEDED"
-	PodStatusStateSTATEUNSPECIFIED PodStatusState = "STATE_UNSPECIFIED"
+	PodStatusStateSTATEFAILED    PodStatusState = "STATE_FAILED"
+	PodStatusStateSTATEPENDING   PodStatusState = "STATE_PENDING"
+	PodStatusStateSTATERUNNING   PodStatusState = "STATE_RUNNING"
+	PodStatusStateSTATESUCCEEDED PodStatusState = "STATE_SUCCEEDED"
 )
 
 // Defines values for VirtualMachineStatusState.
@@ -53,7 +51,6 @@ const (
 	VirtualMachineStatusStateSTATESTOPPED                 VirtualMachineStatusState = "STATE_STOPPED"
 	VirtualMachineStatusStateSTATESTOPPING                VirtualMachineStatusState = "STATE_STOPPING"
 	VirtualMachineStatusStateSTATETERMINATING             VirtualMachineStatusState = "STATE_TERMINATING"
-	VirtualMachineStatusStateSTATEUNSPECIFIED             VirtualMachineStatusState = "STATE_UNSPECIFIED"
 	VirtualMachineStatusStateSTATEWAITINGFORVOLUMEBINDING VirtualMachineStatusState = "STATE_WAITING_FOR_VOLUME_BINDING"
 )
 
@@ -75,7 +72,7 @@ type AppEndpoint struct {
 	Fqdns *[]Fqdn `json:"fqdns,omitempty"`
 
 	// Id Endpoint object UID (e.g. service or ingress UID)
-	Id *string `json:"id,omitempty"`
+	Id *openapi_types.UUID `json:"id,omitempty"`
 
 	// Name Endpoint name
 	Name *string `json:"name,omitempty"`
@@ -90,7 +87,7 @@ type AppWorkload struct {
 	CreateTime *time.Time `json:"createTime,omitempty"`
 
 	// Id Workload UUID
-	Id string `json:"id"`
+	Id openapi_types.UUID `json:"id"`
 
 	// Name Workload name
 	Name string `json:"name"`

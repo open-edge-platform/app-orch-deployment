@@ -1,5 +1,5 @@
 # Generated with protoc-gen-openapi
-# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+# https://github.com/kollalabs/protoc-gen-openapi
 
 openapi: 3.0.3
 info:
@@ -11,6 +11,7 @@ paths:
         get:
             tags:
                 - ClusterService
+            summary: ListClusters
             description: Gets a list of all cluster objects.
             operationId: ClusterService_ListClusters
             parameters:
@@ -18,9 +19,12 @@ paths:
                   in: query
                   description: Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel. Labels separated by a comma.
                   schema:
-                    type: array
                     maxItems: 100
+                    type: array
                     items:
+                        maxLength: 200
+                        minLength: 1
+                        pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
                         type: string
                 - name: orderBy
                   in: query
@@ -36,6 +40,7 @@ paths:
                   in: query
                   description: Optional. Select count of clusters to be listed per page.
                   schema:
+                    maximum: !!float 100
                     type: integer
                     format: int32
                 - name: offset
@@ -55,6 +60,7 @@ paths:
         get:
             tags:
                 - ClusterService
+            summary: GetCluster
             description: Gets a cluster object.
             operationId: ClusterService_GetCluster
             parameters:
@@ -75,6 +81,7 @@ paths:
         get:
             tags:
                 - DeploymentService
+            summary: ListDeployments
             description: Gets a list of all deployment objects.
             operationId: DeploymentService_ListDeployments
             parameters:
@@ -82,9 +89,12 @@ paths:
                   in: query
                   description: Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
                   schema:
+                    maxItems: 20
                     type: array
-                    maxItems: 100
                     items:
+                        maxLength: 200
+                        minLength: 1
+                        pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
                         type: string
                 - name: orderBy
                   in: query
@@ -100,6 +110,7 @@ paths:
                   in: query
                   description: Optional. Select count of Deployment to be listed per page.
                   schema:
+                    maximum: !!float 100
                     type: integer
                     format: int32
                 - name: offset
@@ -118,6 +129,7 @@ paths:
         post:
             tags:
                 - DeploymentService
+            summary: CreateDeployment
             description: Creates a deployment object.
             operationId: DeploymentService_CreateDeployment
             requestBody:
@@ -137,6 +149,7 @@ paths:
         get:
             tags:
                 - DeploymentService
+            summary: ListDeploymentsPerCluster
             operationId: DeploymentService_ListDeploymentsPerCluster
             parameters:
                 - name: clusterId
@@ -148,9 +161,12 @@ paths:
                   in: query
                   description: Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
                   schema:
+                    maxItems: 20
                     type: array
-                    maxItems: 100
                     items:
+                        maxLength: 200
+                        minLength: 1
+                        pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
                         type: string
                 - name: orderBy
                   in: query
@@ -166,6 +182,7 @@ paths:
                   in: query
                   description: Optional. Select count of Deployment to be listed per page.
                   schema:
+                    maximum: !!float 100
                     type: integer
                     format: int32
                 - name: offset
@@ -185,6 +202,7 @@ paths:
         get:
             tags:
                 - DeploymentService
+            summary: GetDeployment
             description: Gets a deployment object.
             operationId: DeploymentService_GetDeployment
             parameters:
@@ -204,6 +222,7 @@ paths:
         put:
             tags:
                 - DeploymentService
+            summary: UpdateDeployment
             description: Updates a deployment object.
             operationId: DeploymentService_UpdateDeployment
             parameters:
@@ -229,6 +248,7 @@ paths:
         delete:
             tags:
                 - DeploymentService
+            summary: DeleteDeployment
             description: Deletes a deployment object.
             operationId: DeploymentService_DeleteDeployment
             parameters:
@@ -255,6 +275,7 @@ paths:
         get:
             tags:
                 - DeploymentService
+            summary: ListDeploymentClusters
             description: Gets a list of all deployment cluster objects.
             operationId: DeploymentService_ListDeploymentClusters
             parameters:
@@ -278,6 +299,7 @@ paths:
                   in: query
                   description: Optional. Select count of Deployment clusters to be listed per page.
                   schema:
+                    maximum: !!float 100
                     type: integer
                     format: int32
                 - name: offset
@@ -297,6 +319,7 @@ paths:
         get:
             tags:
                 - DeploymentService
+            summary: GetDeploymentsStatus
             description: Gets all deployment clusters count status.
             operationId: DeploymentService_GetDeploymentsStatus
             parameters:
@@ -304,9 +327,12 @@ paths:
                   in: query
                   description: Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
                   schema:
+                    maxItems: 20
                     type: array
-                    maxItems: 100
                     items:
+                        maxLength: 200
+                        minLength: 1
+                        pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
                         type: string
             responses:
                 "200":
@@ -346,8 +372,8 @@ components:
                     $ref: '#/components/schemas/Deployment_Status'
                 apps:
                     readOnly: true
-                    type: array
                     maxItems: 100
+                    type: array
                     items:
                         $ref: '#/components/schemas/App'
                     description: Apps has per-app details.
@@ -381,6 +407,8 @@ components:
             type: object
             properties:
                 deploymentId:
+                    maxLength: 40
+                    minLength: 1
                     type: string
                     description: Returns the new Deployment Id.
             description: Response message for the CreateDeployment method.
@@ -395,15 +423,25 @@ components:
                     type: string
                     description: Deployment name (unique string assigned by Orchestrator).
                 displayName:
+                    maxLength: 40
+                    pattern: ^([a-zA-Z0-9][\w\- \.\/_]{0,38}[a-zA-Z0-9]{0,1}|)$
                     type: string
                     description: Deployment display name.
                 appName:
+                    maxLength: 40
+                    minLength: 1
+                    pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
                     type: string
                     description: The deployment package name to deploy from the catalog.
                 appVersion:
+                    maxLength: 20
+                    minLength: 1
+                    pattern: ^[a-z0-9][a-z0-9-.]{0,18}[a-z0-9]{0,1}$
                     type: string
                     description: The version of the deployment package.
                 profileName:
+                    maxLength: 40
+                    pattern: ^[a-z0-9]*[a-z0-9-]{0,38}[a-z0-9]{0,1}$
                     type: string
                     description: The selected profile name to be used for the base Helm values of the different applications in the deployment package
                 createTime:
@@ -416,14 +454,14 @@ components:
                     type: string
                     description: The id of the deployment.
                 overrideValues:
-                    type: array
                     maxItems: 100
+                    type: array
                     items:
                         $ref: '#/components/schemas/OverrideValues'
                     description: The Override values can be used to override any of the base profile values based on Deployment scenario.
                 targetClusters:
-                    type: array
                     maxItems: 100
+                    type: array
                     items:
                         $ref: '#/components/schemas/TargetClusters'
                     description: Cluster labels on which we want to deploy the application.
@@ -431,20 +469,24 @@ components:
                     $ref: '#/components/schemas/Deployment_Status'
                 apps:
                     readOnly: true
-                    type: array
                     maxItems: 100
+                    type: array
                     items:
                         $ref: '#/components/schemas/App'
                     description: Application details.
                 deploymentType:
+                    maxLength: 20
+                    pattern: ^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$
                     type: string
                     description: The deployment type for the target cluster deployment can be either auto-scaling or targeted. In Auto-scaling type, the application will be automatically deployed on all the clusters which match the Target cluster label. In Targeted type, the user has to select among pre created clusters to deploy the application.
                 networkName:
+                    maxLength: 40
+                    pattern: ^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$
                     type: string
                     description: network_name is the name of the interconnect network that deployment be part of
                 serviceExports:
-                    type: array
                     maxItems: 100
+                    type: array
                     items:
                         $ref: '#/components/schemas/ServiceExport'
                 allAppTargetClusters:
@@ -462,14 +504,16 @@ components:
                     type: string
                     description: Deployment name (unique string assigned by Orchestrator).
                 deploymentDisplayName:
+                    maxLength: 40
+                    pattern: ^([a-zA-Z0-9][\w\- \.\/_]{0,38}[a-zA-Z0-9]{0,1}|)$
                     type: string
                     description: Deployment display name.
                 status:
                     $ref: '#/components/schemas/Deployment_Status'
                 apps:
                     readOnly: true
-                    type: array
                     maxItems: 100
+                    type: array
                     items:
                         $ref: '#/components/schemas/App'
                     description: Apps has per-app details.
@@ -553,8 +597,8 @@ components:
             type: object
             properties:
                 clusters:
-                    type: array
                     maxItems: 1000
+                    type: array
                     items:
                         $ref: '#/components/schemas/ClusterInfo'
                     description: A list of Cluster Objects.
@@ -569,8 +613,8 @@ components:
             type: object
             properties:
                 clusters:
-                    type: array
                     maxItems: 1000
+                    type: array
                     items:
                         $ref: '#/components/schemas/Cluster'
                 totalElements:
@@ -584,8 +628,8 @@ components:
             type: object
             properties:
                 deploymentInstancesCluster:
-                    type: array
                     maxItems: 1000
+                    type: array
                     items:
                         $ref: '#/components/schemas/DeploymentInstancesCluster'
                     description: A list of Deployment Instance Cluster Objects.
@@ -600,8 +644,8 @@ components:
             type: object
             properties:
                 deployments:
-                    type: array
                     maxItems: 1000
+                    type: array
                     items:
                         $ref: '#/components/schemas/Deployment'
                     description: A list of Deployment Objects.
@@ -615,9 +659,14 @@ components:
             type: object
             properties:
                 appName:
+                    maxLength: 40
+                    minLength: 1
+                    pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
                     type: string
                     description: deployment package name to use when overriding values.
                 targetNamespace:
+                    maxLength: 63
+                    pattern: (^$)|^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$
                     type: string
                     description: The namespace to deploy the app onto, default namespace is default.
                 values:
@@ -630,6 +679,9 @@ components:
             type: object
             properties:
                 appName:
+                    maxLength: 40
+                    minLength: 1
+                    pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
                     type: string
                 enabled:
                     type: boolean
@@ -665,6 +717,8 @@ components:
             type: object
             properties:
                 appName:
+                    maxLength: 40
+                    pattern: (^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
                     type: string
                     description: The targeted deployment package name.
                 labels:
