@@ -25,6 +25,9 @@ workspace
 */coverage.xml
 app-deployment-manager/pkg/utils/tmpdir/
 
+# built binaries
+app-deployment-manager/app-deployment-manager
+
 # output from Go fuzz tests
 app-deployment-manager/internal/northbound/fuzztests/testdata/
 app-resource-manager/internal/northbound/services/v2/resource/testdata/

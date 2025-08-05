@@ -7,6 +7,7 @@ package northbound
 import (
 	"context"
 	"errors"
+	"fmt"
 	nbmocks "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/northbound/mocks"
 	"net/http"
 	"net/http/httptest"
@@ -380,3 +381,113 @@ func setClusterInstance(clusterListSrc *deploymentv1beta1.ClusterList) *deployme
 
 	return instance
 }
+
+var _ = Describe("MaxItems Validation", func() {
+	var (
+		deploymentServer *DeploymentSvc
+		crClient         *nbmocks.FakeDeploymentV1
+		protoValidator   *protovalidate.Validator
+		err              error
+	)
+
+	BeforeEach(func() {
+		crClient = &nbmocks.FakeDeploymentV1{}
+		protoValidator, err = protovalidate.New()
+		Expect(err).ToNot(HaveOccurred())
+		
+		deploymentServer = NewDeployment(crClient, nil, nil, nil, nil, protoValidator, nil)
+	})
+
+	Describe("Validation Constants", func() {
+		It("should have correct maxItems values", func() {
+			Expect(MAX_LABELS_PER_REQUEST_CLUSTERS).To(Equal(100))
+			Expect(MAX_LABELS_PER_REQUEST_DEPLOYMENTS).To(Equal(20))
+			Expect(MAX_CLUSTERS_RESPONSE).To(Equal(1000))
+			Expect(MAX_DEPLOYMENTS_RESPONSE).To(Equal(1000))
+		})
+	})
+
+	Describe("Input Validation", func() {
+		Context("ListClusters labels validation", func() {
+			It("should accept labels within limit", func() {
+				// Test with exactly 100 labels (at limit)
+				labels := make([]string, 100)
+				for i := 0; i < 100; i++ {
+					labels[i] = fmt.Sprintf("label%d=value%d", i, i)
+				}
+
+				crClient.On("List", mock.Anything, mock.Anything).Return(&deploymentv1beta1.ClusterList{
+					Items: []deploymentv1beta1.Cluster{},
+				}, nil)
+
+				req := &deploymentpb.ListClustersRequest{Labels: labels}
+				_, err := deploymentServer.ListClusters(context.Background(), req)
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("should reject labels over limit", func() {
+				// Test with 101 labels (over limit)
+				labels := make([]string, 101)
+				for i := 0; i < 101; i++ {
+					labels[i] = fmt.Sprintf("label%d=value%d", i, i)
+				}
+
+				req := &deploymentpb.ListClustersRequest{Labels: labels}
+				_, err := deploymentServer.ListClusters(context.Background(), req)
+				
+				Expect(err).To(HaveOccurred())
+				st, ok := status.FromError(err)
+				Expect(ok).To(BeTrue())
+				Expect(st.Code()).To(Equal(codes.InvalidArgument))
+				Expect(st.Message()).To(ContainSubstring("labels array exceeds maximum size of 100 items"))
+			})
+		})
+
+		Context("Deployment service labels validation", func() {
+			It("should accept deployment labels within limit", func() {
+				// Test with exactly 20 labels (at limit)
+				labels := make([]string, 20)
+				for i := 0; i < 20; i++ {
+					labels[i] = fmt.Sprintf("label%d=value%d", i, i)
+				}
+
+				crClient.On("List", mock.Anything, mock.Anything).Return(&deploymentv1beta1.DeploymentList{
+					Items: []deploymentv1beta1.Deployment{},
+				}, nil)
+
+				req := &deploymentpb.ListDeploymentsRequest{Labels: labels}
+				_, err := deploymentServer.ListDeployments(context.Background(), req)
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("should reject deployment labels over limit", func() {
+				// Test with 21 labels (over limit)
+				labels := make([]string, 21)
+				for i := 0; i < 21; i++ {
+					labels[i] = fmt.Sprintf("label%d=value%d", i, i)
+				}
+
+				req := &deploymentpb.ListDeploymentsRequest{Labels: labels}
+				_, err := deploymentServer.ListDeployments(context.Background(), req)
+				
+				Expect(err).To(HaveOccurred())
+				st, ok := status.FromError(err)
+				Expect(ok).To(BeTrue())
+				Expect(st.Code()).To(Equal(codes.InvalidArgument))
+				Expect(st.Message()).To(ContainSubstring("labels array exceeds maximum size of 20 items"))
+			})
+		})
+	})
+
+	Describe("Response Array Limits", func() {
+		Context("Validation Constants", func() {
+			It("should have correct boundary values", func() {
+				// Test that our limits are properly configured
+				Expect(MAX_LABELS_PER_REQUEST_CLUSTERS).To(Equal(100))
+				Expect(MAX_LABELS_PER_REQUEST_DEPLOYMENTS).To(Equal(20))
+				Expect(MAX_CLUSTERS_RESPONSE).To(Equal(1000))
+				Expect(MAX_DEPLOYMENTS_RESPONSE).To(Equal(1000))
+			})
+		})
+	})
+})
