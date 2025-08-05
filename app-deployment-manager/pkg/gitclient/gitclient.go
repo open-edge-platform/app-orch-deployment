@@ -148,6 +148,7 @@ var NewGitClient = func(repoName string) (Repository, error) {
 
 // Return the Git remote's URL given a server, user, and UID.
 func getRemoteURL(server string, user string, repoName string, gitProvider string) string {
+	_ = gitProvider // gitea is the only option, but keep the arg in case we add more providers later
 	return fmt.Sprintf("%s/%s/%s.git", server, user, repoName)
 }
 
