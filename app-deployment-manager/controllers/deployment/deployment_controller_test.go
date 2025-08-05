@@ -7,9 +7,10 @@ package deployment
 import (
 	"errors"
 	"fmt"
-	nexusApi "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/apis/runtimeproject.edge-orchestrator.intel.com/v1"
 	"os"
 	"time"
+
+	nexusApi "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/apis/runtimeproject.edge-orchestrator.intel.com/v1"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -35,16 +36,15 @@ import (
 
 // These Repository objects are used to test recovery from various errors
 type mockRepository struct {
-	ExistsOnRemoteValue         bool
-	ExistsOnRemoteError         error
-	InitializeError             error
-	CloneError                  error
-	CommitFilesError            error
-	PushToRemoteError           error
-	DeleteError                 error
-	CreateCodeCommitClientError error
-	CreateRepoError             error
-	DeleteRepoError             error
+	ExistsOnRemoteValue bool
+	ExistsOnRemoteError error
+	InitializeError     error
+	CloneError          error
+	CommitFilesError    error
+	PushToRemoteError   error
+	DeleteError         error
+	CreateRepoError     error
+	DeleteRepoError     error
 }
 
 func (m *mockRepository) ExistsOnRemote() (bool, error) {
@@ -70,18 +70,6 @@ func (m *mockRepository) PushToRemote() error {
 func (m *mockRepository) Delete() error {
 	_, _ = fmt.Fprintf(GinkgoWriter, "[DEBUG] PushToRemote returning %v\n", m.DeleteError)
 	return m.DeleteError
-}
-func (m *mockRepository) CreateCodeCommitClient() error {
-	_, _ = fmt.Fprintf(GinkgoWriter, "[DEBUG] CreateCodeCommitClient returning %v\n", m.CreateCodeCommitClientError)
-	return m.CreateCodeCommitClientError
-}
-func (m *mockRepository) CreateRepo() error {
-	_, _ = fmt.Fprintf(GinkgoWriter, "[DEBUG] CreateRepo returning %v\n", m.CreateRepoError)
-	return m.CreateRepoError
-}
-func (m *mockRepository) DeleteRepo() error {
-	_, _ = fmt.Fprintf(GinkgoWriter, "[DEBUG] DeleteRepo returning %v\n", m.DeleteRepoError)
-	return m.DeleteRepoError
 }
 
 func checkWordpressGitRepo(d v1beta1.Deployment, gr fleetv1alpha1.GitRepo) {
