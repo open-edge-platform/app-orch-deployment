@@ -84,7 +84,6 @@ adm:
   keycloakServerEndpoint: "https://localhost:9090"
 
   # Configuration for Git provider to which repos will be pushed
-  # gitProvider options < gitea | codecommit >
   gitProvider: gitea
   gitUser:
   gitPassword:
@@ -99,14 +98,6 @@ adm:
   gitCaCertFolder: /tmp/ssl/certs/
   # Name of the file in the folder containing the git ca certificate
   gitCaCertFile: ca.crt
-
-  # If gitProvider is not codecommit these values will be ignored
-  # Keys are used for AWS SDK git client
-  codeCommit:
-    awsRegion: us-west-2
-    awsAccessKeyId:
-    awsSecretAccessKey:
-    awsSshKeyId:
 
   # If secretService is enabled, all credentials such as gitUser, gitPassword, awsAccessKeyID,
   # awsSecretAccessKey, awsSshKeyId, and awsRegion values above will be all ignored

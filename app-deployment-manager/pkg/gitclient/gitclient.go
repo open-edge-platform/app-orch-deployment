@@ -28,13 +28,6 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/client"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/codecommit"
-	"github.com/aws/aws-sdk-go/service/codecommit/codecommitiface"
 )
 
 // A Repository provides a set of operations on a remote Git repo
@@ -45,12 +38,6 @@ type Repository interface {
 	CommitFiles() error
 	PushToRemote() error
 	Delete() error
-
-	// CodeCommit
-	CreateCodeCommitClient() error
-	CreateRepo() error
-	DeleteRepo() error
-	// End CodeCommit
 }
 
 type GitClient struct {
@@ -64,7 +51,6 @@ type GitClient struct {
 	GitProvider  string
 	Repo         *git.Repository
 	RemoteConfig config.RemoteConfig
-	CcClient     codecommitiface.CodeCommitAPI
 }
 
 var log = dazl.GetPackageLogger()
@@ -162,9 +148,7 @@ var NewGitClient = func(repoName string) (Repository, error) {
 
 // Return the Git remote's URL given a server, user, and UID.
 func getRemoteURL(server string, user string, repoName string, gitProvider string) string {
-	if gitProvider == "codecommit" {
-		return fmt.Sprintf("%s/%s.git", server, repoName)
-	}
+	_ = gitProvider // gitea is the only option, but keep the arg in case we add more providers later
 	return fmt.Sprintf("%s/%s/%s.git", server, user, repoName)
 }
 
@@ -209,9 +193,9 @@ func GetRemoteURLWithCreds(deploymentID string) (string, error) {
 	}
 
 	var (
-		user, passwd, awsSSHKeyID string
-		vaultManager              vault.Manager
-		vaultClient               *vaultAPI.Client
+		user         string
+		vaultManager vault.Manager
+		vaultClient  *vaultAPI.Client
 	)
 
 	secretServiceEnabled, err := utils.IsSecretServiceEnabled()
@@ -243,21 +227,8 @@ func GetRemoteURLWithCreds(deploymentID string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-
-		passwd, err = vaultManager.GetSecretValueString(context.Background(),
-			vaultClient,
-			utils.GetSecretServiceGitServicePath(),
-			utils.GetSecretServiceGitServiceKVKeyPassword())
-		if err != nil {
-			return "", err
-		}
 	} else {
 		user, err = utils.GetGitUser()
-		if err != nil {
-			return "", err
-		}
-
-		passwd, err = utils.GetGitPassword()
 		if err != nil {
 			return "", err
 		}
@@ -267,45 +238,14 @@ func GetRemoteURLWithCreds(deploymentID string) (string, error) {
 	case "http":
 		fallthrough
 	case "https":
-		// Only add creds to URL if gitProvider is codecommit
-		if gitProvider != "codecommit" {
-			return remoteURL, nil
-		}
-
-		// Encode any special characters so it can be safely placed inside the URL
-		encodedPasswd := url.QueryEscape(passwd)
-
-		// TODO: remove embedding basic auth creds in remote URL for CodeCommit
-		// when gitjob v0.1.77 is released
-		// TODO: handle https and http properly
-		// Build URL
-		replaceURL := "https://" + user + ":" + encodedPasswd + "@"
-		updatedRemoteURL := strings.Replace(remoteURL, "https://", replaceURL, -1)
-		return updatedRemoteURL, nil
+		return remoteURL, nil
 	case "ssh":
 		gitServerURL, err := url.Parse(remoteURL)
 		if err != nil {
 			return "", err
 		}
 
-		if gitProvider == "codecommit" {
-			if secretServiceEnabled {
-				awsSSHKeyID, err = vaultManager.GetSecretValueString(context.Background(),
-					vaultClient,
-					utils.GetSecretServiceAWSServicePath(),
-					utils.GetSecretServiceAWSServiceKVKeySSHKey())
-				if err != nil {
-					return "", err
-				}
-			} else {
-				awsSSHKeyID, err = utils.GetAwsSSHKey()
-				if err != nil {
-					return "", err
-				}
-			}
-
-			return strings.Replace(remoteURL, "https://", "ssh://"+awsSSHKeyID+"@", -1), nil
-		} else if gitProvider == "gitea" {
+		if gitProvider == "gitea" {
 			return fmt.Sprintf("git@%s:%s/%s.git", gitServerURL.Hostname(), user, deploymentID), nil
 		}
 		return "", errors.NewUnavailable("unsupported git provider type")
@@ -373,20 +313,6 @@ func (g *GitClient) ExistsOnRemote() (bool, error) {
 func (g *GitClient) Initialize(basedir string) error {
 	if g.Repo != nil {
 		return errors.NewUnavailable("GitClient already initialized")
-	}
-
-	// If g.GitProvider is codecommit, create aws sdk client
-	// and create repo with client since cannot with git client
-	if g.GitProvider == "codecommit" {
-		err := g.CreateCodeCommitClient()
-		if err != nil {
-			return err
-		}
-
-		err = g.CreateRepo()
-		if err != nil {
-			return err
-		}
 	}
 
 	if err := os.MkdirAll(basedir, os.ModePerm); err != nil {
@@ -500,128 +426,6 @@ func (g *GitClient) PushToRemote() error {
 	return err
 }
 
-// getCodeCommitSecrets returns GIT_ACCESSKEY, GIT_SECRET_ACCESSKEY, and GIT_REGION
-func (g *GitClient) getCodeCommitSecrets() (string, string, string, error) {
-	flag, err := utils.IsSecretServiceEnabled()
-	if err != nil {
-		return "", "", "", err
-	}
-
-	if flag {
-		return g.getCodeCommitSecretsWithSecretService()
-	}
-
-	return g.getCodeCommitSecretsWithoutSecretService()
-}
-
-func (g *GitClient) getCodeCommitSecretsWithSecretService() (string, string, string, error) {
-	secretServiceEndpoint := utils.GetSecretServiceEndpoint()
-	vaultManager := vault.NewManager(secretServiceEndpoint, utils.GetServiceAccount(), utils.GetSecretServiceMount())
-	vaultClient, err := vaultManager.GetVaultClient(context.Background())
-	if err != nil {
-		return "", "", "", err
-	}
-	defer func() {
-		if err := vaultManager.Logout(context.Background(), vaultClient); err != nil {
-			log.Info(fmt.Sprintf("Error logging out from Vault: %v\n", err))
-		}
-	}()
-	accessKeyID, err := vaultManager.GetSecretValueString(context.Background(), vaultClient, utils.GetSecretServiceAWSServicePath(), utils.GetSecretServiceAWSServiceKVKeyAccessKey())
-	if err != nil {
-		return "", "", "", err
-	}
-	secretAccessKey, err := vaultManager.GetSecretValueString(context.Background(), vaultClient, utils.GetSecretServiceAWSServicePath(), utils.GetSecretServiceAWSServiceKVKeySecretAccessKey())
-	if err != nil {
-		return "", "", "", err
-	}
-	gitRegion, err := vaultManager.GetSecretValueString(context.Background(), vaultClient, utils.GetSecretServiceAWSServicePath(), utils.GetSecretServiceAWSServiceKVKeyRegion())
-	if err != nil {
-		return "", "", "", err
-	}
-	return accessKeyID, secretAccessKey, gitRegion, nil
-}
-
-func (g *GitClient) getCodeCommitSecretsWithoutSecretService() (string, string, string, error) {
-	accessKeyID, err := utils.GetGitAccessKey()
-	if err != nil {
-		return "", "", "", err
-	}
-	secretAccessKey, err := utils.GetGitSecretAccessKey()
-	if err != nil {
-		return "", "", "", err
-	}
-	gitRegion, err := utils.GetGitRegion()
-	if err != nil {
-		return "", "", "", err
-	}
-	return accessKeyID, secretAccessKey, gitRegion, nil
-}
-
-// CreateCodeCommitClient creates the AWS sdk client.
-func (g *GitClient) CreateCodeCommitClient() error {
-	accessKeyID, secretAccessKey, gitRegion, err := g.getCodeCommitSecrets()
-	if err != nil {
-		return err
-	}
-
-	var ccSession client.ConfigProvider
-	creds := credentials.NewStaticCredentials(accessKeyID, secretAccessKey, "")
-	awsconfig := aws.Config{
-		Credentials: creds,
-		Region:      aws.String(gitRegion),
-	}
-	if g.Proxy != "" {
-		proxyURL, _ := url.Parse(g.Proxy)
-		awsconfig.HTTPClient = &_http.Client{
-			Transport: &_http.Transport{
-				Proxy: _http.ProxyURL(proxyURL),
-			},
-		}
-	}
-
-	// Create new session with creds, region and proxy defined
-	ccSession, err = session.NewSession(&awsconfig)
-
-	if err != nil {
-		return err
-	}
-
-	// Create codecommit service client with session config
-	client := codecommit.New(ccSession)
-	g.CcClient = client
-
-	return nil
-}
-
-// CreateRepo creates a repository using the AWS sdk client. Only works with Codecommit.
-func (g *GitClient) CreateRepo() error {
-	createInput := &codecommit.CreateRepositoryInput{
-		RepositoryName: &g.RepoName,
-	}
-
-	_, err := g.CcClient.CreateRepository(createInput)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// DeleteRepo delete a repository using the AWS sdk client. Only works with Codecommit.
-func (g *GitClient) DeleteRepo() error {
-	deleteInput := &codecommit.DeleteRepositoryInput{
-		RepositoryName: &g.RepoName,
-	}
-
-	_, err := g.CcClient.DeleteRepository(deleteInput)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // DeleteGitea Deletes a Git repository using the Gitea client. Only works with Gitea.
 func (g *GitClient) DeleteGitea() error {
 	var giteaClient *gitea.Client
@@ -662,32 +466,11 @@ func (g *GitClient) DeleteGitea() error {
 	return nil
 }
 
-// Delete a Git repository using the AWS SDK client.  Only works with CodeCommit.
-func (g *GitClient) DeleteCodeCommit() error {
-	err := g.CreateCodeCommitClient()
-	if err != nil {
-		return err
-	}
-
-	err = g.DeleteRepo()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (g *GitClient) Delete() error {
-	if g.GitProvider == "codecommit" {
-		err := g.DeleteCodeCommit()
-		if err != nil {
-			return err
-		}
-	} else {
-		err := g.DeleteGitea()
-		if err != nil {
-			return err
-		}
+
+	err := g.DeleteGitea()
+	if err != nil {
+		return err
 	}
 
 	return nil

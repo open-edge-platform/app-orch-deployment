@@ -7,15 +7,16 @@ package deployment
 import (
 	"context"
 	"fmt"
-	nexus "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/client/clientset/versioned"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/rest"
 	"os"
 	"path/filepath"
 	"reflect"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"strings"
 	"time"
+
+	nexus "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/client/clientset/versioned"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/fleet"
 	"k8s.io/apiserver/pkg/storage/names"
@@ -130,8 +131,7 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) (err error) {
 	// Hide internal implementation details in logs by filtering based on regexp
 	// and converting to canned strings. External documentation should provide
 	// information to users based on error codes.
-	logchecker.AddCheck(`codecommit.*Permission denied`, "Internal error: 100")
-	logchecker.AddCheck(`codecommit.*The requested URL returned error.*429`, "Internal error: 101")
+
 	// Add more checks here
 
 	r.gitclient = gitclient.NewGitClient
