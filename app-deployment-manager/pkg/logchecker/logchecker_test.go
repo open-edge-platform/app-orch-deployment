@@ -11,8 +11,8 @@ func TestLogChecker_AddCheck(t *testing.T) {
 	checker := New()
 	checker.AddCheck(`error.*fatal`, "Critical error detected in log.")
 
-	if len(checker.patterns) != 2 {
-		t.Errorf("Expected 2 patterns, got %d", len(checker.patterns))
+	if len(checker.patterns) != 1 {
+		t.Errorf("Expected 1 patterns, got %d", len(checker.patterns))
 	}
 }
 
