@@ -8,33 +8,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/service/codecommit"
-	"github.com/aws/aws-sdk-go/service/codecommit/codecommitiface"
 	vault "github.com/hashicorp/vault/api"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils"
 	manager "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/vault"
-	"github.com/stretchr/testify/mock"
 )
-
-type mockCodeCommitClient struct {
-	codecommitiface.CodeCommitAPI
-	mock.Mock
-}
-
-func (m *mockCodeCommitClient) CreateRepository(input *codecommit.CreateRepositoryInput) (*codecommit.CreateRepositoryOutput, error) {
-	args := m.Called(input)
-	return args.Get(0).(*codecommit.CreateRepositoryOutput), args.Error(1)
-}
-
-func (m *mockCodeCommitClient) DeleteRepository(input *codecommit.DeleteRepositoryInput) (*codecommit.DeleteRepositoryOutput, error) {
-	args := m.Called(input)
-	return args.Get(0).(*codecommit.DeleteRepositoryOutput), args.Error(1)
-}
-
-func (m *mockCodeCommitClient) CreateCodeCommitClient() error {
-	args := m.Called()
-	return args.Error(0)
-}
 
 type mockManager struct {
 	endpoint       string

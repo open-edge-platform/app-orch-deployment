@@ -145,22 +145,6 @@ spec:
               key: {{ .Values.adm.gitCaCertSecretKey }}
               name: {{ .Values.adm.gitCaCertSecret }}
         {{- end }}
-        {{- with .Values.adm.codeCommit.awsRegion }}
-        - name: GIT_REGION
-          value: {{ . | quote }}
-        {{- end }}
-        {{- with .Values.adm.codeCommit.awsAccessKeyId }}
-        - name: GIT_ACCESSKEY
-          value: {{ . | quote }}
-        {{- end }}
-        {{- with .Values.adm.codeCommit.awsSecretAccessKey }}
-        - name: GIT_SECRET_ACCESSKEY
-          value: {{ . | quote }}
-        {{- end }}
-        {{- with .Values.adm.codeCommit.awsSshKeyId }}
-        - name: GIT_AWSSSHKEY
-          value: {{ . | quote }}
-        {{- end }}
         {{- with .Values.adm.serviceAccount.name }}
         - name: SERVICE_ACCOUNT
           value: {{ . | quote }}
