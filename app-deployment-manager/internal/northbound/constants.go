@@ -8,13 +8,13 @@ package northbound
 const (
 	// Maximum number of labels allowed in cluster-related requests
 	MAX_LABELS_PER_REQUEST_CLUSTERS = 100
-	
-	// Maximum number of labels allowed in deployment-related requests  
+
+	// Maximum number of labels allowed in deployment-related requests
 	MAX_LABELS_PER_REQUEST_DEPLOYMENTS = 20
-	
+
 	// Maximum number of clusters returned in a single response
 	MAX_CLUSTERS_RESPONSE = 1000
-	
+
 	// Maximum number of deployments returned in a single response
 	MAX_DEPLOYMENTS_RESPONSE = 1000
 )

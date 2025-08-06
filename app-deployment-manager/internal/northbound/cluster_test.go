@@ -394,7 +394,7 @@ var _ = Describe("MaxItems Validation", func() {
 		crClient = &nbmocks.FakeDeploymentV1{}
 		protoValidator, err = protovalidate.New()
 		Expect(err).ToNot(HaveOccurred())
-		
+
 		deploymentServer = NewDeployment(crClient, nil, nil, nil, nil, protoValidator, nil)
 	})
 
@@ -434,7 +434,7 @@ var _ = Describe("MaxItems Validation", func() {
 
 				req := &deploymentpb.ListClustersRequest{Labels: labels}
 				_, err := deploymentServer.ListClusters(context.Background(), req)
-				
+
 				Expect(err).To(HaveOccurred())
 				st, ok := status.FromError(err)
 				Expect(ok).To(BeTrue())
@@ -469,7 +469,7 @@ var _ = Describe("MaxItems Validation", func() {
 
 				req := &deploymentpb.ListDeploymentsRequest{Labels: labels}
 				_, err := deploymentServer.ListDeployments(context.Background(), req)
-				
+
 				Expect(err).To(HaveOccurred())
 				st, ok := status.FromError(err)
 				Expect(ok).To(BeTrue())

@@ -145,7 +145,7 @@ func (s *DeploymentSvc) ListClusters(ctx context.Context, in *deploymentpb.ListC
 
 	// Enforce maxItems limit on final response
 	if len(selectedClusters) > MAX_CLUSTERS_RESPONSE {
-		log.Warnf("Response truncated: returning %d of %d clusters due to maxItems limit", 
+		log.Warnf("Response truncated: returning %d of %d clusters due to maxItems limit",
 			MAX_CLUSTERS_RESPONSE, len(selectedClusters))
 		selectedClusters = selectedClusters[:MAX_CLUSTERS_RESPONSE]
 	}
