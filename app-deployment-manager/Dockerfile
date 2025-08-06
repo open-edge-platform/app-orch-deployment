@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Build the manager binary
-FROM golang:1.24.2@sha256:d9db32125db0c3a680cfb7a1afcaefb89c898a075ec148fdc2f0f646cc2ed509 AS builder
+FROM golang:1.24.4@sha256:20a022e5112a144aa7b7aeb3f22ebf2cdaefcc4aac0d64e8deeee8cdc18b9c0f AS builder
 ARG TARGETOS
 ARG TARGETARCH
 ENV CGO_ENABLED=0

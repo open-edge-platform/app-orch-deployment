@@ -11,21 +11,20 @@ SPDX-License-Identifier: Apache-2.0
 [![ASP Component Test](https://github.com/open-edge-platform/app-orch-deployment/actions/workflows/asp-component-test.yml/badge.svg)](https://github.com/open-edge-platform/app-orch-deployment/actions/workflows/asp-component-test.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/open-edge-platform/app-orch-deployment/badge)](https://scorecard.dev/viewer/?uri=github.com/open-edge-platform/app-orch-deployment)
 
-
 ## Overview
 
 Application Orchestration Deployment is a collection of cloud-native applications (microservices) that facilitate the
 deployment of user applications to clusters on Edge Nodes in the Open Edge Platform. Together with the [Application Catalog],
 these applications constitute the **Application Orchestration** architecture layer.
 
-Application Orchestration Deployment components work with the [Cluster Manager] to provide a powerful and flexible platform for deploying applications
-to the Edge.
+Application Orchestration Deployment components work with the [Cluster Manager] to provide a powerful and flexible
+platform for deploying applications to the Edge.
 
-Application Orchestration Deployment components are all multi-tenant aware, with each instance able to handle multiple multi-tenancy projects
-concurrently.
+Application Orchestration Deployment components are all multi-tenant aware, with each instance able to handle multiple
+multi-tenancy projects concurrently.
 
-Application Orchestration Deployment components depend on the Edge Orchestrator [Platform Services] for many support functions such as API Gateway,
-Authorization, Authentication, etc.
+Application Orchestration Deployment components depend on the Edge Orchestrator [Platform Services] for many support
+functions such as API Gateway, Authorization, Authentication, etc.
 
 The overall architecture of the Application Orchestration environment is explained in the
 Edge Orchestrator [Application Orchestration Developer Guide](https://docs.openedgeplatform.intel.com/edge-manage-docs/main/developer_guide/app_orch/arch/index.html).

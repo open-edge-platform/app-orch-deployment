@@ -4,7 +4,7 @@
 
 module github.com/open-edge-platform/app-orch-deployment/test-common-utils
 
-go 1.24.0
+go 1.24.4
 
 require (
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 v2.4.3
