@@ -400,10 +400,10 @@ var _ = Describe("MaxItems Validation", func() {
 
 	Describe("Validation Constants", func() {
 		It("should have correct maxItems values", func() {
-			Expect(MAX_LABELS_PER_REQUEST_CLUSTERS).To(Equal(100))
-			Expect(MAX_LABELS_PER_REQUEST_DEPLOYMENTS).To(Equal(20))
-			Expect(MAX_CLUSTERS_RESPONSE).To(Equal(1000))
-			Expect(MAX_DEPLOYMENTS_RESPONSE).To(Equal(1000))
+			Expect(MaxLabelsPerRequestClusters).To(Equal(100))
+			Expect(MaxLabelsPerRequestDeployments).To(Equal(20))
+			Expect(MaxClustersResponse).To(Equal(1000))
+			Expect(MaxDeploymentsResponse).To(Equal(1000))
 		})
 	})
 
@@ -483,10 +483,10 @@ var _ = Describe("MaxItems Validation", func() {
 		Context("Validation Constants", func() {
 			It("should have correct boundary values", func() {
 				// Test that our limits are properly configured
-				Expect(MAX_LABELS_PER_REQUEST_CLUSTERS).To(Equal(100))
-				Expect(MAX_LABELS_PER_REQUEST_DEPLOYMENTS).To(Equal(20))
-				Expect(MAX_CLUSTERS_RESPONSE).To(Equal(1000))
-				Expect(MAX_DEPLOYMENTS_RESPONSE).To(Equal(1000))
+				Expect(MaxLabelsPerRequestClusters).To(Equal(100))
+				Expect(MaxLabelsPerRequestDeployments).To(Equal(20))
+				Expect(MaxClustersResponse).To(Equal(1000))
+				Expect(MaxDeploymentsResponse).To(Equal(1000))
 			})
 		})
 	})

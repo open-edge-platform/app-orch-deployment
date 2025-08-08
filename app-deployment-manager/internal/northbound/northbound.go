@@ -510,9 +510,9 @@ func (s *DeploymentSvc) GetDeploymentsStatus(ctx context.Context, in *deployment
 	}
 
 	// Validate maxItems for labels array
-	if len(in.Labels) > MAX_LABELS_PER_REQUEST_DEPLOYMENTS {
-		log.Warnf("labels array exceeds maximum size: %d > %d", len(in.Labels), MAX_LABELS_PER_REQUEST_DEPLOYMENTS)
-		return nil, errors.Status(errors.NewInvalid("labels array exceeds maximum size of %d items", MAX_LABELS_PER_REQUEST_DEPLOYMENTS)).Err()
+	if len(in.Labels) > MaxLabelsPerRequestDeployments {
+		log.Warnf("labels array exceeds maximum size: %d > %d", len(in.Labels), MaxLabelsPerRequestDeployments)
+		return nil, errors.Status(errors.NewInvalid("labels array exceeds maximum size of %d items", MaxLabelsPerRequestDeployments)).Err()
 	}
 
 	// RBAC auth
@@ -918,9 +918,9 @@ func (s *DeploymentSvc) ListDeploymentsPerCluster(ctx context.Context, in *deplo
 	}
 
 	// Validate maxItems for labels array
-	if len(in.Labels) > MAX_LABELS_PER_REQUEST_DEPLOYMENTS {
-		log.Warnf("labels array exceeds maximum size: %d > %d", len(in.Labels), MAX_LABELS_PER_REQUEST_DEPLOYMENTS)
-		return nil, errors.Status(errors.NewInvalid("labels array exceeds maximum size of %d items", MAX_LABELS_PER_REQUEST_DEPLOYMENTS)).Err()
+	if len(in.Labels) > MaxLabelsPerRequestDeployments {
+		log.Warnf("labels array exceeds maximum size: %d > %d", len(in.Labels), MaxLabelsPerRequestDeployments)
+		return nil, errors.Status(errors.NewInvalid("labels array exceeds maximum size of %d items", MaxLabelsPerRequestDeployments)).Err()
 	}
 
 	// RBAC auth
@@ -1001,10 +1001,10 @@ func (s *DeploymentSvc) ListDeploymentsPerCluster(ctx context.Context, in *deplo
 	totalNumDeployments := len(deploymentList)
 
 	// Enforce maxItems limit on final response
-	if len(deploymentList) > MAX_DEPLOYMENTS_RESPONSE {
+	if len(deploymentList) > MaxDeploymentsResponse {
 		log.Warnf("Response truncated: returning %d of %d deployment instances due to maxItems limit",
-			MAX_DEPLOYMENTS_RESPONSE, len(deploymentList))
-		deploymentList = deploymentList[:MAX_DEPLOYMENTS_RESPONSE]
+			MaxDeploymentsResponse, len(deploymentList))
+		deploymentList = deploymentList[:MaxDeploymentsResponse]
 	}
 
 	resp := &deploymentpb.ListDeploymentsPerClusterResponse{
@@ -1082,9 +1082,9 @@ func (s *DeploymentSvc) ListDeployments(ctx context.Context, in *deploymentpb.Li
 	}
 
 	// Validate maxItems for labels array
-	if len(in.Labels) > MAX_LABELS_PER_REQUEST_DEPLOYMENTS {
-		log.Warnf("labels array exceeds maximum size: %d > %d", len(in.Labels), MAX_LABELS_PER_REQUEST_DEPLOYMENTS)
-		return nil, errors.Status(errors.NewInvalid("labels array exceeds maximum size of %d items", MAX_LABELS_PER_REQUEST_DEPLOYMENTS)).Err()
+	if len(in.Labels) > MaxLabelsPerRequestDeployments {
+		log.Warnf("labels array exceeds maximum size: %d > %d", len(in.Labels), MaxLabelsPerRequestDeployments)
+		return nil, errors.Status(errors.NewInvalid("labels array exceeds maximum size of %d items", MaxLabelsPerRequestDeployments)).Err()
 	}
 
 	// RBAC auth
@@ -1134,10 +1134,10 @@ func (s *DeploymentSvc) ListDeployments(ctx context.Context, in *deploymentpb.Li
 	}
 
 	// Enforce maxItems limit on final response
-	if len(selectedDeployments) > MAX_DEPLOYMENTS_RESPONSE {
+	if len(selectedDeployments) > MaxDeploymentsResponse {
 		log.Warnf("Response truncated: returning %d of %d deployments due to maxItems limit",
-			MAX_DEPLOYMENTS_RESPONSE, len(selectedDeployments))
-		selectedDeployments = selectedDeployments[:MAX_DEPLOYMENTS_RESPONSE]
+			MaxDeploymentsResponse, len(selectedDeployments))
+		selectedDeployments = selectedDeployments[:MaxDeploymentsResponse]
 	}
 
 	utils.LogActivity(ctx, "list", "ADM", "Filter"+logFilter, "Total-Deployments: "+strconv.Itoa(totalNumDeployments))
@@ -1555,10 +1555,10 @@ func (s *DeploymentSvc) ListDeploymentClusters(ctx context.Context, in *deployme
 	}
 
 	// Enforce maxItems limit on final response
-	if len(selectedClusters) > MAX_CLUSTERS_RESPONSE {
+	if len(selectedClusters) > MaxClustersResponse {
 		log.Warnf("Response truncated: returning %d of %d deployment clusters due to maxItems limit",
-			MAX_CLUSTERS_RESPONSE, len(selectedClusters))
-		selectedClusters = selectedClusters[:MAX_CLUSTERS_RESPONSE]
+			MaxClustersResponse, len(selectedClusters))
+		selectedClusters = selectedClusters[:MaxClustersResponse]
 	}
 
 	resp.Clusters = selectedClusters
