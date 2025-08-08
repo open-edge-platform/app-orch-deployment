@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Build the app-service-proxy binary
-FROM golang:1.24.4-bookworm@sha256:10f549dc8489597aa7ed2b62008199bb96717f52a8e8434ea035d5b44368f8a6 AS build
+FROM golang:1.24.6-bookworm@sha256:2679c15c940573aded505b2f2fbbd4e718b5172327aae3ab9f43a10a5c700dfc AS build
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
 ARG MAKE_TARGET=go-build
