@@ -4,7 +4,7 @@
 
 module github.com/open-edge-platform/app-orch-deployment/app-resource-manager
 
-go 1.24.4
+go 1.24.6
 
 toolchain go1.24.1
 
