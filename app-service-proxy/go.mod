@@ -6,8 +6,6 @@ module github.com/open-edge-platform/app-orch-deployment/app-service-proxy
 
 go 1.24.6
 
-toolchain go1.24.1
-
 replace github.com/open-edge-platform/app-orch-deployment/test-common-utils => ../test-common-utils
 
 require (
