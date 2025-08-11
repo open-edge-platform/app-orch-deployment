@@ -4,9 +4,7 @@
 
 module github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2
 
-go 1.23.0
-
-toolchain go1.23.1
+go 1.24.6
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.2-20240717164558-a6c49f84cc0f.2

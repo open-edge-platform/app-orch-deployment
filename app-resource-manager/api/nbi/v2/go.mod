@@ -4,9 +4,7 @@
 
 module github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2
 
-go 1.23.0
-
-toolchain go1.24.1
+go 1.24.6
 
 require (
 	github.com/envoyproxy/protoc-gen-validate v1.0.4
