@@ -31,6 +31,7 @@ plugins:
       - version=2.0.0
       - default_response=false
       - enum_type=string
+      - validate=true
       - description=Application Deployment Manager service providing operations for deploying and managing applications.
     strategy: all
   - remote: buf.build/grpc-ecosystem/gateway:v2.15.2

@@ -43,5 +43,5 @@ message ListAppWorkloadsRequest {
 // Response message for the ListAppWorkloadsResponse method.
 message ListAppWorkloadsResponse {
   // A list of virtual machines.
-  repeated resource.v2.AppWorkload app_workloads = 1;
+  repeated resource.v2.AppWorkload app_workloads = 1 [(validate.rules).repeated.max_items = 1000];
 }

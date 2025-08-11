@@ -115,7 +115,7 @@ type ListAppWorkloadsRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ListAppWorkloadsRequestMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -207,6 +207,17 @@ func (m *ListAppWorkloadsResponse) validate(all bool) error {
 
 	var errors []error
 
+	if len(m.GetAppWorkloads()) > 1000 {
+		err := ListAppWorkloadsResponseValidationError{
+			field:  "AppWorkloads",
+			reason: "value must contain no more than 1000 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	for idx, item := range m.GetAppWorkloads() {
 		_, _ = idx, item
 
@@ -255,7 +266,7 @@ type ListAppWorkloadsResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ListAppWorkloadsResponseMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

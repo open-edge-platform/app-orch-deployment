@@ -83,6 +83,12 @@ func (s *DeploymentSvc) ListClusters(ctx context.Context, in *deploymentpb.ListC
 		return nil, errors.Status(errors.NewInvalid("%v", err)).Err()
 	}
 
+	// Validate maxItems for labels array
+	if len(in.Labels) > MaxLabelsPerRequestClusters {
+		log.Warnf("labels array exceeds maximum size: %d > %d", len(in.Labels), MaxLabelsPerRequestClusters)
+		return nil, errors.Status(errors.NewInvalid("labels array exceeds maximum size of %d items", MaxLabelsPerRequestClusters)).Err()
+	}
+
 	// RBAC auth.
 	if err := s.AuthCheckAllowed(ctx, in); err != nil {
 		log.Warnf("cannot list clusters: %v", err)
@@ -135,6 +141,13 @@ func (s *DeploymentSvc) ListClusters(ctx context.Context, in *deploymentpb.ListC
 	if err != nil {
 		log.Warnf("cannot list clusters: %v", err)
 		return nil, errors.Status(err).Err()
+	}
+
+	// Enforce maxItems limit on final response
+	if len(selectedClusters) > MaxClustersResponse {
+		log.Warnf("response clusters array exceeds maximum size. Returning first %d entries from %d total",
+			MaxClustersResponse, len(selectedClusters))
+		selectedClusters = selectedClusters[:MaxClustersResponse]
 	}
 
 	utils.LogActivity(ctx, "list clusters", "ADM")
