@@ -219,11 +219,11 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(ok).To(BeTrue())
 		})
 
-		It("fails due to error returned when deleting secret", func() {
+		It("fails due to error returned when deleting profile secret", func() {
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusMethodNotAllowed)
-				_, err := w.Write([]byte(`{"apiVersion": "v1", "kind": "Secret", "metadata": {"name": "test-name"}}`))
+				_, err := w.Write([]byte(`{}`))
 				Expect(err).ToNot(HaveOccurred())
 			}))
 
@@ -241,6 +241,31 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(ok).To(BeFalse())
 			Expect(s.Message()).Should(Equal("the server does not allow this method " +
 				"on the requested resource (delete secrets test-profile)"))
+		})
+
+		It("does not fail when deleting secrets that are NotFound", func() {
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusNotFound)
+				_, err := w.Write([]byte(`{}`))
+				Expect(err).ToNot(HaveOccurred())
+			}))
+
+			defer ts.Close()
+
+			kc := mockK8Client(ts.URL)
+
+			deployInstance.Spec.Applications[0].ProfileSecretName = "test-profile"
+			deployInstance.Spec.Applications[0].ValueSecretName = "test-values"
+			deployInstance.Spec.Applications[0].HelmApp.RepoSecretName = "test-helmrepo"
+			deployInstance.Spec.Applications[0].HelmApp.ImageRegistrySecretName = "test-imagerepo"
+
+			err := deleteSecrets(context.Background(), kc, deployInstance)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			s, ok := status.FromError(err)
+			Expect(s.Code()).To(Equal(codes.OK))
+			Expect(ok).To(BeTrue())
 		})
 
 		It("fails due to ProfileSecretName is empty when deleting secrets", func() {
