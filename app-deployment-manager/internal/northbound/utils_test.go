@@ -219,28 +219,41 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(ok).To(BeTrue())
 		})
 
-		It("fails due to error returned when deleting profile secret", func() {
-			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusMethodNotAllowed)
-				_, err := w.Write([]byte(`{}`))
-				Expect(err).ToNot(HaveOccurred())
-			}))
+		It("fails due to error returned when deleting secrets", func() {
+			for _, secretName := range []string{"test-profile", "test-values", "test-helmrepo", "test-imagerepo"} {
+				ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("Content-Type", "application/json")
+					if r.URL.Path == fmt.Sprintf("/api/v1/namespaces/%s/secrets/%s", deployInstance.Namespace, secretName) {
+						w.Header().Set("Content-Type", "application/json")
+						w.WriteHeader(http.StatusMethodNotAllowed)
+						_, err := w.Write([]byte(`{}`))
+						Expect(err).ToNot(HaveOccurred())
+					} else {
+						w.Header().Set("Content-Type", "application/json")
+						w.WriteHeader(http.StatusOK)
+						_, err := w.Write([]byte(`{}`))
+						Expect(err).ToNot(HaveOccurred())
+					}
+				}))
 
-			defer ts.Close()
+				defer ts.Close()
 
-			kc := mockK8Client(ts.URL)
+				kc := mockK8Client(ts.URL)
 
-			deployInstance.Spec.Applications[0].ProfileSecretName = "test-profile"
+				deployInstance.Spec.Applications[0].ProfileSecretName = "test-profile"
+				deployInstance.Spec.Applications[0].ValueSecretName = "test-values"
+				deployInstance.Spec.Applications[0].HelmApp.RepoSecretName = "test-helmrepo"
+				deployInstance.Spec.Applications[0].HelmApp.ImageRegistrySecretName = "test-imagerepo"
 
-			err := deleteSecrets(context.Background(), kc, deployInstance)
+				err := deleteSecrets(context.Background(), kc, deployInstance)
 
-			Expect(err).Should(HaveOccurred())
-			s, ok := status.FromError(err)
-			Expect(s.Code()).To(Equal(codes.Unknown))
-			Expect(ok).To(BeFalse())
-			Expect(s.Message()).Should(Equal("the server does not allow this method " +
-				"on the requested resource (delete secrets test-profile)"))
+				Expect(err).Should(HaveOccurred())
+				s, ok := status.FromError(err)
+				Expect(s.Code()).To(Equal(codes.Unknown))
+				Expect(ok).To(BeFalse())
+				expectedMessage := fmt.Sprintf("the server does not allow this method on the requested resource (delete secrets %s)", secretName)
+				Expect(s.Message()).Should(Equal(expectedMessage))
+			}
 		})
 
 		It("does not fail when deleting secrets that are NotFound", func() {
