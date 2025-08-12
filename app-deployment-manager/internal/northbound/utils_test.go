@@ -224,12 +224,10 @@ var _ = Describe("Gateway gRPC Service", func() {
 				ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					w.Header().Set("Content-Type", "application/json")
 					if r.URL.Path == fmt.Sprintf("/api/v1/namespaces/%s/secrets/%s", deployInstance.Namespace, secretName) {
-						w.Header().Set("Content-Type", "application/json")
 						w.WriteHeader(http.StatusMethodNotAllowed)
 						_, err := w.Write([]byte(`{}`))
 						Expect(err).ToNot(HaveOccurred())
 					} else {
-						w.Header().Set("Content-Type", "application/json")
 						w.WriteHeader(http.StatusOK)
 						_, err := w.Write([]byte(`{}`))
 						Expect(err).ToNot(HaveOccurred())
