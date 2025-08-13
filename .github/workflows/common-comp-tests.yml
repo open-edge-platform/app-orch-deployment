@@ -39,15 +39,15 @@ jobs:
     steps:
       - name: Deploy Kind Orchestrator
         id: deploy-kind-orchestrator
-        uses: open-edge-platform/edge-manageability-framework/.github/actions/deploy_kind@a949b22c2c512881615533b12ef50804690c6b03
-        timeout-minutes: 30
+        uses: open-edge-platform/edge-manageability-framework/.github/actions/deploy_kind@ed0de70b9080465711c587a3ed7a75e51aa1fcb9
+        timeout-minutes: 45
         with:
           orch_version: ${{ inputs.emf-branch || 'main' }}
           orch_password: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
           docker_username: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
           docker_password: ${{ secrets.SYS_DOCKERHUB_RO }}
           token: ${{ secrets.SYS_ORCH_GITHUB }}
-          deployment_type: 'minimal'
+          deployment_type: 'all'
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -90,7 +90,7 @@ jobs:
       - name: Deploy Edge Cluster using EniC
         if: ${{ inputs.use-enic }}
         run: |
-          mage deploy:edgeCluster dev-minimal
+          mage deploy:edgeCluster dev
           echo "ENIC deployment done!"
 
       - name: Upload Deployment Packages to Catalog
