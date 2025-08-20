@@ -609,30 +609,36 @@ func deleteSecrets(ctx context.Context, k8sClient *kubernetes.Clientset, deploym
 	for _, app := range deployment.Spec.Applications {
 		secretName = app.ProfileSecretName
 		err := utils.DeleteSecret(ctx, k8sClient, namespace, secretName)
-		if err != nil {
+		if errors.IsNotFound(err) {
+			log.Warnf("Secret %s not found, continuing", secretName)
+		} else if err != nil {
 			return err
 		}
 
 		secretName = app.ValueSecretName
 		if secretName != "" {
 			err := utils.DeleteSecret(ctx, k8sClient, namespace, secretName)
-			if err != nil {
+			if errors.IsNotFound(err) {
+				log.Warnf("Secret %s not found, continuing", secretName)
+			} else if err != nil {
 				return err
 			}
 
 			// Delete masked override values
 			err = utils.DeleteSecret(ctx, k8sClient, namespace, secretName+"-masked")
-			if err != nil {
-				if !(errors.IsNotFound(err)) {
-					return err
-				}
+			if errors.IsNotFound(err) {
+				log.Warnf("Secret %s not found, continuing", secretName)
+			} else if err != nil {
+				return err
 			}
 		}
 
 		secretName = app.HelmApp.RepoSecretName
 		if secretName != "" && secretName != os.Getenv("RS_PROXY_REPO_SECRET") {
 			err = utils.DeleteSecret(ctx, k8sClient, namespace, secretName)
-			if err != nil {
+			if errors.IsNotFound(err) {
+				log.Warnf("Secret %s not found, continuing", secretName)
+			} else if err != nil {
 				return err
 			}
 		}
@@ -640,18 +646,21 @@ func deleteSecrets(ctx context.Context, k8sClient *kubernetes.Clientset, deploym
 		secretName = app.HelmApp.ImageRegistrySecretName
 		if secretName != "" {
 			err = utils.DeleteSecret(ctx, k8sClient, namespace, secretName)
-			if err != nil {
+			if errors.IsNotFound(err) {
+				log.Warnf("Secret %s not found, continuing", secretName)
+			} else if err != nil {
 				return err
 			}
 		}
 
 		secretName = fmt.Sprintf("%s-%s-%s-secret", deployment.Name, app.Name, deployment.Spec.DeploymentPackageRef.ProfileName)
 		err = utils.DeleteSecret(ctx, k8sClient, namespace, secretName)
-		if err != nil {
-			if !(errors.IsNotFound(err)) {
-				return err
-			}
+		if errors.IsNotFound(err) {
+			log.Warnf("Secret %s not found, continuing", secretName)
+		} else if err != nil {
+			return err
 		}
+
 	}
 
 	return nil
