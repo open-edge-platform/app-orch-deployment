@@ -137,9 +137,9 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 
 	allOverrideKeys := make(map[string][]string)
 	if len(d.OverrideValues) != 0 {
-		for _, val := range d.OverrideValues {
+		for i, val := range d.OverrideValues {
 			if (val.AppName) == "" {
-				return d, errors.NewInvalid("missing overrideValues.appName in request")
+				return d, errors.NewInvalid("validation error:\n - deployment.override_values[%d].app_name: value length must be at least 1 characters [string.min_len]\n - deployment.override_values[%d].app_name: value does not match regex pattern `^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$` [string.pattern]", i, i)
 			}
 			if (val.Values) == nil && val.TargetNamespace == "" {
 				return d, errors.NewInvalid("missing overrideValues.targetNamespace or overrideValues.values in request")
@@ -515,6 +515,15 @@ func (s *DeploymentSvc) GetDeploymentsStatus(ctx context.Context, in *deployment
 		return nil, errors.Status(errors.NewInvalid("labels array exceeds maximum size of %d items", MaxLabelsPerRequestDeployments)).Err()
 	}
 
+	// Validate pattern for labels array
+	labelRegex := regexp.MustCompile(LabelPattern)
+	for i, label := range in.Labels {
+		if !labelRegex.MatchString(label) {
+			log.Warnf("label[%d] does not match pattern: %s", i, label)
+			return nil, errors.Status(errors.NewInvalid("validation error:\n - labels[%d]: value does not match regex pattern `%s` [string.pattern]", i, LabelPattern)).Err()
+		}
+	}
+
 	// RBAC auth
 	if err := s.AuthCheckAllowed(ctx, in); err != nil {
 		log.Warnf("cannot get status of deployments: %v", err)
@@ -674,6 +683,20 @@ func (s *DeploymentSvc) CreateDeployment(ctx context.Context, in *deploymentpb.C
 	if err := s.protoValidator.Validate(in); err != nil {
 		log.Warnf("%v", err)
 		return nil, errors.Status(errors.NewInvalid("%v", err)).Err()
+	}
+
+	// Validate app_name pattern
+	appNameRegex := regexp.MustCompile(IDPattern)
+	if !appNameRegex.MatchString(in.Deployment.AppName) {
+		log.Warnf("app_name does not match pattern: %s", in.Deployment.AppName)
+		return nil, errors.Status(errors.NewInvalid("validation error:\n - deployment.app_name: value does not match regex pattern `%s` [string.pattern]", IDPattern)).Err()
+	}
+
+	// Validate app_version pattern
+	appVersionRegex := regexp.MustCompile(AppVersionPattern)
+	if !appVersionRegex.MatchString(in.Deployment.AppVersion) {
+		log.Warnf("app_version does not match pattern: %s", in.Deployment.AppVersion)
+		return nil, errors.Status(errors.NewInvalid("validation error:\n - deployment.app_version: value does not match regex pattern `%s` [string.pattern]", AppVersionPattern)).Err()
 	}
 
 	// RBAC auth
@@ -843,6 +866,13 @@ func (s *DeploymentSvc) GetDeployment(ctx context.Context, in *deploymentpb.GetD
 		return nil, errors.Status(errors.NewInvalid("%v", err)).Err()
 	}
 
+	// Validate deployment ID pattern
+	idRegex := regexp.MustCompile(IDPattern)
+	if !idRegex.MatchString(in.DeplId) {
+		log.Warnf("deployment ID does not match pattern: %s", in.DeplId)
+		return nil, errors.Status(errors.NewInvalid("validation error:\n - depl_id: value does not match regex pattern `%s` [string.pattern]", IDPattern)).Err()
+	}
+
 	// RBAC auth
 	if err := s.AuthCheckAllowed(ctx, in); err != nil {
 		log.Warnf("cannot get deployment: %v", err)
@@ -917,10 +947,32 @@ func (s *DeploymentSvc) ListDeploymentsPerCluster(ctx context.Context, in *deplo
 		return nil, errors.Status(errors.NewInvalid("%v", err)).Err()
 	}
 
+	// Validate cluster_id pattern
+	idRegex := regexp.MustCompile(IDPattern)
+	if !idRegex.MatchString(in.ClusterId) {
+		log.Warnf("cluster_id does not match pattern: %s", in.ClusterId)
+		return nil, errors.Status(errors.NewInvalid("validation error:\n - cluster_id: value does not match regex pattern `%s` [string.pattern]", IDPattern)).Err()
+	}
+
 	// Validate maxItems for labels array
 	if len(in.Labels) > MaxLabelsPerRequestDeployments {
 		log.Warnf("labels array exceeds maximum size: %d > %d", len(in.Labels), MaxLabelsPerRequestDeployments)
 		return nil, errors.Status(errors.NewInvalid("labels array exceeds maximum size of %d items", MaxLabelsPerRequestDeployments)).Err()
+	}
+
+	// Validate pattern for labels array
+	labelRegex := regexp.MustCompile(LabelPattern)
+	for i, label := range in.Labels {
+		if !labelRegex.MatchString(label) {
+			log.Warnf("label[%d] does not match pattern: %s", i, label)
+			return nil, errors.Status(errors.NewInvalid("validation error:\n - labels[%d]: value does not match regex pattern `%s` [string.pattern]", i, LabelPattern)).Err()
+		}
+	}
+
+	// Validate page_size range
+	if in.PageSize < 0 || in.PageSize > MaxPageSize {
+		log.Warnf("page_size out of range: %d (must be 0 <= page_size <= %d)", in.PageSize, MaxPageSize)
+		return nil, errors.Status(errors.NewInvalid("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to %d [int32.gte_lte]", MaxPageSize)).Err()
 	}
 
 	// RBAC auth
@@ -1087,6 +1139,21 @@ func (s *DeploymentSvc) ListDeployments(ctx context.Context, in *deploymentpb.Li
 		return nil, errors.Status(errors.NewInvalid("labels array exceeds maximum size of %d items", MaxLabelsPerRequestDeployments)).Err()
 	}
 
+	// Validate pattern for labels array
+	labelRegex := regexp.MustCompile(LabelPattern)
+	for i, label := range in.Labels {
+		if !labelRegex.MatchString(label) {
+			log.Warnf("label[%d] does not match pattern: %s", i, label)
+			return nil, errors.Status(errors.NewInvalid("validation error:\n - labels[%d]: value does not match regex pattern `%s` [string.pattern]", i, LabelPattern)).Err()
+		}
+	}
+
+	// Validate page_size range
+	if in.PageSize < 0 || in.PageSize > MaxPageSize {
+		log.Warnf("page_size out of range: %d (must be 0 <= page_size <= %d)", in.PageSize, MaxPageSize)
+		return nil, errors.Status(errors.NewInvalid("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to %d [int32.gte_lte]", MaxPageSize)).Err()
+	}
+
 	// RBAC auth
 	if err := s.AuthCheckAllowed(ctx, in); err != nil {
 		log.Warnf("cannot list deployments: %v", err)
@@ -1163,6 +1230,13 @@ func (s *DeploymentSvc) DeleteDeployment(ctx context.Context, in *deploymentpb.D
 	if err := s.protoValidator.Validate(in); err != nil {
 		log.Warnf("%v", err)
 		return nil, errors.Status(errors.NewInvalid("%v", err)).Err()
+	}
+
+	// Validate deployment ID pattern
+	idRegex := regexp.MustCompile(IDPattern)
+	if !idRegex.MatchString(in.DeplId) {
+		log.Warnf("deployment ID does not match pattern: %s", in.DeplId)
+		return nil, errors.Status(errors.NewInvalid("validation error:\n - depl_id: value does not match regex pattern `%s` [string.pattern]", IDPattern)).Err()
 	}
 
 	// RBAC auth
@@ -1299,6 +1373,20 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 	if err := s.protoValidator.Validate(in); err != nil {
 		log.Warnf("%v", err)
 		return nil, errors.Status(errors.NewInvalid("%v", err)).Err()
+	}
+
+	// Validate app_name pattern
+	appNameRegex := regexp.MustCompile(IDPattern)
+	if !appNameRegex.MatchString(in.Deployment.AppName) {
+		log.Warnf("app_name does not match pattern: %s", in.Deployment.AppName)
+		return nil, errors.Status(errors.NewInvalid("validation error:\n - deployment.app_name: value does not match regex pattern `%s` [string.pattern]", IDPattern)).Err()
+	}
+
+	// Validate app_version pattern
+	appVersionRegex := regexp.MustCompile(AppVersionPattern)
+	if !appVersionRegex.MatchString(in.Deployment.AppVersion) {
+		log.Warnf("app_version does not match pattern: %s", in.Deployment.AppVersion)
+		return nil, errors.Status(errors.NewInvalid("validation error:\n - deployment.app_version: value does not match regex pattern `%s` [string.pattern]", AppVersionPattern)).Err()
 	}
 
 	// RBAC auth
