@@ -5,10 +5,10 @@ syntax = "proto3";
 
 package deployment.v1;
 
-import "buf/validate/validate.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
+import "validate/validate.proto";
 
 // Deployment defines the specification to deploy a Deployment Package onto a set of clusters.
 message Deployment {
@@ -18,7 +18,7 @@ message Deployment {
   // Deployment display name.
   string display_name = 2 [
     (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).string = {
+    (validate.rules).string = {
       min_len: 0
       max_len: 40
       pattern: "^([a-zA-Z0-9][\\w\\- \\.\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$"
@@ -28,7 +28,7 @@ message Deployment {
   // The deployment package name to deploy from the catalog.
   string app_name = 3 [
     (google.api.field_behavior) = REQUIRED,
-    (buf.validate.field).string = {
+    (validate.rules).string = {
       min_len: 1
       max_len: 40
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
@@ -38,7 +38,7 @@ message Deployment {
   // The version of the deployment package.
   string app_version = 4 [
     (google.api.field_behavior) = REQUIRED,
-    (buf.validate.field).string = {
+    (validate.rules).string = {
       min_len: 1
       max_len: 20
       pattern: "^[a-z0-9][a-z0-9-.]{0,18}[a-z0-9]{0,1}$"
@@ -48,7 +48,7 @@ message Deployment {
   // The selected profile name to be used for the base Helm values of the different applications in the deployment package
   string profile_name = 5 [
     (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).string = {
+    (validate.rules).string = {
       min_len: 0
       max_len: 40
       pattern: "^[a-z0-9]*[a-z0-9-]{0,38}[a-z0-9]{0,1}$"
@@ -62,10 +62,16 @@ message Deployment {
   string deploy_id = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // The Override values can be used to override any of the base profile values based on Deployment scenario.
-  repeated OverrideValues override_values = 8 [(google.api.field_behavior) = OPTIONAL];
+  repeated OverrideValues override_values = 8 [
+    (google.api.field_behavior) = OPTIONAL,
+    (validate.rules).repeated = {max_items: 100}
+  ];
 
   // Cluster labels on which we want to deploy the application.
-  repeated TargetClusters target_clusters = 9 [(google.api.field_behavior) = OPTIONAL];
+  repeated TargetClusters target_clusters = 9 [
+    (google.api.field_behavior) = OPTIONAL,
+    (validate.rules).repeated = {max_items: 100}
+  ];
 
   // Status has details of the deployment.
   message Status {
@@ -78,7 +84,10 @@ message Deployment {
   Status status = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // Application details.
-  repeated App apps = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated App apps = 11 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (validate.rules).repeated = {max_items: 100}
+  ];
 
   // The deployment type for the target cluster deployment can be either auto-scaling or targeted.
   // In Auto-scaling type, the application will be automatically deployed on all the
@@ -86,7 +95,7 @@ message Deployment {
   // clusters to deploy the application.
   string deployment_type = 12 [
     (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).string = {
+    (validate.rules).string = {
       min_len: 0
       max_len: 20
       pattern: "^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$"
@@ -96,14 +105,17 @@ message Deployment {
   // network_name is the name of the interconnect network that deployment be part of
   string network_name = 13 [
     (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).string = {
+    (validate.rules).string = {
       min_len: 0
       max_len: 40
       pattern: "^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$"
     }
   ];
 
-  repeated ServiceExport service_exports = 14 [(google.api.field_behavior) = OPTIONAL];
+  repeated ServiceExport service_exports = 14 [
+    (google.api.field_behavior) = OPTIONAL,
+    (validate.rules).repeated = {max_items: 100}
+  ];
 
   // Cluster labels/clusterID on which we want to deploy all the applications of the
   // deployment package
@@ -113,7 +125,7 @@ message Deployment {
 message ServiceExport {
   string app_name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (buf.validate.field).string = {
+    (validate.rules).string = {
       min_len: 1
       max_len: 40
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
@@ -129,7 +141,7 @@ message OverrideValues {
   // deployment package name to use when overriding values.
   string app_name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (buf.validate.field).string = {
+    (validate.rules).string = {
       min_len: 1
       max_len: 40
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
@@ -139,7 +151,7 @@ message OverrideValues {
   // The namespace to deploy the app onto, default namespace is default.
   string target_namespace = 2 [
     (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).string = {
+    (validate.rules).string = {
       min_len: 0
       max_len: 63
       pattern: "(^$)|^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$"
@@ -155,7 +167,7 @@ message TargetClusters {
   // The targeted deployment package name.
   string app_name = 1 [
     (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).string = {
+    (validate.rules).string = {
       min_len: 0
       max_len: 40
       pattern: "(^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
@@ -165,7 +177,7 @@ message TargetClusters {
   // Cluster labels to match the target cluster when auto-scaling deployment.
   map<string, string> labels = 2 [
     (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).map = {
+    (validate.rules).map = {
       keys: {
         string: {
           min_len: 1
@@ -241,7 +253,7 @@ message DeploymentInstancesCluster {
   // Deployment display name.
   string deployment_display_name = 3 [
     (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).string = {
+    (validate.rules).string = {
       min_len: 0
       max_len: 40
       pattern: "^([a-zA-Z0-9][\\w\\- \\.\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$"
@@ -252,7 +264,10 @@ message DeploymentInstancesCluster {
   Deployment.Status status = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // Apps has per-app details.
-  repeated App apps = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated App apps = 5 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (validate.rules).repeated = {max_items: 100}
+  ];
 }
 
 // Details of cluster.
@@ -267,5 +282,8 @@ message Cluster {
   Deployment.Status status = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // Apps has per-app details.
-  repeated App apps = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated App apps = 4 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (validate.rules).repeated = {max_items: 100}
+  ];
 }

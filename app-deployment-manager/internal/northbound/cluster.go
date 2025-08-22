@@ -7,6 +7,7 @@ package northbound
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"time"
 
 	deploymentpb "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
@@ -37,6 +38,13 @@ func (s *DeploymentSvc) GetKubeConfig(ctx context.Context, in *deploymentpb.GetK
 	if err := s.protoValidator.Validate(in); err != nil {
 		log.Warnf("%v", err)
 		return nil, errors.Status(errors.NewInvalid("%v", err)).Err()
+	}
+
+	// Validate cluster ID pattern
+	idRegex := regexp.MustCompile(IDPattern)
+	if !idRegex.MatchString(in.ClusterId) {
+		log.Warnf("cluster ID does not match pattern: %s", in.ClusterId)
+		return nil, errors.Status(errors.NewInvalid("validation error:\n - cluster_id: value does not match regex pattern `%s` [string.pattern]", IDPattern)).Err()
 	}
 
 	// RBAC auth
@@ -81,6 +89,18 @@ func (s *DeploymentSvc) ListClusters(ctx context.Context, in *deploymentpb.ListC
 	if err := s.protoValidator.Validate(in); err != nil {
 		log.Warnf("%v", err)
 		return nil, errors.Status(errors.NewInvalid("%v", err)).Err()
+	}
+
+	// Validate maxItems for labels array
+	if len(in.Labels) > MaxLabelsPerRequestClusters {
+		log.Warnf("labels array exceeds maximum size: %d > %d", len(in.Labels), MaxLabelsPerRequestClusters)
+		return nil, errors.Status(errors.NewInvalid("labels array exceeds maximum size of %d items", MaxLabelsPerRequestClusters)).Err()
+	}
+
+	// Validate page_size range
+	if in.PageSize < 0 || in.PageSize > MaxPageSize {
+		log.Warnf("page_size out of range: %d (must be 0 <= page_size <= %d)", in.PageSize, MaxPageSize)
+		return nil, errors.Status(errors.NewInvalid("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to %d [int32.gte_lte]", MaxPageSize)).Err()
 	}
 
 	// RBAC auth.
@@ -135,6 +155,13 @@ func (s *DeploymentSvc) ListClusters(ctx context.Context, in *deploymentpb.ListC
 	if err != nil {
 		log.Warnf("cannot list clusters: %v", err)
 		return nil, errors.Status(err).Err()
+	}
+
+	// Enforce maxItems limit on final response
+	if len(selectedClusters) > MaxClustersResponse {
+		log.Warnf("response clusters array exceeds maximum size. Returning first %d entries from %d total",
+			MaxClustersResponse, len(selectedClusters))
+		selectedClusters = selectedClusters[:MaxClustersResponse]
 	}
 
 	utils.LogActivity(ctx, "list clusters", "ADM")

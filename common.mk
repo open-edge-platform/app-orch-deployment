@@ -109,7 +109,7 @@ common-install-protoc-plugins:
 	@echo "Installing protoc-gen-go-grpc..."
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 	@echo "Installing protoc-gen-openapi"
-	@go install github.com/kollalabs/protoc-gen-openapi@latest
+	@go install github.com/kollalabs/protoc-gen-openapi@v0.0.27
 	@echo "Installing oapi-codegen"
 	@go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@${OAPI_CODEGEN_VERSION}
 	@echo "Installing buf"
@@ -286,14 +286,14 @@ common-go-fuzz-test: ## GO fuzz tests
 #### Protobuf Targets ####
 
 common-buf-lint-fix: $(VENV_NAME) ## Lint and when possible fix protobuf files
-	buf --version
-	buf format -d -w
-	buf lint
+	PATH="$(GOBIN):$$PATH" buf --version
+	PATH="$(GOBIN):$$PATH" buf format -d -w
+	PATH="$(GOBIN):$$PATH" buf lint
 
 common-buf-generate: $(VENV_NAME) ## Compile protobuf files in api into code
 	set +u; . ./$</bin/activate; set -u ;\
-        buf --version ;\
-        buf generate
+        PATH="$(GOBIN):$$PATH" buf --version ;\
+        PATH="$(GOBIN):$$PATH" buf generate
 
 common-openapi-spec-validate: $(VENV_NAME)
 		set +u; . ./$</bin/activate; set -u ;\
@@ -301,21 +301,21 @@ common-openapi-spec-validate: $(VENV_NAME)
 
 common-buf-update: $(VENV_NAME) ## Update buf modules
 	set +u; . ./$</bin/activate; set -u ;\
-  buf --version ;\
-  pushd api; buf dep update; popd ;\
-  buf build
+  PATH="$(GOBIN):$$PATH" buf --version ;\
+  pushd api; PATH="$(GOBIN):$$PATH" buf mod update; popd ;\
+  PATH="$(GOBIN):$$PATH" buf build
 
 common-buf-lint: $(VENV_NAME) ## Lint and format protobuf files
-	buf --version
-	buf format -d --exit-code
-	buf lint
+	PATH="$(GOBIN):$$PATH" buf --version
+	PATH="$(GOBIN):$$PATH" buf format -d --exit-code
+	PATH="$(GOBIN):$$PATH" buf lint
 
 #### Rest Client Targets ####
 common-rest-client-gen: ## Generate rest-client.
 	@echo Generate Rest client from the generated openapi spec.
 	mkdir -p $(REST_CLIENT_DIR)
-	oapi-codegen -generate client -old-config-style -package restClient -o $(REST_CLIENT_DIR)/client.go $(OPENAPI_SPEC_FILE)
-	oapi-codegen -generate types -old-config-style -package restClient -o $(REST_CLIENT_DIR)/types.go $(OPENAPI_SPEC_FILE)
+	PATH="$(GOBIN):$$PATH" oapi-codegen -generate client -old-config-style -package restClient -o $(REST_CLIENT_DIR)/client.go $(OPENAPI_SPEC_FILE)
+	PATH="$(GOBIN):$$PATH" oapi-codegen -generate types -old-config-style -package restClient -o $(REST_CLIENT_DIR)/types.go $(OPENAPI_SPEC_FILE)
 
 #### Helm Targets ####
 
