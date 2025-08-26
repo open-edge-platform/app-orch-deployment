@@ -57,6 +57,6 @@ type DeploymentSvc struct {
 
 // Register is a stub method to satisfy the northbound.Service interface
 // The actual API endpoints are handled by Connect-RPC in the restproxy package
-func (s *DeploymentSvc) Register(r *grpc.Server) {
+func (s *DeploymentSvc) Register(_ *grpc.Server) {
 	// No-op: Connect-RPC handles the API endpoints
 }

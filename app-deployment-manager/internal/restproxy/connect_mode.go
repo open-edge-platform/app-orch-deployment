@@ -32,8 +32,8 @@ type connectDeploymentService struct {
 
 // CreateDeployment creates a new deployment
 func (s *connectDeploymentService) CreateDeployment(
-	ctx context.Context,
-	req *connect.Request[deploymentv1.CreateDeploymentRequest],
+	_ context.Context,
+	_ *connect.Request[deploymentv1.CreateDeploymentRequest],
 ) (*connect.Response[deploymentv1.CreateDeploymentResponse], error) {
 	log.Infof("CreateDeployment called via Connect-RPC")
 
@@ -54,8 +54,8 @@ func (s *connectDeploymentService) CreateDeployment(
 
 // ListDeployments lists all deployments
 func (s *connectDeploymentService) ListDeployments(
-	ctx context.Context,
-	req *connect.Request[deploymentv1.ListDeploymentsRequest],
+	_ context.Context,
+	_ *connect.Request[deploymentv1.ListDeploymentsRequest],
 ) (*connect.Response[deploymentv1.ListDeploymentsResponse], error) {
 	log.Infof("ListDeployments called via Connect-RPC")
 
@@ -77,8 +77,8 @@ func (s *connectDeploymentService) ListDeployments(
 
 // ListDeploymentsPerCluster lists deployments per cluster
 func (s *connectDeploymentService) ListDeploymentsPerCluster(
-	ctx context.Context,
-	req *connect.Request[deploymentv1.ListDeploymentsPerClusterRequest],
+	_ context.Context,
+	_ *connect.Request[deploymentv1.ListDeploymentsPerClusterRequest],
 ) (*connect.Response[deploymentv1.ListDeploymentsPerClusterResponse], error) {
 	log.Infof("ListDeploymentsPerCluster called via Connect-RPC")
 
@@ -92,7 +92,7 @@ func (s *connectDeploymentService) ListDeploymentsPerCluster(
 
 // GetDeployment gets a specific deployment
 func (s *connectDeploymentService) GetDeployment(
-	ctx context.Context,
+	_ context.Context,
 	req *connect.Request[deploymentv1.GetDeploymentRequest],
 ) (*connect.Response[deploymentv1.GetDeploymentResponse], error) {
 	log.Infof("GetDeployment called via Connect-RPC for ID: %s", req.Msg.DeplId)
@@ -110,7 +110,7 @@ func (s *connectDeploymentService) GetDeployment(
 
 // UpdateDeployment updates a deployment
 func (s *connectDeploymentService) UpdateDeployment(
-	ctx context.Context,
+	_ context.Context,
 	req *connect.Request[deploymentv1.UpdateDeploymentRequest],
 ) (*connect.Response[deploymentv1.UpdateDeploymentResponse], error) {
 	log.Infof("UpdateDeployment called via Connect-RPC for ID: %s", req.Msg.DeplId)
@@ -124,7 +124,7 @@ func (s *connectDeploymentService) UpdateDeployment(
 
 // DeleteDeployment deletes a deployment
 func (s *connectDeploymentService) DeleteDeployment(
-	ctx context.Context,
+	_ context.Context,
 	req *connect.Request[deploymentv1.DeleteDeploymentRequest],
 ) (*connect.Response[emptypb.Empty], error) {
 	log.Infof("DeleteDeployment called via Connect-RPC for ID: %s", req.Msg.DeplId)
@@ -134,8 +134,8 @@ func (s *connectDeploymentService) DeleteDeployment(
 
 // GetDeploymentsStatus gets deployment status
 func (s *connectDeploymentService) GetDeploymentsStatus(
-	ctx context.Context,
-	req *connect.Request[deploymentv1.GetDeploymentsStatusRequest],
+	_ context.Context,
+	_ *connect.Request[deploymentv1.GetDeploymentsStatusRequest],
 ) (*connect.Response[deploymentv1.GetDeploymentsStatusResponse], error) {
 	log.Infof("GetDeploymentsStatus called via Connect-RPC")
 
@@ -155,8 +155,8 @@ func (s *connectDeploymentService) GetDeploymentsStatus(
 
 // ListDeploymentClusters lists deployment clusters
 func (s *connectDeploymentService) ListDeploymentClusters(
-	ctx context.Context,
-	req *connect.Request[deploymentv1.ListDeploymentClustersRequest],
+	_ context.Context,
+	_ *connect.Request[deploymentv1.ListDeploymentClustersRequest],
 ) (*connect.Response[deploymentv1.ListDeploymentClustersResponse], error) {
 	log.Infof("ListDeploymentClusters called via Connect-RPC")
 
@@ -170,8 +170,8 @@ func (s *connectDeploymentService) ListDeploymentClusters(
 
 // GetAppNamespace gets app namespace
 func (s *connectDeploymentService) GetAppNamespace(
-	ctx context.Context,
-	req *connect.Request[deploymentv1.GetAppNamespaceRequest],
+	_ context.Context,
+	_ *connect.Request[deploymentv1.GetAppNamespaceRequest],
 ) (*connect.Response[deploymentv1.GetAppNamespaceResponse], error) {
 	log.Infof("GetAppNamespace called via Connect-RPC")
 
@@ -202,7 +202,7 @@ func Run(backendAddr string, gwAddr int, allowedCorsOrigins string, basePath str
 }
 
 // RunWithDeploymentService starts the Connect-RPC server with an optional real northbound service
-func RunWithDeploymentService(backendAddr string, gwAddr int, allowedCorsOrigins string, basePath string, openapiSpecFilePath string, deploymentSvc *northbound.DeploymentSvc) error {
+func RunWithDeploymentService(backendAddr string, gwAddr int, allowedCorsOrigins string, _ string, _ string, deploymentSvc *northbound.DeploymentSvc) error {
 	log.Infof("Backend server address: %s", backendAddr)
 	log.Infof("Connect-RPC server address: 0.0.0.0:%d", gwAddr)
 
