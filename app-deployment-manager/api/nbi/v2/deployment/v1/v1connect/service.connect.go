@@ -11,8 +11,8 @@ import (
 	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	v1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
 	strings "strings"
 )
@@ -78,7 +78,7 @@ type DeploymentServiceClient interface {
 	// Updates a deployment object.
 	UpdateDeployment(context.Context, *connect.Request[v1.UpdateDeploymentRequest]) (*connect.Response[v1.UpdateDeploymentResponse], error)
 	// Deletes a deployment object.
-	DeleteDeployment(context.Context, *connect.Request[v1.DeleteDeploymentRequest]) (*connect.Response[emptypb.Empty], error)
+	DeleteDeployment(context.Context, *connect.Request[v1.DeleteDeploymentRequest]) (*connect.Response[empty.Empty], error)
 	// Gets all deployment clusters count status.
 	GetDeploymentsStatus(context.Context, *connect.Request[v1.GetDeploymentsStatusRequest]) (*connect.Response[v1.GetDeploymentsStatusResponse], error)
 	// Gets a list of all deployment cluster objects.
@@ -127,7 +127,7 @@ func NewDeploymentServiceClient(httpClient connect.HTTPClient, baseURL string, o
 			connect.WithSchema(deploymentServiceMethods.ByName("UpdateDeployment")),
 			connect.WithClientOptions(opts...),
 		),
-		deleteDeployment: connect.NewClient[v1.DeleteDeploymentRequest, emptypb.Empty](
+		deleteDeployment: connect.NewClient[v1.DeleteDeploymentRequest, empty.Empty](
 			httpClient,
 			baseURL+DeploymentServiceDeleteDeploymentProcedure,
 			connect.WithSchema(deploymentServiceMethods.ByName("DeleteDeployment")),
@@ -161,7 +161,7 @@ type deploymentServiceClient struct {
 	createDeployment          *connect.Client[v1.CreateDeploymentRequest, v1.CreateDeploymentResponse]
 	getDeployment             *connect.Client[v1.GetDeploymentRequest, v1.GetDeploymentResponse]
 	updateDeployment          *connect.Client[v1.UpdateDeploymentRequest, v1.UpdateDeploymentResponse]
-	deleteDeployment          *connect.Client[v1.DeleteDeploymentRequest, emptypb.Empty]
+	deleteDeployment          *connect.Client[v1.DeleteDeploymentRequest, empty.Empty]
 	getDeploymentsStatus      *connect.Client[v1.GetDeploymentsStatusRequest, v1.GetDeploymentsStatusResponse]
 	listDeploymentClusters    *connect.Client[v1.ListDeploymentClustersRequest, v1.ListDeploymentClustersResponse]
 	getAppNamespace           *connect.Client[v1.GetAppNamespaceRequest, v1.GetAppNamespaceResponse]
@@ -193,7 +193,7 @@ func (c *deploymentServiceClient) UpdateDeployment(ctx context.Context, req *con
 }
 
 // DeleteDeployment calls deployment.v1.DeploymentService.DeleteDeployment.
-func (c *deploymentServiceClient) DeleteDeployment(ctx context.Context, req *connect.Request[v1.DeleteDeploymentRequest]) (*connect.Response[emptypb.Empty], error) {
+func (c *deploymentServiceClient) DeleteDeployment(ctx context.Context, req *connect.Request[v1.DeleteDeploymentRequest]) (*connect.Response[empty.Empty], error) {
 	return c.deleteDeployment.CallUnary(ctx, req)
 }
 
@@ -224,7 +224,7 @@ type DeploymentServiceHandler interface {
 	// Updates a deployment object.
 	UpdateDeployment(context.Context, *connect.Request[v1.UpdateDeploymentRequest]) (*connect.Response[v1.UpdateDeploymentResponse], error)
 	// Deletes a deployment object.
-	DeleteDeployment(context.Context, *connect.Request[v1.DeleteDeploymentRequest]) (*connect.Response[emptypb.Empty], error)
+	DeleteDeployment(context.Context, *connect.Request[v1.DeleteDeploymentRequest]) (*connect.Response[empty.Empty], error)
 	// Gets all deployment clusters count status.
 	GetDeploymentsStatus(context.Context, *connect.Request[v1.GetDeploymentsStatusRequest]) (*connect.Response[v1.GetDeploymentsStatusResponse], error)
 	// Gets a list of all deployment cluster objects.
@@ -342,7 +342,7 @@ func (UnimplementedDeploymentServiceHandler) UpdateDeployment(context.Context, *
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("deployment.v1.DeploymentService.UpdateDeployment is not implemented"))
 }
 
-func (UnimplementedDeploymentServiceHandler) DeleteDeployment(context.Context, *connect.Request[v1.DeleteDeploymentRequest]) (*connect.Response[emptypb.Empty], error) {
+func (UnimplementedDeploymentServiceHandler) DeleteDeployment(context.Context, *connect.Request[v1.DeleteDeploymentRequest]) (*connect.Response[empty.Empty], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("deployment.v1.DeploymentService.DeleteDeployment is not implemented"))
 }
 

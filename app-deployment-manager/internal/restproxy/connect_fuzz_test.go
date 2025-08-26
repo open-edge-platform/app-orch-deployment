@@ -8,8 +8,8 @@ import (
 	"context"
 	"testing"
 
-	fuzz "github.com/AdaLogics/go-fuzz-headers"
 	"connectrpc.com/connect"
+	fuzz "github.com/AdaLogics/go-fuzz-headers"
 	deploymentpb "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/northbound"
 	"google.golang.org/protobuf/proto"
@@ -22,7 +22,7 @@ func FuzzConnectRPCCreateDeployment(f *testing.F) {
 		Deployment: &deploymentpb.Deployment{
 			Name:        "test-deployment",
 			AppName:     "test-app",
-			AppVersion:  "1.0.0", 
+			AppVersion:  "1.0.0",
 			ProfileName: "default",
 		},
 	}
@@ -36,7 +36,7 @@ func FuzzConnectRPCCreateDeployment(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data []byte) {
 		// Create a fuzz consumer
 		consumer := fuzz.NewConsumer(data)
-		
+
 		// Generate fuzzed request
 		req := &deploymentpb.CreateDeploymentRequest{}
 		err := consumer.GenerateStruct(req)
@@ -78,7 +78,7 @@ func FuzzConnectRPCListDeployments(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, data []byte) {
 		consumer := fuzz.NewConsumer(data)
-		
+
 		req := &deploymentpb.ListDeploymentsRequest{}
 		err := consumer.GenerateStruct(req)
 		if err != nil {

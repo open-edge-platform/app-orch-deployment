@@ -30,7 +30,9 @@ func TestNewPaginationQuery(t *testing.T) {
 }
 
 func TestIsValidPagination(t *testing.T) {
-	err := errors.NewInvalid("pagesize and offset parameters must be gte zero")
+	offsetErr := errors.NewInvalid("offset parameter must be gte zero")
+	pageSizeErr := errors.NewInvalid("pagesize parameter must be gte zero")
+	pageSizeMaxErr := errors.NewInvalid("pagesize parameter must be lte 100")
 	cases := []struct {
 		pQuery   *PaginationQuery
 		expected error
@@ -39,9 +41,11 @@ func TestIsValidPagination(t *testing.T) {
 		{&PaginationQuery{5, 0}, nil},
 		{&PaginationQuery{10, 1}, nil},
 		{&PaginationQuery{0, 2}, nil},
-		{&PaginationQuery{10, -1}, err},
-		{&PaginationQuery{-1, 0}, err},
-		{&PaginationQuery{-1, -1}, err},
+		{&PaginationQuery{100, 0}, nil},
+		{&PaginationQuery{101, 0}, pageSizeMaxErr},
+		{&PaginationQuery{10, -1}, offsetErr},
+		{&PaginationQuery{-1, 0}, pageSizeErr},
+		{&PaginationQuery{-1, -1}, pageSizeErr}, // pagesize is checked first
 	}
 
 	for _, c := range cases {

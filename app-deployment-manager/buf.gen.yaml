@@ -4,15 +4,17 @@
 
 version: v1
 plugins:
+  # Generate Go protobuf types
   - name: go
     out: api/nbi/v2
     opt: paths=source_relative
-  - name: go-grpc
-    out: api/nbi/v2
-    opt: paths=source_relative
+  
+  # Generate Connect-RPC services (replaces grpc/go)
   - name: connect-go
     out: api/nbi/v2
     opt: paths=source_relative
-  - name: connect-go
-    out: api/nbi/v2
-    opt: paths=source_relative
+  
+  # Generate OpenAPI specs with Connect-RPC and validation support
+  - name: connect-openapi
+    out: api/nbi/v2/spec
+    strategy: all

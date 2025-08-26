@@ -144,7 +144,7 @@ func selectClustersPerDeployment(in *deploymentpb.ListDeploymentClustersRequest,
 
 }
 
-func newPaginationQuery(pageSize int32, offset int32) *dataselector.PaginationQuery {
+func newPaginationQuery(pageSize uint32, offset uint32) *dataselector.PaginationQuery {
 	if pageSize == 0 && offset == 0 {
 		return dataselector.NewPaginationQuery(dataselector.DefaultPageSize, 0)
 	}

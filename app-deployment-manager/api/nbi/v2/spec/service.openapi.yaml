@@ -1,0 +1,1654 @@
+openapi: 3.1.0
+info:
+  title: deployment.v1
+paths:
+  /deployment.orchestrator.apis/v1/deployments:
+    get:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: ListDeployments
+      description: Gets a list of all deployment objects.
+      operationId: deployment.v1.DeploymentService.ListDeployments
+      parameters:
+        - name: labels
+          in: query
+          description: |-
+            Optional. A string array that filters cluster labels to be
+             displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+          schema:
+            type: array
+            items:
+              type: string
+              maxLength: 200
+              minLength: 1
+              pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+              maxItems: 20
+              description: |
+                (OPTIONAL)
+                string.max_len = 200
+                string.min_len = 1
+                string.pattern = "(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$"
+            title: labels
+            maxItems: 20
+            description: |-
+              (OPTIONAL) Optional. A string array that filters cluster labels to be
+               displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+        - name: orderBy
+          in: query
+          description: Optional. Select field and order based on which Deployment list will be sorted.
+          schema:
+            type: string
+            title: order_by
+            maxLength: 100
+            pattern: ^(name|created_time|updated_time)?(\s+(asc|desc))?$
+            description: |
+              (OPTIONAL) Optional. Select field and order based on which Deployment list will be sorted.
+              string.max_len = 100
+              string.pattern = "^(name|created_time|updated_time)?(\\s+(asc|desc))?$"
+        - name: filter
+          in: query
+          description: Optional. Selection criteria to list Deployments.
+          schema:
+            type: string
+            title: filter
+            maxLength: 500
+            description: |
+              (OPTIONAL) Optional. Selection criteria to list Deployments.
+              string.max_len = 500
+        - name: pageSize
+          in: query
+          description: Optional. Select count of Deployment to be listed per page.
+          schema:
+            type: integer
+            title: page_size
+            maximum: 100
+            minimum: 0
+            description: |
+              (OPTIONAL) Optional. Select count of Deployment to be listed per page.
+              uint32.gte = 0
+              uint32.gte_lt = 0
+              uint32.gte_lt_exclusive = 0
+              uint32.gte_lte = 0
+              uint32.gte_lte_exclusive = 0
+              uint32.lte = 100
+        - name: offset
+          in: query
+          description: |-
+            Optional. Offset is used to select the correct page from which Deployment list will be displayed.
+             (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+          schema:
+            type: integer
+            title: offset
+            minimum: 0
+            description: |
+              (OPTIONAL) Optional. Offset is used to select the correct page from which Deployment list will be displayed.
+               (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+              uint32.gte = 0
+              uint32.gte_lt = 0
+              uint32.gte_lt_exclusive = 0
+              uint32.gte_lte = 0
+              uint32.gte_lte_exclusive = 0
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.ListDeploymentsResponse'
+    post:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: CreateDeployment
+      description: Creates a deployment object.
+      operationId: deployment.v1.DeploymentService.CreateDeployment
+      requestBody:
+        description: Required. Initial values for the deployment.
+        content:
+          application/json:
+            schema:
+              title: deployment
+              description: Required. Initial values for the deployment.
+              $ref: '#/components/schemas/deployment.v1.Deployment'
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.CreateDeploymentResponse'
+  /deployment.orchestrator.apis/v1/deployments/clusters/{cluster_id}:
+    get:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: ListDeploymentsPerCluster
+      operationId: deployment.v1.DeploymentService.ListDeploymentsPerCluster
+      parameters:
+        - name: cluster_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: cluster_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+            description: |
+              string.max_len = 40
+              string.min_len = 1
+              string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+        - name: labels
+          in: query
+          description: |-
+            Optional. A string array that filters cluster labels to be
+             displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+          schema:
+            type: array
+            items:
+              type: string
+              maxLength: 200
+              minLength: 1
+              pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+              maxItems: 20
+              description: |
+                (OPTIONAL)
+                string.max_len = 200
+                string.min_len = 1
+                string.pattern = "(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$"
+            title: labels
+            maxItems: 20
+            description: |-
+              (OPTIONAL) Optional. A string array that filters cluster labels to be
+               displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+        - name: orderBy
+          in: query
+          description: Optional. Select field and order based on which Deployment list will be sorted.
+          schema:
+            type: string
+            title: order_by
+            maxLength: 100
+            pattern: ^(name|created_time|updated_time)?(\s+(asc|desc))?$
+            description: |
+              (OPTIONAL) Optional. Select field and order based on which Deployment list will be sorted.
+              string.max_len = 100
+              string.pattern = "^(name|created_time|updated_time)?(\\s+(asc|desc))?$"
+        - name: filter
+          in: query
+          description: Optional. Selection criteria to list Deployments.
+          schema:
+            type: string
+            title: filter
+            maxLength: 500
+            description: |
+              (OPTIONAL) Optional. Selection criteria to list Deployments.
+              string.max_len = 500
+        - name: pageSize
+          in: query
+          description: Optional. Select count of Deployment to be listed per page.
+          schema:
+            type: integer
+            title: page_size
+            maximum: 100
+            minimum: 0
+            description: |
+              (OPTIONAL) Optional. Select count of Deployment to be listed per page.
+              uint32.gte = 0
+              uint32.gte_lt = 0
+              uint32.gte_lt_exclusive = 0
+              uint32.gte_lte = 0
+              uint32.gte_lte_exclusive = 0
+              uint32.lte = 100
+        - name: offset
+          in: query
+          description: |-
+            Optional. Offset is used to select the correct page from which Deployment list will be displayed.
+             (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+          schema:
+            type: integer
+            title: offset
+            minimum: 0
+            description: |
+              (OPTIONAL) Optional. Offset is used to select the correct page from which Deployment list will be displayed.
+               (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+              uint32.gte = 0
+              uint32.gte_lt = 0
+              uint32.gte_lt_exclusive = 0
+              uint32.gte_lte = 0
+              uint32.gte_lte_exclusive = 0
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.ListDeploymentsPerClusterResponse'
+  /deployment.orchestrator.apis/v1/deployments/{depl_id}:
+    get:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: GetDeployment
+      description: Gets a deployment object.
+      operationId: deployment.v1.DeploymentService.GetDeployment
+      parameters:
+        - name: depl_id
+          in: path
+          description: Required. The id of the deployment to get.
+          required: true
+          schema:
+            type: string
+            title: depl_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+            description: |
+              Required. The id of the deployment to get.
+              string.max_len = 40
+              string.min_len = 1
+              string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.GetDeploymentResponse'
+    put:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: UpdateDeployment
+      description: Updates a deployment object.
+      operationId: deployment.v1.DeploymentService.UpdateDeployment
+      parameters:
+        - name: depl_id
+          in: path
+          description: Required. The id of the deployment to update.
+          required: true
+          schema:
+            type: string
+            title: depl_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+            description: |
+              Required. The id of the deployment to update.
+              string.max_len = 40
+              string.min_len = 1
+              string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+      requestBody:
+        description: Required. The new updated Deployment Object.
+        content:
+          application/json:
+            schema:
+              title: deployment
+              description: Required. The new updated Deployment Object.
+              $ref: '#/components/schemas/deployment.v1.Deployment'
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.UpdateDeploymentResponse'
+    delete:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: DeleteDeployment
+      description: Deletes a deployment object.
+      operationId: deployment.v1.DeploymentService.DeleteDeployment
+      parameters:
+        - name: depl_id
+          in: path
+          description: Required. The id of the deployment to delete.
+          required: true
+          schema:
+            type: string
+            title: depl_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+            description: |
+              Required. The id of the deployment to delete.
+              string.max_len = 40
+              string.min_len = 1
+              string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+        - name: deleteType
+          in: query
+          description: |-
+            Required. Different delete types to handle parent and child
+             lists, for dependency support. Available options: PARENT_ONLY, ALL.
+          required: true
+          schema:
+            title: delete_type
+            description: |-
+              Required. Different delete types to handle parent and child
+               lists, for dependency support. Available options: PARENT_ONLY, ALL.
+            $ref: '#/components/schemas/deployment.v1.DeleteType'
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/google.protobuf.Empty'
+  /deployment.orchestrator.apis/v1/summary/deployments_status:
+    get:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: GetDeploymentsStatus
+      description: Gets all deployment clusters count status.
+      operationId: deployment.v1.DeploymentService.GetDeploymentsStatus
+      parameters:
+        - name: labels
+          in: query
+          description: |-
+            Optional. A string array that filters cluster labels to be
+             displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+          schema:
+            type: array
+            items:
+              type: string
+              maxLength: 200
+              minLength: 1
+              pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+              maxItems: 20
+              description: |
+                (OPTIONAL)
+                string.max_len = 200
+                string.min_len = 1
+                string.pattern = "(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$"
+            title: labels
+            maxItems: 20
+            description: |-
+              (OPTIONAL) Optional. A string array that filters cluster labels to be
+               displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.GetDeploymentsStatusResponse'
+  /deployment.orchestrator.apis/v1/deployments/{depl_id}/clusters:
+    get:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: ListDeploymentClusters
+      description: Gets a list of all deployment cluster objects.
+      operationId: deployment.v1.DeploymentService.ListDeploymentClusters
+      parameters:
+        - name: depl_id
+          in: path
+          description: Required. The id of the deployment to get.
+          required: true
+          schema:
+            type: string
+            title: depl_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+            description: |
+              Required. The id of the deployment to get.
+              string.max_len = 40
+              string.min_len = 1
+              string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+        - name: orderBy
+          in: query
+          description: Optional. Select field and order based on which Deployment cluster list will be sorted.
+          schema:
+            type: string
+            title: order_by
+            maxLength: 100
+            pattern: ^(name|id|status|created_time)?(\s+(asc|desc))?$
+            description: |
+              (OPTIONAL) Optional. Select field and order based on which Deployment cluster list will be sorted.
+              string.max_len = 100
+              string.pattern = "^(name|id|status|created_time)?(\\s+(asc|desc))?$"
+        - name: filter
+          in: query
+          description: Optional. Selection criteria to list Deployment clusters.
+          schema:
+            type: string
+            title: filter
+            maxLength: 500
+            description: |
+              (OPTIONAL) Optional. Selection criteria to list Deployment clusters.
+              string.max_len = 500
+        - name: pageSize
+          in: query
+          description: Optional. Select count of Deployment clusters to be listed per page.
+          schema:
+            type: integer
+            title: page_size
+            maximum: 100
+            minimum: 0
+            description: |
+              (OPTIONAL) Optional. Select count of Deployment clusters to be listed per page.
+              uint32.gte = 0
+              uint32.gte_lt = 0
+              uint32.gte_lt_exclusive = 0
+              uint32.gte_lte = 0
+              uint32.gte_lte_exclusive = 0
+              uint32.lte = 100
+        - name: offset
+          in: query
+          description: |-
+            Optional. Offset is used to select the correct page from which Deployment clusters list will be displayed.
+             (E.g If there are 10 Deployment clusters, page size is 2 and offset is set as 4, then the response will display Deployment clusters 5 and 6.)
+          schema:
+            type: integer
+            title: offset
+            minimum: 0
+            description: |
+              (OPTIONAL) Optional. Offset is used to select the correct page from which Deployment clusters list will be displayed.
+               (E.g If there are 10 Deployment clusters, page size is 2 and offset is set as 4, then the response will display Deployment clusters 5 and 6.)
+              uint32.gte = 0
+              uint32.gte_lt = 0
+              uint32.gte_lt_exclusive = 0
+              uint32.gte_lte = 0
+              uint32.gte_lte_exclusive = 0
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.ListDeploymentClustersResponse'
+  /deployment.v1.DeploymentService/GetAppNamespace:
+    post:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: GetAppNamespace
+      operationId: deployment.v1.DeploymentService.GetAppNamespace
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/deployment.v1.GetAppNamespaceRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.GetAppNamespaceResponse'
+components:
+  schemas:
+    deployment.v1.DeleteType:
+      type: string
+      title: DeleteType
+      enum:
+        - PARENT_ONLY
+        - ALL
+      description: |-
+        Different delete types to handle parent and child
+         lists, for dependency support. Available options: PARENT_ONLY, ALL.
+    deployment.v1.State:
+      type: string
+      title: State
+      enum:
+        - UNKNOWN
+        - RUNNING
+        - DOWN
+        - INTERNAL_ERROR
+        - DEPLOYING
+        - UPDATING
+        - TERMINATING
+        - ERROR
+        - NO_TARGET_CLUSTERS
+      description: State are the different states a deployment/cluster/app can be in.
+    google.protobuf.NullValue:
+      type: string
+      title: NullValue
+      enum:
+        - NULL_VALUE
+      description: |-
+        `NullValue` is a singleton enumeration to represent the null value for the
+         `Value` type union.
+
+          The JSON representation for `NullValue` is JSON `null`.
+    deployment.v1.App:
+      type: object
+      properties:
+        name:
+          type: string
+          title: name
+          description: The deployment package app name.
+          readOnly: true
+        id:
+          type: string
+          title: id
+          description: |-
+            Id of the app (same as Fleet bundle name) which is,
+             concatenated from name and deploy_id (uid which comes from k8s).
+          readOnly: true
+        status:
+          title: status
+          description: Status has details of the app.
+          readOnly: true
+          $ref: '#/components/schemas/deployment.v1.Deployment.Status'
+      title: App
+      additionalProperties: false
+      description: Details of application.
+    deployment.v1.Cluster:
+      type: object
+      properties:
+        name:
+          type: string
+          title: name
+          description: Name is the display name which user provides and ECM creates and assigns clustername label to Fleet cluster object.
+          readOnly: true
+        id:
+          type: string
+          title: id
+          description: ID is the cluster id which ECM generates and assigns to the Rancher cluster name.
+          readOnly: true
+        status:
+          title: status
+          description: Status has details of the cluster.
+          readOnly: true
+          $ref: '#/components/schemas/deployment.v1.Deployment.Status'
+        apps:
+          type: array
+          items:
+            $ref: '#/components/schemas/deployment.v1.App'
+          title: apps
+          description: Apps has per-app details.
+          readOnly: true
+      title: Cluster
+      additionalProperties: false
+      description: Details of cluster.
+    deployment.v1.CreateDeploymentRequest:
+      type: object
+      properties:
+        deployment:
+          title: deployment
+          description: Required. Initial values for the deployment.
+          $ref: '#/components/schemas/deployment.v1.Deployment'
+      title: CreateDeploymentRequest
+      required:
+        - deployment
+      additionalProperties: false
+      description: Request message for the CreateDeployment method.
+    deployment.v1.CreateDeploymentResponse:
+      type: object
+      properties:
+        deploymentId:
+          type: string
+          title: deployment_id
+          maxLength: 40
+          minLength: 1
+          description: |
+            Returns the new Deployment Id.
+            string.max_len = 40
+            string.min_len = 1
+      title: CreateDeploymentResponse
+      required:
+        - deploymentId
+      additionalProperties: false
+      description: Response message for the CreateDeployment method.
+    deployment.v1.DeleteDeploymentRequest:
+      type: object
+      properties:
+        deplId:
+          type: string
+          title: depl_id
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: |
+            Required. The id of the deployment to delete.
+            string.max_len = 40
+            string.min_len = 1
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+        deleteType:
+          title: delete_type
+          description: |-
+            Required. Different delete types to handle parent and child
+             lists, for dependency support. Available options: PARENT_ONLY, ALL.
+          $ref: '#/components/schemas/deployment.v1.DeleteType'
+      title: DeleteDeploymentRequest
+      required:
+        - deplId
+        - deleteType
+      additionalProperties: false
+      description: Request message for the DeleteDeployment method.
+    deployment.v1.Deployment:
+      type: object
+      properties:
+        name:
+          type: string
+          title: name
+          description: Deployment name (unique string assigned by Orchestrator).
+          readOnly: true
+        displayName:
+          type: string
+          title: display_name
+          maxLength: 40
+          pattern: ^([a-zA-Z0-9][\w\- \.\/_]{0,38}[a-zA-Z0-9]{0,1}|)$
+          description: |
+            (OPTIONAL) Deployment display name.
+            string.max_len = 40
+            string.min_len = 0
+            string.pattern = "^([a-zA-Z0-9][\\w\\- \\.\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$"
+        appName:
+          type: string
+          title: app_name
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: |
+            The deployment package name to deploy from the catalog.
+            string.max_len = 40
+            string.min_len = 1
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+        appVersion:
+          type: string
+          title: app_version
+          maxLength: 20
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-.]{0,18}[a-z0-9]{0,1}$
+          description: |
+            The version of the deployment package.
+            string.max_len = 20
+            string.min_len = 1
+            string.pattern = "^[a-z0-9][a-z0-9-.]{0,18}[a-z0-9]{0,1}$"
+        profileName:
+          type: string
+          title: profile_name
+          maxLength: 40
+          pattern: ^[a-z0-9]*[a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: |
+            (OPTIONAL) The selected profile name to be used for the base Helm values of the different applications in the deployment package
+            string.max_len = 40
+            string.min_len = 0
+            string.pattern = "^[a-z0-9]*[a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+        createTime:
+          title: create_time
+          description: The creation time of the deployment.
+          readOnly: true
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+        deployId:
+          type: string
+          title: deploy_id
+          description: The id of the deployment.
+          readOnly: true
+        overrideValues:
+          type: array
+          items:
+            $ref: '#/components/schemas/deployment.v1.OverrideValues'
+          title: override_values
+          description: (OPTIONAL) The Override values can be used to override any of the base profile values based on Deployment scenario.
+        targetClusters:
+          type: array
+          items:
+            $ref: '#/components/schemas/deployment.v1.TargetClusters'
+          title: target_clusters
+          description: (OPTIONAL) Cluster labels on which we want to deploy the application.
+        status:
+          title: status
+          description: Status of the deployment.
+          readOnly: true
+          $ref: '#/components/schemas/deployment.v1.Deployment.Status'
+        apps:
+          type: array
+          items:
+            $ref: '#/components/schemas/deployment.v1.App'
+          title: apps
+          description: Application details.
+          readOnly: true
+        deploymentType:
+          type: string
+          title: deployment_type
+          maxLength: 20
+          pattern: ^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$
+          description: |
+            (OPTIONAL) The deployment type for the target cluster deployment can be either auto-scaling or targeted.
+             In Auto-scaling type, the application will be automatically deployed on all the
+             clusters which match the Target cluster label. In Targeted type, the user has to select among pre created
+             clusters to deploy the application.
+            string.max_len = 20
+            string.min_len = 0
+            string.pattern = "^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$"
+        networkName:
+          type: string
+          title: network_name
+          maxLength: 40
+          pattern: ^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$
+          description: |
+            (OPTIONAL) network_name is the name of the interconnect network that deployment be part of
+            string.max_len = 40
+            string.min_len = 0
+            string.pattern = "^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$"
+        serviceExports:
+          type: array
+          items:
+            $ref: '#/components/schemas/deployment.v1.ServiceExport'
+          title: service_exports
+          description: '(OPTIONAL) '
+        allAppTargetClusters:
+          title: all_app_target_clusters
+          description: |-
+            (OPTIONAL) Cluster labels/clusterID on which we want to deploy all the applications of the
+             deployment package
+          $ref: '#/components/schemas/deployment.v1.TargetClusters'
+      title: Deployment
+      required:
+        - appName
+        - appVersion
+      additionalProperties: false
+      description: Deployment defines the specification to deploy a Deployment Package onto a set of clusters.
+    deployment.v1.Deployment.Status:
+      type: object
+      properties:
+        state:
+          title: state
+          readOnly: true
+          $ref: '#/components/schemas/deployment.v1.State'
+        message:
+          type: string
+          title: message
+          readOnly: true
+        summary:
+          title: summary
+          readOnly: true
+          $ref: '#/components/schemas/deployment.v1.Summary'
+      title: Status
+      additionalProperties: false
+      description: Status has details of the deployment.
+    deployment.v1.DeploymentInstancesCluster:
+      type: object
+      properties:
+        deploymentUid:
+          type: string
+          title: deployment_uid
+          description: Deployment CR UID.
+          readOnly: true
+        deploymentName:
+          type: string
+          title: deployment_name
+          description: Deployment name (unique string assigned by Orchestrator).
+          readOnly: true
+        deploymentDisplayName:
+          type: string
+          title: deployment_display_name
+          maxLength: 40
+          pattern: ^([a-zA-Z0-9][\w\- \.\/_]{0,38}[a-zA-Z0-9]{0,1}|)$
+          description: |
+            (OPTIONAL) Deployment display name.
+            string.max_len = 40
+            string.min_len = 0
+            string.pattern = "^([a-zA-Z0-9][\\w\\- \\.\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$"
+        status:
+          title: status
+          description: Status has details of the cluster.
+          readOnly: true
+          $ref: '#/components/schemas/deployment.v1.Deployment.Status'
+        apps:
+          type: array
+          items:
+            $ref: '#/components/schemas/deployment.v1.App'
+          title: apps
+          description: Apps has per-app details.
+          readOnly: true
+      title: DeploymentInstancesCluster
+      additionalProperties: false
+    deployment.v1.GetAppNamespaceRequest:
+      type: object
+      properties:
+        appId:
+          type: string
+          title: app_id
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: |
+            string.max_len = 80
+            string.min_len = 1
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+      title: GetAppNamespaceRequest
+      required:
+        - appId
+      additionalProperties: false
+      description: Request message for the GetappNamespace method.
+    deployment.v1.GetAppNamespaceResponse:
+      type: object
+      properties:
+        namespace:
+          type: string
+          title: namespace
+      title: GetAppNamespaceResponse
+      required:
+        - namespace
+      additionalProperties: false
+      description: Response message for the GetappNamespace method.
+    deployment.v1.GetDeploymentRequest:
+      type: object
+      properties:
+        deplId:
+          type: string
+          title: depl_id
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: |
+            Required. The id of the deployment to get.
+            string.max_len = 40
+            string.min_len = 1
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+      title: GetDeploymentRequest
+      required:
+        - deplId
+      additionalProperties: false
+      description: Request message for the GetDeployment method.
+    deployment.v1.GetDeploymentResponse:
+      type: object
+      properties:
+        deployment:
+          title: deployment
+          description: The Deployment Object requested.
+          $ref: '#/components/schemas/deployment.v1.Deployment'
+      title: GetDeploymentResponse
+      required:
+        - deployment
+      additionalProperties: false
+      description: Response message for the GetDeployment method.
+    deployment.v1.GetDeploymentsStatusRequest:
+      type: object
+      properties:
+        labels:
+          type: array
+          items:
+            type: string
+            maxLength: 200
+            minLength: 1
+            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+            maxItems: 20
+            description: |
+              (OPTIONAL)
+              string.max_len = 200
+              string.min_len = 1
+              string.pattern = "(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$"
+          title: labels
+          maxItems: 20
+          description: |-
+            (OPTIONAL) Optional. A string array that filters cluster labels to be
+             displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+      title: GetDeploymentsStatusRequest
+      additionalProperties: false
+      description: Request message for the GetDeploymentsStatus method.
+    deployment.v1.GetDeploymentsStatusResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+          title: total
+          minimum: 0
+          format: int32
+          description: |
+            int32.gte = 0
+            int32.gte_lt = 0
+            int32.gte_lt_exclusive = 0
+            int32.gte_lte = 0
+            int32.gte_lte_exclusive = 0
+          readOnly: true
+        running:
+          type: integer
+          title: running
+          minimum: 0
+          format: int32
+          description: |
+            int32.gte = 0
+            int32.gte_lt = 0
+            int32.gte_lt_exclusive = 0
+            int32.gte_lte = 0
+            int32.gte_lte_exclusive = 0
+          readOnly: true
+        down:
+          type: integer
+          title: down
+          minimum: 0
+          format: int32
+          description: |
+            int32.gte = 0
+            int32.gte_lt = 0
+            int32.gte_lt_exclusive = 0
+            int32.gte_lte = 0
+            int32.gte_lte_exclusive = 0
+          readOnly: true
+        deploying:
+          type: integer
+          title: deploying
+          minimum: 0
+          format: int32
+          description: |
+            int32.gte = 0
+            int32.gte_lt = 0
+            int32.gte_lt_exclusive = 0
+            int32.gte_lte = 0
+            int32.gte_lte_exclusive = 0
+          readOnly: true
+        updating:
+          type: integer
+          title: updating
+          minimum: 0
+          format: int32
+          description: |
+            int32.gte = 0
+            int32.gte_lt = 0
+            int32.gte_lt_exclusive = 0
+            int32.gte_lte = 0
+            int32.gte_lte_exclusive = 0
+          readOnly: true
+        terminating:
+          type: integer
+          title: terminating
+          minimum: 0
+          format: int32
+          description: |
+            int32.gte = 0
+            int32.gte_lt = 0
+            int32.gte_lt_exclusive = 0
+            int32.gte_lte = 0
+            int32.gte_lte_exclusive = 0
+          readOnly: true
+        error:
+          type: integer
+          title: error
+          minimum: 0
+          format: int32
+          description: |
+            int32.gte = 0
+            int32.gte_lt = 0
+            int32.gte_lt_exclusive = 0
+            int32.gte_lte = 0
+            int32.gte_lte_exclusive = 0
+          readOnly: true
+        unknown:
+          type: integer
+          title: unknown
+          minimum: 0
+          format: int32
+          description: |
+            int32.gte = 0
+            int32.gte_lt = 0
+            int32.gte_lt_exclusive = 0
+            int32.gte_lte = 0
+            int32.gte_lte_exclusive = 0
+          readOnly: true
+      title: GetDeploymentsStatusResponse
+      additionalProperties: false
+      description: Response message for the GetDeploymentsStatus method.
+    deployment.v1.ListDeploymentClustersRequest:
+      type: object
+      properties:
+        deplId:
+          type: string
+          title: depl_id
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: |
+            Required. The id of the deployment to get.
+            string.max_len = 40
+            string.min_len = 1
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+        orderBy:
+          type: string
+          title: order_by
+          maxLength: 100
+          pattern: ^(name|id|status|created_time)?(\s+(asc|desc))?$
+          description: |
+            (OPTIONAL) Optional. Select field and order based on which Deployment cluster list will be sorted.
+            string.max_len = 100
+            string.pattern = "^(name|id|status|created_time)?(\\s+(asc|desc))?$"
+        filter:
+          type: string
+          title: filter
+          maxLength: 500
+          description: |
+            (OPTIONAL) Optional. Selection criteria to list Deployment clusters.
+            string.max_len = 500
+        pageSize:
+          type: integer
+          title: page_size
+          maximum: 100
+          minimum: 0
+          description: |
+            (OPTIONAL) Optional. Select count of Deployment clusters to be listed per page.
+            uint32.gte = 0
+            uint32.gte_lt = 0
+            uint32.gte_lt_exclusive = 0
+            uint32.gte_lte = 0
+            uint32.gte_lte_exclusive = 0
+            uint32.lte = 100
+        offset:
+          type: integer
+          title: offset
+          minimum: 0
+          description: |
+            (OPTIONAL) Optional. Offset is used to select the correct page from which Deployment clusters list will be displayed.
+             (E.g If there are 10 Deployment clusters, page size is 2 and offset is set as 4, then the response will display Deployment clusters 5 and 6.)
+            uint32.gte = 0
+            uint32.gte_lt = 0
+            uint32.gte_lt_exclusive = 0
+            uint32.gte_lte = 0
+            uint32.gte_lte_exclusive = 0
+      title: ListDeploymentClustersRequest
+      required:
+        - deplId
+      additionalProperties: false
+      description: Request message for ListDeploymentClusters method.
+    deployment.v1.ListDeploymentClustersResponse:
+      type: object
+      properties:
+        clusters:
+          type: array
+          items:
+            $ref: '#/components/schemas/deployment.v1.Cluster'
+          title: clusters
+        totalElements:
+          type: integer
+          title: total_elements
+          format: int32
+      title: ListDeploymentClustersResponse
+      required:
+        - clusters
+        - totalElements
+      additionalProperties: false
+      description: Response message for ListDeploymentClusters method.
+    deployment.v1.ListDeploymentsPerClusterRequest:
+      type: object
+      properties:
+        clusterId:
+          type: string
+          title: cluster_id
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: |
+            string.max_len = 40
+            string.min_len = 1
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+        labels:
+          type: array
+          items:
+            type: string
+            maxLength: 200
+            minLength: 1
+            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+            maxItems: 20
+            description: |
+              (OPTIONAL)
+              string.max_len = 200
+              string.min_len = 1
+              string.pattern = "(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$"
+          title: labels
+          maxItems: 20
+          description: |-
+            (OPTIONAL) Optional. A string array that filters cluster labels to be
+             displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+        orderBy:
+          type: string
+          title: order_by
+          maxLength: 100
+          pattern: ^(name|created_time|updated_time)?(\s+(asc|desc))?$
+          description: |
+            (OPTIONAL) Optional. Select field and order based on which Deployment list will be sorted.
+            string.max_len = 100
+            string.pattern = "^(name|created_time|updated_time)?(\\s+(asc|desc))?$"
+        filter:
+          type: string
+          title: filter
+          maxLength: 500
+          description: |
+            (OPTIONAL) Optional. Selection criteria to list Deployments.
+            string.max_len = 500
+        pageSize:
+          type: integer
+          title: page_size
+          maximum: 100
+          minimum: 0
+          description: |
+            (OPTIONAL) Optional. Select count of Deployment to be listed per page.
+            uint32.gte = 0
+            uint32.gte_lt = 0
+            uint32.gte_lt_exclusive = 0
+            uint32.gte_lte = 0
+            uint32.gte_lte_exclusive = 0
+            uint32.lte = 100
+        offset:
+          type: integer
+          title: offset
+          minimum: 0
+          description: |
+            (OPTIONAL) Optional. Offset is used to select the correct page from which Deployment list will be displayed.
+             (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+            uint32.gte = 0
+            uint32.gte_lt = 0
+            uint32.gte_lt_exclusive = 0
+            uint32.gte_lte = 0
+            uint32.gte_lte_exclusive = 0
+      title: ListDeploymentsPerClusterRequest
+      required:
+        - clusterId
+      additionalProperties: false
+      description: Request message for the ListDeploymentsPerCluster method.
+    deployment.v1.ListDeploymentsPerClusterResponse:
+      type: object
+      properties:
+        deploymentInstancesCluster:
+          type: array
+          items:
+            $ref: '#/components/schemas/deployment.v1.DeploymentInstancesCluster'
+          title: deployment_instances_cluster
+          description: A list of Deployment Instance Cluster Objects.
+        totalElements:
+          type: integer
+          title: total_elements
+          format: int32
+      title: ListDeploymentsPerClusterResponse
+      required:
+        - deploymentInstancesCluster
+        - totalElements
+      additionalProperties: false
+      description: Response message for the ListDeploymentsPerCluster method.
+    deployment.v1.ListDeploymentsRequest:
+      type: object
+      properties:
+        labels:
+          type: array
+          items:
+            type: string
+            maxLength: 200
+            minLength: 1
+            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+            maxItems: 20
+            description: |
+              (OPTIONAL)
+              string.max_len = 200
+              string.min_len = 1
+              string.pattern = "(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$"
+          title: labels
+          maxItems: 20
+          description: |-
+            (OPTIONAL) Optional. A string array that filters cluster labels to be
+             displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+        orderBy:
+          type: string
+          title: order_by
+          maxLength: 100
+          pattern: ^(name|created_time|updated_time)?(\s+(asc|desc))?$
+          description: |
+            (OPTIONAL) Optional. Select field and order based on which Deployment list will be sorted.
+            string.max_len = 100
+            string.pattern = "^(name|created_time|updated_time)?(\\s+(asc|desc))?$"
+        filter:
+          type: string
+          title: filter
+          maxLength: 500
+          description: |
+            (OPTIONAL) Optional. Selection criteria to list Deployments.
+            string.max_len = 500
+        pageSize:
+          type: integer
+          title: page_size
+          maximum: 100
+          minimum: 0
+          description: |
+            (OPTIONAL) Optional. Select count of Deployment to be listed per page.
+            uint32.gte = 0
+            uint32.gte_lt = 0
+            uint32.gte_lt_exclusive = 0
+            uint32.gte_lte = 0
+            uint32.gte_lte_exclusive = 0
+            uint32.lte = 100
+        offset:
+          type: integer
+          title: offset
+          minimum: 0
+          description: |
+            (OPTIONAL) Optional. Offset is used to select the correct page from which Deployment list will be displayed.
+             (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+            uint32.gte = 0
+            uint32.gte_lt = 0
+            uint32.gte_lt_exclusive = 0
+            uint32.gte_lte = 0
+            uint32.gte_lte_exclusive = 0
+      title: ListDeploymentsRequest
+      additionalProperties: false
+      description: Request message for the ListDeployments method.
+    deployment.v1.ListDeploymentsResponse:
+      type: object
+      properties:
+        deployments:
+          type: array
+          items:
+            $ref: '#/components/schemas/deployment.v1.Deployment'
+          title: deployments
+          description: A list of Deployment Objects.
+        totalElements:
+          type: integer
+          title: total_elements
+          format: int32
+      title: ListDeploymentsResponse
+      required:
+        - deployments
+        - totalElements
+      additionalProperties: false
+      description: Response message for the ListDeployments method.
+    deployment.v1.OverrideValues:
+      type: object
+      properties:
+        appName:
+          type: string
+          title: app_name
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: |
+            deployment package name to use when overriding values.
+            string.max_len = 40
+            string.min_len = 1
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+        targetNamespace:
+          type: string
+          title: target_namespace
+          maxLength: 63
+          pattern: (^$)|^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$
+          description: |
+            (OPTIONAL) The namespace to deploy the app onto, default namespace is default.
+            string.max_len = 63
+            string.min_len = 0
+            string.pattern = "(^$)|^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$"
+        values:
+          title: values
+          description: (OPTIONAL) The YAML representing Helm overrides
+          $ref: '#/components/schemas/google.protobuf.Struct'
+      title: OverrideValues
+      required:
+        - appName
+      additionalProperties: false
+      description: |-
+        The Override values can be used to override any of the base helm values of
+         applications based on Deployment scenario.
+    deployment.v1.ServiceExport:
+      type: object
+      properties:
+        appName:
+          type: string
+          title: app_name
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: |
+            string.max_len = 40
+            string.min_len = 1
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+        enabled:
+          type: boolean
+          title: enabled
+      title: ServiceExport
+      required:
+        - appName
+      additionalProperties: false
+    deployment.v1.Summary:
+      type: object
+      properties:
+        total:
+          type: integer
+          title: total
+          format: int32
+          description: Total count of apps/clusters in the deployment, value from owned GitRepo objects.
+          readOnly: true
+        running:
+          type: integer
+          title: running
+          format: int32
+          description: Number of running apps/clusters in the deployment, value from owned GitRepo objects.
+          readOnly: true
+        down:
+          type: integer
+          title: down
+          format: int32
+          description: Number of down apps/clusters in the deployment.
+          readOnly: true
+        type:
+          type: string
+          title: type
+          description: Type of thing that we're counting, ie clusters, apps.
+          readOnly: true
+        unknown:
+          type: integer
+          title: unknown
+          format: int32
+          description: Unknown status to indicate cluster not reachable.
+          readOnly: true
+      title: Summary
+      additionalProperties: false
+      description: Count of status.
+    deployment.v1.TargetClusters:
+      type: object
+      properties:
+        appName:
+          type: string
+          title: app_name
+          maxLength: 40
+          pattern: (^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: |
+            (OPTIONAL) The targeted deployment package name.
+            string.max_len = 40
+            string.min_len = 0
+            string.pattern = "(^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+        labels:
+          type: object
+          title: labels
+          additionalProperties:
+            type: string
+            title: value
+            maxLength: 40
+            minLength: 1
+            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9/]{0,38}[a-z0-9])?$
+            description: |
+              string.max_len = 40
+              string.min_len = 1
+              string.pattern = "(^$)|^[a-z0-9]([-_.=,a-z0-9/]{0,38}[a-z0-9])?$"
+          description: (OPTIONAL) Cluster labels to match the target cluster when auto-scaling deployment.
+        clusterId:
+          type: string
+          title: cluster_id
+          description: (OPTIONAL) Cluster id to match the target cluster when targeted deployment.
+      title: TargetClusters
+      additionalProperties: false
+      description: Set target clusters based on labels.
+    deployment.v1.TargetClusters.LabelsEntry:
+      type: object
+      properties:
+        key:
+          type: string
+          title: key
+        value:
+          type: string
+          title: value
+      title: LabelsEntry
+      additionalProperties: false
+    deployment.v1.UpdateDeploymentRequest:
+      type: object
+      properties:
+        deployment:
+          title: deployment
+          description: Required. The new updated Deployment Object.
+          $ref: '#/components/schemas/deployment.v1.Deployment'
+        deplId:
+          type: string
+          title: depl_id
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: |
+            Required. The id of the deployment to update.
+            string.max_len = 40
+            string.min_len = 1
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+      title: UpdateDeploymentRequest
+      required:
+        - deployment
+        - deplId
+      additionalProperties: false
+      description: Request message for the UpdateDeployment method.
+    deployment.v1.UpdateDeploymentResponse:
+      type: object
+      properties:
+        deployment:
+          title: deployment
+          description: The Deployment Object requested.
+          $ref: '#/components/schemas/deployment.v1.Deployment'
+      title: UpdateDeploymentResponse
+      required:
+        - deployment
+      additionalProperties: false
+      description: Response message for the UpdateDeployment method.
+    google.protobuf.Empty:
+      type: object
+      description: |-
+        A generic empty message that you can re-use to avoid defining duplicated
+         empty messages in your APIs. A typical example is to use it as the request
+         or the response type of an API method. For instance:
+
+             service Foo {
+               rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);
+             }
+
+         The JSON representation for `Empty` is empty JSON object `{}`.
+    google.protobuf.ListValue:
+      type: object
+      properties:
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/google.protobuf.Value'
+          title: values
+          description: Repeated field of dynamically typed values.
+      title: ListValue
+      additionalProperties: false
+      description: |-
+        `ListValue` is a wrapper around a repeated field of values.
+
+         The JSON representation for `ListValue` is JSON array.
+    google.protobuf.Struct:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/google.protobuf.Value'
+      description: |-
+        `Struct` represents a structured data value, consisting of fields
+         which map to dynamically typed values. In some languages, `Struct`
+         might be supported by a native representation. For example, in
+         scripting languages like JS a struct is represented as an
+         object. The details of that representation are described together
+         with the proto support for the language.
+
+         The JSON representation for `Struct` is JSON object.
+    google.protobuf.Struct.FieldsEntry:
+      type: object
+      properties:
+        key:
+          type: string
+          title: key
+        value:
+          title: value
+          $ref: '#/components/schemas/google.protobuf.Value'
+      title: FieldsEntry
+      additionalProperties: false
+    google.protobuf.Timestamp:
+      type: string
+      examples:
+        - "2023-01-15T01:30:15.01Z"
+        - "2024-12-25T12:00:00Z"
+      format: date-time
+      description: |-
+        A Timestamp represents a point in time independent of any time zone or local
+         calendar, encoded as a count of seconds and fractions of seconds at
+         nanosecond resolution. The count is relative to an epoch at UTC midnight on
+         January 1, 1970, in the proleptic Gregorian calendar which extends the
+         Gregorian calendar backwards to year one.
+
+         All minutes are 60 seconds long. Leap seconds are "smeared" so that no leap
+         second table is needed for interpretation, using a [24-hour linear
+         smear](https://developers.google.com/time/smear).
+
+         The range is from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z. By
+         restricting to that range, we ensure that we can convert to and from [RFC
+         3339](https://www.ietf.org/rfc/rfc3339.txt) date strings.
+
+         # Examples
+
+         Example 1: Compute Timestamp from POSIX `time()`.
+
+             Timestamp timestamp;
+             timestamp.set_seconds(time(NULL));
+             timestamp.set_nanos(0);
+
+         Example 2: Compute Timestamp from POSIX `gettimeofday()`.
+
+             struct timeval tv;
+             gettimeofday(&tv, NULL);
+
+             Timestamp timestamp;
+             timestamp.set_seconds(tv.tv_sec);
+             timestamp.set_nanos(tv.tv_usec * 1000);
+
+         Example 3: Compute Timestamp from Win32 `GetSystemTimeAsFileTime()`.
+
+             FILETIME ft;
+             GetSystemTimeAsFileTime(&ft);
+             UINT64 ticks = (((UINT64)ft.dwHighDateTime) << 32) | ft.dwLowDateTime;
+
+             // A Windows tick is 100 nanoseconds. Windows epoch 1601-01-01T00:00:00Z
+             // is 11644473600 seconds before Unix epoch 1970-01-01T00:00:00Z.
+             Timestamp timestamp;
+             timestamp.set_seconds((INT64) ((ticks / 10000000) - 11644473600LL));
+             timestamp.set_nanos((INT32) ((ticks % 10000000) * 100));
+
+         Example 4: Compute Timestamp from Java `System.currentTimeMillis()`.
+
+             long millis = System.currentTimeMillis();
+
+             Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)
+                 .setNanos((int) ((millis % 1000) * 1000000)).build();
+
+
+         Example 5: Compute Timestamp from current time in Python.
+
+             timestamp = Timestamp()
+             timestamp.GetCurrentTime()
+
+         # JSON Mapping
+
+         In JSON format, the Timestamp type is encoded as a string in the
+         [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format. That is, the
+         format is "{year}-{month}-{day}T{hour}:{min}:{sec}[.{frac_sec}]Z"
+         where {year} is always expressed using four digits while {month}, {day},
+         {hour}, {min}, and {sec} are zero-padded to two digits each. The fractional
+         seconds, which can go up to 9 digits (i.e. up to 1 nanosecond resolution),
+         are optional. The "Z" suffix indicates the timezone ("UTC"); the timezone
+         is required. A proto3 JSON serializer should always use UTC (as indicated by
+         "Z") when printing the Timestamp type and a proto3 JSON parser should be
+         able to accept both UTC and other timezones (as indicated by an offset).
+
+         For example, "2017-01-15T01:30:15.01Z" encodes 15.01 seconds past
+         01:30 UTC on January 15, 2017.
+
+         In JavaScript, one can convert a Date object to this format using the
+         standard
+         [toISOString()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString)
+         method. In Python, a standard `datetime.datetime` object can be converted
+         to this format using
+         [`strftime`](https://docs.python.org/2/library/time.html#time.strftime) with
+         the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in Java, one can use
+         the Joda Time's [`ISODateTimeFormat.dateTime()`](
+         http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime%2D%2D
+         ) to obtain a formatter capable of generating timestamps in this format.
+    google.protobuf.Value:
+      oneOf:
+        - type: "null"
+        - type: number
+        - type: string
+        - type: boolean
+        - type: array
+        - type: object
+          additionalProperties: true
+      description: |-
+        `Value` represents a dynamically typed value which can be either
+         null, a number, a string, a boolean, a recursive struct value, or a
+         list of values. A producer of value is expected to set one of that
+         variants, absence of any variant indicates an error.
+
+         The JSON representation for `Value` is JSON value.
+    connect-protocol-version:
+      type: number
+      title: Connect-Protocol-Version
+      enum:
+        - 1
+      description: Define the version of the Connect protocol
+      const: 1
+    connect-timeout-header:
+      type: number
+      title: Connect-Timeout-Ms
+      description: Define the timeout, in ms
+    connect.error:
+      type: object
+      properties:
+        code:
+          type: string
+          examples:
+            - not_found
+          enum:
+            - canceled
+            - unknown
+            - invalid_argument
+            - deadline_exceeded
+            - not_found
+            - already_exists
+            - permission_denied
+            - resource_exhausted
+            - failed_precondition
+            - aborted
+            - out_of_range
+            - unimplemented
+            - internal
+            - unavailable
+            - data_loss
+            - unauthenticated
+          description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+        message:
+          type: string
+          description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/connect.error_details.Any'
+          description: A list of messages that carry the error details. There is no limit on the number of messages.
+      title: Connect Error
+      additionalProperties: true
+      description: 'Error type returned by Connect: https://connectrpc.com/docs/go/errors/#http-representation'
+    connect.error_details.Any:
+      type: object
+      properties:
+        type:
+          type: string
+          description: 'A URL that acts as a globally unique identifier for the type of the serialized message. For example: `type.googleapis.com/google.rpc.ErrorInfo`. This is used to determine the schema of the data in the `value` field and is the discriminator for the `debug` field.'
+        value:
+          type: string
+          format: binary
+          description: The Protobuf message, serialized as bytes and base64-encoded. The specific message type is identified by the `type` field.
+        debug:
+          oneOf:
+            - type: object
+              title: Any
+              additionalProperties: true
+              description: Detailed error information.
+          discriminator:
+            propertyName: type
+          title: Debug
+          description: Deserialized error detail payload. The 'type' field indicates the schema. This field is for easier debugging and should not be relied upon for application logic.
+      additionalProperties: true
+      description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message, with an additional debug field for ConnectRPC error details.
+security: []
+tags:
+  - name: deployment.v1.DeploymentService
+    description: DeploymentService provides API operations for catalogs and applications. === Deployment ===

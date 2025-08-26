@@ -939,7 +939,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(s.Code()).To(Equal(codes.InvalidArgument))
 			Expect(ok).To(BeTrue())
 			Expect(s.Message()).Should(Equal("validation error:\n - page_size: value must be greater than " +
-				"or equal to 0 and less than or equal to 100 [int32.gte_lte]"))
+				"or equal to 0 and less than or equal to 100 [uint32.gte_lte]"))
 		})
 
 		It("fails due deployment LIST error", func() {

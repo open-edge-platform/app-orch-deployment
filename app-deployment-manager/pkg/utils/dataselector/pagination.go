@@ -31,12 +31,18 @@ func NewPaginationQuery(pageSize, offSet int) *PaginationQuery {
 	return &PaginationQuery{pageSize, offSet}
 }
 
-// IsValidPagination returns true if pagination has non negative parameters
+// IsValidPagination returns true if pagination has non negative parameters and pageSize is within limits
 func (p *PaginationQuery) IsValidPagination() error {
-	if p.PageSize >= 0 && p.OffSet >= 0 {
-		return nil
+	if p.PageSize < 0 {
+		return errors.NewInvalid("pagesize parameter must be gte zero")
 	}
-	return errors.NewInvalid("pagesize and offset parameters must be gte zero")
+	if p.PageSize > 100 {
+		return errors.NewInvalid("pagesize parameter must be lte 100")
+	}
+	if p.OffSet < 0 {
+		return errors.NewInvalid("offset parameter must be gte zero")
+	}
+	return nil
 }
 
 // IsPageAvailable returns true if at least one element can be placed on page. False otherwise

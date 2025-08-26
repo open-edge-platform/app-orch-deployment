@@ -107,15 +107,26 @@ message ListDeploymentsRequest {
   ];
 
   // Optional. Select field and order based on which Deployment list will be sorted.
-  string order_by = 2 [(google.api.field_behavior) = OPTIONAL];
+  string order_by = 2 [
+    (google.api.field_behavior) = OPTIONAL,
+    (buf.validate.field).string = {
+      max_len: 100
+      pattern: "^(name|created_time|updated_time)?(\\s+(asc|desc))?$"
+    }
+  ];
 
   // Optional. Selection criteria to list Deployments.
-  string filter = 3 [(google.api.field_behavior) = OPTIONAL];
+  string filter = 3 [
+    (google.api.field_behavior) = OPTIONAL,
+    (buf.validate.field).string = {
+      max_len: 500
+    }
+  ];
 
   // Optional. Select count of Deployment to be listed per page.
-  int32 page_size = 4 [
+  uint32 page_size = 4 [
     (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).int32 = {
+    (buf.validate.field).uint32 = {
       gte: 0
       lte: 100
     }
@@ -123,9 +134,9 @@ message ListDeploymentsRequest {
 
   // Optional. Offset is used to select the correct page from which Deployment list will be displayed.
   // (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
-  int32 offset = 5 [
+  uint32 offset = 5 [
     (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).int32 = {gte: 0}
+    (buf.validate.field).uint32 = {gte: 0}
   ];
 }
 
@@ -165,15 +176,26 @@ message ListDeploymentsPerClusterRequest {
   ];
 
   // Optional. Select field and order based on which Deployment list will be sorted.
-  string order_by = 3 [(google.api.field_behavior) = OPTIONAL];
+  string order_by = 3 [
+    (google.api.field_behavior) = OPTIONAL,
+    (buf.validate.field).string = {
+      max_len: 100
+      pattern: "^(name|created_time|updated_time)?(\\s+(asc|desc))?$"
+    }
+  ];
 
   // Optional. Selection criteria to list Deployments.
-  string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+  string filter = 4 [
+    (google.api.field_behavior) = OPTIONAL,
+    (buf.validate.field).string = {
+      max_len: 500
+    }
+  ];
 
   // Optional. Select count of Deployment to be listed per page.
-  int32 page_size = 5 [
+  uint32 page_size = 5 [
     (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).int32 = {
+    (buf.validate.field).uint32 = {
       gte: 0
       lte: 100
     }
@@ -181,9 +203,9 @@ message ListDeploymentsPerClusterRequest {
 
   // Optional. Offset is used to select the correct page from which Deployment list will be displayed.
   // (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
-  int32 offset = 6 [
+  uint32 offset = 6 [
     (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).int32 = {gte: 0}
+    (buf.validate.field).uint32 = {gte: 0}
   ];
 }
 
@@ -257,7 +279,12 @@ message DeleteDeploymentRequest {
 
   // Required. Different delete types to handle parent and child
   // lists, for dependency support. Available options: PARENT_ONLY, ALL.
-  DeleteType delete_type = 2 [(google.api.field_behavior) = REQUIRED];
+  DeleteType delete_type = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (buf.validate.field).enum = {
+      defined_only: true
+    }
+  ];
 }
 
 // === Summary ===
@@ -348,15 +375,26 @@ message ListDeploymentClustersRequest {
   ];
 
   // Optional. Select field and order based on which Deployment cluster list will be sorted.
-  string order_by = 2 [(google.api.field_behavior) = OPTIONAL];
+  string order_by = 2 [
+    (google.api.field_behavior) = OPTIONAL,
+    (buf.validate.field).string = {
+      max_len: 100
+      pattern: "^(name|id|status|created_time)?(\\s+(asc|desc))?$"
+    }
+  ];
 
   // Optional. Selection criteria to list Deployment clusters.
-  string filter = 3 [(google.api.field_behavior) = OPTIONAL];
+  string filter = 3 [
+    (google.api.field_behavior) = OPTIONAL,
+    (buf.validate.field).string = {
+      max_len: 500
+    }
+  ];
 
   // Optional. Select count of Deployment clusters to be listed per page.
-  int32 page_size = 4 [
+  uint32 page_size = 4 [
     (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).int32 = {
+    (buf.validate.field).uint32 = {
       gte: 0
       lte: 100
     }
@@ -364,7 +402,7 @@ message ListDeploymentClustersRequest {
 
   // Optional. Offset is used to select the correct page from which Deployment clusters list will be displayed.
   // (E.g If there are 10 Deployment clusters, page size is 2 and offset is set as 4, then the response will display Deployment clusters 5 and 6.)
-  int32 offset = 5 [(google.api.field_behavior) = OPTIONAL];
+  uint32 offset = 5 [(google.api.field_behavior) = OPTIONAL, (buf.validate.field).uint32 = {gte: 0}];
 }
 
 // Response message for ListDeploymentClusters method.
