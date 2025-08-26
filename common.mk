@@ -106,10 +106,12 @@ common-install-protoc-plugins:
 	@go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@latest
 	@echo "Installing protoc-gen-validate..."
 	@go install github.com/envoyproxy/protoc-gen-validate@latest
-	@echo "Installing protoc-gen-go-grpc..."
-	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-	@echo "Installing protoc-gen-openapi"
-	@go install github.com/kollalabs/protoc-gen-openapi@latest
+	# @echo "Installing protoc-gen-go-grpc..."
+	# @go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+	@echo "Installing protoc-gen-connect-go..."
+	@go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest
+	# @echo "Installing official protoc-gen-openapi from Google..."
+	# @go install github.com/google/gnostic/cmd/protoc-gen-openapi@latest
 	@echo "Installing oapi-codegen"
 	@go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@${OAPI_CODEGEN_VERSION}
 	@echo "Installing buf"
@@ -124,10 +126,12 @@ common-verify-protoc-plugins:
 	@command -v protoc-gen-doc >/dev/null 2>&1 && echo "protoc-gen-doc is installed." || echo "---> protoc-gen-doc is not installed."
 	@echo "Verifying protoc-gen-validate installation..."
 	@command -v protoc-gen-validate >/dev/null 2>&1 && echo "protoc-gen-validate is installed." || echo "---> protoc-gen-validate is not installed."
-	@echo "Verifying protoc-gen-go-grpc installation..."
-	@command -v protoc-gen-go-grpc >/dev/null 2>&1 && echo "protoc-gen-go-grpc is installed." || echo "---> protoc-gen-go-grpc is not installed."
-	@echo "Verifying protoc-gen-openapi installation..."
-	@command -v protoc-gen-openapi >/dev/null 2>&1 && echo "protoc-gen-openapi is installed." || echo "---> protoc-gen-openapi is not installed."
+	# @echo "Verifying protoc-gen-go-grpc installation..."
+	# @command -v protoc-gen-go-grpc >/dev/null 2>&1 && echo "protoc-gen-go-grpc is installed." || echo "---> protoc-gen-go-grpc is not installed."
+	@echo "Verifying protoc-gen-connect-go installation..."
+	@command -v protoc-gen-connect-go >/dev/null 2>&1 && echo "protoc-gen-connect-go is installed." || echo "---> protoc-gen-connect-go is not installed."
+	# @echo "Verifying protoc-gen-openapi installation..."
+	# @command -v protoc-gen-openapi >/dev/null 2>&1 && echo "protoc-gen-openapi is installed." || echo "---> protoc-gen-openapi is not installed."
 	@echo "Verifying oapi-codegen installation..."
 	@command -v oapi-codegen >/dev/null 2>&1 && echo "oapi-codegen is installed." || echo "---> oapi-codegen is not installed."
 	@echo "Verifying buf installation..."
@@ -302,7 +306,7 @@ common-openapi-spec-validate: $(VENV_NAME)
 common-buf-update: $(VENV_NAME) ## Update buf modules
 	set +u; . ./$</bin/activate; set -u ;\
   buf --version ;\
-  pushd api; buf dep update; popd ;\
+  pushd api; buf mod update; popd ;\
   buf build
 
 common-buf-lint: $(VENV_NAME) ## Lint and format protobuf files

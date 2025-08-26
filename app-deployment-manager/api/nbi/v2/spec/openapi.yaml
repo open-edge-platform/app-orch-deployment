@@ -16,10 +16,11 @@ paths:
             parameters:
                 - name: labels
                   in: query
-                  description: Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel. Labels separated by a comma.
+                  description: |-
+                    Optional. A string array that filters cluster labels to be
+                     displayed ie color=blue,customer=intel. Labels separated by a comma.
                   schema:
                     type: array
-                    maxItems: 100
                     items:
                         type: string
                 - name: orderBy
@@ -40,7 +41,9 @@ paths:
                     format: int32
                 - name: offset
                   in: query
-                  description: Optional. Offset is used to select the correct page from which clusters list will be displayed. (E.g If there are 10 clusters, page size is 2 and offset is set as 4, then the response will display clusters 5 and 6).
+                  description: |-
+                    Optional. Offset is used to select the correct page from which clusters list will be displayed.
+                     (E.g If there are 10 clusters, page size is 2 and offset is set as 4, then the response will display clusters 5 and 6).
                   schema:
                     type: integer
                     format: int32
@@ -80,10 +83,11 @@ paths:
             parameters:
                 - name: labels
                   in: query
-                  description: Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+                  description: |-
+                    Optional. A string array that filters cluster labels to be
+                     displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
                   schema:
                     type: array
-                    maxItems: 100
                     items:
                         type: string
                 - name: orderBy
@@ -104,7 +108,9 @@ paths:
                     format: int32
                 - name: offset
                   in: query
-                  description: Optional. Offset is used to select the correct page from which Deployment list will be displayed. (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+                  description: |-
+                    Optional. Offset is used to select the correct page from which Deployment list will be displayed.
+                     (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
                   schema:
                     type: integer
                     format: int32
@@ -146,10 +152,11 @@ paths:
                     type: string
                 - name: labels
                   in: query
-                  description: Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+                  description: |-
+                    Optional. A string array that filters cluster labels to be
+                     displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
                   schema:
                     type: array
-                    maxItems: 100
                     items:
                         type: string
                 - name: orderBy
@@ -170,7 +177,9 @@ paths:
                     format: int32
                 - name: offset
                   in: query
-                  description: Optional. Offset is used to select the correct page from which Deployment list will be displayed. (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+                  description: |-
+                    Optional. Offset is used to select the correct page from which Deployment list will be displayed.
+                     (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
                   schema:
                     type: integer
                     format: int32
@@ -240,7 +249,9 @@ paths:
                     type: string
                 - name: deleteType
                   in: query
-                  description: 'Required. Different delete types to handle parent and child lists, for dependency support. Available options: PARENT_ONLY, ALL.'
+                  description: |-
+                    Required. Different delete types to handle parent and child
+                     lists, for dependency support. Available options: PARENT_ONLY, ALL.
                   schema:
                     enum:
                         - PARENT_ONLY
@@ -282,7 +293,9 @@ paths:
                     format: int32
                 - name: offset
                   in: query
-                  description: Optional. Offset is used to select the correct page from which Deployment clusters list will be displayed. (E.g If there are 10 Deployment clusters, page size is 2 and offset is set as 4, then the response will display Deployment clusters 5 and 6.)
+                  description: |-
+                    Optional. Offset is used to select the correct page from which Deployment clusters list will be displayed.
+                     (E.g If there are 10 Deployment clusters, page size is 2 and offset is set as 4, then the response will display Deployment clusters 5 and 6.)
                   schema:
                     type: integer
                     format: int32
@@ -302,10 +315,11 @@ paths:
             parameters:
                 - name: labels
                   in: query
-                  description: Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+                  description: |-
+                    Optional. A string array that filters cluster labels to be
+                     displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
                   schema:
                     type: array
-                    maxItems: 100
                     items:
                         type: string
             responses:
@@ -327,9 +341,14 @@ components:
                 id:
                     readOnly: true
                     type: string
-                    description: Id of the app (same as Fleet bundle name) which is, concatenated from name and deploy_id (uid which comes from k8s).
+                    description: |-
+                        Id of the app (same as Fleet bundle name) which is,
+                         concatenated from name and deploy_id (uid which comes from k8s).
                 status:
-                    $ref: '#/components/schemas/Deployment_Status'
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/Deployment_Status'
+                    description: Status has details of the app.
             description: Details of application.
         Cluster:
             type: object
@@ -343,11 +362,13 @@ components:
                     type: string
                     description: ID is the cluster id which ECM generates and assigns to the Rancher cluster name.
                 status:
-                    $ref: '#/components/schemas/Deployment_Status'
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/Deployment_Status'
+                    description: Status has details of the cluster.
                 apps:
                     readOnly: true
                     type: array
-                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/App'
                     description: Apps has per-app details.
@@ -417,38 +438,45 @@ components:
                     description: The id of the deployment.
                 overrideValues:
                     type: array
-                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/OverrideValues'
                     description: The Override values can be used to override any of the base profile values based on Deployment scenario.
                 targetClusters:
                     type: array
-                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/TargetClusters'
                     description: Cluster labels on which we want to deploy the application.
                 status:
-                    $ref: '#/components/schemas/Deployment_Status'
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/Deployment_Status'
+                    description: Status of the deployment.
                 apps:
                     readOnly: true
                     type: array
-                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/App'
                     description: Application details.
                 deploymentType:
                     type: string
-                    description: The deployment type for the target cluster deployment can be either auto-scaling or targeted. In Auto-scaling type, the application will be automatically deployed on all the clusters which match the Target cluster label. In Targeted type, the user has to select among pre created clusters to deploy the application.
+                    description: |-
+                        The deployment type for the target cluster deployment can be either auto-scaling or targeted.
+                         In Auto-scaling type, the application will be automatically deployed on all the
+                         clusters which match the Target cluster label. In Targeted type, the user has to select among pre created
+                         clusters to deploy the application.
                 networkName:
                     type: string
                     description: network_name is the name of the interconnect network that deployment be part of
                 serviceExports:
                     type: array
-                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/ServiceExport'
                 allAppTargetClusters:
-                    $ref: '#/components/schemas/TargetClusters'
+                    allOf:
+                        - $ref: '#/components/schemas/TargetClusters'
+                    description: |-
+                        Cluster labels/clusterID on which we want to deploy all the applications of the
+                         deployment package
             description: Deployment defines the specification to deploy a Deployment Package onto a set of clusters.
         DeploymentInstancesCluster:
             type: object
@@ -465,11 +493,13 @@ components:
                     type: string
                     description: Deployment display name.
                 status:
-                    $ref: '#/components/schemas/Deployment_Status'
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/Deployment_Status'
+                    description: Status has details of the cluster.
                 apps:
                     readOnly: true
                     type: array
-                    maxItems: 100
                     items:
                         $ref: '#/components/schemas/App'
                     description: Apps has per-app details.
@@ -494,13 +524,17 @@ components:
                     readOnly: true
                     type: string
                 summary:
-                    $ref: '#/components/schemas/Summary'
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/Summary'
             description: Status has details of the deployment.
         GetClusterResponse:
             type: object
             properties:
                 cluster:
-                    $ref: '#/components/schemas/Cluster'
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/Cluster'
             description: Response message for GetCluster method.
         GetDeploymentResponse:
             required:
@@ -508,7 +542,9 @@ components:
             type: object
             properties:
                 deployment:
-                    $ref: '#/components/schemas/Deployment'
+                    allOf:
+                        - $ref: '#/components/schemas/Deployment'
+                    description: The Deployment Object requested.
             description: Response message for the GetDeployment method.
         GetDeploymentsStatusResponse:
             type: object
@@ -554,7 +590,6 @@ components:
             properties:
                 clusters:
                     type: array
-                    maxItems: 1000
                     items:
                         $ref: '#/components/schemas/ClusterInfo'
                     description: A list of Cluster Objects.
@@ -570,7 +605,6 @@ components:
             properties:
                 clusters:
                     type: array
-                    maxItems: 1000
                     items:
                         $ref: '#/components/schemas/Cluster'
                 totalElements:
@@ -585,7 +619,6 @@ components:
             properties:
                 deploymentInstancesCluster:
                     type: array
-                    maxItems: 1000
                     items:
                         $ref: '#/components/schemas/DeploymentInstancesCluster'
                     description: A list of Deployment Instance Cluster Objects.
@@ -601,7 +634,6 @@ components:
             properties:
                 deployments:
                     type: array
-                    maxItems: 1000
                     items:
                         $ref: '#/components/schemas/Deployment'
                     description: A list of Deployment Objects.
@@ -623,7 +655,9 @@ components:
                 values:
                     type: object
                     description: The YAML representing Helm overrides
-            description: The Override values can be used to override any of the base helm values of applications based on Deployment scenario.
+            description: |-
+                The Override values can be used to override any of the base helm values of
+                 applications based on Deployment scenario.
         ServiceExport:
             required:
                 - appName
@@ -682,7 +716,9 @@ components:
             type: object
             properties:
                 deployment:
-                    $ref: '#/components/schemas/Deployment'
+                    allOf:
+                        - $ref: '#/components/schemas/Deployment'
+                    description: The Deployment Object requested.
             description: Response message for the UpdateDeployment method.
 tags:
     - name: ClusterService

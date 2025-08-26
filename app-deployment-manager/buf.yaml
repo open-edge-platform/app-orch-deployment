@@ -2,26 +2,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-version: v2
-modules:
-  - path: api/nbi/v2
+version: v1
+name: buf.build/open-edge-platform/app-deployment-manager
 deps:
   - buf.build/bufbuild/protovalidate
   - buf.build/googleapis/googleapis
-lint:
-  use:
-    - STANDARD
-    - ENUM_FIRST_VALUE_ZERO
-  except:
-    - FIELD_NOT_REQUIRED
-    - PACKAGE_NO_IMPORT_CYCLE
-    - ENUM_VALUE_PREFIX
-    - ENUM_ZERO_VALUE_SUFFIX
-  rpc_allow_google_protobuf_empty_responses: true
-  disallow_comment_ignores: true
-breaking:
-  use:
-    - FILE
-  except:
-    - EXTENSION_NO_DELETE
-    - FIELD_SAME_DEFAULT

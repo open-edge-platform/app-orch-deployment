@@ -12,7 +12,6 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/fleet"
 	"k8s.io/client-go/kubernetes"
 
-	deploymentpb "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
 	deploymentv1beta1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/v1beta1"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/catalogclient"
 	"github.com/open-edge-platform/orch-library/go/pkg/auth"
@@ -44,9 +43,8 @@ type DeploymentInstance struct {
 	checkFilters []string
 }
 
-// DeploymentSvc registers deployment server.
+// DeploymentSvc provides deployment service functionality.
 type DeploymentSvc struct {
-	deploymentpb.UnimplementedDeploymentServiceServer
 	crClient          clientv1beta1.AppDeploymentClientInterface
 	opaClient         openpolicyagent.ClientWithResponsesInterface
 	fleetBundleClient *fleet.BundleClient
@@ -57,17 +55,8 @@ type DeploymentSvc struct {
 	apiMutex          sync.Mutex
 }
 
+// Register is a stub method to satisfy the northbound.Service interface
+// The actual API endpoints are handled by Connect-RPC in the restproxy package
 func (s *DeploymentSvc) Register(r *grpc.Server) {
-	server := &DeploymentSvc{
-		crClient:          s.crClient,
-		opaClient:         s.opaClient,
-		fleetBundleClient: s.fleetBundleClient,
-		k8sClient:         s.k8sClient,
-		catalogClient:     s.catalogClient,
-		protoValidator:    s.protoValidator,
-		vaultAuthClient:   s.vaultAuthClient,
-	}
-
-	deploymentpb.RegisterDeploymentServiceServer(r, server)
-	deploymentpb.RegisterClusterServiceServer(r, server)
+	// No-op: Connect-RPC handles the API endpoints
 }

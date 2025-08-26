@@ -125,10 +125,10 @@ controller-gen: ## Download controller-gen locally if necessary.
 	test -s $(CONTROLLER_GEN) || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
 
 generate-crds: controller-gen
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./api/v1beta1/..." output:crd:artifacts:config=config/crd/bases
 
 generate-apis: controller-gen
-	$(CONTROLLER_GEN) object:headerFile="controllers/license.go.txt" paths="./api/..."
+	$(CONTROLLER_GEN) object:headerFile="controllers/license.go.txt" paths="./api/v1beta1/..."
 
 manifests: generate-apis generate-crds ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 
