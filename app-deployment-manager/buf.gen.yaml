@@ -9,12 +9,26 @@ plugins:
     out: api/nbi/v2
     opt: paths=source_relative
   
-  # Generate Connect-RPC services (replaces grpc/go)
-  - name: connect-go
+  # Generate gRPC services (required for gRPC-Gateway)
+  - name: go-grpc
     out: api/nbi/v2
     opt: paths=source_relative
   
-  # Generate OpenAPI specs with Connect-RPC and validation support
+  # Generate gRPC-Gateway for REST endpoints
+  - name: grpc-gateway
+    out: api/nbi/v2
+    opt:
+      - paths=source_relative
+      - generate_unbound_methods=true
+  
+  # Generate buf.validate validation code
+  - name: validate
+    out: api/nbi/v2
+    opt:
+      - paths=source_relative
+      - lang=go
+  
+  # Generate OpenAPI specs with new plugin (replacing kollalabs)
   - name: connect-openapi
     out: api/nbi/v2/spec
     strategy: all

@@ -8,7 +8,7 @@ package deployment.v1;
 option go_package = "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1";
 
 import "buf/validate/validate.proto";
-import "resources.proto";
+import "deployment/v1/resources.proto";
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/empty.proto";

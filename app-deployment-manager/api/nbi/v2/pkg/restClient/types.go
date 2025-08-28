@@ -28,13 +28,14 @@ const (
 
 // App Details of application.
 type App struct {
-	// Id Id of the app (same as Fleet bundle name) which is, concatenated from name and deploy_id (uid which comes from k8s).
+	// Id Id of the app (same as Fleet bundle name) which is,
+	//  concatenated from name and deploy_id (uid which comes from k8s).
 	Id *string `json:"id,omitempty"`
 
 	// Name The deployment package app name.
 	Name *string `json:"name,omitempty"`
 
-	// Status Status has details of the deployment.
+	// Status Status has details of the app.
 	Status *DeploymentStatus `json:"status,omitempty"`
 }
 
@@ -49,7 +50,7 @@ type Cluster struct {
 	// Name Name is the display name which user provides and ECM creates and assigns clustername label to Fleet cluster object.
 	Name *string `json:"name,omitempty"`
 
-	// Status Status has details of the deployment.
+	// Status Status has details of the cluster.
 	Status *DeploymentStatus `json:"status,omitempty"`
 }
 
@@ -76,7 +77,8 @@ type CreateDeploymentResponse struct {
 
 // Deployment Deployment defines the specification to deploy a Deployment Package onto a set of clusters.
 type Deployment struct {
-	// AllAppTargetClusters Set target clusters based on labels.
+	// AllAppTargetClusters Cluster labels/clusterID on which we want to deploy all the applications of the
+	//  deployment package
 	AllAppTargetClusters *TargetClusters `json:"allAppTargetClusters,omitempty"`
 
 	// AppName The deployment package name to deploy from the catalog.
@@ -94,7 +96,10 @@ type Deployment struct {
 	// DeployId The id of the deployment.
 	DeployId *string `json:"deployId,omitempty"`
 
-	// DeploymentType The deployment type for the target cluster deployment can be either auto-scaling or targeted. In Auto-scaling type, the application will be automatically deployed on all the clusters which match the Target cluster label. In Targeted type, the user has to select among pre created clusters to deploy the application.
+	// DeploymentType The deployment type for the target cluster deployment can be either auto-scaling or targeted.
+	//  In Auto-scaling type, the application will be automatically deployed on all the
+	//  clusters which match the Target cluster label. In Targeted type, the user has to select among pre created
+	//  clusters to deploy the application.
 	DeploymentType *string `json:"deploymentType,omitempty"`
 
 	// DisplayName Deployment display name.
@@ -113,7 +118,7 @@ type Deployment struct {
 	ProfileName    *string          `json:"profileName,omitempty"`
 	ServiceExports *[]ServiceExport `json:"serviceExports,omitempty"`
 
-	// Status Status has details of the deployment.
+	// Status Status of the deployment.
 	Status *DeploymentStatus `json:"status,omitempty"`
 
 	// TargetClusters Cluster labels on which we want to deploy the application.
@@ -134,7 +139,7 @@ type DeploymentInstancesCluster struct {
 	// DeploymentUid Deployment CR UID.
 	DeploymentUid *string `json:"deploymentUid,omitempty"`
 
-	// Status Status has details of the deployment.
+	// Status Status has details of the cluster.
 	Status *DeploymentStatus `json:"status,omitempty"`
 }
 
@@ -142,9 +147,7 @@ type DeploymentInstancesCluster struct {
 type DeploymentStatus struct {
 	Message *string                `json:"message,omitempty"`
 	State   *DeploymentStatusState `json:"state,omitempty"`
-
-	// Summary Count of status.
-	Summary *Summary `json:"summary,omitempty"`
+	Summary *Summary               `json:"summary,omitempty"`
 }
 
 // DeploymentStatusState defines model for DeploymentStatus.State.
@@ -152,13 +155,12 @@ type DeploymentStatusState string
 
 // GetClusterResponse Response message for GetCluster method.
 type GetClusterResponse struct {
-	// Cluster Details of cluster.
 	Cluster *Cluster `json:"cluster,omitempty"`
 }
 
 // GetDeploymentResponse Response message for the GetDeployment method.
 type GetDeploymentResponse struct {
-	// Deployment Deployment defines the specification to deploy a Deployment Package onto a set of clusters.
+	// Deployment The Deployment Object requested.
 	Deployment Deployment `json:"deployment"`
 }
 
@@ -201,7 +203,9 @@ type ListDeploymentsResponse struct {
 	TotalElements int32        `json:"totalElements"`
 }
 
-// OverrideValues The Override values can be used to override any of the base helm values of applications based on Deployment scenario.
+// OverrideValues The Override values can be used to override any of the base helm values of
+//
+//	applications based on Deployment scenario.
 type OverrideValues struct {
 	// AppName deployment package name to use when overriding values.
 	AppName string `json:"appName"`
@@ -251,13 +255,14 @@ type TargetClusters struct {
 
 // UpdateDeploymentResponse Response message for the UpdateDeployment method.
 type UpdateDeploymentResponse struct {
-	// Deployment Deployment defines the specification to deploy a Deployment Package onto a set of clusters.
+	// Deployment The Deployment Object requested.
 	Deployment Deployment `json:"deployment"`
 }
 
 // ClusterServiceListClustersParams defines parameters for ClusterServiceListClusters.
 type ClusterServiceListClustersParams struct {
-	// Labels Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel. Labels separated by a comma.
+	// Labels Optional. A string array that filters cluster labels to be
+	//  displayed ie color=blue,customer=intel. Labels separated by a comma.
 	Labels *[]string `form:"labels,omitempty" json:"labels,omitempty"`
 
 	// OrderBy Optional. Select field and order based on which cluster list will be sorted.
@@ -269,13 +274,15 @@ type ClusterServiceListClustersParams struct {
 	// PageSize Optional. Select count of clusters to be listed per page.
 	PageSize *int32 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
 
-	// Offset Optional. Offset is used to select the correct page from which clusters list will be displayed. (E.g If there are 10 clusters, page size is 2 and offset is set as 4, then the response will display clusters 5 and 6).
+	// Offset Optional. Offset is used to select the correct page from which clusters list will be displayed.
+	//  (E.g If there are 10 clusters, page size is 2 and offset is set as 4, then the response will display clusters 5 and 6).
 	Offset *int32 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
 // DeploymentServiceListDeploymentsParams defines parameters for DeploymentServiceListDeployments.
 type DeploymentServiceListDeploymentsParams struct {
-	// Labels Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+	// Labels Optional. A string array that filters cluster labels to be
+	//  displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
 	Labels *[]string `form:"labels,omitempty" json:"labels,omitempty"`
 
 	// OrderBy Optional. Select field and order based on which Deployment list will be sorted.
@@ -287,13 +294,15 @@ type DeploymentServiceListDeploymentsParams struct {
 	// PageSize Optional. Select count of Deployment to be listed per page.
 	PageSize *int32 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
 
-	// Offset Optional. Offset is used to select the correct page from which Deployment list will be displayed. (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+	// Offset Optional. Offset is used to select the correct page from which Deployment list will be displayed.
+	//  (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
 	Offset *int32 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
 // DeploymentServiceListDeploymentsPerClusterParams defines parameters for DeploymentServiceListDeploymentsPerCluster.
 type DeploymentServiceListDeploymentsPerClusterParams struct {
-	// Labels Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+	// Labels Optional. A string array that filters cluster labels to be
+	//  displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
 	Labels *[]string `form:"labels,omitempty" json:"labels,omitempty"`
 
 	// OrderBy Optional. Select field and order based on which Deployment list will be sorted.
@@ -305,13 +314,15 @@ type DeploymentServiceListDeploymentsPerClusterParams struct {
 	// PageSize Optional. Select count of Deployment to be listed per page.
 	PageSize *int32 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
 
-	// Offset Optional. Offset is used to select the correct page from which Deployment list will be displayed. (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+	// Offset Optional. Offset is used to select the correct page from which Deployment list will be displayed.
+	//  (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
 	Offset *int32 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
 // DeploymentServiceDeleteDeploymentParams defines parameters for DeploymentServiceDeleteDeployment.
 type DeploymentServiceDeleteDeploymentParams struct {
-	// DeleteType Required. Different delete types to handle parent and child lists, for dependency support. Available options: PARENT_ONLY, ALL.
+	// DeleteType Required. Different delete types to handle parent and child
+	//  lists, for dependency support. Available options: PARENT_ONLY, ALL.
 	DeleteType *DeploymentServiceDeleteDeploymentParamsDeleteType `form:"deleteType,omitempty" json:"deleteType,omitempty"`
 }
 
@@ -329,13 +340,15 @@ type DeploymentServiceListDeploymentClustersParams struct {
 	// PageSize Optional. Select count of Deployment clusters to be listed per page.
 	PageSize *int32 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
 
-	// Offset Optional. Offset is used to select the correct page from which Deployment clusters list will be displayed. (E.g If there are 10 Deployment clusters, page size is 2 and offset is set as 4, then the response will display Deployment clusters 5 and 6.)
+	// Offset Optional. Offset is used to select the correct page from which Deployment clusters list will be displayed.
+	//  (E.g If there are 10 Deployment clusters, page size is 2 and offset is set as 4, then the response will display Deployment clusters 5 and 6.)
 	Offset *int32 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
 // DeploymentServiceGetDeploymentsStatusParams defines parameters for DeploymentServiceGetDeploymentsStatus.
 type DeploymentServiceGetDeploymentsStatusParams struct {
-	// Labels Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+	// Labels Optional. A string array that filters cluster labels to be
+	//  displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
 	Labels *[]string `form:"labels,omitempty" json:"labels,omitempty"`
 }
 
