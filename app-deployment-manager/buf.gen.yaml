@@ -2,33 +2,35 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-version: v1
+version: v2
+managed:
+  enabled: true
+  disable:
+    - file_option: go_package
+      module: buf.build/googleapis/googleapis
+    - file_option: go_package
+      module: buf.build/grpc-ecosystem/grpc-gateway
+    - file_option: go_package
+      module: buf.build/bufbuild/protovalidate
+    - file_option: go_package
+      module: buf.build/envoyproxy/protoc-gen-validate
 plugins:
-  # Generate Go protobuf types
-  - name: go
+  - remote: buf.build/protocolbuffers/go:v1.28.1
     out: api/nbi/v2
     opt: paths=source_relative
-  
-  # Generate gRPC services (required for gRPC-Gateway)
-  - name: go-grpc
-    out: api/nbi/v2
-    opt: paths=source_relative
-  
-  # Generate gRPC-Gateway for REST endpoints
-  - name: grpc-gateway
+  - remote: buf.build/grpc/go:v1.2.0
     out: api/nbi/v2
     opt:
       - paths=source_relative
-      - generate_unbound_methods=true
-  
-  # Generate buf.validate validation code
-  - name: validate
+      - require_unimplemented_servers=false
+  - local: protoc-gen-validate
     out: api/nbi/v2
     opt:
       - paths=source_relative
       - lang=go
-  
-  # Generate OpenAPI specs with new plugin (replacing kollalabs)
-  - name: connect-openapi
+  - local: protoc-gen-connect-openapi
     out: api/nbi/v2/spec
     strategy: all
+  - remote: buf.build/grpc-ecosystem/gateway:v2.15.2
+    out: api/nbi/v2
+    opt: paths=source_relative
