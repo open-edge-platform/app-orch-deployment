@@ -1,7 +1,3 @@
-# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
-#
-# SPDX-License-Identifier: Apache-2.0
-
 version: v2
 managed:
   enabled: true
@@ -14,11 +10,14 @@ managed:
       module: buf.build/bufbuild/protovalidate
     - file_option: go_package
       module: buf.build/envoyproxy/protoc-gen-validate
+  override:
+    - file_option: go_package_prefix
+      value: github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2
 plugins:
-  - remote: buf.build/protocolbuffers/go:v1.28.1
+  - local: protoc-gen-go
     out: api/nbi/v2
     opt: paths=source_relative
-  - remote: buf.build/grpc/go:v1.2.0
+  - local: protoc-gen-go-grpc
     out: api/nbi/v2
     opt:
       - paths=source_relative
@@ -28,9 +27,9 @@ plugins:
     opt:
       - paths=source_relative
       - lang=go
-  - local: protoc-gen-connect-openapi
+  - local: protoc-gen-openapi
     out: api/nbi/v2/spec
     strategy: all
-  - remote: buf.build/grpc-ecosystem/gateway:v2.15.2
+  - local: protoc-gen-grpc-gateway
     out: api/nbi/v2
     opt: paths=source_relative

@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: deployment/v1/cluster_service.proto
 
-package v1
+package deploymentv1
 
 import (
 	context "context"

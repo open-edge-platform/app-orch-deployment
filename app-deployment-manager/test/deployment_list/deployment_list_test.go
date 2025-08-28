@@ -32,8 +32,8 @@ func (s *TestSuite) TestListDeploymentsWithPagination() {
 	}
 
 	testCases := []struct {
-		pageSize int32
-		offset   int32
+		pageSize uint32
+		offset   uint32
 	}{
 		{pageSize: 1, offset: 0},  // First page with one deployment
 		{pageSize: 2, offset: 0},  // First page with two deployments
@@ -86,9 +86,18 @@ func (s *TestSuite) TestListDeploymentsInvalidPaginationParameters() {
 		// TODO: test orderBy?
 	}
 	for _, tt := range testCases {
+		var pageSize, offset *uint32
+		if tt.pageSize >= 0 {
+			ps := uint32(tt.pageSize)
+			pageSize = &ps
+		}
+		if tt.offset >= 0 {
+			os := uint32(tt.offset)
+			offset = &os
+		}
 		deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
-			PageSize: &tt.pageSize,
-			Offset:   &tt.offset,
+			PageSize: pageSize,
+			Offset:   offset,
 			Labels:   tt.labels,
 		})
 		s.NoErrorf(err, "Pagination parameters %v", tt)

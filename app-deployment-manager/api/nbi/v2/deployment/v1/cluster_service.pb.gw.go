@@ -2,11 +2,11 @@
 // source: deployment/v1/cluster_service.proto
 
 /*
-Package v1 is a reverse proxy.
+Package deploymentv1 is a reverse proxy.
 
 It translates gRPC into RESTful JSON APIs.
 */
-package v1
+package deploymentv1
 
 import (
 	"context"
@@ -181,7 +181,7 @@ func RegisterClusterServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 // RegisterClusterServiceHandlerFromEndpoint is same as RegisterClusterServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
 func RegisterClusterServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
-	conn, err := grpc.DialContext(ctx, endpoint, opts...)
+	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
 	}

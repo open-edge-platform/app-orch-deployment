@@ -13,6 +13,7 @@ import (
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
+	deploymentv1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
 )
 
 var DpConfigs = map[string]any{
@@ -131,7 +132,7 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 			return "", retCode, fmt.Errorf("failed to get deployments per cluster: %v, status code: %d", err, retCode)
 		}
 		for _, deployment := range deployments {
-			if *deployment.DeploymentDisplayName == displayName && *deployment.Status.State == "RUNNING" {
+			if *deployment.DeploymentDisplayName == displayName && *deployment.Status.State == int(deploymentv1.State_RUNNING) {
 				fmt.Printf("%s deployment already exists in cluster %s, skipping creation\n", useDP["deployPackage"], types.TestClusterID)
 				return "", retCode, nil
 			}
@@ -176,7 +177,7 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 
 	fmt.Printf("Created %s deployment successfully, deployment id %s\n", displayName, deployID)
 
-	err = waitForDeploymentStatus(opts.AdmClient, displayName, restClient.RUNNING, types.RetryCount, opts.DeploymentTimeout)
+	err = waitForDeploymentStatus(opts.AdmClient, displayName, deploymentv1.State_RUNNING, types.RetryCount, opts.DeploymentTimeout)
 	if err != nil {
 		return "", retCode, err
 	}
@@ -185,9 +186,10 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 	return deployID, retCode, nil
 }
 
-func DeleteDeploymentWithDeleteType(client *restClient.ClientWithResponses, deployID string, deleteType restClient.DeploymentServiceDeleteDeploymentParamsDeleteType) (int, error) {
+func DeleteDeploymentWithDeleteType(client *restClient.ClientWithResponses, deployID string, deleteType deploymentv1.DeleteType) (int, error) {
+	deleteTypeValue := int(deleteType)
 	resp, err := client.DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployID, &restClient.DeploymentServiceDeleteDeploymentParams{
-		DeleteType: &deleteType,
+		DeleteType: &deleteTypeValue,
 	})
 	if err != nil || resp == nil || resp.StatusCode() != http.StatusOK {
 		status := 0
@@ -268,7 +270,7 @@ func GetDeployment(client *restClient.ClientWithResponses, deployID string) (res
 	return resp.JSON200.Deployment, resp.StatusCode(), nil
 }
 
-func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName string, status restClient.DeploymentStatusState, retries int, delay time.Duration) error {
+func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName string, status deploymentv1.State, retries int, delay time.Duration) error {
 	currState := "UNKNOWN"
 	for i := 0; i < retries; i++ {
 		deployments, retCode, err := getDeployments(client)
@@ -282,17 +284,17 @@ func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName
 				currState = string(*d.Status.State)
 			}
 
-			if *d.DisplayName == displayName && currState == string(status) {
-				fmt.Printf("Waiting for deployment %s state %s ---> %s\n", displayName, currState, status)
+			if *d.DisplayName == displayName && *d.Status.State == int(status) {
+				fmt.Printf("Waiting for deployment %s state %s ---> %s\n", displayName, currState, status.String())
 				return nil
 			}
 		}
 
-		fmt.Printf("Waiting for deployment %s state %s ---> %s\n", displayName, currState, status)
+		fmt.Printf("Waiting for deployment %s state %s ---> %s\n", displayName, currState, status.String())
 		time.Sleep(delay)
 	}
 
-	return fmt.Errorf("deployment %s did not reach status %s after %d retries", displayName, status, retries)
+	return fmt.Errorf("deployment %s did not reach status %s after %d retries", displayName, status.String(), retries)
 }
 
 func UpdateDeployment(client *restClient.ClientWithResponses, deployID string, params restClient.DeploymentServiceUpdateDeploymentJSONRequestBody) (int, error) {

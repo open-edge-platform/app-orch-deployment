@@ -1060,6 +1060,7 @@ type ClusterServiceListClustersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ListClustersResponse
+	JSONDefault  *Status
 }
 
 // Status returns HTTPResponse.Status
@@ -1082,6 +1083,7 @@ type ClusterServiceGetClusterResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *GetClusterResponse
+	JSONDefault  *Status
 }
 
 // Status returns HTTPResponse.Status
@@ -1104,6 +1106,7 @@ type DeploymentServiceListDeploymentsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ListDeploymentsResponse
+	JSONDefault  *Status
 }
 
 // Status returns HTTPResponse.Status
@@ -1126,6 +1129,7 @@ type DeploymentServiceCreateDeploymentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *CreateDeploymentResponse
+	JSONDefault  *Status
 }
 
 // Status returns HTTPResponse.Status
@@ -1148,6 +1152,7 @@ type DeploymentServiceListDeploymentsPerClusterResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ListDeploymentsPerClusterResponse
+	JSONDefault  *Status
 }
 
 // Status returns HTTPResponse.Status
@@ -1169,6 +1174,7 @@ func (r DeploymentServiceListDeploymentsPerClusterResponse) StatusCode() int {
 type DeploymentServiceDeleteDeploymentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSONDefault  *Status
 }
 
 // Status returns HTTPResponse.Status
@@ -1191,6 +1197,7 @@ type DeploymentServiceGetDeploymentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *GetDeploymentResponse
+	JSONDefault  *Status
 }
 
 // Status returns HTTPResponse.Status
@@ -1213,6 +1220,7 @@ type DeploymentServiceUpdateDeploymentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *UpdateDeploymentResponse
+	JSONDefault  *Status
 }
 
 // Status returns HTTPResponse.Status
@@ -1235,6 +1243,7 @@ type DeploymentServiceListDeploymentClustersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ListDeploymentClustersResponse
+	JSONDefault  *Status
 }
 
 // Status returns HTTPResponse.Status
@@ -1257,6 +1266,7 @@ type DeploymentServiceGetDeploymentsStatusResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *GetDeploymentsStatusResponse
+	JSONDefault  *Status
 }
 
 // Status returns HTTPResponse.Status
@@ -1402,6 +1412,13 @@ func ParseClusterServiceListClustersResponse(rsp *http.Response) (*ClusterServic
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Status
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
 	}
 
 	return response, nil
@@ -1427,6 +1444,13 @@ func ParseClusterServiceGetClusterResponse(rsp *http.Response) (*ClusterServiceG
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Status
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1454,6 +1478,13 @@ func ParseDeploymentServiceListDeploymentsResponse(rsp *http.Response) (*Deploym
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Status
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
 	}
 
 	return response, nil
@@ -1479,6 +1510,13 @@ func ParseDeploymentServiceCreateDeploymentResponse(rsp *http.Response) (*Deploy
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Status
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1506,6 +1544,13 @@ func ParseDeploymentServiceListDeploymentsPerClusterResponse(rsp *http.Response)
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Status
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
 	}
 
 	return response, nil
@@ -1522,6 +1567,16 @@ func ParseDeploymentServiceDeleteDeploymentResponse(rsp *http.Response) (*Deploy
 	response := &DeploymentServiceDeleteDeploymentResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Status
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
 	}
 
 	return response, nil
@@ -1547,6 +1602,13 @@ func ParseDeploymentServiceGetDeploymentResponse(rsp *http.Response) (*Deploymen
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Status
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1574,6 +1636,13 @@ func ParseDeploymentServiceUpdateDeploymentResponse(rsp *http.Response) (*Deploy
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Status
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
 	}
 
 	return response, nil
@@ -1600,6 +1669,13 @@ func ParseDeploymentServiceListDeploymentClustersResponse(rsp *http.Response) (*
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Status
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
 	}
 
 	return response, nil
@@ -1625,6 +1701,13 @@ func ParseDeploymentServiceGetDeploymentsStatusResponse(rsp *http.Response) (*De
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Status
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
 
 	}
 
