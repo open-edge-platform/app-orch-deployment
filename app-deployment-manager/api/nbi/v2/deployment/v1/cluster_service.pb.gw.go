@@ -133,7 +133,7 @@ func RegisterClusterServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.ClusterService/ListClusters", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/clusters"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.ClusterService/ListClusters", runtime.WithHTTPPathPattern("/adm/v1/clusters"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -158,7 +158,7 @@ func RegisterClusterServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.ClusterService/GetCluster", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/clusters/{cluster_id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.ClusterService/GetCluster", runtime.WithHTTPPathPattern("/adm/v1/clusters/{cluster_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -222,7 +222,7 @@ func RegisterClusterServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.ClusterService/ListClusters", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/clusters"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.ClusterService/ListClusters", runtime.WithHTTPPathPattern("/adm/v1/clusters"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -244,7 +244,7 @@ func RegisterClusterServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.ClusterService/GetCluster", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/clusters/{cluster_id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.ClusterService/GetCluster", runtime.WithHTTPPathPattern("/adm/v1/clusters/{cluster_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -264,9 +264,9 @@ func RegisterClusterServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 }
 
 var (
-	pattern_ClusterService_ListClusters_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"deployment.orchestrator.apis", "v1", "clusters"}, ""))
+	pattern_ClusterService_ListClusters_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"adm", "v1", "clusters"}, ""))
 
-	pattern_ClusterService_GetCluster_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"deployment.orchestrator.apis", "v1", "clusters", "cluster_id"}, ""))
+	pattern_ClusterService_GetCluster_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"adm", "v1", "clusters", "cluster_id"}, ""))
 )
 
 var (

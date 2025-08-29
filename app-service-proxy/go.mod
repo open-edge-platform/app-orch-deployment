@@ -6,8 +6,6 @@ module github.com/open-edge-platform/app-orch-deployment/app-service-proxy
 
 go 1.24.6
 
-replace github.com/open-edge-platform/app-orch-deployment/test-common-utils => ../test-common-utils
-
 require (
 	github.com/chromedp/cdproto v0.0.0-20250521201632-aadd49e0822c
 	github.com/chromedp/chromedp v0.13.6
@@ -115,3 +113,10 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.6.0 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
+
+// Replace with local modules for development
+replace github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 => ../app-deployment-manager/api/nbi/v2
+
+replace github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 => ../app-resource-manager/api/nbi/v2
+
+replace github.com/open-edge-platform/app-orch-deployment/test-common-utils => ../test-common-utils

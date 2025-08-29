@@ -88,30 +88,30 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// EndpointsServiceListAppEndpoints request
-	EndpointsServiceListAppEndpoints(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ResourceV2EndpointsServiceListAppEndpoints request
+	ResourceV2EndpointsServiceListAppEndpoints(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PodServiceDeletePod request
-	PodServiceDeletePod(ctx context.Context, clusterId string, namespace string, podName string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ResourceV2PodServiceDeletePod request
+	ResourceV2PodServiceDeletePod(ctx context.Context, clusterId string, namespace string, podName string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// VirtualMachineServiceRestartVirtualMachine request
-	VirtualMachineServiceRestartVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ResourceV2VirtualMachineServiceRestartVirtualMachine request
+	ResourceV2VirtualMachineServiceRestartVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// VirtualMachineServiceStartVirtualMachine request
-	VirtualMachineServiceStartVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ResourceV2VirtualMachineServiceStartVirtualMachine request
+	ResourceV2VirtualMachineServiceStartVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// VirtualMachineServiceStopVirtualMachine request
-	VirtualMachineServiceStopVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ResourceV2VirtualMachineServiceStopVirtualMachine request
+	ResourceV2VirtualMachineServiceStopVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// VirtualMachineServiceGetVNC request
-	VirtualMachineServiceGetVNC(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ResourceV2VirtualMachineServiceGetVNC request
+	ResourceV2VirtualMachineServiceGetVNC(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// AppWorkloadServiceListAppWorkloads request
-	AppWorkloadServiceListAppWorkloads(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ResourceV2AppWorkloadServiceListAppWorkloads request
+	ResourceV2AppWorkloadServiceListAppWorkloads(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-func (c *Client) EndpointsServiceListAppEndpoints(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewEndpointsServiceListAppEndpointsRequest(c.Server, appId, clusterId)
+func (c *Client) ResourceV2EndpointsServiceListAppEndpoints(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResourceV2EndpointsServiceListAppEndpointsRequest(c.Server, appId, clusterId)
 	if err != nil {
 		return nil, err
 	}
@@ -122,8 +122,8 @@ func (c *Client) EndpointsServiceListAppEndpoints(ctx context.Context, appId str
 	return c.Client.Do(req)
 }
 
-func (c *Client) PodServiceDeletePod(ctx context.Context, clusterId string, namespace string, podName string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPodServiceDeletePodRequest(c.Server, clusterId, namespace, podName)
+func (c *Client) ResourceV2PodServiceDeletePod(ctx context.Context, clusterId string, namespace string, podName string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResourceV2PodServiceDeletePodRequest(c.Server, clusterId, namespace, podName)
 	if err != nil {
 		return nil, err
 	}
@@ -134,8 +134,8 @@ func (c *Client) PodServiceDeletePod(ctx context.Context, clusterId string, name
 	return c.Client.Do(req)
 }
 
-func (c *Client) VirtualMachineServiceRestartVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewVirtualMachineServiceRestartVirtualMachineRequest(c.Server, appId, clusterId, virtualMachineId)
+func (c *Client) ResourceV2VirtualMachineServiceRestartVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResourceV2VirtualMachineServiceRestartVirtualMachineRequest(c.Server, appId, clusterId, virtualMachineId)
 	if err != nil {
 		return nil, err
 	}
@@ -146,8 +146,8 @@ func (c *Client) VirtualMachineServiceRestartVirtualMachine(ctx context.Context,
 	return c.Client.Do(req)
 }
 
-func (c *Client) VirtualMachineServiceStartVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewVirtualMachineServiceStartVirtualMachineRequest(c.Server, appId, clusterId, virtualMachineId)
+func (c *Client) ResourceV2VirtualMachineServiceStartVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResourceV2VirtualMachineServiceStartVirtualMachineRequest(c.Server, appId, clusterId, virtualMachineId)
 	if err != nil {
 		return nil, err
 	}
@@ -158,8 +158,8 @@ func (c *Client) VirtualMachineServiceStartVirtualMachine(ctx context.Context, a
 	return c.Client.Do(req)
 }
 
-func (c *Client) VirtualMachineServiceStopVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewVirtualMachineServiceStopVirtualMachineRequest(c.Server, appId, clusterId, virtualMachineId)
+func (c *Client) ResourceV2VirtualMachineServiceStopVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResourceV2VirtualMachineServiceStopVirtualMachineRequest(c.Server, appId, clusterId, virtualMachineId)
 	if err != nil {
 		return nil, err
 	}
@@ -170,8 +170,8 @@ func (c *Client) VirtualMachineServiceStopVirtualMachine(ctx context.Context, ap
 	return c.Client.Do(req)
 }
 
-func (c *Client) VirtualMachineServiceGetVNC(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewVirtualMachineServiceGetVNCRequest(c.Server, appId, clusterId, virtualMachineId)
+func (c *Client) ResourceV2VirtualMachineServiceGetVNC(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResourceV2VirtualMachineServiceGetVNCRequest(c.Server, appId, clusterId, virtualMachineId)
 	if err != nil {
 		return nil, err
 	}
@@ -182,8 +182,8 @@ func (c *Client) VirtualMachineServiceGetVNC(ctx context.Context, appId string, 
 	return c.Client.Do(req)
 }
 
-func (c *Client) AppWorkloadServiceListAppWorkloads(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAppWorkloadServiceListAppWorkloadsRequest(c.Server, appId, clusterId)
+func (c *Client) ResourceV2AppWorkloadServiceListAppWorkloads(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResourceV2AppWorkloadServiceListAppWorkloadsRequest(c.Server, appId, clusterId)
 	if err != nil {
 		return nil, err
 	}
@@ -194,20 +194,20 @@ func (c *Client) AppWorkloadServiceListAppWorkloads(ctx context.Context, appId s
 	return c.Client.Do(req)
 }
 
-// NewEndpointsServiceListAppEndpointsRequest generates requests for EndpointsServiceListAppEndpoints
-func NewEndpointsServiceListAppEndpointsRequest(server string, appId string, clusterId string) (*http.Request, error) {
+// NewResourceV2EndpointsServiceListAppEndpointsRequest generates requests for ResourceV2EndpointsServiceListAppEndpoints
+func NewResourceV2EndpointsServiceListAppEndpointsRequest(server string, appId string, clusterId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "appId", runtime.ParamLocationPath, appId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "app_id", runtime.ParamLocationPath, appId)
 	if err != nil {
 		return nil, err
 	}
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "clusterId", runtime.ParamLocationPath, clusterId)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "cluster_id", runtime.ParamLocationPath, clusterId)
 	if err != nil {
 		return nil, err
 	}
@@ -217,7 +217,7 @@ func NewEndpointsServiceListAppEndpointsRequest(server string, appId string, clu
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resource.orchestrator.apis/v2/endpoints/%s/%s", pathParam0, pathParam1)
+	operationPath := fmt.Sprintf("/arm/v2/endpoints/%s/%s", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -235,13 +235,13 @@ func NewEndpointsServiceListAppEndpointsRequest(server string, appId string, clu
 	return req, nil
 }
 
-// NewPodServiceDeletePodRequest generates requests for PodServiceDeletePod
-func NewPodServiceDeletePodRequest(server string, clusterId string, namespace string, podName string) (*http.Request, error) {
+// NewResourceV2PodServiceDeletePodRequest generates requests for ResourceV2PodServiceDeletePod
+func NewResourceV2PodServiceDeletePodRequest(server string, clusterId string, namespace string, podName string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterId", runtime.ParamLocationPath, clusterId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "cluster_id", runtime.ParamLocationPath, clusterId)
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +255,7 @@ func NewPodServiceDeletePodRequest(server string, clusterId string, namespace st
 
 	var pathParam2 string
 
-	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "podName", runtime.ParamLocationPath, podName)
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "pod_name", runtime.ParamLocationPath, podName)
 	if err != nil {
 		return nil, err
 	}
@@ -265,7 +265,7 @@ func NewPodServiceDeletePodRequest(server string, clusterId string, namespace st
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resource.orchestrator.apis/v2/workloads/pods/%s/%s/%s/delete", pathParam0, pathParam1, pathParam2)
+	operationPath := fmt.Sprintf("/arm/v2/workloads/pods/%s/%s/%s/delete", pathParam0, pathParam1, pathParam2)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -283,27 +283,27 @@ func NewPodServiceDeletePodRequest(server string, clusterId string, namespace st
 	return req, nil
 }
 
-// NewVirtualMachineServiceRestartVirtualMachineRequest generates requests for VirtualMachineServiceRestartVirtualMachine
-func NewVirtualMachineServiceRestartVirtualMachineRequest(server string, appId string, clusterId string, virtualMachineId string) (*http.Request, error) {
+// NewResourceV2VirtualMachineServiceRestartVirtualMachineRequest generates requests for ResourceV2VirtualMachineServiceRestartVirtualMachine
+func NewResourceV2VirtualMachineServiceRestartVirtualMachineRequest(server string, appId string, clusterId string, virtualMachineId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "appId", runtime.ParamLocationPath, appId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "app_id", runtime.ParamLocationPath, appId)
 	if err != nil {
 		return nil, err
 	}
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "clusterId", runtime.ParamLocationPath, clusterId)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "cluster_id", runtime.ParamLocationPath, clusterId)
 	if err != nil {
 		return nil, err
 	}
 
 	var pathParam2 string
 
-	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "virtualMachineId", runtime.ParamLocationPath, virtualMachineId)
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "virtual_machine_id", runtime.ParamLocationPath, virtualMachineId)
 	if err != nil {
 		return nil, err
 	}
@@ -313,7 +313,7 @@ func NewVirtualMachineServiceRestartVirtualMachineRequest(server string, appId s
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/restart", pathParam0, pathParam1, pathParam2)
+	operationPath := fmt.Sprintf("/arm/v2/workloads/virtual-machines/%s/%s/%s/restart", pathParam0, pathParam1, pathParam2)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -331,27 +331,27 @@ func NewVirtualMachineServiceRestartVirtualMachineRequest(server string, appId s
 	return req, nil
 }
 
-// NewVirtualMachineServiceStartVirtualMachineRequest generates requests for VirtualMachineServiceStartVirtualMachine
-func NewVirtualMachineServiceStartVirtualMachineRequest(server string, appId string, clusterId string, virtualMachineId string) (*http.Request, error) {
+// NewResourceV2VirtualMachineServiceStartVirtualMachineRequest generates requests for ResourceV2VirtualMachineServiceStartVirtualMachine
+func NewResourceV2VirtualMachineServiceStartVirtualMachineRequest(server string, appId string, clusterId string, virtualMachineId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "appId", runtime.ParamLocationPath, appId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "app_id", runtime.ParamLocationPath, appId)
 	if err != nil {
 		return nil, err
 	}
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "clusterId", runtime.ParamLocationPath, clusterId)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "cluster_id", runtime.ParamLocationPath, clusterId)
 	if err != nil {
 		return nil, err
 	}
 
 	var pathParam2 string
 
-	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "virtualMachineId", runtime.ParamLocationPath, virtualMachineId)
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "virtual_machine_id", runtime.ParamLocationPath, virtualMachineId)
 	if err != nil {
 		return nil, err
 	}
@@ -361,7 +361,7 @@ func NewVirtualMachineServiceStartVirtualMachineRequest(server string, appId str
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/start", pathParam0, pathParam1, pathParam2)
+	operationPath := fmt.Sprintf("/arm/v2/workloads/virtual-machines/%s/%s/%s/start", pathParam0, pathParam1, pathParam2)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -379,27 +379,27 @@ func NewVirtualMachineServiceStartVirtualMachineRequest(server string, appId str
 	return req, nil
 }
 
-// NewVirtualMachineServiceStopVirtualMachineRequest generates requests for VirtualMachineServiceStopVirtualMachine
-func NewVirtualMachineServiceStopVirtualMachineRequest(server string, appId string, clusterId string, virtualMachineId string) (*http.Request, error) {
+// NewResourceV2VirtualMachineServiceStopVirtualMachineRequest generates requests for ResourceV2VirtualMachineServiceStopVirtualMachine
+func NewResourceV2VirtualMachineServiceStopVirtualMachineRequest(server string, appId string, clusterId string, virtualMachineId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "appId", runtime.ParamLocationPath, appId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "app_id", runtime.ParamLocationPath, appId)
 	if err != nil {
 		return nil, err
 	}
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "clusterId", runtime.ParamLocationPath, clusterId)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "cluster_id", runtime.ParamLocationPath, clusterId)
 	if err != nil {
 		return nil, err
 	}
 
 	var pathParam2 string
 
-	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "virtualMachineId", runtime.ParamLocationPath, virtualMachineId)
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "virtual_machine_id", runtime.ParamLocationPath, virtualMachineId)
 	if err != nil {
 		return nil, err
 	}
@@ -409,7 +409,7 @@ func NewVirtualMachineServiceStopVirtualMachineRequest(server string, appId stri
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/stop", pathParam0, pathParam1, pathParam2)
+	operationPath := fmt.Sprintf("/arm/v2/workloads/virtual-machines/%s/%s/%s/stop", pathParam0, pathParam1, pathParam2)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -427,27 +427,27 @@ func NewVirtualMachineServiceStopVirtualMachineRequest(server string, appId stri
 	return req, nil
 }
 
-// NewVirtualMachineServiceGetVNCRequest generates requests for VirtualMachineServiceGetVNC
-func NewVirtualMachineServiceGetVNCRequest(server string, appId string, clusterId string, virtualMachineId string) (*http.Request, error) {
+// NewResourceV2VirtualMachineServiceGetVNCRequest generates requests for ResourceV2VirtualMachineServiceGetVNC
+func NewResourceV2VirtualMachineServiceGetVNCRequest(server string, appId string, clusterId string, virtualMachineId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "appId", runtime.ParamLocationPath, appId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "app_id", runtime.ParamLocationPath, appId)
 	if err != nil {
 		return nil, err
 	}
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "clusterId", runtime.ParamLocationPath, clusterId)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "cluster_id", runtime.ParamLocationPath, clusterId)
 	if err != nil {
 		return nil, err
 	}
 
 	var pathParam2 string
 
-	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "virtualMachineId", runtime.ParamLocationPath, virtualMachineId)
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "virtual_machine_id", runtime.ParamLocationPath, virtualMachineId)
 	if err != nil {
 		return nil, err
 	}
@@ -457,7 +457,7 @@ func NewVirtualMachineServiceGetVNCRequest(server string, appId string, clusterI
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/vnc", pathParam0, pathParam1, pathParam2)
+	operationPath := fmt.Sprintf("/arm/v2/workloads/virtual-machines/%s/%s/%s/vnc", pathParam0, pathParam1, pathParam2)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -475,20 +475,20 @@ func NewVirtualMachineServiceGetVNCRequest(server string, appId string, clusterI
 	return req, nil
 }
 
-// NewAppWorkloadServiceListAppWorkloadsRequest generates requests for AppWorkloadServiceListAppWorkloads
-func NewAppWorkloadServiceListAppWorkloadsRequest(server string, appId string, clusterId string) (*http.Request, error) {
+// NewResourceV2AppWorkloadServiceListAppWorkloadsRequest generates requests for ResourceV2AppWorkloadServiceListAppWorkloads
+func NewResourceV2AppWorkloadServiceListAppWorkloadsRequest(server string, appId string, clusterId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "appId", runtime.ParamLocationPath, appId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "app_id", runtime.ParamLocationPath, appId)
 	if err != nil {
 		return nil, err
 	}
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "clusterId", runtime.ParamLocationPath, clusterId)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "cluster_id", runtime.ParamLocationPath, clusterId)
 	if err != nil {
 		return nil, err
 	}
@@ -498,7 +498,7 @@ func NewAppWorkloadServiceListAppWorkloadsRequest(server string, appId string, c
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/resource.orchestrator.apis/v2/workloads/%s/%s", pathParam0, pathParam1)
+	operationPath := fmt.Sprintf("/arm/v2/workloads/%s/%s", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -559,36 +559,36 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// EndpointsServiceListAppEndpointsWithResponse request
-	EndpointsServiceListAppEndpointsWithResponse(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*EndpointsServiceListAppEndpointsResponse, error)
+	// ResourceV2EndpointsServiceListAppEndpointsWithResponse request
+	ResourceV2EndpointsServiceListAppEndpointsWithResponse(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*ResourceV2EndpointsServiceListAppEndpointsResponse, error)
 
-	// PodServiceDeletePodWithResponse request
-	PodServiceDeletePodWithResponse(ctx context.Context, clusterId string, namespace string, podName string, reqEditors ...RequestEditorFn) (*PodServiceDeletePodResponse, error)
+	// ResourceV2PodServiceDeletePodWithResponse request
+	ResourceV2PodServiceDeletePodWithResponse(ctx context.Context, clusterId string, namespace string, podName string, reqEditors ...RequestEditorFn) (*ResourceV2PodServiceDeletePodResponse, error)
 
-	// VirtualMachineServiceRestartVirtualMachineWithResponse request
-	VirtualMachineServiceRestartVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*VirtualMachineServiceRestartVirtualMachineResponse, error)
+	// ResourceV2VirtualMachineServiceRestartVirtualMachineWithResponse request
+	ResourceV2VirtualMachineServiceRestartVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceRestartVirtualMachineResponse, error)
 
-	// VirtualMachineServiceStartVirtualMachineWithResponse request
-	VirtualMachineServiceStartVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*VirtualMachineServiceStartVirtualMachineResponse, error)
+	// ResourceV2VirtualMachineServiceStartVirtualMachineWithResponse request
+	ResourceV2VirtualMachineServiceStartVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceStartVirtualMachineResponse, error)
 
-	// VirtualMachineServiceStopVirtualMachineWithResponse request
-	VirtualMachineServiceStopVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*VirtualMachineServiceStopVirtualMachineResponse, error)
+	// ResourceV2VirtualMachineServiceStopVirtualMachineWithResponse request
+	ResourceV2VirtualMachineServiceStopVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceStopVirtualMachineResponse, error)
 
-	// VirtualMachineServiceGetVNCWithResponse request
-	VirtualMachineServiceGetVNCWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*VirtualMachineServiceGetVNCResponse, error)
+	// ResourceV2VirtualMachineServiceGetVNCWithResponse request
+	ResourceV2VirtualMachineServiceGetVNCWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceGetVNCResponse, error)
 
-	// AppWorkloadServiceListAppWorkloadsWithResponse request
-	AppWorkloadServiceListAppWorkloadsWithResponse(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*AppWorkloadServiceListAppWorkloadsResponse, error)
+	// ResourceV2AppWorkloadServiceListAppWorkloadsWithResponse request
+	ResourceV2AppWorkloadServiceListAppWorkloadsWithResponse(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*ResourceV2AppWorkloadServiceListAppWorkloadsResponse, error)
 }
 
-type EndpointsServiceListAppEndpointsResponse struct {
+type ResourceV2EndpointsServiceListAppEndpointsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ListAppEndpointsResponse
+	JSON200      *ResourceV2ListAppEndpointsResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r EndpointsServiceListAppEndpointsResponse) Status() string {
+func (r ResourceV2EndpointsServiceListAppEndpointsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -596,21 +596,21 @@ func (r EndpointsServiceListAppEndpointsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r EndpointsServiceListAppEndpointsResponse) StatusCode() int {
+func (r ResourceV2EndpointsServiceListAppEndpointsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PodServiceDeletePodResponse struct {
+type ResourceV2PodServiceDeletePodResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *DeletePodResponse
+	JSON200      *ResourceV2DeletePodResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r PodServiceDeletePodResponse) Status() string {
+func (r ResourceV2PodServiceDeletePodResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -618,21 +618,21 @@ func (r PodServiceDeletePodResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PodServiceDeletePodResponse) StatusCode() int {
+func (r ResourceV2PodServiceDeletePodResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type VirtualMachineServiceRestartVirtualMachineResponse struct {
+type ResourceV2VirtualMachineServiceRestartVirtualMachineResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *RestartVirtualMachineResponse
+	JSON200      *ResourceV2RestartVirtualMachineResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r VirtualMachineServiceRestartVirtualMachineResponse) Status() string {
+func (r ResourceV2VirtualMachineServiceRestartVirtualMachineResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -640,21 +640,21 @@ func (r VirtualMachineServiceRestartVirtualMachineResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r VirtualMachineServiceRestartVirtualMachineResponse) StatusCode() int {
+func (r ResourceV2VirtualMachineServiceRestartVirtualMachineResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type VirtualMachineServiceStartVirtualMachineResponse struct {
+type ResourceV2VirtualMachineServiceStartVirtualMachineResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *StartVirtualMachineResponse
+	JSON200      *ResourceV2StartVirtualMachineResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r VirtualMachineServiceStartVirtualMachineResponse) Status() string {
+func (r ResourceV2VirtualMachineServiceStartVirtualMachineResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -662,21 +662,21 @@ func (r VirtualMachineServiceStartVirtualMachineResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r VirtualMachineServiceStartVirtualMachineResponse) StatusCode() int {
+func (r ResourceV2VirtualMachineServiceStartVirtualMachineResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type VirtualMachineServiceStopVirtualMachineResponse struct {
+type ResourceV2VirtualMachineServiceStopVirtualMachineResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *StopVirtualMachineResponse
+	JSON200      *ResourceV2StopVirtualMachineResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r VirtualMachineServiceStopVirtualMachineResponse) Status() string {
+func (r ResourceV2VirtualMachineServiceStopVirtualMachineResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -684,21 +684,21 @@ func (r VirtualMachineServiceStopVirtualMachineResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r VirtualMachineServiceStopVirtualMachineResponse) StatusCode() int {
+func (r ResourceV2VirtualMachineServiceStopVirtualMachineResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type VirtualMachineServiceGetVNCResponse struct {
+type ResourceV2VirtualMachineServiceGetVNCResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *GetVNCResponse
+	JSON200      *ResourceV2GetVNCResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r VirtualMachineServiceGetVNCResponse) Status() string {
+func (r ResourceV2VirtualMachineServiceGetVNCResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -706,21 +706,21 @@ func (r VirtualMachineServiceGetVNCResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r VirtualMachineServiceGetVNCResponse) StatusCode() int {
+func (r ResourceV2VirtualMachineServiceGetVNCResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type AppWorkloadServiceListAppWorkloadsResponse struct {
+type ResourceV2AppWorkloadServiceListAppWorkloadsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ListAppWorkloadsResponse
+	JSON200      *ResourceV2ListAppWorkloadsResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r AppWorkloadServiceListAppWorkloadsResponse) Status() string {
+func (r ResourceV2AppWorkloadServiceListAppWorkloadsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -728,92 +728,92 @@ func (r AppWorkloadServiceListAppWorkloadsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r AppWorkloadServiceListAppWorkloadsResponse) StatusCode() int {
+func (r ResourceV2AppWorkloadServiceListAppWorkloadsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-// EndpointsServiceListAppEndpointsWithResponse request returning *EndpointsServiceListAppEndpointsResponse
-func (c *ClientWithResponses) EndpointsServiceListAppEndpointsWithResponse(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*EndpointsServiceListAppEndpointsResponse, error) {
-	rsp, err := c.EndpointsServiceListAppEndpoints(ctx, appId, clusterId, reqEditors...)
+// ResourceV2EndpointsServiceListAppEndpointsWithResponse request returning *ResourceV2EndpointsServiceListAppEndpointsResponse
+func (c *ClientWithResponses) ResourceV2EndpointsServiceListAppEndpointsWithResponse(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*ResourceV2EndpointsServiceListAppEndpointsResponse, error) {
+	rsp, err := c.ResourceV2EndpointsServiceListAppEndpoints(ctx, appId, clusterId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseEndpointsServiceListAppEndpointsResponse(rsp)
+	return ParseResourceV2EndpointsServiceListAppEndpointsResponse(rsp)
 }
 
-// PodServiceDeletePodWithResponse request returning *PodServiceDeletePodResponse
-func (c *ClientWithResponses) PodServiceDeletePodWithResponse(ctx context.Context, clusterId string, namespace string, podName string, reqEditors ...RequestEditorFn) (*PodServiceDeletePodResponse, error) {
-	rsp, err := c.PodServiceDeletePod(ctx, clusterId, namespace, podName, reqEditors...)
+// ResourceV2PodServiceDeletePodWithResponse request returning *ResourceV2PodServiceDeletePodResponse
+func (c *ClientWithResponses) ResourceV2PodServiceDeletePodWithResponse(ctx context.Context, clusterId string, namespace string, podName string, reqEditors ...RequestEditorFn) (*ResourceV2PodServiceDeletePodResponse, error) {
+	rsp, err := c.ResourceV2PodServiceDeletePod(ctx, clusterId, namespace, podName, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePodServiceDeletePodResponse(rsp)
+	return ParseResourceV2PodServiceDeletePodResponse(rsp)
 }
 
-// VirtualMachineServiceRestartVirtualMachineWithResponse request returning *VirtualMachineServiceRestartVirtualMachineResponse
-func (c *ClientWithResponses) VirtualMachineServiceRestartVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*VirtualMachineServiceRestartVirtualMachineResponse, error) {
-	rsp, err := c.VirtualMachineServiceRestartVirtualMachine(ctx, appId, clusterId, virtualMachineId, reqEditors...)
+// ResourceV2VirtualMachineServiceRestartVirtualMachineWithResponse request returning *ResourceV2VirtualMachineServiceRestartVirtualMachineResponse
+func (c *ClientWithResponses) ResourceV2VirtualMachineServiceRestartVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceRestartVirtualMachineResponse, error) {
+	rsp, err := c.ResourceV2VirtualMachineServiceRestartVirtualMachine(ctx, appId, clusterId, virtualMachineId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseVirtualMachineServiceRestartVirtualMachineResponse(rsp)
+	return ParseResourceV2VirtualMachineServiceRestartVirtualMachineResponse(rsp)
 }
 
-// VirtualMachineServiceStartVirtualMachineWithResponse request returning *VirtualMachineServiceStartVirtualMachineResponse
-func (c *ClientWithResponses) VirtualMachineServiceStartVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*VirtualMachineServiceStartVirtualMachineResponse, error) {
-	rsp, err := c.VirtualMachineServiceStartVirtualMachine(ctx, appId, clusterId, virtualMachineId, reqEditors...)
+// ResourceV2VirtualMachineServiceStartVirtualMachineWithResponse request returning *ResourceV2VirtualMachineServiceStartVirtualMachineResponse
+func (c *ClientWithResponses) ResourceV2VirtualMachineServiceStartVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceStartVirtualMachineResponse, error) {
+	rsp, err := c.ResourceV2VirtualMachineServiceStartVirtualMachine(ctx, appId, clusterId, virtualMachineId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseVirtualMachineServiceStartVirtualMachineResponse(rsp)
+	return ParseResourceV2VirtualMachineServiceStartVirtualMachineResponse(rsp)
 }
 
-// VirtualMachineServiceStopVirtualMachineWithResponse request returning *VirtualMachineServiceStopVirtualMachineResponse
-func (c *ClientWithResponses) VirtualMachineServiceStopVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*VirtualMachineServiceStopVirtualMachineResponse, error) {
-	rsp, err := c.VirtualMachineServiceStopVirtualMachine(ctx, appId, clusterId, virtualMachineId, reqEditors...)
+// ResourceV2VirtualMachineServiceStopVirtualMachineWithResponse request returning *ResourceV2VirtualMachineServiceStopVirtualMachineResponse
+func (c *ClientWithResponses) ResourceV2VirtualMachineServiceStopVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceStopVirtualMachineResponse, error) {
+	rsp, err := c.ResourceV2VirtualMachineServiceStopVirtualMachine(ctx, appId, clusterId, virtualMachineId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseVirtualMachineServiceStopVirtualMachineResponse(rsp)
+	return ParseResourceV2VirtualMachineServiceStopVirtualMachineResponse(rsp)
 }
 
-// VirtualMachineServiceGetVNCWithResponse request returning *VirtualMachineServiceGetVNCResponse
-func (c *ClientWithResponses) VirtualMachineServiceGetVNCWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*VirtualMachineServiceGetVNCResponse, error) {
-	rsp, err := c.VirtualMachineServiceGetVNC(ctx, appId, clusterId, virtualMachineId, reqEditors...)
+// ResourceV2VirtualMachineServiceGetVNCWithResponse request returning *ResourceV2VirtualMachineServiceGetVNCResponse
+func (c *ClientWithResponses) ResourceV2VirtualMachineServiceGetVNCWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceGetVNCResponse, error) {
+	rsp, err := c.ResourceV2VirtualMachineServiceGetVNC(ctx, appId, clusterId, virtualMachineId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseVirtualMachineServiceGetVNCResponse(rsp)
+	return ParseResourceV2VirtualMachineServiceGetVNCResponse(rsp)
 }
 
-// AppWorkloadServiceListAppWorkloadsWithResponse request returning *AppWorkloadServiceListAppWorkloadsResponse
-func (c *ClientWithResponses) AppWorkloadServiceListAppWorkloadsWithResponse(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*AppWorkloadServiceListAppWorkloadsResponse, error) {
-	rsp, err := c.AppWorkloadServiceListAppWorkloads(ctx, appId, clusterId, reqEditors...)
+// ResourceV2AppWorkloadServiceListAppWorkloadsWithResponse request returning *ResourceV2AppWorkloadServiceListAppWorkloadsResponse
+func (c *ClientWithResponses) ResourceV2AppWorkloadServiceListAppWorkloadsWithResponse(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*ResourceV2AppWorkloadServiceListAppWorkloadsResponse, error) {
+	rsp, err := c.ResourceV2AppWorkloadServiceListAppWorkloads(ctx, appId, clusterId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseAppWorkloadServiceListAppWorkloadsResponse(rsp)
+	return ParseResourceV2AppWorkloadServiceListAppWorkloadsResponse(rsp)
 }
 
-// ParseEndpointsServiceListAppEndpointsResponse parses an HTTP response from a EndpointsServiceListAppEndpointsWithResponse call
-func ParseEndpointsServiceListAppEndpointsResponse(rsp *http.Response) (*EndpointsServiceListAppEndpointsResponse, error) {
+// ParseResourceV2EndpointsServiceListAppEndpointsResponse parses an HTTP response from a ResourceV2EndpointsServiceListAppEndpointsWithResponse call
+func ParseResourceV2EndpointsServiceListAppEndpointsResponse(rsp *http.Response) (*ResourceV2EndpointsServiceListAppEndpointsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &EndpointsServiceListAppEndpointsResponse{
+	response := &ResourceV2EndpointsServiceListAppEndpointsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ListAppEndpointsResponse
+		var dest ResourceV2ListAppEndpointsResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -824,22 +824,22 @@ func ParseEndpointsServiceListAppEndpointsResponse(rsp *http.Response) (*Endpoin
 	return response, nil
 }
 
-// ParsePodServiceDeletePodResponse parses an HTTP response from a PodServiceDeletePodWithResponse call
-func ParsePodServiceDeletePodResponse(rsp *http.Response) (*PodServiceDeletePodResponse, error) {
+// ParseResourceV2PodServiceDeletePodResponse parses an HTTP response from a ResourceV2PodServiceDeletePodWithResponse call
+func ParseResourceV2PodServiceDeletePodResponse(rsp *http.Response) (*ResourceV2PodServiceDeletePodResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PodServiceDeletePodResponse{
+	response := &ResourceV2PodServiceDeletePodResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest DeletePodResponse
+		var dest ResourceV2DeletePodResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -850,22 +850,22 @@ func ParsePodServiceDeletePodResponse(rsp *http.Response) (*PodServiceDeletePodR
 	return response, nil
 }
 
-// ParseVirtualMachineServiceRestartVirtualMachineResponse parses an HTTP response from a VirtualMachineServiceRestartVirtualMachineWithResponse call
-func ParseVirtualMachineServiceRestartVirtualMachineResponse(rsp *http.Response) (*VirtualMachineServiceRestartVirtualMachineResponse, error) {
+// ParseResourceV2VirtualMachineServiceRestartVirtualMachineResponse parses an HTTP response from a ResourceV2VirtualMachineServiceRestartVirtualMachineWithResponse call
+func ParseResourceV2VirtualMachineServiceRestartVirtualMachineResponse(rsp *http.Response) (*ResourceV2VirtualMachineServiceRestartVirtualMachineResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &VirtualMachineServiceRestartVirtualMachineResponse{
+	response := &ResourceV2VirtualMachineServiceRestartVirtualMachineResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest RestartVirtualMachineResponse
+		var dest ResourceV2RestartVirtualMachineResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -876,22 +876,22 @@ func ParseVirtualMachineServiceRestartVirtualMachineResponse(rsp *http.Response)
 	return response, nil
 }
 
-// ParseVirtualMachineServiceStartVirtualMachineResponse parses an HTTP response from a VirtualMachineServiceStartVirtualMachineWithResponse call
-func ParseVirtualMachineServiceStartVirtualMachineResponse(rsp *http.Response) (*VirtualMachineServiceStartVirtualMachineResponse, error) {
+// ParseResourceV2VirtualMachineServiceStartVirtualMachineResponse parses an HTTP response from a ResourceV2VirtualMachineServiceStartVirtualMachineWithResponse call
+func ParseResourceV2VirtualMachineServiceStartVirtualMachineResponse(rsp *http.Response) (*ResourceV2VirtualMachineServiceStartVirtualMachineResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &VirtualMachineServiceStartVirtualMachineResponse{
+	response := &ResourceV2VirtualMachineServiceStartVirtualMachineResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest StartVirtualMachineResponse
+		var dest ResourceV2StartVirtualMachineResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -902,22 +902,22 @@ func ParseVirtualMachineServiceStartVirtualMachineResponse(rsp *http.Response) (
 	return response, nil
 }
 
-// ParseVirtualMachineServiceStopVirtualMachineResponse parses an HTTP response from a VirtualMachineServiceStopVirtualMachineWithResponse call
-func ParseVirtualMachineServiceStopVirtualMachineResponse(rsp *http.Response) (*VirtualMachineServiceStopVirtualMachineResponse, error) {
+// ParseResourceV2VirtualMachineServiceStopVirtualMachineResponse parses an HTTP response from a ResourceV2VirtualMachineServiceStopVirtualMachineWithResponse call
+func ParseResourceV2VirtualMachineServiceStopVirtualMachineResponse(rsp *http.Response) (*ResourceV2VirtualMachineServiceStopVirtualMachineResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &VirtualMachineServiceStopVirtualMachineResponse{
+	response := &ResourceV2VirtualMachineServiceStopVirtualMachineResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest StopVirtualMachineResponse
+		var dest ResourceV2StopVirtualMachineResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -928,22 +928,22 @@ func ParseVirtualMachineServiceStopVirtualMachineResponse(rsp *http.Response) (*
 	return response, nil
 }
 
-// ParseVirtualMachineServiceGetVNCResponse parses an HTTP response from a VirtualMachineServiceGetVNCWithResponse call
-func ParseVirtualMachineServiceGetVNCResponse(rsp *http.Response) (*VirtualMachineServiceGetVNCResponse, error) {
+// ParseResourceV2VirtualMachineServiceGetVNCResponse parses an HTTP response from a ResourceV2VirtualMachineServiceGetVNCWithResponse call
+func ParseResourceV2VirtualMachineServiceGetVNCResponse(rsp *http.Response) (*ResourceV2VirtualMachineServiceGetVNCResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &VirtualMachineServiceGetVNCResponse{
+	response := &ResourceV2VirtualMachineServiceGetVNCResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest GetVNCResponse
+		var dest ResourceV2GetVNCResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -954,22 +954,22 @@ func ParseVirtualMachineServiceGetVNCResponse(rsp *http.Response) (*VirtualMachi
 	return response, nil
 }
 
-// ParseAppWorkloadServiceListAppWorkloadsResponse parses an HTTP response from a AppWorkloadServiceListAppWorkloadsWithResponse call
-func ParseAppWorkloadServiceListAppWorkloadsResponse(rsp *http.Response) (*AppWorkloadServiceListAppWorkloadsResponse, error) {
+// ParseResourceV2AppWorkloadServiceListAppWorkloadsResponse parses an HTTP response from a ResourceV2AppWorkloadServiceListAppWorkloadsWithResponse call
+func ParseResourceV2AppWorkloadServiceListAppWorkloadsResponse(rsp *http.Response) (*ResourceV2AppWorkloadServiceListAppWorkloadsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &AppWorkloadServiceListAppWorkloadsResponse{
+	response := &ResourceV2AppWorkloadServiceListAppWorkloadsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ListAppWorkloadsResponse
+		var dest ResourceV2ListAppWorkloadsResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

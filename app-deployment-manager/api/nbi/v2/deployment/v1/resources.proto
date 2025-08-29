@@ -5,12 +5,12 @@ syntax = "proto3";
 
 package deployment.v1;
 
-option go_package = "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1";
-
 import "buf/validate/validate.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1";
 
 // Deployment defines the specification to deploy a Deployment Package onto a set of clusters.
 message Deployment {

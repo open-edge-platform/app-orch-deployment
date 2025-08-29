@@ -176,10 +176,6 @@ github.com/open-edge-platform/app-orch-catalog v0.11.21 h1:Rk7FZv6ntETNgt4El9XjP
 github.com/open-edge-platform/app-orch-catalog v0.11.21/go.mod h1:+09ZM8MhFI5Z3+dHX/kv4DvJIaM7ahj1FpWHa1b0fGg=
 github.com/open-edge-platform/app-orch-deployment/app-deployment-manager v2.3.39+incompatible h1:2IkkPLinREun4NcoiOXEOxk3S8/zCD52Oh/6nJmqCRk=
 github.com/open-edge-platform/app-orch-deployment/app-deployment-manager v2.3.39+incompatible/go.mod h1:AsJfP7DpFj1AHsJOF68+bO8B2o0A5O2mduJwaSI0dWI=
-github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 v2.4.3 h1:h02ac5zLpPX+zg1SFq+EkDTMG+YAfmK9VmWVqGOulIc=
-github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 v2.4.3/go.mod h1:bG6RcGbU0K8msdb7MtFOKhPzNSjHWXtL6j8iHLzrx2w=
-github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 v2.0.0-20250602150811-eac18c424a6d h1:jJ+ZWQK1N5Gw88O2iAeaMp3f4UC8NGdrWabfnXAhEcs=
-github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 v2.0.0-20250602150811-eac18c424a6d/go.mod h1:yZYQ0gc24x1z2oWeCu96Z/udfy615+Nanq+v6ZsjKCY=
 github.com/open-edge-platform/orch-library/go v0.6.1 h1:IGR2ic73f3obnhlxTRfHcyYMbPbYu7BSqa9UYyEZ78Q=
 github.com/open-edge-platform/orch-library/go v0.6.1/go.mod h1:3Tes/GJfwYbnQa/1scbKiLbjZrL4fJEouFk28oo5/c8=
 github.com/open-edge-platform/orch-library/go/dazl v0.5.4 h1:Rx/bSAZiLjEEBjUiJEzBvT0fQv5huT5FQ2Ke3IMUhiE=

@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+version: v2
+modules:
+  - path: .
+    name: buf.build/open-edge-platform/app-deployment-manager/api
+
+deps:
+  - buf.build/googleapis/googleapis
+
+lint:
+  use:
+    - DEFAULT
+
+breaking:
+  use:
+    - FILE

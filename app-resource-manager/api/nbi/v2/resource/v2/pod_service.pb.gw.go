@@ -137,7 +137,7 @@ func RegisterPodServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/resource.v2.PodService/DeletePod", runtime.WithHTTPPathPattern("/resource.orchestrator.apis/v2/workloads/pods/{cluster_id}/{namespace}/{pod_name}/delete"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/resource.v2.PodService/DeletePod", runtime.WithHTTPPathPattern("/arm/v2/workloads/pods/{cluster_id}/{namespace}/{pod_name}/delete"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -201,7 +201,7 @@ func RegisterPodServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/resource.v2.PodService/DeletePod", runtime.WithHTTPPathPattern("/resource.orchestrator.apis/v2/workloads/pods/{cluster_id}/{namespace}/{pod_name}/delete"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/resource.v2.PodService/DeletePod", runtime.WithHTTPPathPattern("/arm/v2/workloads/pods/{cluster_id}/{namespace}/{pod_name}/delete"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -221,7 +221,7 @@ func RegisterPodServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 }
 
 var (
-	pattern_PodService_DeletePod_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"resource.orchestrator.apis", "v2", "workloads", "pods", "cluster_id", "namespace", "pod_name", "delete"}, ""))
+	pattern_PodService_DeletePod_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"arm", "v2", "workloads", "pods", "cluster_id", "namespace", "pod_name", "delete"}, ""))
 )
 
 var (

@@ -32,8 +32,8 @@ func (s *TestSuite) TestListDeploymentsWithPagination() {
 	}
 
 	testCases := []struct {
-		pageSize uint32
-		offset   uint32
+		pageSize int
+		offset   int
 	}{
 		{pageSize: 1, offset: 0},  // First page with one deployment
 		{pageSize: 2, offset: 0},  // First page with two deployments
@@ -43,7 +43,7 @@ func (s *TestSuite) TestListDeploymentsWithPagination() {
 		{pageSize: 2, offset: 50}, // Tenth page with two deployments (should be empty)
 	}
 	for _, tt := range testCases {
-		deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
+		deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentV1DeploymentServiceListDeploymentsParams{
 			PageSize: &tt.pageSize,
 			Offset:   &tt.offset,
 		})
@@ -86,16 +86,16 @@ func (s *TestSuite) TestListDeploymentsInvalidPaginationParameters() {
 		// TODO: test orderBy?
 	}
 	for _, tt := range testCases {
-		var pageSize, offset *uint32
+		var pageSize, offset *int
 		if tt.pageSize >= 0 {
-			ps := uint32(tt.pageSize)
+			ps := int(tt.pageSize)
 			pageSize = &ps
 		}
 		if tt.offset >= 0 {
-			os := uint32(tt.offset)
+			os := int(tt.offset)
 			offset = &os
 		}
-		deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
+		deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentV1DeploymentServiceListDeploymentsParams{
 			PageSize: pageSize,
 			Offset:   offset,
 			Labels:   tt.labels,
@@ -124,7 +124,7 @@ func (s *TestSuite) TestListDeploymentsWithFilter() {
 		s.NoError(err, "Failed to create '"+app+"-"+deploymentutils.DeploymentTypeTargeted+"' deployment")
 	}
 	displayName := deploymentutils.FormDisplayName(deploymentutils.AppWordpress, testName)
-	deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
+	deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentV1DeploymentServiceListDeploymentsParams{
 		Filter: ptr("displayName=" + displayName),
 	})
 	s.NoError(err, "Failed to list deployments with filter")

@@ -28,7 +28,7 @@ GOCMD   := go
 GOTESTSUM_PKG := gotest.tools/gotestsum@v1.12.2
 OAPI_CODEGEN_VERSION ?= v2.2.0
 LOCALBIN ?= $(shell pwd)/bin
-BUF_VERSION ?= v1.52.1
+BUF_VERSION ?= v1.57.0
 
 ## Path variables ##
 OUT_DIR	:= out
@@ -110,6 +110,8 @@ common-install-protoc-plugins:
 	# @go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 	@echo "Installing protoc-gen-connect-go..."
 	@go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest
+	# @echo "Installing protoc-gen-connect-openapi..."
+	# @go install github.com/bufbuild/protoc-gen-connect-openapi@latest
 	# @echo "Installing official protoc-gen-openapi from Google..."
 	# @go install github.com/google/gnostic/cmd/protoc-gen-openapi@latest
 	@echo "Installing oapi-codegen"
@@ -130,6 +132,8 @@ common-verify-protoc-plugins:
 	# @command -v protoc-gen-go-grpc >/dev/null 2>&1 && echo "protoc-gen-go-grpc is installed." || echo "---> protoc-gen-go-grpc is not installed."
 	@echo "Verifying protoc-gen-connect-go installation..."
 	@command -v protoc-gen-connect-go >/dev/null 2>&1 && echo "protoc-gen-connect-go is installed." || echo "---> protoc-gen-connect-go is not installed."
+	@echo "Verifying protoc-gen-connect-openapi installation..."
+	@command -v protoc-gen-connect-openapi >/dev/null 2>&1 && echo "protoc-gen-connect-openapi is installed." || echo "---> protoc-gen-connect-openapi is not installed."
 	# @echo "Verifying protoc-gen-openapi installation..."
 	# @command -v protoc-gen-openapi >/dev/null 2>&1 && echo "protoc-gen-openapi is installed." || echo "---> protoc-gen-openapi is not installed."
 	@echo "Verifying oapi-codegen installation..."

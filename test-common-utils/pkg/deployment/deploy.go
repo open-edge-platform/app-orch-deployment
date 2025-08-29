@@ -7,7 +7,6 @@ package deployment
 import (
 	"context"
 	"fmt"
-	"maps"
 	"net/http"
 	"time"
 
@@ -132,7 +131,7 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 			return "", retCode, fmt.Errorf("failed to get deployments per cluster: %v, status code: %d", err, retCode)
 		}
 		for _, deployment := range deployments {
-			if *deployment.DeploymentDisplayName == displayName && *deployment.Status.State == int(deploymentv1.State_RUNNING) {
+			if *deployment.DisplayName == displayName && *deployment.Status.State == restClient.RUNNING {
 				fmt.Printf("%s deployment already exists in cluster %s, skipping creation\n", useDP["deployPackage"], types.TestClusterID)
 				return "", retCode, nil
 			}
@@ -187,9 +186,19 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 }
 
 func DeleteDeploymentWithDeleteType(client *restClient.ClientWithResponses, deployID string, deleteType deploymentv1.DeleteType) (int, error) {
-	deleteTypeValue := int(deleteType)
-	resp, err := client.DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployID, &restClient.DeploymentServiceDeleteDeploymentParams{
-		DeleteType: &deleteTypeValue,
+	// Convert protobuf enum to REST client enum
+	var restDeleteType restClient.DeploymentV1DeleteType
+	switch deleteType {
+	case deploymentv1.DeleteType_ALL:
+		restDeleteType = restClient.ALL
+	case deploymentv1.DeleteType_PARENT_ONLY:
+		restDeleteType = restClient.PARENTONLY
+	default:
+		restDeleteType = restClient.ALL
+	}
+
+	resp, err := client.DeploymentV1DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployID, &restClient.DeploymentV1DeploymentServiceDeleteDeploymentParams{
+		DeleteType: restDeleteType,
 	})
 	if err != nil || resp == nil || resp.StatusCode() != http.StatusOK {
 		status := 0
@@ -202,7 +211,7 @@ func DeleteDeploymentWithDeleteType(client *restClient.ClientWithResponses, depl
 }
 
 func DeleteDeployment(client *restClient.ClientWithResponses, deployID string) (int, error) {
-	resp, err := client.DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployID, nil)
+	resp, err := client.DeploymentV1DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployID, nil)
 	if err != nil || resp == nil || resp.StatusCode() != http.StatusOK {
 		status := 0
 		if resp != nil {
@@ -213,7 +222,7 @@ func DeleteDeployment(client *restClient.ClientWithResponses, deployID string) (
 	return resp.StatusCode(), nil
 }
 
-func deploymentExists(deployments []restClient.Deployment, displayName string) bool {
+func deploymentExists(deployments []restClient.DeploymentV1Deployment, displayName string) bool {
 	for _, d := range deployments {
 		if *d.DisplayName == displayName {
 			return true
@@ -222,26 +231,9 @@ func deploymentExists(deployments []restClient.Deployment, displayName string) b
 	return false
 }
 
-func getDeploymentPerCluster(client *restClient.ClientWithResponses) ([]restClient.DeploymentInstancesCluster, int, error) {
-	resp, err := client.DeploymentServiceListDeploymentsPerClusterWithResponse(context.TODO(), types.TestClusterID, nil)
-	if err != nil || resp == nil || resp.StatusCode() != 200 {
-		if err != nil {
-			if resp != nil {
-				return nil, resp.StatusCode(), fmt.Errorf("%v", err)
-			}
-			return nil, 0, fmt.Errorf("%v", err)
-		}
-		if resp != nil {
-			return nil, resp.StatusCode(), fmt.Errorf("failed to list deployment cluster: %v", string(resp.Body))
-		}
-		return nil, 0, fmt.Errorf("failed to list deployment cluster: response is nil")
-	}
-
-	return resp.JSON200.DeploymentInstancesCluster, resp.StatusCode(), nil
-}
-
-func getDeployments(client *restClient.ClientWithResponses) ([]restClient.Deployment, int, error) {
-	resp, err := client.DeploymentServiceListDeploymentsWithResponse(context.TODO(), nil)
+func getDeploymentPerCluster(admClient *restClient.ClientWithResponses) ([]restClient.DeploymentV1Deployment, int, error) {
+	// Use ListDeployments to get all deployments, since ListDeploymentsPerCluster returns different structure
+	resp, err := admClient.DeploymentV1DeploymentServiceListDeploymentsWithResponse(context.TODO(), nil)
 	if err != nil || resp == nil || resp.StatusCode() != 200 {
 		if err != nil {
 			if resp != nil {
@@ -258,13 +250,31 @@ func getDeployments(client *restClient.ClientWithResponses) ([]restClient.Deploy
 	return resp.JSON200.Deployments, resp.StatusCode(), nil
 }
 
-func GetDeployment(client *restClient.ClientWithResponses, deployID string) (restClient.Deployment, int, error) {
-	resp, err := client.DeploymentServiceGetDeploymentWithResponse(context.TODO(), deployID)
+func getDeployments(client *restClient.ClientWithResponses) ([]restClient.DeploymentV1Deployment, int, error) {
+	resp, err := client.DeploymentV1DeploymentServiceListDeploymentsWithResponse(context.TODO(), nil)
+	if err != nil || resp == nil || resp.StatusCode() != 200 {
+		if err != nil {
+			if resp != nil {
+				return nil, resp.StatusCode(), fmt.Errorf("%v", err)
+			}
+			return nil, 0, fmt.Errorf("%v", err)
+		}
+		if resp != nil {
+			return nil, resp.StatusCode(), fmt.Errorf("failed to list deployments: %v", string(resp.Body))
+		}
+		return nil, 0, fmt.Errorf("failed to list deployments: response is nil")
+	}
+
+	return resp.JSON200.Deployments, resp.StatusCode(), nil
+}
+
+func GetDeployment(client *restClient.ClientWithResponses, deployID string) (restClient.DeploymentV1Deployment, int, error) {
+	resp, err := client.DeploymentV1DeploymentServiceGetDeploymentWithResponse(context.TODO(), deployID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
-			return restClient.Deployment{}, resp.StatusCode(), fmt.Errorf("%v", err)
+			return restClient.DeploymentV1Deployment{}, resp.StatusCode(), fmt.Errorf("%v", err)
 		}
-		return restClient.Deployment{}, resp.StatusCode(), err
+		return restClient.DeploymentV1Deployment{}, resp.StatusCode(), err
 	}
 
 	return resp.JSON200.Deployment, resp.StatusCode(), nil
@@ -272,6 +282,25 @@ func GetDeployment(client *restClient.ClientWithResponses, deployID string) (res
 
 func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName string, status deploymentv1.State, retries int, delay time.Duration) error {
 	currState := "UNKNOWN"
+	
+	// Convert protobuf enum to REST client enum
+	var targetState restClient.DeploymentV1State
+	switch status {
+	case deploymentv1.State_RUNNING:
+		targetState = restClient.RUNNING
+	case deploymentv1.State_DEPLOYING:
+		targetState = restClient.DEPLOYING
+	case deploymentv1.State_ERROR:
+		targetState = restClient.ERROR
+	case deploymentv1.State_TERMINATING:
+		targetState = restClient.TERMINATING
+	case deploymentv1.State_DOWN:
+		targetState = restClient.DOWN
+	case deploymentv1.State_UPDATING:
+		targetState = restClient.UPDATING
+	default:
+		targetState = restClient.UNKNOWN
+	}
 	for i := 0; i < retries; i++ {
 		deployments, retCode, err := getDeployments(client)
 		if err != nil || retCode != 200 {
@@ -284,7 +313,7 @@ func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName
 				currState = string(*d.Status.State)
 			}
 
-			if *d.DisplayName == displayName && *d.Status.State == int(status) {
+			if *d.DisplayName == displayName && *d.Status.State == targetState {
 				fmt.Printf("Waiting for deployment %s state %s ---> %s\n", displayName, currState, status.String())
 				return nil
 			}
@@ -297,8 +326,8 @@ func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName
 	return fmt.Errorf("deployment %s did not reach status %s after %d retries", displayName, status.String(), retries)
 }
 
-func UpdateDeployment(client *restClient.ClientWithResponses, deployID string, params restClient.DeploymentServiceUpdateDeploymentJSONRequestBody) (int, error) {
-	resp, err := client.DeploymentServiceUpdateDeploymentWithResponse(context.TODO(), deployID, params)
+func UpdateDeployment(client *restClient.ClientWithResponses, deployID string, params restClient.DeploymentV1DeploymentServiceUpdateDeploymentJSONRequestBody) (int, error) {
+	resp, err := client.DeploymentV1DeploymentServiceUpdateDeploymentWithResponse(context.TODO(), deployID, params)
 	if err != nil || resp == nil || resp.StatusCode() != 200 {
 		if err != nil {
 			if resp != nil {
@@ -348,7 +377,7 @@ func deleteDeploymentByDisplayName(client *restClient.ClientWithResponses, displ
 }
 
 func createDeployment(client *restClient.ClientWithResponses, params CreateDeploymentParams) (string, int, error) {
-	reqBody := restClient.DeploymentServiceCreateDeploymentJSONRequestBody{
+	reqBody := restClient.DeploymentV1DeploymentServiceCreateDeploymentJSONRequestBody{
 		AppName:        params.DpName,
 		AppVersion:     params.AppVersion,
 		DeploymentType: ptr(params.DeploymentType),
@@ -356,37 +385,44 @@ func createDeployment(client *restClient.ClientWithResponses, params CreateDeplo
 		ProfileName:    ptr(params.ProfileName),
 	}
 
-	var targetClusters []restClient.TargetClusters
+	var targetClusters []restClient.DeploymentV1TargetClusters
 	if params.DeploymentType == "targeted" {
 		for _, v := range *ptr(params.AppNames) {
-			targetClusters = append(targetClusters, restClient.TargetClusters{
+			targetClusters = append(targetClusters, restClient.DeploymentV1TargetClusters{
 				AppName:   ptr(v),
 				ClusterId: ptr(params.ClusterID),
 			})
 		}
 	} else if params.DeploymentType == "auto-scaling" {
 		for _, v := range *ptr(params.AppNames) {
-			targetClusters = append(targetClusters, restClient.TargetClusters{
+			targetClusters = append(targetClusters, restClient.DeploymentV1TargetClusters{
 				AppName: ptr(v),
-				Labels:  ptr(*params.Labels),
+				Labels: &restClient.DeploymentV1TargetClusters_Labels{
+					AdditionalProperties: *params.Labels,
+				},
 			})
 		}
 	}
 	reqBody.TargetClusters = &targetClusters
 
-	var overrideValues []restClient.OverrideValues
+	var overrideValues []restClient.DeploymentV1OverrideValues
 	for _, v := range *ptr(params.OverrideValues) {
-		overrideValues = append(overrideValues, restClient.OverrideValues{
+		overrideValues = append(overrideValues, restClient.DeploymentV1OverrideValues{
 			AppName:         v["appName"].(string),
 			TargetNamespace: ptr(v["targetNamespace"].(string)),
-			Values: func() *map[string]any {
-				convertedMap := make(map[string]any)
+			Values: func() *restClient.GoogleProtobufStruct {
 				if v["targetValues"] == nil {
 					return nil
 				}
-				maps.Copy(convertedMap, v["targetValues"].(map[string]any))
-
-				return &convertedMap
+				additionalProps := make(map[string]restClient.GoogleProtobufValue)
+				for key, value := range v["targetValues"].(map[string]any) {
+					additionalProps[key] = restClient.GoogleProtobufValue{
+						AdditionalProperties: map[string]interface{}{"value": value},
+					}
+				}
+				return &restClient.GoogleProtobufStruct{
+					AdditionalProperties: additionalProps,
+				}
 			}(),
 		})
 	}
@@ -423,8 +459,8 @@ func DeleteAndRetryUntilDeleted(client *restClient.ClientWithResponses, displayN
 	return fmt.Errorf("deployment %s not deleted after %d retries", displayName, retries)
 }
 
-func createDeploymentCmd(admClient *restClient.ClientWithResponses, reqBody *restClient.DeploymentServiceCreateDeploymentJSONRequestBody) (string, int, error) {
-	resp, err := admClient.DeploymentServiceCreateDeploymentWithResponse(context.TODO(), *reqBody)
+func createDeploymentCmd(admClient *restClient.ClientWithResponses, reqBody *restClient.DeploymentV1DeploymentServiceCreateDeploymentJSONRequestBody) (string, int, error) {
+	resp, err := admClient.DeploymentV1DeploymentServiceCreateDeploymentWithResponse(context.TODO(), *reqBody)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return "", resp.StatusCode(), fmt.Errorf("%v", err)
@@ -435,19 +471,19 @@ func createDeploymentCmd(admClient *restClient.ClientWithResponses, reqBody *res
 	return resp.JSON200.DeploymentId, resp.StatusCode(), nil
 }
 
-func GetDeploymentsStatus(admClient *restClient.ClientWithResponses, labels *[]string) (*restClient.GetDeploymentsStatusResponse, int, error) {
-	var params *restClient.DeploymentServiceGetDeploymentsStatusParams
+func GetDeploymentsStatus(admClient *restClient.ClientWithResponses, labels *[]string) (*restClient.DeploymentV1GetDeploymentsStatusResponse, int, error) {
+	var params *restClient.DeploymentV1DeploymentServiceGetDeploymentsStatusParams
 	if labels != nil {
-		params = &restClient.DeploymentServiceGetDeploymentsStatusParams{
+		params = &restClient.DeploymentV1DeploymentServiceGetDeploymentsStatusParams{
 			Labels: labels,
 		}
 	}
-	resp, err := admClient.DeploymentServiceGetDeploymentsStatusWithResponse(context.TODO(), params)
+	resp, err := admClient.DeploymentV1DeploymentServiceGetDeploymentsStatusWithResponse(context.TODO(), params)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
-			return &restClient.GetDeploymentsStatusResponse{}, resp.StatusCode(), fmt.Errorf("%v", err)
+			return &restClient.DeploymentV1GetDeploymentsStatusResponse{}, resp.StatusCode(), fmt.Errorf("%v", err)
 		}
-		return &restClient.GetDeploymentsStatusResponse{}, resp.StatusCode(), fmt.Errorf("failed to get deployment status: %v", string(resp.Body))
+		return &restClient.DeploymentV1GetDeploymentsStatusResponse{}, resp.StatusCode(), fmt.Errorf("failed to get deployment status: %v", string(resp.Body))
 	}
 
 	return resp.JSON200, resp.StatusCode(), nil
@@ -457,17 +493,17 @@ func FormDisplayName(dpPackageName, testName string) string {
 	return fmt.Sprintf("%s-%s", dpPackageName, testName)
 }
 
-func DeploymentsList(admClient *restClient.ClientWithResponses) (*[]restClient.Deployment, int, error) {
+func DeploymentsList(admClient *restClient.ClientWithResponses) (*[]restClient.DeploymentV1Deployment, int, error) {
 	return DeploymentsListWithParams(admClient, nil)
 }
 
-func DeploymentsListWithParams(admClient *restClient.ClientWithResponses, params *restClient.DeploymentServiceListDeploymentsParams) (*[]restClient.Deployment, int, error) {
-	resp, err := admClient.DeploymentServiceListDeploymentsWithResponse(context.TODO(), params)
+func DeploymentsListWithParams(admClient *restClient.ClientWithResponses, params *restClient.DeploymentV1DeploymentServiceListDeploymentsParams) (*[]restClient.DeploymentV1Deployment, int, error) {
+	resp, err := admClient.DeploymentV1DeploymentServiceListDeploymentsWithResponse(context.TODO(), params)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
-			return &[]restClient.Deployment{}, resp.StatusCode(), fmt.Errorf("%v", err)
+			return &[]restClient.DeploymentV1Deployment{}, resp.StatusCode(), fmt.Errorf("%v", err)
 		}
-		return &[]restClient.Deployment{}, resp.StatusCode(), err
+		return &[]restClient.DeploymentV1Deployment{}, resp.StatusCode(), err
 	}
 
 	return &resp.JSON200.Deployments, resp.StatusCode(), nil
@@ -508,15 +544,15 @@ func ResetThenChangeDpConfig(dpConfigName string, key string, value any, origina
 	return nil
 }
 
-func GetDeployApps(client *restClient.ClientWithResponses, deployID string) ([]*restClient.App, error) {
+func GetDeployApps(client *restClient.ClientWithResponses, deployID string) ([]*restClient.DeploymentV1App, error) {
 	deployments, retCode, err := getDeploymentPerCluster(client)
 	if err != nil || retCode != 200 {
-		return []*restClient.App{}, fmt.Errorf("failed to get deployments: %v", err)
+		return []*restClient.DeploymentV1App{}, fmt.Errorf("failed to get deployments: %v", err)
 	}
 
 	for _, d := range deployments {
-		if *d.DeploymentUid == deployID {
-			apps := make([]*restClient.App, len(*d.Apps))
+		if *d.DeployId == deployID {
+			apps := make([]*restClient.DeploymentV1App, len(*d.Apps))
 			for i, app := range *d.Apps {
 				apps[i] = &app
 				fmt.Println("app.Name : ", *app.Name)
@@ -525,5 +561,5 @@ func GetDeployApps(client *restClient.ClientWithResponses, deployID string) ([]*
 		}
 	}
 
-	return []*restClient.App{}, fmt.Errorf("did not find deployment id %s", deployID)
+	return []*restClient.DeploymentV1App{}, fmt.Errorf("did not find deployment id %s", deployID)
 }
