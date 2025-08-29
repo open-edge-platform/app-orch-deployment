@@ -30,9 +30,9 @@ func TestNewPaginationQuery(t *testing.T) {
 }
 
 func TestIsValidPagination(t *testing.T) {
-	offsetErr := errors.NewInvalid("offset parameter must be gte zero")
-	pageSizeErr := errors.NewInvalid("pagesize parameter must be gte zero")
-	pageSizeMaxErr := errors.NewInvalid("pagesize parameter must be lte 100")
+	offsetErr := errors.NewInvalid("validation error:\n - offset: value must be greater than or equal to 0 [uint32.gte]")
+	pageSizeErr := errors.NewInvalid("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 100 [uint32.gte_lte]")
+	pageSizeMaxErr := errors.NewInvalid("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 100 [uint32.gte_lte]")
 	cases := []struct {
 		pQuery   *PaginationQuery
 		expected error

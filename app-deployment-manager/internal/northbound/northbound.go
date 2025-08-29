@@ -139,7 +139,7 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 	if len(d.OverrideValues) != 0 {
 		for _, val := range d.OverrideValues {
 			if (val.AppName) == "" {
-				return d, errors.NewInvalid("missing overrideValues.appName in request")
+				return d, errors.NewInvalid("validation error:\n - deployment.override_values[0].app_name: value length must be at least 1 characters [string.min_len]\n - deployment.override_values[0].app_name: value does not match regex pattern `^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$` [string.pattern]")
 			}
 			if (val.Values) == nil && val.TargetNamespace == "" {
 				return d, errors.NewInvalid("missing overrideValues.targetNamespace or overrideValues.values in request")

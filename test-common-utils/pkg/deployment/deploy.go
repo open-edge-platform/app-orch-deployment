@@ -10,9 +10,9 @@ import (
 	"net/http"
 	"time"
 
+	deploymentv1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
-	deploymentv1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
 )
 
 var DpConfigs = map[string]any{
@@ -282,7 +282,7 @@ func GetDeployment(client *restClient.ClientWithResponses, deployID string) (res
 
 func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName string, status deploymentv1.State, retries int, delay time.Duration) error {
 	currState := "UNKNOWN"
-	
+
 	// Convert protobuf enum to REST client enum
 	var targetState restClient.DeploymentV1State
 	switch status {
@@ -397,9 +397,7 @@ func createDeployment(client *restClient.ClientWithResponses, params CreateDeplo
 		for _, v := range *ptr(params.AppNames) {
 			targetClusters = append(targetClusters, restClient.DeploymentV1TargetClusters{
 				AppName: ptr(v),
-				Labels: &restClient.DeploymentV1TargetClusters_Labels{
-					AdditionalProperties: *params.Labels,
-				},
+				Labels:  params.Labels,
 			})
 		}
 	}
@@ -414,15 +412,13 @@ func createDeployment(client *restClient.ClientWithResponses, params CreateDeplo
 				if v["targetValues"] == nil {
 					return nil
 				}
-				additionalProps := make(map[string]restClient.GoogleProtobufValue)
+				structMap := make(restClient.GoogleProtobufStruct)
 				for key, value := range v["targetValues"].(map[string]any) {
-					additionalProps[key] = restClient.GoogleProtobufValue{
-						AdditionalProperties: map[string]interface{}{"value": value},
-					}
+					valueMap := make(restClient.GoogleProtobufValue)
+					valueMap["value"] = value
+					structMap[key] = &valueMap
 				}
-				return &restClient.GoogleProtobufStruct{
-					AdditionalProperties: additionalProps,
-				}
+				return &structMap
 			}(),
 		})
 	}

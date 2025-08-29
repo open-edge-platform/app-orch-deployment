@@ -83,7 +83,7 @@ type UnsafeAppWorkloadServiceServer interface {
 }
 
 func RegisterAppWorkloadServiceServer(s grpc.ServiceRegistrar, srv AppWorkloadServiceServer) {
-	// If the following call pancis, it indicates UnimplementedAppWorkloadServiceServer was
+	// If the following call panics, it indicates UnimplementedAppWorkloadServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.

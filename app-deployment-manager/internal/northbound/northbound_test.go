@@ -29,8 +29,6 @@ import (
 
 	"google.golang.org/grpc/metadata"
 
-	"github.com/bufbuild/protovalidate-go"
-
 	"google.golang.org/protobuf/types/known/structpb"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
@@ -72,7 +70,6 @@ type DeployServer struct {
 	k8sClient        *nbmocks.FakeDeploymentV1
 	vaultAuthMock    *nbmocks.VaultAuth
 	opaMock          *openpolicyagent.MockClientWithResponsesInterface
-	protoValidator   *protovalidate.Validator
 	catalogClient    *mockerymock.MockeryCatalogClient
 	kc               *kubernetes.Clientset
 	ctx              context.Context
@@ -83,7 +80,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 		deploymentServer         *DeploymentSvc
 		deploymentListSrc        deploymentv1beta1.DeploymentList
 		k8sClient                *nbmocks.FakeDeploymentV1
-		protoValidator           *protovalidate.Validator
 		deployInstance           *deploymentv1beta1.Deployment
 		deployInstanceResp       *deploymentpb.Deployment
 		mockController           *gomock.Controller
@@ -123,10 +119,8 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).AnyTimes()
 
 			// protovalidate Validator
-			protoValidator, err = protovalidate.New()
-			Expect(err).ToNot(HaveOccurred())
 
-			deploymentServer = NewDeployment(k8sClient, opaMock, nil, nil, nil, protoValidator, nil)
+			deploymentServer = NewDeployment(k8sClient, opaMock, nil, nil, nil, nil)
 
 			md := metadata.Pairs("foo", "bar")
 			ctx = metadata.NewIncomingContext(context.Background(), md)
@@ -224,11 +218,9 @@ var _ = Describe("Gateway gRPC Service", func() {
 	Describe("Gateway API ListDeploymentClusters", func() {
 		BeforeEach(func() {
 			// protovalidate Validator
-			protoValidator, err := protovalidate.New()
-			Expect(err).ToNot(HaveOccurred())
 
 			k8sClient = &nbmocks.FakeDeploymentV1{}
-			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, nil, protoValidator, nil)
+			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, nil, nil)
 
 			// populates a mock deployment object
 			setDeploymentListObjects(&deploymentListSrc)
@@ -274,7 +266,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 		It("fails due to deployment LIST error", func() {
 			k8sClient = &nbmocks.FakeDeploymentV1{}
-			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, nil, protoValidator, nil)
+			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, nil, nil)
 
 			k8sClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -297,7 +289,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 		It("fails due to deployment cluster LIST error", func() {
 			k8sClient = &nbmocks.FakeDeploymentV1{}
-			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, nil, protoValidator, nil)
+			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, nil, nil)
 
 			k8sClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -328,7 +320,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 		It("fails due to deployment not found", func() {
 			k8sClient = &nbmocks.FakeDeploymentV1{}
-			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, nil, protoValidator, nil)
+			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, nil, nil)
 
 			deploymentListSrc.Items[0].ObjectMeta.Name = ""
 
@@ -364,11 +356,9 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s.kc = mockK8Client(ts.URL)
 
 			// protovalidate Validator
-			s.protoValidator, err = protovalidate.New()
-			Expect(err).ToNot(HaveOccurred())
 
 			s.k8sClient = &nbmocks.FakeDeploymentV1{}
-			s.deploymentServer = NewDeployment(s.k8sClient, nil, s.kc, nil, nil, s.protoValidator, nil)
+			s.deploymentServer = NewDeployment(s.k8sClient, nil, s.kc, nil, nil, nil)
 
 			// populates a mock deployment object
 			setDeploymentListObjects(&deploymentListSrc)
@@ -554,7 +544,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			defer ts.Close()
 
 			k8sClient := &nbmocks.FakeDeploymentV1{}
-			deploymentServer := NewDeployment(k8sClient, nil, s.kc, nil, nil, s.protoValidator, nil)
+			deploymentServer := NewDeployment(k8sClient, nil, s.kc, nil, nil, nil)
 
 			k8sClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -586,7 +576,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			defer ts.Close()
 
 			k8sClient := &nbmocks.FakeDeploymentV1{}
-			deploymentServer := NewDeployment(k8sClient, nil, s.kc, nil, nil, s.protoValidator, nil)
+			deploymentServer := NewDeployment(k8sClient, nil, s.kc, nil, nil, nil)
 
 			k8sClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -634,10 +624,8 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s.kc = mockK8Client(ts.URL)
 
 			// protovalidate Validator
-			s.protoValidator, err = protovalidate.New()
-			Expect(err).ToNot(HaveOccurred())
 
-			s.deploymentServer = NewDeployment(s.k8sClient, nil, s.kc, nil, nil, s.protoValidator, nil)
+			s.deploymentServer = NewDeployment(s.k8sClient, nil, s.kc, nil, nil, nil)
 
 			// populates a mock deployment object
 			setDeploymentListObjects(&deploymentListSrc)
@@ -866,10 +854,8 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s.kc = mockK8Client(ts.URL)
 
 			// protovalidate Validator
-			s.protoValidator, err = protovalidate.New()
-			Expect(err).ToNot(HaveOccurred())
 
-			s.deploymentServer = NewDeployment(s.k8sClient, nil, s.kc, nil, nil, s.protoValidator, nil)
+			s.deploymentServer = NewDeployment(s.k8sClient, nil, s.kc, nil, nil, nil)
 
 			// populates a mock deployment object
 			setDeploymentListObject(&deploymentListSrc)
@@ -907,7 +893,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 		It("successfully returns an empty list with no filter labels", func() {
 			k8sClient = &nbmocks.FakeDeploymentV1{}
-			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, nil, s.protoValidator, nil)
+			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, nil, nil)
 
 			k8sClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -947,7 +933,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 			k8sClient = &nbmocks.FakeDeploymentV1{}
 
-			deploymentServer = NewDeployment(k8sClient, nil, s.kc, nil, nil, s.protoValidator, nil)
+			deploymentServer = NewDeployment(k8sClient, nil, s.kc, nil, nil, nil)
 
 			k8sClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -980,7 +966,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 	Describe("Gateway API Filter List", func() {
 		BeforeEach(func() {
 			k8sClient = &nbmocks.FakeDeploymentV1{}
-			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, nil, protoValidator, nil)
+			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, nil, nil)
 
 			// populates a mock deployment object
 			setDeploymentListObject(&deploymentListSrc)
@@ -1013,7 +999,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			defer ts.Close()
 
 			kc := mockK8Client(ts.URL)
-			deploymentServer := NewDeployment(k8sClient, nil, kc, nil, nil, protoValidator, nil)
+			deploymentServer := NewDeployment(k8sClient, nil, kc, nil, nil, nil)
 
 			k8sClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -1044,7 +1030,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 		It("Filter: successfully returns an empty list due no matching target label", func() {
 			k8sClient := &nbmocks.FakeDeploymentV1{}
-			deploymentServer := NewDeployment(k8sClient, nil, nil, nil, nil, protoValidator, nil)
+			deploymentServer := NewDeployment(k8sClient, nil, nil, nil, nil, nil)
 
 			k8sClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -1093,7 +1079,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			defer ts.Close()
 
 			kc := mockK8Client(ts.URL)
-			deploymentServer := NewDeployment(k8sClient, nil, kc, nil, nil, protoValidator, nil)
+			deploymentServer := NewDeployment(k8sClient, nil, kc, nil, nil, nil)
 
 			k8sClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -1157,7 +1143,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			defer ts.Close()
 
 			kClient := mockK8Client(ts.URL)
-			deploymentServer := NewDeployment(k8sClient, nil, kClient, nil, nil, protoValidator, nil)
+			deploymentServer := NewDeployment(k8sClient, nil, kClient, nil, nil, nil)
 
 			k8sClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -1223,7 +1209,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			defer ts.Close()
 
 			kClient := mockK8Client(ts.URL)
-			deploymentServer := NewDeployment(k8sClient, nil, kClient, nil, nil, protoValidator, nil)
+			deploymentServer := NewDeployment(k8sClient, nil, kClient, nil, nil, nil)
 
 			k8sClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -1289,10 +1275,9 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 			kClient := mockK8Client(ts.URL)
 
-			protoValidator, err := protovalidate.New()
 			Expect(err).ToNot(HaveOccurred())
 
-			deploymentServer := NewDeployment(k8sClient, nil, kClient, nil, nil, protoValidator, nil)
+			deploymentServer := NewDeployment(k8sClient, nil, kClient, nil, nil, nil)
 
 			k8sClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -1392,10 +1377,8 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s.k8sClient = &nbmocks.FakeDeploymentV1{}
 
 			// protovalidate Validator
-			s.protoValidator, err = protovalidate.New()
-			Expect(err).ToNot(HaveOccurred())
 
-			s.deploymentServer = NewDeployment(s.k8sClient, nil, nil, nil, nil, s.protoValidator, nil)
+			s.deploymentServer = NewDeployment(s.k8sClient, nil, nil, nil, nil, nil)
 
 			// populates a mock deployment object
 			setDeploymentListObject(&deploymentListSrc)
@@ -1421,7 +1404,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 			k8sClient := &nbmocks.FakeDeploymentV1{}
 
-			deploymentServer := NewDeployment(k8sClient, nil, s.kc, nil, nil, s.protoValidator, nil)
+			deploymentServer := NewDeployment(k8sClient, nil, s.kc, nil, nil, nil)
 
 			k8sClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -1452,8 +1435,8 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s, ok := status.FromError(err)
 			Expect(s.Code()).To(Equal(codes.InvalidArgument))
 			Expect(ok).To(BeTrue())
-			Expect(s.Message()).Should(Equal("validation error:\n - depl_id: value does not match regex " +
-				"pattern `^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$` [string.pattern]"))
+			Expect(s.Message()).Should(Equal("invalid DeleteDeploymentRequest.DeplId: value does not match regex " +
+				"pattern \"^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$\""))
 		})
 
 		It("fails to delete deployment due to invalid pattern non alphanumeric in deploy id", func() {
@@ -1506,7 +1489,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 		It("fails due to LIST error", func() {
 			k8sClient := &nbmocks.FakeDeploymentV1{}
-			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, nil, s.protoValidator, nil)
+			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, nil, nil)
 
 			k8sClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -1534,7 +1517,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 		It("fails due to DELETE error", func() {
 			k8sClient := &nbmocks.FakeDeploymentV1{}
-			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, nil, s.protoValidator, nil)
+			deploymentServer = NewDeployment(k8sClient, nil, nil, nil, nil, nil)
 
 			k8sClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -1564,7 +1547,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			defer ts.Close()
 
 			k8sClient := &nbmocks.FakeDeploymentV1{}
-			deploymentServer = NewDeployment(k8sClient, nil, s.kc, nil, nil, protoValidator, nil)
+			deploymentServer = NewDeployment(k8sClient, nil, s.kc, nil, nil, nil)
 
 			k8sClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -1608,10 +1591,8 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s.kc = mockK8Client(ts.URL)
 
 			// protovalidate Validator
-			s.protoValidator, err = protovalidate.New()
-			Expect(err).ToNot(HaveOccurred())
 
-			s.deploymentServer = NewDeployment(s.k8sClient, nil, s.kc, nil, nil, s.protoValidator, nil)
+			s.deploymentServer = NewDeployment(s.k8sClient, nil, s.kc, nil, nil, nil)
 
 			s.k8sClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -1726,8 +1707,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s.catalogClient = mockerymock.NewMockeryCatalogClient(GinkgoT())
 
 			// protovalidate Validator
-			s.protoValidator, err = protovalidate.New()
-			Expect(err).ToNot(HaveOccurred())
 
 			// M2M auth client mock
 			s.vaultAuthMock = &nbmocks.VaultAuth{}
@@ -1759,7 +1738,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 			s.kc = mockK8Client(ts.URL)
 
-			s.deploymentServer = NewDeployment(s.k8sClient, s.opaMock, s.kc, nil, s.catalogClient, s.protoValidator, s.vaultAuthMock)
+			s.deploymentServer = NewDeployment(s.k8sClient, s.opaMock, s.kc, nil, s.catalogClient, s.vaultAuthMock)
 
 			s.k8sClient.On(
 				"Create", nbmocks.AnyContextValue, deployInstance, mock.AnythingOfType("v1.CreateOptions"),
@@ -2643,7 +2622,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			defer ts.Close()
 			kc := mockK8Client(ts.URL)
 
-			deploymentServer := NewDeployment(s.k8sClient, s.opaMock, kc, nil, s.catalogClient, s.protoValidator, s.vaultAuthMock)
+			deploymentServer := NewDeployment(s.k8sClient, s.opaMock, kc, nil, s.catalogClient, s.vaultAuthMock)
 
 			s.k8sClient.On(
 				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
@@ -2680,8 +2659,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s.catalogClient = mockerymock.NewMockeryCatalogClient(GinkgoT())
 
 			// protovalidate Validator
-			s.protoValidator, err = protovalidate.New()
-			Expect(err).ToNot(HaveOccurred())
 
 			ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
@@ -2712,7 +2689,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 				}, nil,
 			).AnyTimes()
 
-			s.deploymentServer = NewDeployment(s.k8sClient, s.opaMock, s.kc, nil, s.catalogClient, s.protoValidator, s.vaultAuthMock)
+			s.deploymentServer = NewDeployment(s.k8sClient, s.opaMock, s.kc, nil, s.catalogClient, s.vaultAuthMock)
 
 			s.k8sClient.On(
 				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
@@ -2990,7 +2967,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 				return nil, apierrors.NewInternalError(fmt.Errorf("internal error"))
 			}
 
-			deploymentServer = NewDeployment(k8sClient, nil, s.kc, nil, s.catalogClient, s.protoValidator, s.vaultAuthMock)
+			deploymentServer = NewDeployment(k8sClient, nil, s.kc, nil, s.catalogClient, s.vaultAuthMock)
 			deployInstance = SetDeployInstance(&deploymentListSrc, "")
 
 			k8sClient.On(
@@ -3035,7 +3012,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 			k8sClient := &nbmocks.FakeDeploymentV1{}
 
-			deploymentServer = NewDeployment(k8sClient, nil, s.kc, nil, s.catalogClient, s.protoValidator, s.vaultAuthMock)
+			deploymentServer = NewDeployment(k8sClient, nil, s.kc, nil, s.catalogClient, s.vaultAuthMock)
 			deployInstance = SetDeployInstance(&deploymentListSrc, "")
 
 			k8sClient.On(
@@ -3078,7 +3055,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 			k8sClient := &nbmocks.FakeDeploymentV1{}
 
-			deploymentServer = NewDeployment(k8sClient, nil, kc, nil, s.catalogClient, s.protoValidator, s.vaultAuthMock)
+			deploymentServer = NewDeployment(k8sClient, nil, kc, nil, s.catalogClient, s.vaultAuthMock)
 			deployInstance = SetDeployInstance(&deploymentListSrc, "")
 
 			k8sClient.On(
@@ -3125,8 +3102,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s.kc = mockK8Client(ts.URL)
 
 			// protovalidate Validator
-			s.protoValidator, err = protovalidate.New()
-			Expect(err).ToNot(HaveOccurred())
 
 			mockController = gomock.NewController(t)
 			s.opaMock = openpolicyagent.NewMockClientWithResponsesInterface(mockController)
@@ -3147,7 +3122,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 				}, nil,
 			).AnyTimes()
 
-			s.deploymentServer = NewDeployment(s.k8sClient, s.opaMock, s.kc, nil, nil, s.protoValidator, nil)
+			s.deploymentServer = NewDeployment(s.k8sClient, s.opaMock, s.kc, nil, nil, nil)
 
 			// populates a mock deployment object
 			setDeploymentListObject(&deploymentListSrc)

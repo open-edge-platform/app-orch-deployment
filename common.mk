@@ -309,9 +309,9 @@ common-openapi-spec-validate: $(VENV_NAME)
 
 common-buf-update: $(VENV_NAME) ## Update buf modules
 	set +u; . ./$</bin/activate; set -u ;\
-  buf --version ;\
-  pushd api; buf mod update; popd ;\
-  buf build
+  PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf --version ;\
+  pushd api; PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf mod update; popd ;\
+  PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf build
 
 common-buf-lint: $(VENV_NAME) ## Lint and format protobuf files
 	buf --version

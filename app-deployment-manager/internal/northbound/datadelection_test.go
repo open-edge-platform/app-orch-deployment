@@ -69,7 +69,7 @@ var _ = Describe("Data Selection", func() {
 			Expect(err).To(HaveOccurred())
 			s, ok := status.FromError(err)
 			Expect(ok).To(BeFalse())
-			Expect(s.Message()).Should(Equal("pagesize parameter must be lte 100"))
+			Expect(s.Message()).Should(Equal("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 100 [uint32.gte_lte]"))
 		})
 
 		It("fails due to parse order by", func() {
@@ -158,7 +158,7 @@ var _ = Describe("Data Selection", func() {
 			Expect(err).To(HaveOccurred())
 			s, ok := status.FromError(err)
 			Expect(ok).To(BeFalse())
-			Expect(s.Message()).Should(Equal("pagesize parameter must be lte 100"))
+			Expect(s.Message()).Should(Equal("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 100 [uint32.gte_lte]"))
 		})
 
 		It("fails due to parse order by", func() {
@@ -257,7 +257,7 @@ var _ = Describe("Data Selection", func() {
 			Expect(err).To(HaveOccurred())
 			s, ok := status.FromError(err)
 			Expect(ok).To(BeFalse())
-			Expect(s.Message()).Should(Equal("pagesize parameter must be lte 100"))
+			Expect(s.Message()).Should(Equal("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 100 [uint32.gte_lte]"))
 		})
 
 		It("fails due to parse order by", func() {

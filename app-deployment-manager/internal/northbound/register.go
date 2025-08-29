@@ -5,9 +5,9 @@
 package northbound
 
 import (
-	"github.com/bufbuild/protovalidate-go"
 	"sync"
 
+	"buf.build/go/protovalidate"
 	clientv1beta1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/appdeploymentclient/v1beta1"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/fleet"
 	"k8s.io/client-go/kubernetes"
@@ -22,15 +22,24 @@ import (
 // NewDeployment creates and initializes a new deployment service.
 func NewDeployment(crClient clientv1beta1.AppDeploymentClientInterface,
 	opaClient openpolicyagent.ClientWithResponsesInterface,
-	k8sClient *kubernetes.Clientset, fleetBundleClient *fleet.BundleClient, catalogClient catalogclient.CatalogClient, protoValidator *protovalidate.Validator, vaultAuthClient auth.VaultAuth) *DeploymentSvc {
+	k8sClient *kubernetes.Clientset, fleetBundleClient *fleet.BundleClient, catalogClient catalogclient.CatalogClient, vaultAuthClient auth.VaultAuth, protoValidator ...protovalidate.Validator) *DeploymentSvc {
+
+	var validator protovalidate.Validator
+	if len(protoValidator) > 0 {
+		validator = protoValidator[0]
+	} else {
+		// Create a default validator for backward compatibility
+		validator, _ = protovalidate.New()
+	}
+
 	return &DeploymentSvc{
 		crClient:          crClient,
 		opaClient:         opaClient,
 		fleetBundleClient: fleetBundleClient,
 		k8sClient:         k8sClient,
 		catalogClient:     catalogClient,
-		protoValidator:    protoValidator,
 		vaultAuthClient:   vaultAuthClient,
+		protoValidator:    validator,
 	}
 }
 
@@ -50,8 +59,8 @@ type DeploymentSvc struct {
 	fleetBundleClient *fleet.BundleClient
 	k8sClient         *kubernetes.Clientset
 	catalogClient     catalogclient.CatalogClient
-	protoValidator    *protovalidate.Validator
 	vaultAuthClient   auth.VaultAuth
+	protoValidator    protovalidate.Validator
 	apiMutex          sync.Mutex
 }
 

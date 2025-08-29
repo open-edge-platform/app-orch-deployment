@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/bufbuild/protovalidate-go"
 	"github.com/stretchr/testify/mock"
 	"k8s.io/apimachinery/pkg/types"
 
@@ -33,7 +32,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 		deploymentServer *DeploymentSvc
 		clusterInstance  *deploymentv1beta1.Cluster
 		crClient         *nbmocks.FakeDeploymentV1
-		protoValidator   *protovalidate.Validator
 		err              error
 	)
 
@@ -46,11 +44,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 			crClient = &nbmocks.FakeDeploymentV1{}
 
-			// protovalidate Validator
-			protoValidator, err = protovalidate.New()
-			Expect(err).ToNot(HaveOccurred())
-
-			deploymentServer = NewDeployment(crClient, nil, nil, nil, nil, protoValidator, nil)
+			deploymentServer = NewDeployment(crClient, nil, nil, nil, nil, nil)
 		})
 
 		It("successfully get kubeconfig", func() {
@@ -67,7 +61,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 			kc := mockK8Client(ts.URL)
 
-			deploymentServer := NewDeployment(crClient, nil, kc, nil, nil, protoValidator, nil)
+			deploymentServer := NewDeployment(crClient, nil, kc, nil, nil, nil)
 
 			crClient.On(
 				"Get", context.TODO(), mock.AnythingOfType("string"), mock.AnythingOfType("v1.GetOptions"),
@@ -97,7 +91,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 			kc := mockK8Client(ts.URL)
 
-			deploymentServer := NewDeployment(crClient, nil, kc, nil, nil, protoValidator, nil)
+			deploymentServer := NewDeployment(crClient, nil, kc, nil, nil, nil)
 
 			crClient.On(
 				"Get", context.TODO(), mock.AnythingOfType("string"), mock.AnythingOfType("v1.GetOptions"),
@@ -166,11 +160,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 			crClient = &nbmocks.FakeDeploymentV1{}
 
-			// protovalidate Validator
-			protoValidator, err := protovalidate.New()
-			Expect(err).ToNot(HaveOccurred())
-
-			deploymentServer = NewDeployment(crClient, nil, nil, nil, nil, protoValidator, nil)
+			deploymentServer = NewDeployment(crClient, nil, nil, nil, nil, nil)
 		})
 
 		It("successfully list clusters", func() {
@@ -234,12 +224,8 @@ var _ = Describe("Gateway gRPC Service", func() {
 		var deploymentClusterListSrc deploymentv1beta1.DeploymentClusterList
 
 		BeforeEach(func() {
-			// protovalidate Validator
-			protoValidator, err := protovalidate.New()
-			Expect(err).ToNot(HaveOccurred())
-
 			crClient = &nbmocks.FakeDeploymentV1{}
-			deploymentServer = NewDeployment(crClient, nil, nil, nil, nil, protoValidator, nil)
+			deploymentServer = NewDeployment(crClient, nil, nil, nil, nil, nil)
 
 			// populates a mock deployment object
 			setDeploymentClusterListObject(&deploymentClusterListSrc)
@@ -263,11 +249,10 @@ var _ = Describe("Gateway gRPC Service", func() {
 		})
 
 		It("fails due to no cluster found", func() {
-			protoValidator, err := protovalidate.New()
 			Expect(err).ToNot(HaveOccurred())
 
 			crClient = &nbmocks.FakeDeploymentV1{}
-			deploymentServer = NewDeployment(crClient, nil, nil, nil, nil, protoValidator, nil)
+			deploymentServer = NewDeployment(crClient, nil, nil, nil, nil, nil)
 
 			crClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
@@ -297,11 +282,10 @@ var _ = Describe("Gateway gRPC Service", func() {
 		})
 
 		It("fails due to deploymentCluster LIST error", func() {
-			protoValidator, err := protovalidate.New()
 			Expect(err).ToNot(HaveOccurred())
 
 			crClient = &nbmocks.FakeDeploymentV1{}
-			deploymentServer = NewDeployment(crClient, nil, nil, nil, nil, protoValidator, nil)
+			deploymentServer = NewDeployment(crClient, nil, nil, nil, nil, nil)
 
 			crClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),

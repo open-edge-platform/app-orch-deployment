@@ -34,13 +34,13 @@ func NewPaginationQuery(pageSize, offSet int) *PaginationQuery {
 // IsValidPagination returns true if pagination has non negative parameters and pageSize is within limits
 func (p *PaginationQuery) IsValidPagination() error {
 	if p.PageSize < 0 {
-		return errors.NewInvalid("pagesize parameter must be gte zero")
+		return errors.NewInvalid("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 100 [uint32.gte_lte]")
 	}
 	if p.PageSize > 100 {
-		return errors.NewInvalid("pagesize parameter must be lte 100")
+		return errors.NewInvalid("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 100 [uint32.gte_lte]")
 	}
 	if p.OffSet < 0 {
-		return errors.NewInvalid("offset parameter must be gte zero")
+		return errors.NewInvalid("validation error:\n - offset: value must be greater than or equal to 0 [uint32.gte]")
 	}
 	return nil
 }
