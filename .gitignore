@@ -23,6 +23,7 @@ workspace
 */cover.out
 */coverage.html
 */coverage.xml
+*.test
 app-deployment-manager/pkg/utils/tmpdir/
 
 # output from Go fuzz tests

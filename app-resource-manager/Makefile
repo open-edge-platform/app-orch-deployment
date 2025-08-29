@@ -96,7 +96,16 @@ verify-protoc-plugins: common-verify-protoc-plugins  ## Verify protoc plugins
 
 OPENAPI_SPEC_FILE ?= ./api/nbi/v2/spec/v2/openapi.yaml
 REST_CLIENT_DIR ?= ./api/nbi/v2/pkg/restClient/v2
-proto-generate: common-buf-update common-buf-generate common-openapi-spec-validate common-rest-client-gen common-buf-lint ## Generate protobuf code
+proto-generate: common-buf-update common-buf-generate merge-connectrpc-openapi common-openapi-spec-validate common-rest-client-gen common-buf-lint ## Generate protobuf code
+
+merge-connectrpc-openapi: ## Merge ConnectRPC individual OpenAPI files into consolidated specification
+	@echo "Merging ConnectRPC OpenAPI files..."
+	@python3 scripts/merge_openapi.py \
+		"api/nbi/v2/spec/v2" \
+		"api/nbi/v2/spec/v2/openapi.yaml" \
+		"App Resource Manager API" \
+		"App Resource Manager service providing operations for resource management" \
+		"1.0.0"
 
 buf-generate: common-buf-generate ## Generate protobuf code
 

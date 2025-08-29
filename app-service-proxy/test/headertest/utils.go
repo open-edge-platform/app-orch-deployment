@@ -259,15 +259,15 @@ func GetCliSecretHarbor(url, token string) (string, error) {
 	return secret, nil
 }
 
-func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppEndpoint, int, error) {
+func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.ResourceV2AppEndpoint, int, error) {
 	resp, err :=
-		armClient.EndpointsServiceListAppEndpointsWithResponse(context.TODO(),
+		armClient.ResourceV2EndpointsServiceListAppEndpointsWithResponse(context.TODO(),
 			appID, types.TestClusterID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
-			return &[]restClient.AppEndpoint{}, resp.StatusCode(), fmt.Errorf("%v", err)
+			return &[]restClient.ResourceV2AppEndpoint{}, resp.StatusCode(), fmt.Errorf("%v", err)
 		}
-		return &[]restClient.AppEndpoint{}, resp.StatusCode(), fmt.Errorf("failed to list app endpoints: %v", string(resp.Body))
+		return &[]restClient.ResourceV2AppEndpoint{}, resp.StatusCode(), fmt.Errorf("failed to list app endpoints: %v", string(resp.Body))
 	}
 
 	return resp.JSON200.AppEndpoints, resp.StatusCode(), nil

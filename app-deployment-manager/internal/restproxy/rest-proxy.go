@@ -7,23 +7,24 @@ package restproxy
 import (
 	"context"
 	"fmt"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/open-edge-platform/orch-library/go/dazl"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"net/http"
 	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/secure"
 	"github.com/gin-gonic/gin"
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils"
-	ginlogger "github.com/open-edge-platform/orch-library/go/pkg/logging/gin"
-	"google.golang.org/grpc/metadata"
-
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	deploymentpb "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
+	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils"
+	"github.com/open-edge-platform/orch-library/go/dazl"
+	ginlogger "github.com/open-edge-platform/orch-library/go/pkg/logging/gin"
 	ginutils "github.com/open-edge-platform/orch-library/go/pkg/middleware/gin"
 	openapiutils "github.com/open-edge-platform/orch-library/go/pkg/openapi"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 var log = dazl.GetPackageLogger()
@@ -33,6 +34,58 @@ var allowedHeaders = map[string]struct{}{
 }
 
 const ActiveProjectID = "ActiveProjectID"
+
+// errorHandler provides enhanced error handling for gRPC-Gateway responses
+// This filters and formats error details for better REST API responses
+func errorHandler(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.Marshaler, w http.ResponseWriter, r *http.Request, err error) {
+	// Check if this is a gRPC error
+	if s, ok := status.FromError(err); ok {
+		// Map gRPC status codes to appropriate HTTP status codes
+		var httpStatus int
+		switch s.Code() {
+		case codes.InvalidArgument:
+			httpStatus = http.StatusBadRequest
+		case codes.NotFound:
+			httpStatus = http.StatusNotFound
+		case codes.AlreadyExists:
+			httpStatus = http.StatusConflict
+		case codes.PermissionDenied:
+			httpStatus = http.StatusForbidden
+		case codes.Unauthenticated:
+			httpStatus = http.StatusUnauthorized
+		case codes.ResourceExhausted:
+			httpStatus = http.StatusTooManyRequests
+		case codes.Unimplemented:
+			httpStatus = http.StatusNotImplemented
+		case codes.Unavailable:
+			httpStatus = http.StatusServiceUnavailable
+		case codes.DeadlineExceeded:
+			httpStatus = http.StatusGatewayTimeout
+		default:
+			httpStatus = http.StatusInternalServerError
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(httpStatus)
+
+		// Create filtered error response that excludes internal system details
+		errorResponse := map[string]interface{}{
+			"error": map[string]interface{}{
+				"code":    int(s.Code()),
+				"message": s.Message(),
+				"status":  s.Code().String(),
+			},
+		}
+
+		if buf, err := marshaler.Marshal(errorResponse); err == nil {
+			_, _ = w.Write(buf)
+		}
+		return
+	}
+
+	// Fall back to default handler for non-gRPC errors
+	runtime.DefaultHTTPErrorHandler(ctx, mux, marshaler, w, r, err)
+}
 
 func isHeaderAllowed(s string) (string, bool) {
 	// check if allowedHeaders contain the header
@@ -49,7 +102,7 @@ func Run(grpcAddr string, gwAddr int, allowedCorsOrigins string, basePath string
 
 	gin.DefaultWriter = ginlogger.NewWriter(log)
 
-	// creating mux for gRPC gateway. This will multiplex or route request different gRPC service
+	// creating mux for gRPC gateway with enhanced error handling
 	gwmux := runtime.NewServeMux(
 		// convert header in response(going from gateway) from metadata received.
 		runtime.WithOutgoingHeaderMatcher(isHeaderAllowed),
@@ -63,6 +116,8 @@ func Run(grpcAddr string, gwAddr int, allowedCorsOrigins string, basePath string
 		}),
 		// handle 405 method not allowed
 		runtime.WithRoutingErrorHandler(ginutils.HandleRoutingError),
+		// Enhanced error handling for better REST API responses
+		runtime.WithErrorHandler(errorHandler),
 	)
 
 	// Register DeploymentService

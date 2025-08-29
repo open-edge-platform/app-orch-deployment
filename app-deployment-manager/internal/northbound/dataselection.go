@@ -13,7 +13,14 @@ import (
 
 func selectDeployments(in *deploymentpb.ListDeploymentsRequest, deployments []*deploymentpb.Deployment) ([]*deploymentpb.Deployment, error) {
 	var orderByList []dataselector.OrderBy
-	paginationQuery := newPaginationQuery(in.PageSize, in.Offset)
+	var pageSize, offset uint32
+	if in.PageSize >= 0 {
+		pageSize = uint32(in.PageSize)
+	}
+	if in.Offset >= 0 {
+		offset = uint32(in.Offset)
+	}
+	paginationQuery := newPaginationQuery(pageSize, offset)
 
 	err := paginationQuery.IsValidPagination()
 	if err != nil {
@@ -58,7 +65,14 @@ func selectDeployments(in *deploymentpb.ListDeploymentsRequest, deployments []*d
 
 func selectClusters(in *deploymentpb.ListClustersRequest, clusterInfoList []*deploymentpb.ClusterInfo) ([]*deploymentpb.ClusterInfo, error) {
 	var orderByList []dataselector.OrderBy
-	paginationQuery := newPaginationQuery(in.PageSize, in.Offset)
+	var pageSize, offset uint32
+	if in.PageSize >= 0 {
+		pageSize = uint32(in.PageSize)
+	}
+	if in.Offset >= 0 {
+		offset = uint32(in.Offset)
+	}
+	paginationQuery := newPaginationQuery(pageSize, offset)
 
 	err := paginationQuery.IsValidPagination()
 	if err != nil {
@@ -101,7 +115,14 @@ func selectClusters(in *deploymentpb.ListClustersRequest, clusterInfoList []*dep
 
 func selectClustersPerDeployment(in *deploymentpb.ListDeploymentClustersRequest, clusterList []*deploymentpb.Cluster) ([]*deploymentpb.Cluster, error) {
 	var orderByList []dataselector.OrderBy
-	paginationQuery := newPaginationQuery(in.PageSize, in.Offset)
+	var pageSize, offset uint32
+	if in.PageSize >= 0 {
+		pageSize = uint32(in.PageSize)
+	}
+	if in.Offset >= 0 {
+		offset = uint32(in.Offset)
+	}
+	paginationQuery := newPaginationQuery(pageSize, offset)
 
 	err := paginationQuery.IsValidPagination()
 	if err != nil {
@@ -144,7 +165,7 @@ func selectClustersPerDeployment(in *deploymentpb.ListDeploymentClustersRequest,
 
 }
 
-func newPaginationQuery(pageSize int32, offset int32) *dataselector.PaginationQuery {
+func newPaginationQuery(pageSize uint32, offset uint32) *dataselector.PaginationQuery {
 	if pageSize == 0 && offset == 0 {
 		return dataselector.NewPaginationQuery(dataselector.DefaultPageSize, 0)
 	}

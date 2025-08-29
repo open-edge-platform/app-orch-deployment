@@ -212,7 +212,7 @@ type AppEndpointMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AppEndpointMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -354,7 +354,7 @@ type FqdnMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m FqdnMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -480,7 +480,7 @@ type PortMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m PortMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -584,7 +584,7 @@ type EndpointStatusMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m EndpointStatusMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

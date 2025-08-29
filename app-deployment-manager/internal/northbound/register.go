@@ -5,14 +5,13 @@
 package northbound
 
 import (
-	"github.com/bufbuild/protovalidate-go"
 	"sync"
 
+	"buf.build/go/protovalidate"
 	clientv1beta1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/appdeploymentclient/v1beta1"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/fleet"
 	"k8s.io/client-go/kubernetes"
 
-	deploymentpb "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
 	deploymentv1beta1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/v1beta1"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/catalogclient"
 	"github.com/open-edge-platform/orch-library/go/pkg/auth"
@@ -23,15 +22,24 @@ import (
 // NewDeployment creates and initializes a new deployment service.
 func NewDeployment(crClient clientv1beta1.AppDeploymentClientInterface,
 	opaClient openpolicyagent.ClientWithResponsesInterface,
-	k8sClient *kubernetes.Clientset, fleetBundleClient *fleet.BundleClient, catalogClient catalogclient.CatalogClient, protoValidator *protovalidate.Validator, vaultAuthClient auth.VaultAuth) *DeploymentSvc {
+	k8sClient *kubernetes.Clientset, fleetBundleClient *fleet.BundleClient, catalogClient catalogclient.CatalogClient, vaultAuthClient auth.VaultAuth, protoValidator ...protovalidate.Validator) *DeploymentSvc {
+
+	var validator protovalidate.Validator
+	if len(protoValidator) > 0 {
+		validator = protoValidator[0]
+	} else {
+		// Create a default validator for backward compatibility
+		validator, _ = protovalidate.New()
+	}
+
 	return &DeploymentSvc{
 		crClient:          crClient,
 		opaClient:         opaClient,
 		fleetBundleClient: fleetBundleClient,
 		k8sClient:         k8sClient,
 		catalogClient:     catalogClient,
-		protoValidator:    protoValidator,
 		vaultAuthClient:   vaultAuthClient,
+		protoValidator:    validator,
 	}
 }
 
@@ -44,30 +52,20 @@ type DeploymentInstance struct {
 	checkFilters []string
 }
 
-// DeploymentSvc registers deployment server.
+// DeploymentSvc provides deployment service functionality.
 type DeploymentSvc struct {
-	deploymentpb.UnimplementedDeploymentServiceServer
 	crClient          clientv1beta1.AppDeploymentClientInterface
 	opaClient         openpolicyagent.ClientWithResponsesInterface
 	fleetBundleClient *fleet.BundleClient
 	k8sClient         *kubernetes.Clientset
 	catalogClient     catalogclient.CatalogClient
-	protoValidator    *protovalidate.Validator
 	vaultAuthClient   auth.VaultAuth
+	protoValidator    protovalidate.Validator
 	apiMutex          sync.Mutex
 }
 
-func (s *DeploymentSvc) Register(r *grpc.Server) {
-	server := &DeploymentSvc{
-		crClient:          s.crClient,
-		opaClient:         s.opaClient,
-		fleetBundleClient: s.fleetBundleClient,
-		k8sClient:         s.k8sClient,
-		catalogClient:     s.catalogClient,
-		protoValidator:    s.protoValidator,
-		vaultAuthClient:   s.vaultAuthClient,
-	}
-
-	deploymentpb.RegisterDeploymentServiceServer(r, server)
-	deploymentpb.RegisterClusterServiceServer(r, server)
+// Register is a stub method to satisfy the northbound.Service interface
+// The actual API endpoints are handled by Connect-RPC in the restproxy package
+func (s *DeploymentSvc) Register(_ *grpc.Server) {
+	// No-op: Connect-RPC handles the API endpoints
 }

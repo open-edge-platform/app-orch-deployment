@@ -4,44 +4,109 @@
 package restClient
 
 import (
+	"encoding/json"
+	"fmt"
 	"time"
+
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// Defines values for DeploymentStatusState.
+// Defines values for ConnectProtocolVersion.
 const (
-	DEPLOYING        DeploymentStatusState = "DEPLOYING"
-	DOWN             DeploymentStatusState = "DOWN"
-	ERROR            DeploymentStatusState = "ERROR"
-	INTERNALERROR    DeploymentStatusState = "INTERNAL_ERROR"
-	NOTARGETCLUSTERS DeploymentStatusState = "NO_TARGET_CLUSTERS"
-	RUNNING          DeploymentStatusState = "RUNNING"
-	TERMINATING      DeploymentStatusState = "TERMINATING"
-	UNKNOWN          DeploymentStatusState = "UNKNOWN"
-	UPDATING         DeploymentStatusState = "UPDATING"
+	N1 ConnectProtocolVersion = 1
 )
 
-// Defines values for DeploymentServiceDeleteDeploymentParamsDeleteType.
+// Defines values for ConnectErrorCode.
 const (
-	ALL        DeploymentServiceDeleteDeploymentParamsDeleteType = "ALL"
-	PARENTONLY DeploymentServiceDeleteDeploymentParamsDeleteType = "PARENT_ONLY"
+	Aborted            ConnectErrorCode = "aborted"
+	AlreadyExists      ConnectErrorCode = "already_exists"
+	Canceled           ConnectErrorCode = "canceled"
+	DataLoss           ConnectErrorCode = "data_loss"
+	DeadlineExceeded   ConnectErrorCode = "deadline_exceeded"
+	FailedPrecondition ConnectErrorCode = "failed_precondition"
+	Internal           ConnectErrorCode = "internal"
+	InvalidArgument    ConnectErrorCode = "invalid_argument"
+	NotFound           ConnectErrorCode = "not_found"
+	OutOfRange         ConnectErrorCode = "out_of_range"
+	PermissionDenied   ConnectErrorCode = "permission_denied"
+	ResourceExhausted  ConnectErrorCode = "resource_exhausted"
+	Unauthenticated    ConnectErrorCode = "unauthenticated"
+	Unavailable        ConnectErrorCode = "unavailable"
+	Unimplemented      ConnectErrorCode = "unimplemented"
+	Unknown            ConnectErrorCode = "unknown"
 )
 
-// App Details of application.
-type App struct {
-	// Id Id of the app (same as Fleet bundle name) which is, concatenated from name and deploy_id (uid which comes from k8s).
+// Defines values for DeploymentV1DeleteType.
+const (
+	ALL        DeploymentV1DeleteType = "ALL"
+	PARENTONLY DeploymentV1DeleteType = "PARENT_ONLY"
+)
+
+// Defines values for DeploymentV1State.
+const (
+	DEPLOYING        DeploymentV1State = "DEPLOYING"
+	DOWN             DeploymentV1State = "DOWN"
+	ERROR            DeploymentV1State = "ERROR"
+	INTERNALERROR    DeploymentV1State = "INTERNAL_ERROR"
+	NOTARGETCLUSTERS DeploymentV1State = "NO_TARGET_CLUSTERS"
+	RUNNING          DeploymentV1State = "RUNNING"
+	TERMINATING      DeploymentV1State = "TERMINATING"
+	UNKNOWN          DeploymentV1State = "UNKNOWN"
+	UPDATING         DeploymentV1State = "UPDATING"
+)
+
+// ConnectProtocolVersion Define the version of the Connect protocol
+type ConnectProtocolVersion float32
+
+// ConnectTimeoutHeader Define the timeout, in ms
+type ConnectTimeoutHeader = float32
+
+// ConnectError Error type returned by Connect: https://connectrpc.com/docs/go/errors/#http-representation
+type ConnectError struct {
+	// Code The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+	Code *ConnectErrorCode `json:"code,omitempty"`
+
+	// Details A list of messages that carry the error details. There is no limit on the number of messages.
+	Details *[]ConnectErrorDetailsAny `json:"details,omitempty"`
+
+	// Message A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+	Message              *string                `json:"message,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// ConnectErrorCode The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+type ConnectErrorCode string
+
+// ConnectErrorDetailsAny Contains an arbitrary serialized message along with a @type that describes the type of the serialized message, with an additional debug field for ConnectRPC error details.
+type ConnectErrorDetailsAny struct {
+	// Debug Detailed error information.
+	Debug *map[string]interface{} `json:"debug,omitempty"`
+
+	// Type A URL that acts as a globally unique identifier for the type of the serialized message. For example: `type.googleapis.com/google.rpc.ErrorInfo`. This is used to determine the schema of the data in the `value` field and is the discriminator for the `debug` field.
+	Type *string `json:"type,omitempty"`
+
+	// Value The Protobuf message, serialized as bytes and base64-encoded. The specific message type is identified by the `type` field.
+	Value                *openapi_types.File    `json:"value,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// DeploymentV1App Details of application.
+type DeploymentV1App struct {
+	// Id Id of the app (same as Fleet bundle name) which is,
+	//  concatenated from name and deploy_id (uid which comes from k8s).
 	Id *string `json:"id,omitempty"`
 
 	// Name The deployment package app name.
 	Name *string `json:"name,omitempty"`
 
 	// Status Status has details of the deployment.
-	Status *DeploymentStatus `json:"status,omitempty"`
+	Status *DeploymentV1DeploymentStatus `json:"status,omitempty"`
 }
 
-// Cluster Details of cluster.
-type Cluster struct {
+// DeploymentV1Cluster Details of cluster.
+type DeploymentV1Cluster struct {
 	// Apps Apps has per-app details.
-	Apps *[]App `json:"apps,omitempty"`
+	Apps *[]DeploymentV1App `json:"apps,omitempty"`
 
 	// Id ID is the cluster id which ECM generates and assigns to the Rancher cluster name.
 	Id *string `json:"id,omitempty"`
@@ -50,13 +115,101 @@ type Cluster struct {
 	Name *string `json:"name,omitempty"`
 
 	// Status Status has details of the deployment.
-	Status *DeploymentStatus `json:"status,omitempty"`
+	Status *DeploymentV1DeploymentStatus `json:"status,omitempty"`
 }
 
-// ClusterInfo Cluster defines the message for the Cluster object.
-type ClusterInfo struct {
-	// CreateTime The creation time of the cluster retrieved from Fleet cluster object.
-	CreateTime *time.Time `json:"createTime,omitempty"`
+// DeploymentV1ClusterInfo Cluster defines the message for the Cluster object.
+type DeploymentV1ClusterInfo struct {
+	// CreateTime A Timestamp represents a point in time independent of any time zone or local
+	//  calendar, encoded as a count of seconds and fractions of seconds at
+	//  nanosecond resolution. The count is relative to an epoch at UTC midnight on
+	//  January 1, 1970, in the proleptic Gregorian calendar which extends the
+	//  Gregorian calendar backwards to year one.
+	//
+	//  All minutes are 60 seconds long. Leap seconds are "smeared" so that no leap
+	//  second table is needed for interpretation, using a [24-hour linear
+	//  smear](https://developers.google.com/time/smear).
+	//
+	//  The range is from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z. By
+	//  restricting to that range, we ensure that we can convert to and from [RFC
+	//  3339](https://www.ietf.org/rfc/rfc3339.txt) date strings.
+	//
+	//  # Examples
+	//
+	//  Example 1: Compute Timestamp from POSIX `time()`.
+	//
+	//      Timestamp timestamp;
+	//      timestamp.set_seconds(time(NULL));
+	//      timestamp.set_nanos(0);
+	//
+	//  Example 2: Compute Timestamp from POSIX `gettimeofday()`.
+	//
+	//      struct timeval tv;
+	//      gettimeofday(&tv, NULL);
+	//
+	//      Timestamp timestamp;
+	//      timestamp.set_seconds(tv.tv_sec);
+	//      timestamp.set_nanos(tv.tv_usec * 1000);
+	//
+	//  Example 3: Compute Timestamp from Win32 `GetSystemTimeAsFileTime()`.
+	//
+	//      FILETIME ft;
+	//      GetSystemTimeAsFileTime(&ft);
+	//      UINT64 ticks = (((UINT64)ft.dwHighDateTime) << 32) | ft.dwLowDateTime;
+	//
+	//      // A Windows tick is 100 nanoseconds. Windows epoch 1601-01-01T00:00:00Z
+	//      // is 11644473600 seconds before Unix epoch 1970-01-01T00:00:00Z.
+	//      Timestamp timestamp;
+	//      timestamp.set_seconds((INT64) ((ticks / 10000000) - 11644473600LL));
+	//      timestamp.set_nanos((INT32) ((ticks % 10000000) * 100));
+	//
+	//  Example 4: Compute Timestamp from Java `System.currentTimeMillis()`.
+	//
+	//      long millis = System.currentTimeMillis();
+	//
+	//      Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)
+	//          .setNanos((int) ((millis % 1000) * 1000000)).build();
+	//
+	//  Example 5: Compute Timestamp from Java `Instant.now()`.
+	//
+	//      Instant now = Instant.now();
+	//
+	//      Timestamp timestamp =
+	//          Timestamp.newBuilder().setSeconds(now.getEpochSecond())
+	//              .setNanos(now.getNano()).build();
+	//
+	//  Example 6: Compute Timestamp from current time in Python.
+	//
+	//      timestamp = Timestamp()
+	//      timestamp.GetCurrentTime()
+	//
+	//  # JSON Mapping
+	//
+	//  In JSON format, the Timestamp type is encoded as a string in the
+	//  [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format. That is, the
+	//  format is "{year}-{month}-{day}T{hour}:{min}:{sec}[.{frac_sec}]Z"
+	//  where {year} is always expressed using four digits while {month}, {day},
+	//  {hour}, {min}, and {sec} are zero-padded to two digits each. The fractional
+	//  seconds, which can go up to 9 digits (i.e. up to 1 nanosecond resolution),
+	//  are optional. The "Z" suffix indicates the timezone ("UTC"); the timezone
+	//  is required. A proto3 JSON serializer should always use UTC (as indicated by
+	//  "Z") when printing the Timestamp type and a proto3 JSON parser should be
+	//  able to accept both UTC and other timezones (as indicated by an offset).
+	//
+	//  For example, "2017-01-15T01:30:15.01Z" encodes 15.01 seconds past
+	//  01:30 UTC on January 15, 2017.
+	//
+	//  In JavaScript, one can convert a Date object to this format using the
+	//  standard
+	//  [toISOString()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString)
+	//  method. In Python, a standard `datetime.datetime` object can be converted
+	//  to this format using
+	//  [`strftime`](https://docs.python.org/2/library/time.html#time.strftime) with
+	//  the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in Java, one can use
+	//  the Joda Time's [`ISODateTimeFormat.dateTime()`](
+	//  http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime()
+	//  ) to obtain a formatter capable of generating timestamps in this format.
+	CreateTime *GoogleProtobufTimestamp `json:"createTime,omitempty"`
 
 	// Id ID is the cluster id which ECM generates and assigns to the Rancher cluster name.
 	Id *string `json:"id,omitempty"`
@@ -68,16 +221,21 @@ type ClusterInfo struct {
 	Name *string `json:"name,omitempty"`
 }
 
-// CreateDeploymentResponse Response message for the CreateDeployment method.
-type CreateDeploymentResponse struct {
+// DeploymentV1CreateDeploymentResponse Response message for the CreateDeployment method.
+type DeploymentV1CreateDeploymentResponse struct {
 	// DeploymentId Returns the new Deployment Id.
 	DeploymentId string `json:"deploymentId"`
 }
 
-// Deployment Deployment defines the specification to deploy a Deployment Package onto a set of clusters.
-type Deployment struct {
+// DeploymentV1DeleteType Different delete types to handle parent and child
+//
+//	lists, for dependency support. Available options: PARENT_ONLY, ALL.
+type DeploymentV1DeleteType string
+
+// DeploymentV1Deployment Deployment defines the specification to deploy a Deployment Package onto a set of clusters.
+type DeploymentV1Deployment struct {
 	// AllAppTargetClusters Set target clusters based on labels.
-	AllAppTargetClusters *TargetClusters `json:"allAppTargetClusters,omitempty"`
+	AllAppTargetClusters *DeploymentV1TargetClusters `json:"allAppTargetClusters,omitempty"`
 
 	// AppName The deployment package name to deploy from the catalog.
 	AppName string `json:"appName"`
@@ -86,46 +244,150 @@ type Deployment struct {
 	AppVersion string `json:"appVersion"`
 
 	// Apps Application details.
-	Apps *[]App `json:"apps,omitempty"`
+	Apps *[]DeploymentV1App `json:"apps,omitempty"`
 
-	// CreateTime The creation time of the deployment.
-	CreateTime *time.Time `json:"createTime,omitempty"`
+	// CreateTime A Timestamp represents a point in time independent of any time zone or local
+	//  calendar, encoded as a count of seconds and fractions of seconds at
+	//  nanosecond resolution. The count is relative to an epoch at UTC midnight on
+	//  January 1, 1970, in the proleptic Gregorian calendar which extends the
+	//  Gregorian calendar backwards to year one.
+	//
+	//  All minutes are 60 seconds long. Leap seconds are "smeared" so that no leap
+	//  second table is needed for interpretation, using a [24-hour linear
+	//  smear](https://developers.google.com/time/smear).
+	//
+	//  The range is from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z. By
+	//  restricting to that range, we ensure that we can convert to and from [RFC
+	//  3339](https://www.ietf.org/rfc/rfc3339.txt) date strings.
+	//
+	//  # Examples
+	//
+	//  Example 1: Compute Timestamp from POSIX `time()`.
+	//
+	//      Timestamp timestamp;
+	//      timestamp.set_seconds(time(NULL));
+	//      timestamp.set_nanos(0);
+	//
+	//  Example 2: Compute Timestamp from POSIX `gettimeofday()`.
+	//
+	//      struct timeval tv;
+	//      gettimeofday(&tv, NULL);
+	//
+	//      Timestamp timestamp;
+	//      timestamp.set_seconds(tv.tv_sec);
+	//      timestamp.set_nanos(tv.tv_usec * 1000);
+	//
+	//  Example 3: Compute Timestamp from Win32 `GetSystemTimeAsFileTime()`.
+	//
+	//      FILETIME ft;
+	//      GetSystemTimeAsFileTime(&ft);
+	//      UINT64 ticks = (((UINT64)ft.dwHighDateTime) << 32) | ft.dwLowDateTime;
+	//
+	//      // A Windows tick is 100 nanoseconds. Windows epoch 1601-01-01T00:00:00Z
+	//      // is 11644473600 seconds before Unix epoch 1970-01-01T00:00:00Z.
+	//      Timestamp timestamp;
+	//      timestamp.set_seconds((INT64) ((ticks / 10000000) - 11644473600LL));
+	//      timestamp.set_nanos((INT32) ((ticks % 10000000) * 100));
+	//
+	//  Example 4: Compute Timestamp from Java `System.currentTimeMillis()`.
+	//
+	//      long millis = System.currentTimeMillis();
+	//
+	//      Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)
+	//          .setNanos((int) ((millis % 1000) * 1000000)).build();
+	//
+	//  Example 5: Compute Timestamp from Java `Instant.now()`.
+	//
+	//      Instant now = Instant.now();
+	//
+	//      Timestamp timestamp =
+	//          Timestamp.newBuilder().setSeconds(now.getEpochSecond())
+	//              .setNanos(now.getNano()).build();
+	//
+	//  Example 6: Compute Timestamp from current time in Python.
+	//
+	//      timestamp = Timestamp()
+	//      timestamp.GetCurrentTime()
+	//
+	//  # JSON Mapping
+	//
+	//  In JSON format, the Timestamp type is encoded as a string in the
+	//  [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format. That is, the
+	//  format is "{year}-{month}-{day}T{hour}:{min}:{sec}[.{frac_sec}]Z"
+	//  where {year} is always expressed using four digits while {month}, {day},
+	//  {hour}, {min}, and {sec} are zero-padded to two digits each. The fractional
+	//  seconds, which can go up to 9 digits (i.e. up to 1 nanosecond resolution),
+	//  are optional. The "Z" suffix indicates the timezone ("UTC"); the timezone
+	//  is required. A proto3 JSON serializer should always use UTC (as indicated by
+	//  "Z") when printing the Timestamp type and a proto3 JSON parser should be
+	//  able to accept both UTC and other timezones (as indicated by an offset).
+	//
+	//  For example, "2017-01-15T01:30:15.01Z" encodes 15.01 seconds past
+	//  01:30 UTC on January 15, 2017.
+	//
+	//  In JavaScript, one can convert a Date object to this format using the
+	//  standard
+	//  [toISOString()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString)
+	//  method. In Python, a standard `datetime.datetime` object can be converted
+	//  to this format using
+	//  [`strftime`](https://docs.python.org/2/library/time.html#time.strftime) with
+	//  the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in Java, one can use
+	//  the Joda Time's [`ISODateTimeFormat.dateTime()`](
+	//  http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime()
+	//  ) to obtain a formatter capable of generating timestamps in this format.
+	CreateTime *GoogleProtobufTimestamp `json:"createTime,omitempty"`
 
 	// DeployId The id of the deployment.
 	DeployId *string `json:"deployId,omitempty"`
 
-	// DeploymentType The deployment type for the target cluster deployment can be either auto-scaling or targeted. In Auto-scaling type, the application will be automatically deployed on all the clusters which match the Target cluster label. In Targeted type, the user has to select among pre created clusters to deploy the application.
+	// DeploymentType (OPTIONAL) The deployment type for the target cluster deployment can be either auto-scaling or targeted.
+	//  In Auto-scaling type, the application will be automatically deployed on all the
+	//  clusters which match the Target cluster label. In Targeted type, the user has to select among pre created
+	//  clusters to deploy the application.
 	DeploymentType *string `json:"deploymentType,omitempty"`
 
-	// DisplayName Deployment display name.
+	// DisplayName (OPTIONAL) Deployment display name.
 	DisplayName *string `json:"displayName,omitempty"`
 
 	// Name Deployment name (unique string assigned by Orchestrator).
 	Name *string `json:"name,omitempty"`
 
-	// NetworkName network_name is the name of the interconnect network that deployment be part of
+	// NetworkName (OPTIONAL) network_name is the name of the interconnect network that deployment be part of
 	NetworkName *string `json:"networkName,omitempty"`
 
-	// OverrideValues The Override values can be used to override any of the base profile values based on Deployment scenario.
-	OverrideValues *[]OverrideValues `json:"overrideValues,omitempty"`
+	// OverrideValues (OPTIONAL) The Override values can be used to override any of the base profile values based on Deployment scenario.
+	OverrideValues *[]DeploymentV1OverrideValues `json:"overrideValues,omitempty"`
 
-	// ProfileName The selected profile name to be used for the base Helm values of the different applications in the deployment package
-	ProfileName    *string          `json:"profileName,omitempty"`
-	ServiceExports *[]ServiceExport `json:"serviceExports,omitempty"`
+	// ProfileName (OPTIONAL) The selected profile name to be used for the base Helm values of the different applications in the deployment package
+	ProfileName *string `json:"profileName,omitempty"`
+
+	// ServiceExports (OPTIONAL)
+	ServiceExports *[]DeploymentV1ServiceExport `json:"serviceExports,omitempty"`
 
 	// Status Status has details of the deployment.
-	Status *DeploymentStatus `json:"status,omitempty"`
+	Status *DeploymentV1DeploymentStatus `json:"status,omitempty"`
 
-	// TargetClusters Cluster labels on which we want to deploy the application.
-	TargetClusters *[]TargetClusters `json:"targetClusters,omitempty"`
+	// TargetClusters (OPTIONAL) Cluster labels on which we want to deploy the application.
+	TargetClusters *[]DeploymentV1TargetClusters `json:"targetClusters,omitempty"`
 }
 
-// DeploymentInstancesCluster defines model for DeploymentInstancesCluster.
-type DeploymentInstancesCluster struct {
-	// Apps Apps has per-app details.
-	Apps *[]App `json:"apps,omitempty"`
+// DeploymentV1DeploymentStatus Status has details of the deployment.
+type DeploymentV1DeploymentStatus struct {
+	Message *string `json:"message,omitempty"`
 
-	// DeploymentDisplayName Deployment display name.
+	// State State are the different states a deployment/cluster/app can be in.
+	State *DeploymentV1State `json:"state,omitempty"`
+
+	// Summary Count of status.
+	Summary *DeploymentV1Summary `json:"summary,omitempty"`
+}
+
+// DeploymentV1DeploymentInstancesCluster defines model for deployment.v1.DeploymentInstancesCluster.
+type DeploymentV1DeploymentInstancesCluster struct {
+	// Apps Apps has per-app details.
+	Apps *[]DeploymentV1App `json:"apps,omitempty"`
+
+	// DeploymentDisplayName (OPTIONAL) Deployment display name.
 	DeploymentDisplayName *string `json:"deploymentDisplayName,omitempty"`
 
 	// DeploymentName Deployment name (unique string assigned by Orchestrator).
@@ -135,35 +397,33 @@ type DeploymentInstancesCluster struct {
 	DeploymentUid *string `json:"deploymentUid,omitempty"`
 
 	// Status Status has details of the deployment.
-	Status *DeploymentStatus `json:"status,omitempty"`
+	Status *DeploymentV1DeploymentStatus `json:"status,omitempty"`
 }
 
-// DeploymentStatus Status has details of the deployment.
-type DeploymentStatus struct {
-	Message *string                `json:"message,omitempty"`
-	State   *DeploymentStatusState `json:"state,omitempty"`
-
-	// Summary Count of status.
-	Summary *Summary `json:"summary,omitempty"`
+// DeploymentV1GetAppNamespaceRequest Request message for the GetappNamespace method.
+type DeploymentV1GetAppNamespaceRequest struct {
+	AppId string `json:"appId"`
 }
 
-// DeploymentStatusState defines model for DeploymentStatus.State.
-type DeploymentStatusState string
+// DeploymentV1GetAppNamespaceResponse Response message for the GetappNamespace method.
+type DeploymentV1GetAppNamespaceResponse struct {
+	Namespace string `json:"namespace"`
+}
 
-// GetClusterResponse Response message for GetCluster method.
-type GetClusterResponse struct {
+// DeploymentV1GetClusterResponse Response message for GetCluster method.
+type DeploymentV1GetClusterResponse struct {
 	// Cluster Details of cluster.
-	Cluster *Cluster `json:"cluster,omitempty"`
+	Cluster *DeploymentV1Cluster `json:"cluster,omitempty"`
 }
 
-// GetDeploymentResponse Response message for the GetDeployment method.
-type GetDeploymentResponse struct {
+// DeploymentV1GetDeploymentResponse Response message for the GetDeployment method.
+type DeploymentV1GetDeploymentResponse struct {
 	// Deployment Deployment defines the specification to deploy a Deployment Package onto a set of clusters.
-	Deployment Deployment `json:"deployment"`
+	Deployment DeploymentV1Deployment `json:"deployment"`
 }
 
-// GetDeploymentsStatusResponse Response message for the GetDeploymentsStatus method.
-type GetDeploymentsStatusResponse struct {
+// DeploymentV1GetDeploymentsStatusResponse Response message for the GetDeploymentsStatus method.
+type DeploymentV1GetDeploymentsStatusResponse struct {
 	Deploying   *int32 `json:"deploying,omitempty"`
 	Down        *int32 `json:"down,omitempty"`
 	Error       *int32 `json:"error,omitempty"`
@@ -174,53 +434,81 @@ type GetDeploymentsStatusResponse struct {
 	Updating    *int32 `json:"updating,omitempty"`
 }
 
-// ListClustersResponse Response message for the ListClusters method.
-type ListClustersResponse struct {
+// DeploymentV1GetKubeConfigRequest Request message for Get KubeConfig method
+type DeploymentV1GetKubeConfigRequest struct {
+	// ClusterId Required. The cluster id for the kubeconfig.
+	ClusterId string `json:"clusterId"`
+}
+
+// DeploymentV1GetKubeConfigResponse Response message for Get KubeConfig method
+type DeploymentV1GetKubeConfigResponse struct {
+	KubeConfigInfo *DeploymentV1KubeConfigInfo `json:"kubeConfigInfo,omitempty"`
+}
+
+// DeploymentV1KubeConfigInfo defines model for deployment.v1.KubeConfigInfo.
+type DeploymentV1KubeConfigInfo struct {
+	KubeConfig *[]byte `json:"kubeConfig,omitempty"`
+}
+
+// DeploymentV1ListClustersResponse Response message for the ListClusters method.
+type DeploymentV1ListClustersResponse struct {
 	// Clusters A list of Cluster Objects.
-	Clusters      []ClusterInfo `json:"clusters"`
-	TotalElements int32         `json:"totalElements"`
+	Clusters      []DeploymentV1ClusterInfo `json:"clusters"`
+	TotalElements int32                     `json:"totalElements"`
 }
 
-// ListDeploymentClustersResponse Response message for ListDeploymentClusters method.
-type ListDeploymentClustersResponse struct {
-	Clusters      []Cluster `json:"clusters"`
-	TotalElements int32     `json:"totalElements"`
+// DeploymentV1ListDeploymentClustersResponse Response message for ListDeploymentClusters method.
+type DeploymentV1ListDeploymentClustersResponse struct {
+	Clusters      []DeploymentV1Cluster `json:"clusters"`
+	TotalElements int32                 `json:"totalElements"`
 }
 
-// ListDeploymentsPerClusterResponse Response message for the ListDeploymentsPerCluster method.
-type ListDeploymentsPerClusterResponse struct {
+// DeploymentV1ListDeploymentsPerClusterResponse Response message for the ListDeploymentsPerCluster method.
+type DeploymentV1ListDeploymentsPerClusterResponse struct {
 	// DeploymentInstancesCluster A list of Deployment Instance Cluster Objects.
-	DeploymentInstancesCluster []DeploymentInstancesCluster `json:"deploymentInstancesCluster"`
-	TotalElements              int32                        `json:"totalElements"`
+	DeploymentInstancesCluster []DeploymentV1DeploymentInstancesCluster `json:"deploymentInstancesCluster"`
+	TotalElements              int32                                    `json:"totalElements"`
 }
 
-// ListDeploymentsResponse Response message for the ListDeployments method.
-type ListDeploymentsResponse struct {
+// DeploymentV1ListDeploymentsResponse Response message for the ListDeployments method.
+type DeploymentV1ListDeploymentsResponse struct {
 	// Deployments A list of Deployment Objects.
-	Deployments   []Deployment `json:"deployments"`
-	TotalElements int32        `json:"totalElements"`
+	Deployments   []DeploymentV1Deployment `json:"deployments"`
+	TotalElements int32                    `json:"totalElements"`
 }
 
-// OverrideValues The Override values can be used to override any of the base helm values of applications based on Deployment scenario.
-type OverrideValues struct {
+// DeploymentV1OverrideValues The Override values can be used to override any of the base helm values of
+//
+//	applications based on Deployment scenario.
+type DeploymentV1OverrideValues struct {
 	// AppName deployment package name to use when overriding values.
 	AppName string `json:"appName"`
 
-	// TargetNamespace The namespace to deploy the app onto, default namespace is default.
+	// TargetNamespace (OPTIONAL) The namespace to deploy the app onto, default namespace is default.
 	TargetNamespace *string `json:"targetNamespace,omitempty"`
 
-	// Values The YAML representing Helm overrides
-	Values *map[string]interface{} `json:"values,omitempty"`
+	// Values `Struct` represents a structured data value, consisting of fields
+	//  which map to dynamically typed values. In some languages, `Struct`
+	//  might be supported by a native representation. For example, in
+	//  scripting languages like JS a struct is represented as an
+	//  object. The details of that representation are described together
+	//  with the proto support for the language.
+	//
+	//  The JSON representation for `Struct` is JSON object.
+	Values *GoogleProtobufStruct `json:"values,omitempty"`
 }
 
-// ServiceExport defines model for ServiceExport.
-type ServiceExport struct {
+// DeploymentV1ServiceExport defines model for deployment.v1.ServiceExport.
+type DeploymentV1ServiceExport struct {
 	AppName string `json:"appName"`
 	Enabled *bool  `json:"enabled,omitempty"`
 }
 
-// Summary Count of status.
-type Summary struct {
+// DeploymentV1State State are the different states a deployment/cluster/app can be in.
+type DeploymentV1State string
+
+// DeploymentV1Summary Count of status.
+type DeploymentV1Summary struct {
 	// Down Number of down apps/clusters in the deployment.
 	Down *int32 `json:"down,omitempty"`
 
@@ -237,27 +525,150 @@ type Summary struct {
 	Unknown *int32 `json:"unknown,omitempty"`
 }
 
-// TargetClusters Set target clusters based on labels.
-type TargetClusters struct {
-	// AppName The targeted deployment package name.
+// DeploymentV1TargetClusters Set target clusters based on labels.
+type DeploymentV1TargetClusters struct {
+	// AppName (OPTIONAL) The targeted deployment package name.
 	AppName *string `json:"appName,omitempty"`
 
-	// ClusterId Cluster id to match the target cluster when targeted deployment.
+	// ClusterId (OPTIONAL) Cluster id to match the target cluster when targeted deployment.
 	ClusterId *string `json:"clusterId,omitempty"`
 
-	// Labels Cluster labels to match the target cluster when auto-scaling deployment.
+	// Labels (OPTIONAL) Cluster labels to match the target cluster when auto-scaling deployment.
 	Labels *map[string]string `json:"labels,omitempty"`
 }
 
-// UpdateDeploymentResponse Response message for the UpdateDeployment method.
-type UpdateDeploymentResponse struct {
+// DeploymentV1UpdateDeploymentResponse Response message for the UpdateDeployment method.
+type DeploymentV1UpdateDeploymentResponse struct {
 	// Deployment Deployment defines the specification to deploy a Deployment Package onto a set of clusters.
-	Deployment Deployment `json:"deployment"`
+	Deployment DeploymentV1Deployment `json:"deployment"`
 }
 
-// ClusterServiceListClustersParams defines parameters for ClusterServiceListClusters.
-type ClusterServiceListClustersParams struct {
-	// Labels Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel. Labels separated by a comma.
+// GoogleProtobufEmpty A generic empty message that you can re-use to avoid defining duplicated
+//
+//	empty messages in your APIs. A typical example is to use it as the request
+//	or the response type of an API method. For instance:
+//
+//	    service Foo {
+//	      rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);
+//	    }
+type GoogleProtobufEmpty = map[string]interface{}
+
+// GoogleProtobufStruct `Struct` represents a structured data value, consisting of fields
+//
+//	which map to dynamically typed values. In some languages, `Struct`
+//	might be supported by a native representation. For example, in
+//	scripting languages like JS a struct is represented as an
+//	object. The details of that representation are described together
+//	with the proto support for the language.
+//
+//	The JSON representation for `Struct` is JSON object.
+type GoogleProtobufStruct map[string]*GoogleProtobufValue
+
+// GoogleProtobufTimestamp A Timestamp represents a point in time independent of any time zone or local
+//
+//	calendar, encoded as a count of seconds and fractions of seconds at
+//	nanosecond resolution. The count is relative to an epoch at UTC midnight on
+//	January 1, 1970, in the proleptic Gregorian calendar which extends the
+//	Gregorian calendar backwards to year one.
+//
+//	All minutes are 60 seconds long. Leap seconds are "smeared" so that no leap
+//	second table is needed for interpretation, using a [24-hour linear
+//	smear](https://developers.google.com/time/smear).
+//
+//	The range is from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z. By
+//	restricting to that range, we ensure that we can convert to and from [RFC
+//	3339](https://www.ietf.org/rfc/rfc3339.txt) date strings.
+//
+//	# Examples
+//
+//	Example 1: Compute Timestamp from POSIX `time()`.
+//
+//	    Timestamp timestamp;
+//	    timestamp.set_seconds(time(NULL));
+//	    timestamp.set_nanos(0);
+//
+//	Example 2: Compute Timestamp from POSIX `gettimeofday()`.
+//
+//	    struct timeval tv;
+//	    gettimeofday(&tv, NULL);
+//
+//	    Timestamp timestamp;
+//	    timestamp.set_seconds(tv.tv_sec);
+//	    timestamp.set_nanos(tv.tv_usec * 1000);
+//
+//	Example 3: Compute Timestamp from Win32 `GetSystemTimeAsFileTime()`.
+//
+//	    FILETIME ft;
+//	    GetSystemTimeAsFileTime(&ft);
+//	    UINT64 ticks = (((UINT64)ft.dwHighDateTime) << 32) | ft.dwLowDateTime;
+//
+//	    // A Windows tick is 100 nanoseconds. Windows epoch 1601-01-01T00:00:00Z
+//	    // is 11644473600 seconds before Unix epoch 1970-01-01T00:00:00Z.
+//	    Timestamp timestamp;
+//	    timestamp.set_seconds((INT64) ((ticks / 10000000) - 11644473600LL));
+//	    timestamp.set_nanos((INT32) ((ticks % 10000000) * 100));
+//
+//	Example 4: Compute Timestamp from Java `System.currentTimeMillis()`.
+//
+//	    long millis = System.currentTimeMillis();
+//
+//	    Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)
+//	        .setNanos((int) ((millis % 1000) * 1000000)).build();
+//
+//	Example 5: Compute Timestamp from Java `Instant.now()`.
+//
+//	    Instant now = Instant.now();
+//
+//	    Timestamp timestamp =
+//	        Timestamp.newBuilder().setSeconds(now.getEpochSecond())
+//	            .setNanos(now.getNano()).build();
+//
+//	Example 6: Compute Timestamp from current time in Python.
+//
+//	    timestamp = Timestamp()
+//	    timestamp.GetCurrentTime()
+//
+//	# JSON Mapping
+//
+//	In JSON format, the Timestamp type is encoded as a string in the
+//	[RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format. That is, the
+//	format is "{year}-{month}-{day}T{hour}:{min}:{sec}[.{frac_sec}]Z"
+//	where {year} is always expressed using four digits while {month}, {day},
+//	{hour}, {min}, and {sec} are zero-padded to two digits each. The fractional
+//	seconds, which can go up to 9 digits (i.e. up to 1 nanosecond resolution),
+//	are optional. The "Z" suffix indicates the timezone ("UTC"); the timezone
+//	is required. A proto3 JSON serializer should always use UTC (as indicated by
+//	"Z") when printing the Timestamp type and a proto3 JSON parser should be
+//	able to accept both UTC and other timezones (as indicated by an offset).
+//
+//	For example, "2017-01-15T01:30:15.01Z" encodes 15.01 seconds past
+//	01:30 UTC on January 15, 2017.
+//
+//	In JavaScript, one can convert a Date object to this format using the
+//	standard
+//	[toISOString()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString)
+//	method. In Python, a standard `datetime.datetime` object can be converted
+//	to this format using
+//	[`strftime`](https://docs.python.org/2/library/time.html#time.strftime) with
+//	the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in Java, one can use
+//	the Joda Time's [`ISODateTimeFormat.dateTime()`](
+//	http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime()
+//	) to obtain a formatter capable of generating timestamps in this format.
+type GoogleProtobufTimestamp = time.Time
+
+// GoogleProtobufValue `Value` represents a dynamically typed value which can be either
+//
+//	null, a number, a string, a boolean, a recursive struct value, or a
+//	list of values. A producer of value is expected to set one of these
+//	variants. Absence of any variant indicates an error.
+//
+//	The JSON representation for `Value` is JSON value.
+type GoogleProtobufValue map[string]interface{}
+
+// DeploymentV1ClusterServiceListClustersParams defines parameters for DeploymentV1ClusterServiceListClusters.
+type DeploymentV1ClusterServiceListClustersParams struct {
+	// Labels Optional. A string array that filters cluster labels to be
+	//  displayed ie color=blue,customer=intel. Labels separated by a comma.
 	Labels *[]string `form:"labels,omitempty" json:"labels,omitempty"`
 
 	// OrderBy Optional. Select field and order based on which cluster list will be sorted.
@@ -269,13 +680,15 @@ type ClusterServiceListClustersParams struct {
 	// PageSize Optional. Select count of clusters to be listed per page.
 	PageSize *int32 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
 
-	// Offset Optional. Offset is used to select the correct page from which clusters list will be displayed. (E.g If there are 10 clusters, page size is 2 and offset is set as 4, then the response will display clusters 5 and 6).
+	// Offset Optional. Offset is used to select the correct page from which clusters list will be displayed.
+	//  (E.g If there are 10 clusters, page size is 2 and offset is set as 4, then the response will display clusters 5 and 6).
 	Offset *int32 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
-// DeploymentServiceListDeploymentsParams defines parameters for DeploymentServiceListDeployments.
-type DeploymentServiceListDeploymentsParams struct {
-	// Labels Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+// DeploymentV1DeploymentServiceListDeploymentsParams defines parameters for DeploymentV1DeploymentServiceListDeployments.
+type DeploymentV1DeploymentServiceListDeploymentsParams struct {
+	// Labels Optional. A string array that filters cluster labels to be
+	//  displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
 	Labels *[]string `form:"labels,omitempty" json:"labels,omitempty"`
 
 	// OrderBy Optional. Select field and order based on which Deployment list will be sorted.
@@ -287,13 +700,15 @@ type DeploymentServiceListDeploymentsParams struct {
 	// PageSize Optional. Select count of Deployment to be listed per page.
 	PageSize *int32 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
 
-	// Offset Optional. Offset is used to select the correct page from which Deployment list will be displayed. (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+	// Offset Optional. Offset is used to select the correct page from which Deployment list will be displayed.
+	//  (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
 	Offset *int32 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
-// DeploymentServiceListDeploymentsPerClusterParams defines parameters for DeploymentServiceListDeploymentsPerCluster.
-type DeploymentServiceListDeploymentsPerClusterParams struct {
-	// Labels Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+// DeploymentV1DeploymentServiceListDeploymentsPerClusterParams defines parameters for DeploymentV1DeploymentServiceListDeploymentsPerCluster.
+type DeploymentV1DeploymentServiceListDeploymentsPerClusterParams struct {
+	// Labels Optional. A string array that filters cluster labels to be
+	//  displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
 	Labels *[]string `form:"labels,omitempty" json:"labels,omitempty"`
 
 	// OrderBy Optional. Select field and order based on which Deployment list will be sorted.
@@ -305,21 +720,20 @@ type DeploymentServiceListDeploymentsPerClusterParams struct {
 	// PageSize Optional. Select count of Deployment to be listed per page.
 	PageSize *int32 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
 
-	// Offset Optional. Offset is used to select the correct page from which Deployment list will be displayed. (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+	// Offset Optional. Offset is used to select the correct page from which Deployment list will be displayed.
+	//  (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
 	Offset *int32 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
-// DeploymentServiceDeleteDeploymentParams defines parameters for DeploymentServiceDeleteDeployment.
-type DeploymentServiceDeleteDeploymentParams struct {
-	// DeleteType Required. Different delete types to handle parent and child lists, for dependency support. Available options: PARENT_ONLY, ALL.
-	DeleteType *DeploymentServiceDeleteDeploymentParamsDeleteType `form:"deleteType,omitempty" json:"deleteType,omitempty"`
+// DeploymentV1DeploymentServiceDeleteDeploymentParams defines parameters for DeploymentV1DeploymentServiceDeleteDeployment.
+type DeploymentV1DeploymentServiceDeleteDeploymentParams struct {
+	// DeleteType Required. Different delete types to handle parent and child
+	//  lists, for dependency support. Available options: PARENT_ONLY, ALL.
+	DeleteType DeploymentV1DeleteType `form:"deleteType" json:"deleteType"`
 }
 
-// DeploymentServiceDeleteDeploymentParamsDeleteType defines parameters for DeploymentServiceDeleteDeployment.
-type DeploymentServiceDeleteDeploymentParamsDeleteType string
-
-// DeploymentServiceListDeploymentClustersParams defines parameters for DeploymentServiceListDeploymentClusters.
-type DeploymentServiceListDeploymentClustersParams struct {
+// DeploymentV1DeploymentServiceListDeploymentClustersParams defines parameters for DeploymentV1DeploymentServiceListDeploymentClusters.
+type DeploymentV1DeploymentServiceListDeploymentClustersParams struct {
 	// OrderBy Optional. Select field and order based on which Deployment cluster list will be sorted.
 	OrderBy *string `form:"orderBy,omitempty" json:"orderBy,omitempty"`
 
@@ -329,18 +743,234 @@ type DeploymentServiceListDeploymentClustersParams struct {
 	// PageSize Optional. Select count of Deployment clusters to be listed per page.
 	PageSize *int32 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
 
-	// Offset Optional. Offset is used to select the correct page from which Deployment clusters list will be displayed. (E.g If there are 10 Deployment clusters, page size is 2 and offset is set as 4, then the response will display Deployment clusters 5 and 6.)
+	// Offset Optional. Offset is used to select the correct page from which Deployment clusters list will be displayed.
+	//  (E.g If there are 10 Deployment clusters, page size is 2 and offset is set as 4, then the response will display Deployment clusters 5 and 6.)
 	Offset *int32 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
-// DeploymentServiceGetDeploymentsStatusParams defines parameters for DeploymentServiceGetDeploymentsStatus.
-type DeploymentServiceGetDeploymentsStatusParams struct {
-	// Labels Optional. A string array that filters cluster labels to be displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+// DeploymentV1DeploymentServiceGetDeploymentsStatusParams defines parameters for DeploymentV1DeploymentServiceGetDeploymentsStatus.
+type DeploymentV1DeploymentServiceGetDeploymentsStatusParams struct {
+	// Labels Optional. A string array that filters cluster labels to be
+	//  displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
 	Labels *[]string `form:"labels,omitempty" json:"labels,omitempty"`
 }
 
-// DeploymentServiceCreateDeploymentJSONRequestBody defines body for DeploymentServiceCreateDeployment for application/json ContentType.
-type DeploymentServiceCreateDeploymentJSONRequestBody = Deployment
+// DeploymentV1ClusterServiceGetKubeConfigParams defines parameters for DeploymentV1ClusterServiceGetKubeConfig.
+type DeploymentV1ClusterServiceGetKubeConfigParams struct {
+	ConnectProtocolVersion ConnectProtocolVersion `json:"Connect-Protocol-Version"`
+	ConnectTimeoutMs       *ConnectTimeoutHeader  `json:"Connect-Timeout-Ms,omitempty"`
+}
 
-// DeploymentServiceUpdateDeploymentJSONRequestBody defines body for DeploymentServiceUpdateDeployment for application/json ContentType.
-type DeploymentServiceUpdateDeploymentJSONRequestBody = Deployment
+// DeploymentV1DeploymentServiceGetAppNamespaceParams defines parameters for DeploymentV1DeploymentServiceGetAppNamespace.
+type DeploymentV1DeploymentServiceGetAppNamespaceParams struct {
+	ConnectProtocolVersion ConnectProtocolVersion `json:"Connect-Protocol-Version"`
+	ConnectTimeoutMs       *ConnectTimeoutHeader  `json:"Connect-Timeout-Ms,omitempty"`
+}
+
+// DeploymentV1DeploymentServiceCreateDeploymentJSONRequestBody defines body for DeploymentV1DeploymentServiceCreateDeployment for application/json ContentType.
+type DeploymentV1DeploymentServiceCreateDeploymentJSONRequestBody = DeploymentV1Deployment
+
+// DeploymentV1DeploymentServiceUpdateDeploymentJSONRequestBody defines body for DeploymentV1DeploymentServiceUpdateDeployment for application/json ContentType.
+type DeploymentV1DeploymentServiceUpdateDeploymentJSONRequestBody = DeploymentV1Deployment
+
+// DeploymentV1ClusterServiceGetKubeConfigJSONRequestBody defines body for DeploymentV1ClusterServiceGetKubeConfig for application/json ContentType.
+type DeploymentV1ClusterServiceGetKubeConfigJSONRequestBody = DeploymentV1GetKubeConfigRequest
+
+// DeploymentV1DeploymentServiceGetAppNamespaceJSONRequestBody defines body for DeploymentV1DeploymentServiceGetAppNamespace for application/json ContentType.
+type DeploymentV1DeploymentServiceGetAppNamespaceJSONRequestBody = DeploymentV1GetAppNamespaceRequest
+
+// Getter for additional properties for ConnectError. Returns the specified
+// element and whether it was found
+func (a ConnectError) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for ConnectError
+func (a *ConnectError) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for ConnectError to handle AdditionalProperties
+func (a *ConnectError) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["code"]; found {
+		err = json.Unmarshal(raw, &a.Code)
+		if err != nil {
+			return fmt.Errorf("error reading 'code': %w", err)
+		}
+		delete(object, "code")
+	}
+
+	if raw, found := object["details"]; found {
+		err = json.Unmarshal(raw, &a.Details)
+		if err != nil {
+			return fmt.Errorf("error reading 'details': %w", err)
+		}
+		delete(object, "details")
+	}
+
+	if raw, found := object["message"]; found {
+		err = json.Unmarshal(raw, &a.Message)
+		if err != nil {
+			return fmt.Errorf("error reading 'message': %w", err)
+		}
+		delete(object, "message")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for ConnectError to handle AdditionalProperties
+func (a ConnectError) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.Code != nil {
+		object["code"], err = json.Marshal(a.Code)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'code': %w", err)
+		}
+	}
+
+	if a.Details != nil {
+		object["details"], err = json.Marshal(a.Details)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'details': %w", err)
+		}
+	}
+
+	if a.Message != nil {
+		object["message"], err = json.Marshal(a.Message)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'message': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for ConnectErrorDetailsAny. Returns the specified
+// element and whether it was found
+func (a ConnectErrorDetailsAny) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for ConnectErrorDetailsAny
+func (a *ConnectErrorDetailsAny) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for ConnectErrorDetailsAny to handle AdditionalProperties
+func (a *ConnectErrorDetailsAny) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["debug"]; found {
+		err = json.Unmarshal(raw, &a.Debug)
+		if err != nil {
+			return fmt.Errorf("error reading 'debug': %w", err)
+		}
+		delete(object, "debug")
+	}
+
+	if raw, found := object["type"]; found {
+		err = json.Unmarshal(raw, &a.Type)
+		if err != nil {
+			return fmt.Errorf("error reading 'type': %w", err)
+		}
+		delete(object, "type")
+	}
+
+	if raw, found := object["value"]; found {
+		err = json.Unmarshal(raw, &a.Value)
+		if err != nil {
+			return fmt.Errorf("error reading 'value': %w", err)
+		}
+		delete(object, "value")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for ConnectErrorDetailsAny to handle AdditionalProperties
+func (a ConnectErrorDetailsAny) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.Debug != nil {
+		object["debug"], err = json.Marshal(a.Debug)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'debug': %w", err)
+		}
+	}
+
+	if a.Type != nil {
+		object["type"], err = json.Marshal(a.Type)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'type': %w", err)
+		}
+	}
+
+	if a.Value != nil {
+		object["value"], err = json.Marshal(a.Value)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'value': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
