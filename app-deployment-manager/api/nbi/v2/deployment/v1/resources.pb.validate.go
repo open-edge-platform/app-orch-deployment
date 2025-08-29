@@ -59,13 +59,93 @@ func (m *Deployment) validate(all bool) error {
 
 	// no validation rules for Name
 
-	// no validation rules for DisplayName
+	if l := utf8.RuneCountInString(m.GetDisplayName()); l < 0 || l > 40 {
+		err := DeploymentValidationError{
+			field:  "DisplayName",
+			reason: "value length must be between 0 and 40 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for AppName
+	if !_Deployment_DisplayName_Pattern.MatchString(m.GetDisplayName()) {
+		err := DeploymentValidationError{
+			field:  "DisplayName",
+			reason: "value does not match regex pattern \"^([a-zA-Z0-9][\\\\w\\\\- \\\\.\\\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for AppVersion
+	if l := utf8.RuneCountInString(m.GetAppName()); l < 1 || l > 40 {
+		err := DeploymentValidationError{
+			field:  "AppName",
+			reason: "value length must be between 1 and 40 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for ProfileName
+	if !_Deployment_AppName_Pattern.MatchString(m.GetAppName()) {
+		err := DeploymentValidationError{
+			field:  "AppName",
+			reason: "value does not match regex pattern \"^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if l := utf8.RuneCountInString(m.GetAppVersion()); l < 1 || l > 20 {
+		err := DeploymentValidationError{
+			field:  "AppVersion",
+			reason: "value length must be between 1 and 20 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if !_Deployment_AppVersion_Pattern.MatchString(m.GetAppVersion()) {
+		err := DeploymentValidationError{
+			field:  "AppVersion",
+			reason: "value does not match regex pattern \"^[a-z0-9][a-z0-9-.]{0,18}[a-z0-9]{0,1}$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if l := utf8.RuneCountInString(m.GetProfileName()); l < 0 || l > 40 {
+		err := DeploymentValidationError{
+			field:  "ProfileName",
+			reason: "value length must be between 0 and 40 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if !_Deployment_ProfileName_Pattern.MatchString(m.GetProfileName()) {
+		err := DeploymentValidationError{
+			field:  "ProfileName",
+			reason: "value does not match regex pattern \"^[a-z0-9]*[a-z0-9-]{0,38}[a-z0-9]{0,1}$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if all {
 		switch v := interface{}(m.GetCreateTime()).(type) {
@@ -229,9 +309,49 @@ func (m *Deployment) validate(all bool) error {
 
 	}
 
-	// no validation rules for DeploymentType
+	if l := utf8.RuneCountInString(m.GetDeploymentType()); l < 0 || l > 20 {
+		err := DeploymentValidationError{
+			field:  "DeploymentType",
+			reason: "value length must be between 0 and 20 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for NetworkName
+	if !_Deployment_DeploymentType_Pattern.MatchString(m.GetDeploymentType()) {
+		err := DeploymentValidationError{
+			field:  "DeploymentType",
+			reason: "value does not match regex pattern \"^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if l := utf8.RuneCountInString(m.GetNetworkName()); l < 0 || l > 40 {
+		err := DeploymentValidationError{
+			field:  "NetworkName",
+			reason: "value length must be between 0 and 40 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if !_Deployment_NetworkName_Pattern.MatchString(m.GetNetworkName()) {
+		err := DeploymentValidationError{
+			field:  "NetworkName",
+			reason: "value does not match regex pattern \"^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	for idx, item := range m.GetServiceExports() {
 		_, _ = idx, item
@@ -373,6 +493,18 @@ var _ interface {
 	ErrorName() string
 } = DeploymentValidationError{}
 
+var _Deployment_DisplayName_Pattern = regexp.MustCompile("^([a-zA-Z0-9][\\w\\- \\.\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$")
+
+var _Deployment_AppName_Pattern = regexp.MustCompile("^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$")
+
+var _Deployment_AppVersion_Pattern = regexp.MustCompile("^[a-z0-9][a-z0-9-.]{0,18}[a-z0-9]{0,1}$")
+
+var _Deployment_ProfileName_Pattern = regexp.MustCompile("^[a-z0-9]*[a-z0-9-]{0,38}[a-z0-9]{0,1}$")
+
+var _Deployment_DeploymentType_Pattern = regexp.MustCompile("^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$")
+
+var _Deployment_NetworkName_Pattern = regexp.MustCompile("^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$")
+
 // Validate checks the field values on ServiceExport with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -395,7 +527,27 @@ func (m *ServiceExport) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for AppName
+	if l := utf8.RuneCountInString(m.GetAppName()); l < 1 || l > 40 {
+		err := ServiceExportValidationError{
+			field:  "AppName",
+			reason: "value length must be between 1 and 40 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if !_ServiceExport_AppName_Pattern.MatchString(m.GetAppName()) {
+		err := ServiceExportValidationError{
+			field:  "AppName",
+			reason: "value does not match regex pattern \"^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Enabled
 
@@ -477,6 +629,8 @@ var _ interface {
 	ErrorName() string
 } = ServiceExportValidationError{}
 
+var _ServiceExport_AppName_Pattern = regexp.MustCompile("^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$")
+
 // Validate checks the field values on OverrideValues with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -499,9 +653,49 @@ func (m *OverrideValues) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for AppName
+	if l := utf8.RuneCountInString(m.GetAppName()); l < 1 || l > 40 {
+		err := OverrideValuesValidationError{
+			field:  "AppName",
+			reason: "value length must be between 1 and 40 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for TargetNamespace
+	if !_OverrideValues_AppName_Pattern.MatchString(m.GetAppName()) {
+		err := OverrideValuesValidationError{
+			field:  "AppName",
+			reason: "value does not match regex pattern \"^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if l := utf8.RuneCountInString(m.GetTargetNamespace()); l < 0 || l > 63 {
+		err := OverrideValuesValidationError{
+			field:  "TargetNamespace",
+			reason: "value length must be between 0 and 63 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if !_OverrideValues_TargetNamespace_Pattern.MatchString(m.GetTargetNamespace()) {
+		err := OverrideValuesValidationError{
+			field:  "TargetNamespace",
+			reason: "value does not match regex pattern \"(^$)|^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if all {
 		switch v := interface{}(m.GetValues()).(type) {
@@ -610,6 +804,10 @@ var _ interface {
 	ErrorName() string
 } = OverrideValuesValidationError{}
 
+var _OverrideValues_AppName_Pattern = regexp.MustCompile("^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$")
+
+var _OverrideValues_TargetNamespace_Pattern = regexp.MustCompile("(^$)|^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$")
+
 // Validate checks the field values on TargetClusters with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -632,7 +830,27 @@ func (m *TargetClusters) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for AppName
+	if l := utf8.RuneCountInString(m.GetAppName()); l < 0 || l > 40 {
+		err := TargetClustersValidationError{
+			field:  "AppName",
+			reason: "value length must be between 0 and 40 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if !_TargetClusters_AppName_Pattern.MatchString(m.GetAppName()) {
+		err := TargetClustersValidationError{
+			field:  "AppName",
+			reason: "value does not match regex pattern \"(^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Labels
 
@@ -715,6 +933,8 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = TargetClustersValidationError{}
+
+var _TargetClusters_AppName_Pattern = regexp.MustCompile("(^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$")
 
 // Validate checks the field values on Summary with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
@@ -981,7 +1201,27 @@ func (m *DeploymentInstancesCluster) validate(all bool) error {
 
 	// no validation rules for DeploymentName
 
-	// no validation rules for DeploymentDisplayName
+	if l := utf8.RuneCountInString(m.GetDeploymentDisplayName()); l < 0 || l > 40 {
+		err := DeploymentInstancesClusterValidationError{
+			field:  "DeploymentDisplayName",
+			reason: "value length must be between 0 and 40 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if !_DeploymentInstancesCluster_DeploymentDisplayName_Pattern.MatchString(m.GetDeploymentDisplayName()) {
+		err := DeploymentInstancesClusterValidationError{
+			field:  "DeploymentDisplayName",
+			reason: "value does not match regex pattern \"^([a-zA-Z0-9][\\\\w\\\\- \\\\.\\\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if all {
 		switch v := interface{}(m.GetStatus()).(type) {
@@ -1125,6 +1365,8 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = DeploymentInstancesClusterValidationError{}
+
+var _DeploymentInstancesCluster_DeploymentDisplayName_Pattern = regexp.MustCompile("^([a-zA-Z0-9][\\w\\- \\.\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$")
 
 // Validate checks the field values on Cluster with the rules defined in the
 // proto definition for this message. If any rules are violated, the first

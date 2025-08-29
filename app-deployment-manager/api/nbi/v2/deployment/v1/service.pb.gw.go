@@ -481,7 +481,7 @@ func RegisterDeploymentServiceHandlerServer(ctx context.Context, mux *runtime.Se
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.DeploymentService/ListDeployments", runtime.WithHTTPPathPattern("/adm/v1/deployments"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.DeploymentService/ListDeployments", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/deployments"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -506,7 +506,7 @@ func RegisterDeploymentServiceHandlerServer(ctx context.Context, mux *runtime.Se
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.DeploymentService/ListDeploymentsPerCluster", runtime.WithHTTPPathPattern("/adm/v1/deployments/clusters/{cluster_id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.DeploymentService/ListDeploymentsPerCluster", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/deployments/clusters/{cluster_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -531,7 +531,7 @@ func RegisterDeploymentServiceHandlerServer(ctx context.Context, mux *runtime.Se
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.DeploymentService/CreateDeployment", runtime.WithHTTPPathPattern("/adm/v1/deployments"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.DeploymentService/CreateDeployment", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/deployments"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -556,7 +556,7 @@ func RegisterDeploymentServiceHandlerServer(ctx context.Context, mux *runtime.Se
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.DeploymentService/GetDeployment", runtime.WithHTTPPathPattern("/adm/v1/deployments/{depl_id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.DeploymentService/GetDeployment", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/deployments/{depl_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -581,7 +581,7 @@ func RegisterDeploymentServiceHandlerServer(ctx context.Context, mux *runtime.Se
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.DeploymentService/UpdateDeployment", runtime.WithHTTPPathPattern("/adm/v1/deployments/{depl_id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.DeploymentService/UpdateDeployment", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/deployments/{depl_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -606,7 +606,7 @@ func RegisterDeploymentServiceHandlerServer(ctx context.Context, mux *runtime.Se
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.DeploymentService/DeleteDeployment", runtime.WithHTTPPathPattern("/adm/v1/deployments/{depl_id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.DeploymentService/DeleteDeployment", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/deployments/{depl_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -631,7 +631,7 @@ func RegisterDeploymentServiceHandlerServer(ctx context.Context, mux *runtime.Se
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.DeploymentService/GetDeploymentsStatus", runtime.WithHTTPPathPattern("/adm/v1/summary/deployments_status"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.DeploymentService/GetDeploymentsStatus", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/summary/deployments_status"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -656,7 +656,7 @@ func RegisterDeploymentServiceHandlerServer(ctx context.Context, mux *runtime.Se
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.DeploymentService/ListDeploymentClusters", runtime.WithHTTPPathPattern("/adm/v1/deployments/{depl_id}/clusters"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/deployment.v1.DeploymentService/ListDeploymentClusters", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/deployments/{depl_id}/clusters"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -720,7 +720,7 @@ func RegisterDeploymentServiceHandlerClient(ctx context.Context, mux *runtime.Se
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.DeploymentService/ListDeployments", runtime.WithHTTPPathPattern("/adm/v1/deployments"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.DeploymentService/ListDeployments", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/deployments"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -742,7 +742,7 @@ func RegisterDeploymentServiceHandlerClient(ctx context.Context, mux *runtime.Se
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.DeploymentService/ListDeploymentsPerCluster", runtime.WithHTTPPathPattern("/adm/v1/deployments/clusters/{cluster_id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.DeploymentService/ListDeploymentsPerCluster", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/deployments/clusters/{cluster_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -764,7 +764,7 @@ func RegisterDeploymentServiceHandlerClient(ctx context.Context, mux *runtime.Se
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.DeploymentService/CreateDeployment", runtime.WithHTTPPathPattern("/adm/v1/deployments"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.DeploymentService/CreateDeployment", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/deployments"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -786,7 +786,7 @@ func RegisterDeploymentServiceHandlerClient(ctx context.Context, mux *runtime.Se
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.DeploymentService/GetDeployment", runtime.WithHTTPPathPattern("/adm/v1/deployments/{depl_id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.DeploymentService/GetDeployment", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/deployments/{depl_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -808,7 +808,7 @@ func RegisterDeploymentServiceHandlerClient(ctx context.Context, mux *runtime.Se
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.DeploymentService/UpdateDeployment", runtime.WithHTTPPathPattern("/adm/v1/deployments/{depl_id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.DeploymentService/UpdateDeployment", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/deployments/{depl_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -830,7 +830,7 @@ func RegisterDeploymentServiceHandlerClient(ctx context.Context, mux *runtime.Se
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.DeploymentService/DeleteDeployment", runtime.WithHTTPPathPattern("/adm/v1/deployments/{depl_id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.DeploymentService/DeleteDeployment", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/deployments/{depl_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -852,7 +852,7 @@ func RegisterDeploymentServiceHandlerClient(ctx context.Context, mux *runtime.Se
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.DeploymentService/GetDeploymentsStatus", runtime.WithHTTPPathPattern("/adm/v1/summary/deployments_status"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.DeploymentService/GetDeploymentsStatus", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/summary/deployments_status"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -874,7 +874,7 @@ func RegisterDeploymentServiceHandlerClient(ctx context.Context, mux *runtime.Se
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.DeploymentService/ListDeploymentClusters", runtime.WithHTTPPathPattern("/adm/v1/deployments/{depl_id}/clusters"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/deployment.v1.DeploymentService/ListDeploymentClusters", runtime.WithHTTPPathPattern("/deployment.orchestrator.apis/v1/deployments/{depl_id}/clusters"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -894,21 +894,21 @@ func RegisterDeploymentServiceHandlerClient(ctx context.Context, mux *runtime.Se
 }
 
 var (
-	pattern_DeploymentService_ListDeployments_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"adm", "v1", "deployments"}, ""))
+	pattern_DeploymentService_ListDeployments_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"deployment.orchestrator.apis", "v1", "deployments"}, ""))
 
-	pattern_DeploymentService_ListDeploymentsPerCluster_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"adm", "v1", "deployments", "clusters", "cluster_id"}, ""))
+	pattern_DeploymentService_ListDeploymentsPerCluster_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"deployment.orchestrator.apis", "v1", "deployments", "clusters", "cluster_id"}, ""))
 
-	pattern_DeploymentService_CreateDeployment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"adm", "v1", "deployments"}, ""))
+	pattern_DeploymentService_CreateDeployment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"deployment.orchestrator.apis", "v1", "deployments"}, ""))
 
-	pattern_DeploymentService_GetDeployment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"adm", "v1", "deployments", "depl_id"}, ""))
+	pattern_DeploymentService_GetDeployment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"deployment.orchestrator.apis", "v1", "deployments", "depl_id"}, ""))
 
-	pattern_DeploymentService_UpdateDeployment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"adm", "v1", "deployments", "depl_id"}, ""))
+	pattern_DeploymentService_UpdateDeployment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"deployment.orchestrator.apis", "v1", "deployments", "depl_id"}, ""))
 
-	pattern_DeploymentService_DeleteDeployment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"adm", "v1", "deployments", "depl_id"}, ""))
+	pattern_DeploymentService_DeleteDeployment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"deployment.orchestrator.apis", "v1", "deployments", "depl_id"}, ""))
 
-	pattern_DeploymentService_GetDeploymentsStatus_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"adm", "v1", "summary", "deployments_status"}, ""))
+	pattern_DeploymentService_GetDeploymentsStatus_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"deployment.orchestrator.apis", "v1", "summary", "deployments_status"}, ""))
 
-	pattern_DeploymentService_ListDeploymentClusters_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"adm", "v1", "deployments", "depl_id", "clusters"}, ""))
+	pattern_DeploymentService_ListDeploymentClusters_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"deployment.orchestrator.apis", "v1", "deployments", "depl_id", "clusters"}, ""))
 )
 
 var (

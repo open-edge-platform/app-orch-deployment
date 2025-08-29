@@ -43,9 +43,11 @@ func (s *TestSuite) TestListDeploymentsWithPagination() {
 		{pageSize: 2, offset: 50}, // Tenth page with two deployments (should be empty)
 	}
 	for _, tt := range testCases {
+		pageSize := int32(tt.pageSize)
+		offset := int32(tt.offset)
 		deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentV1DeploymentServiceListDeploymentsParams{
-			PageSize: &tt.pageSize,
-			Offset:   &tt.offset,
+			PageSize: &pageSize,
+			Offset:   &offset,
 		})
 		s.NoError(err, "Failed to list deployments with pagination")
 		s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
@@ -86,14 +88,12 @@ func (s *TestSuite) TestListDeploymentsInvalidPaginationParameters() {
 		// TODO: test orderBy?
 	}
 	for _, tt := range testCases {
-		var pageSize, offset *int
+		var pageSize, offset *int32
 		if tt.pageSize >= 0 {
-			ps := int(tt.pageSize)
-			pageSize = &ps
+			pageSize = &tt.pageSize
 		}
 		if tt.offset >= 0 {
-			os := int(tt.offset)
-			offset = &os
+			offset = &tt.offset
 		}
 		deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentV1DeploymentServiceListDeploymentsParams{
 			PageSize: pageSize,

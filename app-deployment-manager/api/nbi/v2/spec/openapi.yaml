@@ -5,7 +5,7 @@ info:
     and managing applications
   version: 2.0.0
 paths:
-  /adm/v1/deployments:
+  /deployment.orchestrator.apis/v1/deployments:
     get:
       tags:
       - deployment.v1.DeploymentService
@@ -21,21 +21,8 @@ paths:
           type: array
           items:
             type: string
-            maxLength: 200
-            minLength: 1
-            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
-            maxItems: 20
-            description: '(OPTIONAL)
-
-              string.max_len = 200
-
-              string.min_len = 1
-
-              string.pattern = "(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$"
-
-              '
+            description: '(OPTIONAL) '
           title: labels
-          maxItems: 20
           description: "(OPTIONAL) Optional. A string array that filters cluster labels\
             \ to be\n displayed ie color=blue,customer=intel-corp. Labels separated\
             \ by a comma."
@@ -46,52 +33,24 @@ paths:
         schema:
           type: string
           title: order_by
-          maxLength: 100
-          pattern: ^(name|created_time|updated_time)?(\s+(asc|desc))?$
-          description: '(OPTIONAL) Optional. Select field and order based on which
+          description: (OPTIONAL) Optional. Select field and order based on which
             Deployment list will be sorted.
-
-            string.max_len = 100
-
-            string.pattern = "^(name|created_time|updated_time)?(\\s+(asc|desc))?$"
-
-            '
       - name: filter
         in: query
         description: Optional. Selection criteria to list Deployments.
         schema:
           type: string
           title: filter
-          maxLength: 500
-          description: '(OPTIONAL) Optional. Selection criteria to list Deployments.
-
-            string.max_len = 500
-
-            '
+          description: (OPTIONAL) Optional. Selection criteria to list Deployments.
       - name: pageSize
         in: query
         description: Optional. Select count of Deployment to be listed per page.
         schema:
           type: integer
           title: page_size
-          maximum: 100
-          minimum: 0
-          description: '(OPTIONAL) Optional. Select count of Deployment to be listed
+          format: int32
+          description: (OPTIONAL) Optional. Select count of Deployment to be listed
             per page.
-
-            uint32.gte = 0
-
-            uint32.gte_lt = 0
-
-            uint32.gte_lt_exclusive = 0
-
-            uint32.gte_lte = 0
-
-            uint32.gte_lte_exclusive = 0
-
-            uint32.lte = 100
-
-            '
       - name: offset
         in: query
         description: "Optional. Offset is used to select the correct page from which\
@@ -101,13 +60,11 @@ paths:
         schema:
           type: integer
           title: offset
-          minimum: 0
+          format: int32
           description: "(OPTIONAL) Optional. Offset is used to select the correct\
             \ page from which Deployment list will be displayed.\n (E.g If there are\
             \ 10 Deployments, page size is 2 and offset is set as 4, then the response\
-            \ will display Deployment 5 and 6.)\nuint32.gte = 0\nuint32.gte_lt = 0\n\
-            uint32.gte_lt_exclusive = 0\nuint32.gte_lte = 0\nuint32.gte_lte_exclusive\
-            \ = 0\n"
+            \ will display Deployment 5 and 6.)"
       responses:
         '200':
           description: Success
@@ -136,7 +93,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/deployment.v1.CreateDeploymentResponse'
-  /adm/v1/deployments/clusters/{cluster_id}:
+  /deployment.orchestrator.apis/v1/deployments/clusters/{cluster_id}:
     get:
       tags:
       - deployment.v1.DeploymentService
@@ -149,16 +106,6 @@ paths:
         schema:
           type: string
           title: cluster_id
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: 'string.max_len = 40
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
       - name: labels
         in: query
         description: "Optional. A string array that filters cluster labels to be\n\
@@ -167,21 +114,8 @@ paths:
           type: array
           items:
             type: string
-            maxLength: 200
-            minLength: 1
-            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
-            maxItems: 20
-            description: '(OPTIONAL)
-
-              string.max_len = 200
-
-              string.min_len = 1
-
-              string.pattern = "(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$"
-
-              '
+            description: '(OPTIONAL) '
           title: labels
-          maxItems: 20
           description: "(OPTIONAL) Optional. A string array that filters cluster labels\
             \ to be\n displayed ie color=blue,customer=intel-corp. Labels separated\
             \ by a comma."
@@ -192,52 +126,24 @@ paths:
         schema:
           type: string
           title: order_by
-          maxLength: 100
-          pattern: ^(name|created_time|updated_time)?(\s+(asc|desc))?$
-          description: '(OPTIONAL) Optional. Select field and order based on which
+          description: (OPTIONAL) Optional. Select field and order based on which
             Deployment list will be sorted.
-
-            string.max_len = 100
-
-            string.pattern = "^(name|created_time|updated_time)?(\\s+(asc|desc))?$"
-
-            '
       - name: filter
         in: query
         description: Optional. Selection criteria to list Deployments.
         schema:
           type: string
           title: filter
-          maxLength: 500
-          description: '(OPTIONAL) Optional. Selection criteria to list Deployments.
-
-            string.max_len = 500
-
-            '
+          description: (OPTIONAL) Optional. Selection criteria to list Deployments.
       - name: pageSize
         in: query
         description: Optional. Select count of Deployment to be listed per page.
         schema:
           type: integer
           title: page_size
-          maximum: 100
-          minimum: 0
-          description: '(OPTIONAL) Optional. Select count of Deployment to be listed
+          format: int32
+          description: (OPTIONAL) Optional. Select count of Deployment to be listed
             per page.
-
-            uint32.gte = 0
-
-            uint32.gte_lt = 0
-
-            uint32.gte_lt_exclusive = 0
-
-            uint32.gte_lte = 0
-
-            uint32.gte_lte_exclusive = 0
-
-            uint32.lte = 100
-
-            '
       - name: offset
         in: query
         description: "Optional. Offset is used to select the correct page from which\
@@ -247,13 +153,11 @@ paths:
         schema:
           type: integer
           title: offset
-          minimum: 0
+          format: int32
           description: "(OPTIONAL) Optional. Offset is used to select the correct\
             \ page from which Deployment list will be displayed.\n (E.g If there are\
             \ 10 Deployments, page size is 2 and offset is set as 4, then the response\
-            \ will display Deployment 5 and 6.)\nuint32.gte = 0\nuint32.gte_lt = 0\n\
-            uint32.gte_lt_exclusive = 0\nuint32.gte_lte = 0\nuint32.gte_lte_exclusive\
-            \ = 0\n"
+            \ will display Deployment 5 and 6.)"
       responses:
         '200':
           description: Success
@@ -261,7 +165,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/deployment.v1.ListDeploymentsPerClusterResponse'
-  /adm/v1/deployments/{depl_id}:
+  /deployment.orchestrator.apis/v1/deployments/{depl_id}:
     get:
       tags:
       - deployment.v1.DeploymentService
@@ -276,18 +180,7 @@ paths:
         schema:
           type: string
           title: depl_id
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: 'Required. The id of the deployment to get.
-
-            string.max_len = 40
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
+          description: Required. The id of the deployment to get.
       responses:
         '200':
           description: Success
@@ -309,18 +202,7 @@ paths:
         schema:
           type: string
           title: depl_id
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: 'Required. The id of the deployment to update.
-
-            string.max_len = 40
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
+          description: Required. The id of the deployment to update.
       requestBody:
         description: Required. The new updated Deployment Object.
         content:
@@ -350,18 +232,7 @@ paths:
         schema:
           type: string
           title: depl_id
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: 'Required. The id of the deployment to delete.
-
-            string.max_len = 40
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
+          description: Required. The id of the deployment to delete.
       - name: deleteType
         in: query
         description: "Required. Different delete types to handle parent and child\n\
@@ -379,7 +250,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/google.protobuf.Empty'
-  /adm/v1/summary/deployments_status:
+  /deployment.orchestrator.apis/v1/summary/deployments_status:
     get:
       tags:
       - deployment.v1.DeploymentService
@@ -395,21 +266,8 @@ paths:
           type: array
           items:
             type: string
-            maxLength: 200
-            minLength: 1
-            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
-            maxItems: 20
-            description: '(OPTIONAL)
-
-              string.max_len = 200
-
-              string.min_len = 1
-
-              string.pattern = "(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$"
-
-              '
+            description: '(OPTIONAL) '
           title: labels
-          maxItems: 20
           description: "(OPTIONAL) Optional. A string array that filters cluster labels\
             \ to be\n displayed ie color=blue,customer=intel-corp. Labels separated\
             \ by a comma."
@@ -420,7 +278,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/deployment.v1.GetDeploymentsStatusResponse'
-  /adm/v1/deployments/{depl_id}/clusters:
+  /deployment.orchestrator.apis/v1/deployments/{depl_id}/clusters:
     get:
       tags:
       - deployment.v1.DeploymentService
@@ -435,18 +293,7 @@ paths:
         schema:
           type: string
           title: depl_id
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: 'Required. The id of the deployment to get.
-
-            string.max_len = 40
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
+          description: Required. The id of the deployment to get.
       - name: orderBy
         in: query
         description: Optional. Select field and order based on which Deployment cluster
@@ -454,29 +301,16 @@ paths:
         schema:
           type: string
           title: order_by
-          maxLength: 100
-          pattern: ^(name|id|status|created_time)?(\s+(asc|desc))?$
-          description: '(OPTIONAL) Optional. Select field and order based on which
+          description: (OPTIONAL) Optional. Select field and order based on which
             Deployment cluster list will be sorted.
-
-            string.max_len = 100
-
-            string.pattern = "^(name|id|status|created_time)?(\\s+(asc|desc))?$"
-
-            '
       - name: filter
         in: query
         description: Optional. Selection criteria to list Deployment clusters.
         schema:
           type: string
           title: filter
-          maxLength: 500
-          description: '(OPTIONAL) Optional. Selection criteria to list Deployment
+          description: (OPTIONAL) Optional. Selection criteria to list Deployment
             clusters.
-
-            string.max_len = 500
-
-            '
       - name: pageSize
         in: query
         description: Optional. Select count of Deployment clusters to be listed per
@@ -484,24 +318,9 @@ paths:
         schema:
           type: integer
           title: page_size
-          maximum: 100
-          minimum: 0
-          description: '(OPTIONAL) Optional. Select count of Deployment clusters to
+          format: int32
+          description: (OPTIONAL) Optional. Select count of Deployment clusters to
             be listed per page.
-
-            uint32.gte = 0
-
-            uint32.gte_lt = 0
-
-            uint32.gte_lt_exclusive = 0
-
-            uint32.gte_lte = 0
-
-            uint32.gte_lte_exclusive = 0
-
-            uint32.lte = 100
-
-            '
       - name: offset
         in: query
         description: "Optional. Offset is used to select the correct page from which\
@@ -511,13 +330,11 @@ paths:
         schema:
           type: integer
           title: offset
-          minimum: 0
+          format: int32
           description: "(OPTIONAL) Optional. Offset is used to select the correct\
             \ page from which Deployment clusters list will be displayed.\n (E.g If\
             \ there are 10 Deployment clusters, page size is 2 and offset is set as\
-            \ 4, then the response will display Deployment clusters 5 and 6.)\nuint32.gte\
-            \ = 0\nuint32.gte_lt = 0\nuint32.gte_lt_exclusive = 0\nuint32.gte_lte\
-            \ = 0\nuint32.gte_lte_exclusive = 0\n"
+            \ 4, then the response will display Deployment clusters 5 and 6.)"
       responses:
         '200':
           description: Success
@@ -596,7 +413,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/deployment.v1.GetKubeConfigResponse'
-  /adm/v1/clusters:
+  /deployment.orchestrator.apis/v1/clusters:
     get:
       tags:
       - deployment.v1.ClusterService
@@ -624,52 +441,24 @@ paths:
         schema:
           type: string
           title: order_by
-          maxLength: 100
-          pattern: ^(name|id|status|created_time)?(\s+(asc|desc))?$
-          description: '(OPTIONAL) Optional. Select field and order based on which
+          description: (OPTIONAL) Optional. Select field and order based on which
             cluster list will be sorted.
-
-            string.max_len = 100
-
-            string.pattern = "^(name|id|status|created_time)?(\\s+(asc|desc))?$"
-
-            '
       - name: filter
         in: query
         description: Optional. Selection criteria to list clusters.
         schema:
           type: string
           title: filter
-          maxLength: 500
-          description: '(OPTIONAL) Optional. Selection criteria to list clusters.
-
-            string.max_len = 500
-
-            '
+          description: (OPTIONAL) Optional. Selection criteria to list clusters.
       - name: pageSize
         in: query
         description: Optional. Select count of clusters to be listed per page.
         schema:
           type: integer
           title: page_size
-          maximum: 100
-          minimum: 0
-          description: '(OPTIONAL) Optional. Select count of clusters to be listed
+          format: int32
+          description: (OPTIONAL) Optional. Select count of clusters to be listed
             per page.
-
-            uint32.gte = 0
-
-            uint32.gte_lt = 0
-
-            uint32.gte_lt_exclusive = 0
-
-            uint32.gte_lte = 0
-
-            uint32.gte_lte_exclusive = 0
-
-            uint32.lte = 100
-
-            '
       - name: offset
         in: query
         description: "Optional. Offset is used to select the correct page from which\
@@ -679,13 +468,11 @@ paths:
         schema:
           type: integer
           title: offset
-          minimum: 0
+          format: int32
           description: "(OPTIONAL) Optional. Offset is used to select the correct\
             \ page from which clusters list will be displayed.\n (E.g If there are\
             \ 10 clusters, page size is 2 and offset is set as 4, then the response\
-            \ will display clusters 5 and 6).\nuint32.gte = 0\nuint32.gte_lt = 0\n\
-            uint32.gte_lt_exclusive = 0\nuint32.gte_lte = 0\nuint32.gte_lte_exclusive\
-            \ = 0\n"
+            \ will display clusters 5 and 6)."
       responses:
         '200':
           description: Success
@@ -693,7 +480,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/deployment.v1.ListClustersResponse'
-  /adm/v1/clusters/{cluster_id}:
+  /deployment.orchestrator.apis/v1/clusters/{cluster_id}:
     get:
       tags:
       - deployment.v1.ClusterService
@@ -708,18 +495,7 @@ paths:
         schema:
           type: string
           title: cluster_id
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: 'Required. The id of the cluster.
-
-            string.max_len = 40
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
+          description: Required. The id of the cluster.
       responses:
         '200':
           description: Success
@@ -830,15 +606,7 @@ components:
         deploymentId:
           type: string
           title: deployment_id
-          maxLength: 40
-          minLength: 1
-          description: 'Returns the new Deployment Id.
-
-            string.max_len = 40
-
-            string.min_len = 1
-
-            '
+          description: Returns the new Deployment Id.
       title: CreateDeploymentResponse
       required:
       - deploymentId
@@ -850,18 +618,7 @@ components:
         deplId:
           type: string
           title: depl_id
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: 'Required. The id of the deployment to delete.
-
-            string.max_len = 40
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
+          description: Required. The id of the deployment to delete.
         deleteType:
           title: delete_type
           description: "Required. Different delete types to handle parent and child\n\
@@ -884,62 +641,20 @@ components:
         displayName:
           type: string
           title: display_name
-          maxLength: 40
-          pattern: ^([a-zA-Z0-9][\w\- \.\/_]{0,38}[a-zA-Z0-9]{0,1}|)$
-          description: '(OPTIONAL) Deployment display name.
-
-            string.max_len = 40
-
-            string.min_len = 0
-
-            string.pattern = "^([a-zA-Z0-9][\\w\\- \\.\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$"
-
-            '
+          description: (OPTIONAL) Deployment display name.
         appName:
           type: string
           title: app_name
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: 'The deployment package name to deploy from the catalog.
-
-            string.max_len = 40
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
+          description: The deployment package name to deploy from the catalog.
         appVersion:
           type: string
           title: app_version
-          maxLength: 20
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-.]{0,18}[a-z0-9]{0,1}$
-          description: 'The version of the deployment package.
-
-            string.max_len = 20
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-.]{0,18}[a-z0-9]{0,1}$"
-
-            '
+          description: The version of the deployment package.
         profileName:
           type: string
           title: profile_name
-          maxLength: 40
-          pattern: ^[a-z0-9]*[a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: '(OPTIONAL) The selected profile name to be used for the base
+          description: (OPTIONAL) The selected profile name to be used for the base
             Helm values of the different applications in the deployment package
-
-            string.max_len = 40
-
-            string.min_len = 0
-
-            string.pattern = "^[a-z0-9]*[a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
         createTime:
           title: create_time
           description: The creation time of the deployment.
@@ -978,30 +693,16 @@ components:
         deploymentType:
           type: string
           title: deployment_type
-          maxLength: 20
-          pattern: ^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$
           description: "(OPTIONAL) The deployment type for the target cluster deployment\
             \ can be either auto-scaling or targeted.\n In Auto-scaling type, the\
             \ application will be automatically deployed on all the\n clusters which\
             \ match the Target cluster label. In Targeted type, the user has to select\
-            \ among pre created\n clusters to deploy the application.\nstring.max_len\
-            \ = 20\nstring.min_len = 0\nstring.pattern = \"^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$\"\
-            \n"
+            \ among pre created\n clusters to deploy the application."
         networkName:
           type: string
           title: network_name
-          maxLength: 40
-          pattern: ^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$
-          description: '(OPTIONAL) network_name is the name of the interconnect network
+          description: (OPTIONAL) network_name is the name of the interconnect network
             that deployment be part of
-
-            string.max_len = 40
-
-            string.min_len = 0
-
-            string.pattern = "^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$"
-
-            '
         serviceExports:
           type: array
           items:
@@ -1054,17 +755,7 @@ components:
         deploymentDisplayName:
           type: string
           title: deployment_display_name
-          maxLength: 40
-          pattern: ^([a-zA-Z0-9][\w\- \.\/_]{0,38}[a-zA-Z0-9]{0,1}|)$
-          description: '(OPTIONAL) Deployment display name.
-
-            string.max_len = 40
-
-            string.min_len = 0
-
-            string.pattern = "^([a-zA-Z0-9][\\w\\- \\.\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$"
-
-            '
+          description: (OPTIONAL) Deployment display name.
         status:
           title: status
           description: Status has details of the cluster.
@@ -1085,16 +776,6 @@ components:
         appId:
           type: string
           title: app_id
-          maxLength: 80
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
-          description: 'string.max_len = 80
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
-
-            '
       title: GetAppNamespaceRequest
       required:
       - appId
@@ -1117,18 +798,7 @@ components:
         deplId:
           type: string
           title: depl_id
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: 'Required. The id of the deployment to get.
-
-            string.max_len = 40
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
+          description: Required. The id of the deployment to get.
       title: GetDeploymentRequest
       required:
       - deplId
@@ -1153,21 +823,8 @@ components:
           type: array
           items:
             type: string
-            maxLength: 200
-            minLength: 1
-            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
-            maxItems: 20
-            description: '(OPTIONAL)
-
-              string.max_len = 200
-
-              string.min_len = 1
-
-              string.pattern = "(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$"
-
-              '
+            description: '(OPTIONAL) '
           title: labels
-          maxItems: 20
           description: "(OPTIONAL) Optional. A string array that filters cluster labels\
             \ to be\n displayed ie color=blue,customer=intel-corp. Labels separated\
             \ by a comma."
@@ -1180,138 +837,42 @@ components:
         total:
           type: integer
           title: total
-          minimum: 0
           format: int32
-          description: 'int32.gte = 0
-
-            int32.gte_lt = 0
-
-            int32.gte_lt_exclusive = 0
-
-            int32.gte_lte = 0
-
-            int32.gte_lte_exclusive = 0
-
-            '
           readOnly: true
         running:
           type: integer
           title: running
-          minimum: 0
           format: int32
-          description: 'int32.gte = 0
-
-            int32.gte_lt = 0
-
-            int32.gte_lt_exclusive = 0
-
-            int32.gte_lte = 0
-
-            int32.gte_lte_exclusive = 0
-
-            '
           readOnly: true
         down:
           type: integer
           title: down
-          minimum: 0
           format: int32
-          description: 'int32.gte = 0
-
-            int32.gte_lt = 0
-
-            int32.gte_lt_exclusive = 0
-
-            int32.gte_lte = 0
-
-            int32.gte_lte_exclusive = 0
-
-            '
           readOnly: true
         deploying:
           type: integer
           title: deploying
-          minimum: 0
           format: int32
-          description: 'int32.gte = 0
-
-            int32.gte_lt = 0
-
-            int32.gte_lt_exclusive = 0
-
-            int32.gte_lte = 0
-
-            int32.gte_lte_exclusive = 0
-
-            '
           readOnly: true
         updating:
           type: integer
           title: updating
-          minimum: 0
           format: int32
-          description: 'int32.gte = 0
-
-            int32.gte_lt = 0
-
-            int32.gte_lt_exclusive = 0
-
-            int32.gte_lte = 0
-
-            int32.gte_lte_exclusive = 0
-
-            '
           readOnly: true
         terminating:
           type: integer
           title: terminating
-          minimum: 0
           format: int32
-          description: 'int32.gte = 0
-
-            int32.gte_lt = 0
-
-            int32.gte_lt_exclusive = 0
-
-            int32.gte_lte = 0
-
-            int32.gte_lte_exclusive = 0
-
-            '
           readOnly: true
         error:
           type: integer
           title: error
-          minimum: 0
           format: int32
-          description: 'int32.gte = 0
-
-            int32.gte_lt = 0
-
-            int32.gte_lt_exclusive = 0
-
-            int32.gte_lte = 0
-
-            int32.gte_lte_exclusive = 0
-
-            '
           readOnly: true
         unknown:
           type: integer
           title: unknown
-          minimum: 0
           format: int32
-          description: 'int32.gte = 0
-
-            int32.gte_lt = 0
-
-            int32.gte_lt_exclusive = 0
-
-            int32.gte_lte = 0
-
-            int32.gte_lte_exclusive = 0
-
-            '
           readOnly: true
       title: GetDeploymentsStatusResponse
       additionalProperties: false
@@ -1322,72 +883,31 @@ components:
         deplId:
           type: string
           title: depl_id
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: 'Required. The id of the deployment to get.
-
-            string.max_len = 40
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
+          description: Required. The id of the deployment to get.
         orderBy:
           type: string
           title: order_by
-          maxLength: 100
-          pattern: ^(name|id|status|created_time)?(\s+(asc|desc))?$
-          description: '(OPTIONAL) Optional. Select field and order based on which
+          description: (OPTIONAL) Optional. Select field and order based on which
             Deployment cluster list will be sorted.
-
-            string.max_len = 100
-
-            string.pattern = "^(name|id|status|created_time)?(\\s+(asc|desc))?$"
-
-            '
         filter:
           type: string
           title: filter
-          maxLength: 500
-          description: '(OPTIONAL) Optional. Selection criteria to list Deployment
+          description: (OPTIONAL) Optional. Selection criteria to list Deployment
             clusters.
-
-            string.max_len = 500
-
-            '
         pageSize:
           type: integer
           title: page_size
-          maximum: 100
-          minimum: 0
-          description: '(OPTIONAL) Optional. Select count of Deployment clusters to
+          format: int32
+          description: (OPTIONAL) Optional. Select count of Deployment clusters to
             be listed per page.
-
-            uint32.gte = 0
-
-            uint32.gte_lt = 0
-
-            uint32.gte_lt_exclusive = 0
-
-            uint32.gte_lte = 0
-
-            uint32.gte_lte_exclusive = 0
-
-            uint32.lte = 100
-
-            '
         offset:
           type: integer
           title: offset
-          minimum: 0
+          format: int32
           description: "(OPTIONAL) Optional. Offset is used to select the correct\
             \ page from which Deployment clusters list will be displayed.\n (E.g If\
             \ there are 10 Deployment clusters, page size is 2 and offset is set as\
-            \ 4, then the response will display Deployment clusters 5 and 6.)\nuint32.gte\
-            \ = 0\nuint32.gte_lt = 0\nuint32.gte_lt_exclusive = 0\nuint32.gte_lte\
-            \ = 0\nuint32.gte_lte_exclusive = 0\n"
+            \ 4, then the response will display Deployment clusters 5 and 6.)"
       title: ListDeploymentClustersRequest
       required:
       - deplId
@@ -1417,91 +937,38 @@ components:
         clusterId:
           type: string
           title: cluster_id
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: 'string.max_len = 40
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
         labels:
           type: array
           items:
             type: string
-            maxLength: 200
-            minLength: 1
-            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
-            maxItems: 20
-            description: '(OPTIONAL)
-
-              string.max_len = 200
-
-              string.min_len = 1
-
-              string.pattern = "(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$"
-
-              '
+            description: '(OPTIONAL) '
           title: labels
-          maxItems: 20
           description: "(OPTIONAL) Optional. A string array that filters cluster labels\
             \ to be\n displayed ie color=blue,customer=intel-corp. Labels separated\
             \ by a comma."
         orderBy:
           type: string
           title: order_by
-          maxLength: 100
-          pattern: ^(name|created_time|updated_time)?(\s+(asc|desc))?$
-          description: '(OPTIONAL) Optional. Select field and order based on which
+          description: (OPTIONAL) Optional. Select field and order based on which
             Deployment list will be sorted.
-
-            string.max_len = 100
-
-            string.pattern = "^(name|created_time|updated_time)?(\\s+(asc|desc))?$"
-
-            '
         filter:
           type: string
           title: filter
-          maxLength: 500
-          description: '(OPTIONAL) Optional. Selection criteria to list Deployments.
-
-            string.max_len = 500
-
-            '
+          description: (OPTIONAL) Optional. Selection criteria to list Deployments.
         pageSize:
           type: integer
           title: page_size
-          maximum: 100
-          minimum: 0
-          description: '(OPTIONAL) Optional. Select count of Deployment to be listed
+          format: int32
+          description: (OPTIONAL) Optional. Select count of Deployment to be listed
             per page.
-
-            uint32.gte = 0
-
-            uint32.gte_lt = 0
-
-            uint32.gte_lt_exclusive = 0
-
-            uint32.gte_lte = 0
-
-            uint32.gte_lte_exclusive = 0
-
-            uint32.lte = 100
-
-            '
         offset:
           type: integer
           title: offset
-          minimum: 0
+          format: int32
           description: "(OPTIONAL) Optional. Offset is used to select the correct\
             \ page from which Deployment list will be displayed.\n (E.g If there are\
             \ 10 Deployments, page size is 2 and offset is set as 4, then the response\
-            \ will display Deployment 5 and 6.)\nuint32.gte = 0\nuint32.gte_lt = 0\n\
-            uint32.gte_lt_exclusive = 0\nuint32.gte_lte = 0\nuint32.gte_lte_exclusive\
-            \ = 0\n"
+            \ will display Deployment 5 and 6.)"
       title: ListDeploymentsPerClusterRequest
       required:
       - clusterId
@@ -1533,77 +1000,34 @@ components:
           type: array
           items:
             type: string
-            maxLength: 200
-            minLength: 1
-            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
-            maxItems: 20
-            description: '(OPTIONAL)
-
-              string.max_len = 200
-
-              string.min_len = 1
-
-              string.pattern = "(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$"
-
-              '
+            description: '(OPTIONAL) '
           title: labels
-          maxItems: 20
           description: "(OPTIONAL) Optional. A string array that filters cluster labels\
             \ to be\n displayed ie color=blue,customer=intel-corp. Labels separated\
             \ by a comma."
         orderBy:
           type: string
           title: order_by
-          maxLength: 100
-          pattern: ^(name|created_time|updated_time)?(\s+(asc|desc))?$
-          description: '(OPTIONAL) Optional. Select field and order based on which
+          description: (OPTIONAL) Optional. Select field and order based on which
             Deployment list will be sorted.
-
-            string.max_len = 100
-
-            string.pattern = "^(name|created_time|updated_time)?(\\s+(asc|desc))?$"
-
-            '
         filter:
           type: string
           title: filter
-          maxLength: 500
-          description: '(OPTIONAL) Optional. Selection criteria to list Deployments.
-
-            string.max_len = 500
-
-            '
+          description: (OPTIONAL) Optional. Selection criteria to list Deployments.
         pageSize:
           type: integer
           title: page_size
-          maximum: 100
-          minimum: 0
-          description: '(OPTIONAL) Optional. Select count of Deployment to be listed
+          format: int32
+          description: (OPTIONAL) Optional. Select count of Deployment to be listed
             per page.
-
-            uint32.gte = 0
-
-            uint32.gte_lt = 0
-
-            uint32.gte_lt_exclusive = 0
-
-            uint32.gte_lte = 0
-
-            uint32.gte_lte_exclusive = 0
-
-            uint32.lte = 100
-
-            '
         offset:
           type: integer
           title: offset
-          minimum: 0
+          format: int32
           description: "(OPTIONAL) Optional. Offset is used to select the correct\
             \ page from which Deployment list will be displayed.\n (E.g If there are\
             \ 10 Deployments, page size is 2 and offset is set as 4, then the response\
-            \ will display Deployment 5 and 6.)\nuint32.gte = 0\nuint32.gte_lt = 0\n\
-            uint32.gte_lt_exclusive = 0\nuint32.gte_lte = 0\nuint32.gte_lte_exclusive\
-            \ = 0\n"
+            \ will display Deployment 5 and 6.)"
       title: ListDeploymentsRequest
       additionalProperties: false
       description: Request message for the ListDeployments method.
@@ -1632,33 +1056,12 @@ components:
         appName:
           type: string
           title: app_name
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: 'deployment package name to use when overriding values.
-
-            string.max_len = 40
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
+          description: deployment package name to use when overriding values.
         targetNamespace:
           type: string
           title: target_namespace
-          maxLength: 63
-          pattern: (^$)|^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$
-          description: '(OPTIONAL) The namespace to deploy the app onto, default namespace
+          description: (OPTIONAL) The namespace to deploy the app onto, default namespace
             is default.
-
-            string.max_len = 63
-
-            string.min_len = 0
-
-            string.pattern = "(^$)|^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$"
-
-            '
         values:
           title: values
           description: (OPTIONAL) The YAML representing Helm overrides
@@ -1675,16 +1078,6 @@ components:
         appName:
           type: string
           title: app_name
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: 'string.max_len = 40
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
         enabled:
           type: boolean
           title: enabled
@@ -1735,33 +1128,13 @@ components:
         appName:
           type: string
           title: app_name
-          maxLength: 40
-          pattern: (^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: '(OPTIONAL) The targeted deployment package name.
-
-            string.max_len = 40
-
-            string.min_len = 0
-
-            string.pattern = "(^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
+          description: (OPTIONAL) The targeted deployment package name.
         labels:
           type: object
           title: labels
           additionalProperties:
             type: string
             title: value
-            maxLength: 40
-            minLength: 1
-            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9/]{0,38}[a-z0-9])?$
-            description: 'string.max_len = 40
-
-              string.min_len = 1
-
-              string.pattern = "(^$)|^[a-z0-9]([-_.=,a-z0-9/]{0,38}[a-z0-9])?$"
-
-              '
           description: (OPTIONAL) Cluster labels to match the target cluster when
             auto-scaling deployment.
         clusterId:
@@ -1793,18 +1166,7 @@ components:
         deplId:
           type: string
           title: depl_id
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: 'Required. The id of the deployment to update.
-
-            string.max_len = 40
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
+          description: Required. The id of the deployment to update.
       title: UpdateDeploymentRequest
       required:
       - deployment
@@ -2044,18 +1406,7 @@ components:
         clusterId:
           type: string
           title: cluster_id
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: 'Required. The id of the cluster.
-
-            string.max_len = 40
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
+          description: Required. The id of the cluster.
       title: GetClusterRequest
       required:
       - clusterId
@@ -2077,18 +1428,7 @@ components:
         clusterId:
           type: string
           title: cluster_id
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: 'Required. The cluster id for the kubeconfig.
-
-            string.max_len = 40
-
-            string.min_len = 1
-
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
-
-            '
+          description: Required. The cluster id for the kubeconfig.
       title: GetKubeConfigRequest
       required:
       - clusterId
@@ -2128,56 +1468,26 @@ components:
         orderBy:
           type: string
           title: order_by
-          maxLength: 100
-          pattern: ^(name|id|status|created_time)?(\s+(asc|desc))?$
-          description: '(OPTIONAL) Optional. Select field and order based on which
+          description: (OPTIONAL) Optional. Select field and order based on which
             cluster list will be sorted.
-
-            string.max_len = 100
-
-            string.pattern = "^(name|id|status|created_time)?(\\s+(asc|desc))?$"
-
-            '
         filter:
           type: string
           title: filter
-          maxLength: 500
-          description: '(OPTIONAL) Optional. Selection criteria to list clusters.
-
-            string.max_len = 500
-
-            '
+          description: (OPTIONAL) Optional. Selection criteria to list clusters.
         pageSize:
           type: integer
           title: page_size
-          maximum: 100
-          minimum: 0
-          description: '(OPTIONAL) Optional. Select count of clusters to be listed
+          format: int32
+          description: (OPTIONAL) Optional. Select count of clusters to be listed
             per page.
-
-            uint32.gte = 0
-
-            uint32.gte_lt = 0
-
-            uint32.gte_lt_exclusive = 0
-
-            uint32.gte_lte = 0
-
-            uint32.gte_lte_exclusive = 0
-
-            uint32.lte = 100
-
-            '
         offset:
           type: integer
           title: offset
-          minimum: 0
+          format: int32
           description: "(OPTIONAL) Optional. Offset is used to select the correct\
             \ page from which clusters list will be displayed.\n (E.g If there are\
             \ 10 clusters, page size is 2 and offset is set as 4, then the response\
-            \ will display clusters 5 and 6).\nuint32.gte = 0\nuint32.gte_lt = 0\n\
-            uint32.gte_lt_exclusive = 0\nuint32.gte_lte = 0\nuint32.gte_lte_exclusive\
-            \ = 0\n"
+            \ will display clusters 5 and 6)."
       title: ListClustersRequest
       additionalProperties: false
       description: Request message for the ListClusters method.

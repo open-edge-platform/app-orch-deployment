@@ -57,7 +57,27 @@ func (m *GetKubeConfigRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for ClusterId
+	if l := utf8.RuneCountInString(m.GetClusterId()); l < 1 || l > 40 {
+		err := GetKubeConfigRequestValidationError{
+			field:  "ClusterId",
+			reason: "value length must be between 1 and 40 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if !_GetKubeConfigRequest_ClusterId_Pattern.MatchString(m.GetClusterId()) {
+		err := GetKubeConfigRequestValidationError{
+			field:  "ClusterId",
+			reason: "value does not match regex pattern \"^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return GetKubeConfigRequestMultiError(errors)
@@ -138,6 +158,8 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetKubeConfigRequestValidationError{}
+
+var _GetKubeConfigRequest_ClusterId_Pattern = regexp.MustCompile("^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$")
 
 // Validate checks the field values on GetKubeConfigResponse with the rules
 // defined in the proto definition for this message. If any rules are
@@ -398,9 +420,27 @@ func (m *ListClustersRequest) validate(all bool) error {
 
 	// no validation rules for Filter
 
-	// no validation rules for PageSize
+	if val := m.GetPageSize(); val < 0 || val > 100 {
+		err := ListClustersRequestValidationError{
+			field:  "PageSize",
+			reason: "value must be inside range [0, 100]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for Offset
+	if m.GetOffset() < 0 {
+		err := ListClustersRequestValidationError{
+			field:  "Offset",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return ListClustersRequestMultiError(errors)
@@ -642,7 +682,27 @@ func (m *GetClusterRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for ClusterId
+	if l := utf8.RuneCountInString(m.GetClusterId()); l < 1 || l > 40 {
+		err := GetClusterRequestValidationError{
+			field:  "ClusterId",
+			reason: "value length must be between 1 and 40 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if !_GetClusterRequest_ClusterId_Pattern.MatchString(m.GetClusterId()) {
+		err := GetClusterRequestValidationError{
+			field:  "ClusterId",
+			reason: "value does not match regex pattern \"^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return GetClusterRequestMultiError(errors)
@@ -723,6 +783,8 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetClusterRequestValidationError{}
+
+var _GetClusterRequest_ClusterId_Pattern = regexp.MustCompile("^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$")
 
 // Validate checks the field values on GetClusterResponse with the rules
 // defined in the proto definition for this message. If any rules are

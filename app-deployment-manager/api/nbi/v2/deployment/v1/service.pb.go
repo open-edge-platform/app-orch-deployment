@@ -10,7 +10,7 @@
 package deploymentv1
 
 import (
-	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -178,10 +178,10 @@ type ListDeploymentsRequest struct {
 	// Optional. Selection criteria to list Deployments.
 	Filter string `protobuf:"bytes,3,opt,name=filter,proto3" json:"filter,omitempty"`
 	// Optional. Select count of Deployment to be listed per page.
-	PageSize uint32 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageSize int32 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	// Optional. Offset is used to select the correct page from which Deployment list will be displayed.
 	// (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
-	Offset        uint32 `protobuf:"varint,5,opt,name=offset,proto3" json:"offset,omitempty"`
+	Offset        int32 `protobuf:"varint,5,opt,name=offset,proto3" json:"offset,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -237,14 +237,14 @@ func (x *ListDeploymentsRequest) GetFilter() string {
 	return ""
 }
 
-func (x *ListDeploymentsRequest) GetPageSize() uint32 {
+func (x *ListDeploymentsRequest) GetPageSize() int32 {
 	if x != nil {
 		return x.PageSize
 	}
 	return 0
 }
 
-func (x *ListDeploymentsRequest) GetOffset() uint32 {
+func (x *ListDeploymentsRequest) GetOffset() int32 {
 	if x != nil {
 		return x.Offset
 	}
@@ -317,10 +317,10 @@ type ListDeploymentsPerClusterRequest struct {
 	// Optional. Selection criteria to list Deployments.
 	Filter string `protobuf:"bytes,4,opt,name=filter,proto3" json:"filter,omitempty"`
 	// Optional. Select count of Deployment to be listed per page.
-	PageSize uint32 `protobuf:"varint,5,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageSize int32 `protobuf:"varint,5,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	// Optional. Offset is used to select the correct page from which Deployment list will be displayed.
 	// (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
-	Offset        uint32 `protobuf:"varint,6,opt,name=offset,proto3" json:"offset,omitempty"`
+	Offset        int32 `protobuf:"varint,6,opt,name=offset,proto3" json:"offset,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -383,14 +383,14 @@ func (x *ListDeploymentsPerClusterRequest) GetFilter() string {
 	return ""
 }
 
-func (x *ListDeploymentsPerClusterRequest) GetPageSize() uint32 {
+func (x *ListDeploymentsPerClusterRequest) GetPageSize() int32 {
 	if x != nil {
 		return x.PageSize
 	}
 	return 0
 }
 
-func (x *ListDeploymentsPerClusterRequest) GetOffset() uint32 {
+func (x *ListDeploymentsPerClusterRequest) GetOffset() int32 {
 	if x != nil {
 		return x.Offset
 	}
@@ -948,10 +948,10 @@ type ListDeploymentClustersRequest struct {
 	// Optional. Selection criteria to list Deployment clusters.
 	Filter string `protobuf:"bytes,3,opt,name=filter,proto3" json:"filter,omitempty"`
 	// Optional. Select count of Deployment clusters to be listed per page.
-	PageSize uint32 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageSize int32 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	// Optional. Offset is used to select the correct page from which Deployment clusters list will be displayed.
 	// (E.g If there are 10 Deployment clusters, page size is 2 and offset is set as 4, then the response will display Deployment clusters 5 and 6.)
-	Offset        uint32 `protobuf:"varint,5,opt,name=offset,proto3" json:"offset,omitempty"`
+	Offset        int32 `protobuf:"varint,5,opt,name=offset,proto3" json:"offset,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1007,14 +1007,14 @@ func (x *ListDeploymentClustersRequest) GetFilter() string {
 	return ""
 }
 
-func (x *ListDeploymentClustersRequest) GetPageSize() uint32 {
+func (x *ListDeploymentClustersRequest) GetPageSize() int32 {
 	if x != nil {
 		return x.PageSize
 	}
 	return 0
 }
 
-func (x *ListDeploymentClustersRequest) GetOffset() uint32 {
+func (x *ListDeploymentClustersRequest) GetOffset() int32 {
 	if x != nil {
 		return x.Offset
 	}
@@ -1078,37 +1078,37 @@ var File_deployment_v1_service_proto protoreflect.FileDescriptor
 
 const file_deployment_v1_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1bdeployment/v1/service.proto\x12\rdeployment.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1ddeployment/v1/resources.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/protobuf/empty.proto\"Y\n" +
+	"\x1bdeployment/v1/service.proto\x12\rdeployment.v1\x1a\x1ddeployment/v1/resources.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x17validate/validate.proto\"Y\n" +
 	"\x17CreateDeploymentRequest\x12>\n" +
 	"\n" +
 	"deployment\x18\x01 \x01(\v2\x19.deployment.v1.DeploymentB\x03\xe0A\x02R\n" +
 	"deployment\"M\n" +
 	"\x18CreateDeploymentResponse\x121\n" +
-	"\rdeployment_id\x18\x01 \x01(\tB\f\xe0A\x02\xbaH\x06r\x04\x10\x01\x18(R\fdeploymentId\"\xc8\x02\n" +
+	"\rdeployment_id\x18\x01 \x01(\tB\f\xe0A\x02\xfaB\x06r\x04\x10\x01\x18(R\fdeploymentId\"\x84\x02\n" +
 	"\x16ListDeploymentsRequest\x12^\n" +
-	"\x06labels\x18\x01 \x03(\tBF\xe0A\x01\xbaH@\x92\x01=\b\x00\x10\x14\"7r5\x10\x01\x18\xc8\x012.(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$R\x06labels\x12Z\n" +
-	"\border_by\x18\x02 \x01(\tB?\xe0A\x01\xbaH9r7\x18d23^(name|created_time|updated_time)?(\\s+(asc|desc))?$R\aorderBy\x12#\n" +
-	"\x06filter\x18\x03 \x01(\tB\v\xe0A\x01\xbaH\x05r\x03\x18\xf4\x03R\x06filter\x12)\n" +
-	"\tpage_size\x18\x04 \x01(\rB\f\xe0A\x01\xbaH\x06*\x04\x18d(\x00R\bpageSize\x12\"\n" +
-	"\x06offset\x18\x05 \x01(\rB\n" +
-	"\xe0A\x01\xbaH\x04*\x02(\x00R\x06offset\"\x87\x01\n" +
+	"\x06labels\x18\x01 \x03(\tBF\xe0A\x01\xfaB@\x92\x01=\b\x00\x10\x14\"7r5\x10\x01\x18\xc8\x012.(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$R\x06labels\x12\x1e\n" +
+	"\border_by\x18\x02 \x01(\tB\x03\xe0A\x01R\aorderBy\x12\x1b\n" +
+	"\x06filter\x18\x03 \x01(\tB\x03\xe0A\x01R\x06filter\x12)\n" +
+	"\tpage_size\x18\x04 \x01(\x05B\f\xe0A\x01\xfaB\x06\x1a\x04\x18d(\x00R\bpageSize\x12\"\n" +
+	"\x06offset\x18\x05 \x01(\x05B\n" +
+	"\xe0A\x01\xfaB\x04\x1a\x02(\x00R\x06offset\"\x87\x01\n" +
 	"\x17ListDeploymentsResponse\x12@\n" +
 	"\vdeployments\x18\x01 \x03(\v2\x19.deployment.v1.DeploymentB\x03\xe0A\x02R\vdeployments\x12*\n" +
-	"\x0etotal_elements\x18\x02 \x01(\x05B\x03\xe0A\x02R\rtotalElements\"\xa7\x03\n" +
+	"\x0etotal_elements\x18\x02 \x01(\x05B\x03\xe0A\x02R\rtotalElements\"\xe3\x02\n" +
 	" ListDeploymentsPerClusterRequest\x12S\n" +
 	"\n" +
-	"cluster_id\x18\x01 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\x12^\n" +
-	"\x06labels\x18\x02 \x03(\tBF\xe0A\x01\xbaH@\x92\x01=\b\x00\x10\x14\"7r5\x10\x01\x18\xc8\x012.(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$R\x06labels\x12Z\n" +
-	"\border_by\x18\x03 \x01(\tB?\xe0A\x01\xbaH9r7\x18d23^(name|created_time|updated_time)?(\\s+(asc|desc))?$R\aorderBy\x12#\n" +
-	"\x06filter\x18\x04 \x01(\tB\v\xe0A\x01\xbaH\x05r\x03\x18\xf4\x03R\x06filter\x12)\n" +
-	"\tpage_size\x18\x05 \x01(\rB\f\xe0A\x01\xbaH\x06*\x04\x18d(\x00R\bpageSize\x12\"\n" +
-	"\x06offset\x18\x06 \x01(\rB\n" +
-	"\xe0A\x01\xbaH\x04*\x02(\x00R\x06offset\"\xc1\x01\n" +
+	"cluster_id\x18\x01 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\x12^\n" +
+	"\x06labels\x18\x02 \x03(\tBF\xe0A\x01\xfaB@\x92\x01=\b\x00\x10\x14\"7r5\x10\x01\x18\xc8\x012.(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$R\x06labels\x12\x1e\n" +
+	"\border_by\x18\x03 \x01(\tB\x03\xe0A\x01R\aorderBy\x12\x1b\n" +
+	"\x06filter\x18\x04 \x01(\tB\x03\xe0A\x01R\x06filter\x12)\n" +
+	"\tpage_size\x18\x05 \x01(\x05B\f\xe0A\x01\xfaB\x06\x1a\x04\x18d(\x00R\bpageSize\x12\"\n" +
+	"\x06offset\x18\x06 \x01(\x05B\n" +
+	"\xe0A\x01\xfaB\x04\x1a\x02(\x00R\x06offset\"\xc1\x01\n" +
 	"!ListDeploymentsPerClusterResponse\x12p\n" +
 	"\x1cdeployment_instances_cluster\x18\x01 \x03(\v2).deployment.v1.DeploymentInstancesClusterB\x03\xe0A\x02R\x1adeploymentInstancesCluster\x12*\n" +
 	"\x0etotal_elements\x18\x02 \x01(\x05B\x03\xe0A\x02R\rtotalElements\"e\n" +
 	"\x14GetDeploymentRequest\x12M\n" +
-	"\adepl_id\x18\x01 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\x06deplId\"W\n" +
+	"\adepl_id\x18\x01 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\x06deplId\"W\n" +
 	"\x15GetDeploymentResponse\x12>\n" +
 	"\n" +
 	"deployment\x18\x01 \x01(\v2\x19.deployment.v1.DeploymentB\x03\xe0A\x02R\n" +
@@ -1117,64 +1117,62 @@ const file_deployment_v1_service_proto_rawDesc = "" +
 	"\n" +
 	"deployment\x18\x01 \x01(\v2\x19.deployment.v1.DeploymentB\x03\xe0A\x02R\n" +
 	"deployment\x12M\n" +
-	"\adepl_id\x18\x02 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\x06deplId\"Z\n" +
+	"\adepl_id\x18\x02 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\x06deplId\"Z\n" +
 	"\x18UpdateDeploymentResponse\x12>\n" +
 	"\n" +
 	"deployment\x18\x01 \x01(\v2\x19.deployment.v1.DeploymentB\x03\xe0A\x02R\n" +
-	"deployment\"\xb1\x01\n" +
+	"deployment\"\xa9\x01\n" +
 	"\x17DeleteDeploymentRequest\x12M\n" +
-	"\adepl_id\x18\x01 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\x06deplId\x12G\n" +
-	"\vdelete_type\x18\x02 \x01(\x0e2\x19.deployment.v1.DeleteTypeB\v\xe0A\x02\xbaH\x05\x82\x01\x02\x10\x01R\n" +
+	"\adepl_id\x18\x01 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\x06deplId\x12?\n" +
+	"\vdelete_type\x18\x02 \x01(\x0e2\x19.deployment.v1.DeleteTypeB\x03\xe0A\x02R\n" +
 	"deleteType\"}\n" +
 	"\x1bGetDeploymentsStatusRequest\x12^\n" +
-	"\x06labels\x18\x01 \x03(\tBF\xe0A\x01\xbaH@\x92\x01=\b\x00\x10\x14\"7r5\x10\x01\x18\xc8\x012.(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$R\x06labels\"\xce\x02\n" +
+	"\x06labels\x18\x01 \x03(\tBF\xe0A\x01\xfaB@\x92\x01=\b\x00\x10\x14\"7r5\x10\x01\x18\xc8\x012.(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$R\x06labels\"\xce\x02\n" +
 	"\x1cGetDeploymentsStatusResponse\x12 \n" +
 	"\x05total\x18\x01 \x01(\x05B\n" +
-	"\xe0A\x03\xbaH\x04\x1a\x02(\x00R\x05total\x12$\n" +
+	"\xe0A\x03\xfaB\x04\x1a\x02(\x00R\x05total\x12$\n" +
 	"\arunning\x18\x02 \x01(\x05B\n" +
-	"\xe0A\x03\xbaH\x04\x1a\x02(\x00R\arunning\x12\x1e\n" +
+	"\xe0A\x03\xfaB\x04\x1a\x02(\x00R\arunning\x12\x1e\n" +
 	"\x04down\x18\x03 \x01(\x05B\n" +
-	"\xe0A\x03\xbaH\x04\x1a\x02(\x00R\x04down\x12(\n" +
+	"\xe0A\x03\xfaB\x04\x1a\x02(\x00R\x04down\x12(\n" +
 	"\tdeploying\x18\x04 \x01(\x05B\n" +
-	"\xe0A\x03\xbaH\x04\x1a\x02(\x00R\tdeploying\x12&\n" +
+	"\xe0A\x03\xfaB\x04\x1a\x02(\x00R\tdeploying\x12&\n" +
 	"\bupdating\x18\x05 \x01(\x05B\n" +
-	"\xe0A\x03\xbaH\x04\x1a\x02(\x00R\bupdating\x12,\n" +
+	"\xe0A\x03\xfaB\x04\x1a\x02(\x00R\bupdating\x12,\n" +
 	"\vterminating\x18\x06 \x01(\x05B\n" +
-	"\xe0A\x03\xbaH\x04\x1a\x02(\x00R\vterminating\x12 \n" +
+	"\xe0A\x03\xfaB\x04\x1a\x02(\x00R\vterminating\x12 \n" +
 	"\x05error\x18\a \x01(\x05B\n" +
-	"\xe0A\x03\xbaH\x04\x1a\x02(\x00R\x05error\x12$\n" +
+	"\xe0A\x03\xfaB\x04\x1a\x02(\x00R\x05error\x12$\n" +
 	"\aunknown\x18\b \x01(\x05B\n" +
-	"\xe0A\x03\xbaH\x04\x1a\x02(\x00R\aunknown\"e\n" +
+	"\xe0A\x03\xfaB\x04\x1a\x02(\x00R\aunknown\"e\n" +
 	"\x16GetAppNamespaceRequest\x12K\n" +
-	"\x06app_id\x18\x01 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18P2&^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$R\x05appId\"<\n" +
+	"\x06app_id\x18\x01 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18P2&^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$R\x05appId\"<\n" +
 	"\x17GetAppNamespaceResponse\x12!\n" +
-	"\tnamespace\x18\x01 \x01(\tB\x03\xe0A\x02R\tnamespace\"\xbb\x02\n" +
+	"\tnamespace\x18\x01 \x01(\tB\x03\xe0A\x02R\tnamespace\"\xf3\x01\n" +
 	"\x1dListDeploymentClustersRequest\x12M\n" +
-	"\adepl_id\x18\x01 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\x06deplId\x12W\n" +
-	"\border_by\x18\x02 \x01(\tB<\xe0A\x01\xbaH6r4\x18d20^(name|id|status|created_time)?(\\s+(asc|desc))?$R\aorderBy\x12#\n" +
-	"\x06filter\x18\x03 \x01(\tB\v\xe0A\x01\xbaH\x05r\x03\x18\xf4\x03R\x06filter\x12)\n" +
-	"\tpage_size\x18\x04 \x01(\rB\f\xe0A\x01\xbaH\x06*\x04\x18d(\x00R\bpageSize\x12\"\n" +
-	"\x06offset\x18\x05 \x01(\rB\n" +
-	"\xe0A\x01\xbaH\x04*\x02(\x00R\x06offset\"\x85\x01\n" +
+	"\adepl_id\x18\x01 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\x06deplId\x12\x1e\n" +
+	"\border_by\x18\x02 \x01(\tB\x03\xe0A\x01R\aorderBy\x12\x1b\n" +
+	"\x06filter\x18\x03 \x01(\tB\x03\xe0A\x01R\x06filter\x12)\n" +
+	"\tpage_size\x18\x04 \x01(\x05B\f\xe0A\x01\xfaB\x06\x1a\x04\x18d(\x00R\bpageSize\x12\x1b\n" +
+	"\x06offset\x18\x05 \x01(\x05B\x03\xe0A\x01R\x06offset\"\x85\x01\n" +
 	"\x1eListDeploymentClustersResponse\x127\n" +
 	"\bclusters\x18\x01 \x03(\v2\x16.deployment.v1.ClusterB\x03\xe0A\x02R\bclusters\x12*\n" +
 	"\x0etotal_elements\x18\x02 \x01(\x05B\x03\xe0A\x02R\rtotalElements*&\n" +
 	"\n" +
 	"DeleteType\x12\x0f\n" +
 	"\vPARENT_ONLY\x10\x00\x12\a\n" +
-	"\x03ALL\x10\x012\x97\n" +
-	"\n" +
-	"\x11DeploymentService\x12}\n" +
-	"\x0fListDeployments\x12%.deployment.v1.ListDeploymentsRequest\x1a&.deployment.v1.ListDeploymentsResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/adm/v1/deployments\x12\xb1\x01\n" +
-	"\x19ListDeploymentsPerCluster\x12/.deployment.v1.ListDeploymentsPerClusterRequest\x1a0.deployment.v1.ListDeploymentsPerClusterResponse\"1\x82\xd3\xe4\x93\x02+\x12)/adm/v1/deployments/clusters/{cluster_id}\x12\x8c\x01\n" +
-	"\x10CreateDeployment\x12&.deployment.v1.CreateDeploymentRequest\x1a'.deployment.v1.CreateDeploymentResponse\"'\x82\xd3\xe4\x93\x02!:\n" +
-	"deployment\"\x13/adm/v1/deployments\x12\x81\x01\n" +
-	"\rGetDeployment\x12#.deployment.v1.GetDeploymentRequest\x1a$.deployment.v1.GetDeploymentResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/adm/v1/deployments/{depl_id}\x12\x96\x01\n" +
-	"\x10UpdateDeployment\x12&.deployment.v1.UpdateDeploymentRequest\x1a'.deployment.v1.UpdateDeploymentResponse\"1\x82\xd3\xe4\x93\x02+:\n" +
-	"deployment\x1a\x1d/adm/v1/deployments/{depl_id}\x12y\n" +
-	"\x10DeleteDeployment\x12&.deployment.v1.DeleteDeploymentRequest\x1a\x16.google.protobuf.Empty\"%\x82\xd3\xe4\x93\x02\x1f*\x1d/adm/v1/deployments/{depl_id}\x12\x9b\x01\n" +
-	"\x14GetDeploymentsStatus\x12*.deployment.v1.GetDeploymentsStatusRequest\x1a+.deployment.v1.GetDeploymentsStatusResponse\"*\x82\xd3\xe4\x93\x02$\x12\"/adm/v1/summary/deployments_status\x12\xa5\x01\n" +
-	"\x16ListDeploymentClusters\x12,.deployment.v1.ListDeploymentClustersRequest\x1a-.deployment.v1.ListDeploymentClustersResponse\".\x82\xd3\xe4\x93\x02(\x12&/adm/v1/deployments/{depl_id}/clusters\x12b\n" +
+	"\x03ALL\x10\x012\xe1\v\n" +
+	"\x11DeploymentService\x12\x96\x01\n" +
+	"\x0fListDeployments\x12%.deployment.v1.ListDeploymentsRequest\x1a&.deployment.v1.ListDeploymentsResponse\"4\x82\xd3\xe4\x93\x02.\x12,/deployment.orchestrator.apis/v1/deployments\x12\xca\x01\n" +
+	"\x19ListDeploymentsPerCluster\x12/.deployment.v1.ListDeploymentsPerClusterRequest\x1a0.deployment.v1.ListDeploymentsPerClusterResponse\"J\x82\xd3\xe4\x93\x02D\x12B/deployment.orchestrator.apis/v1/deployments/clusters/{cluster_id}\x12\xa5\x01\n" +
+	"\x10CreateDeployment\x12&.deployment.v1.CreateDeploymentRequest\x1a'.deployment.v1.CreateDeploymentResponse\"@\x82\xd3\xe4\x93\x02::\n" +
+	"deployment\",/deployment.orchestrator.apis/v1/deployments\x12\x9a\x01\n" +
+	"\rGetDeployment\x12#.deployment.v1.GetDeploymentRequest\x1a$.deployment.v1.GetDeploymentResponse\">\x82\xd3\xe4\x93\x028\x126/deployment.orchestrator.apis/v1/deployments/{depl_id}\x12\xaf\x01\n" +
+	"\x10UpdateDeployment\x12&.deployment.v1.UpdateDeploymentRequest\x1a'.deployment.v1.UpdateDeploymentResponse\"J\x82\xd3\xe4\x93\x02D:\n" +
+	"deployment\x1a6/deployment.orchestrator.apis/v1/deployments/{depl_id}\x12\x92\x01\n" +
+	"\x10DeleteDeployment\x12&.deployment.v1.DeleteDeploymentRequest\x1a\x16.google.protobuf.Empty\">\x82\xd3\xe4\x93\x028*6/deployment.orchestrator.apis/v1/deployments/{depl_id}\x12\xb4\x01\n" +
+	"\x14GetDeploymentsStatus\x12*.deployment.v1.GetDeploymentsStatusRequest\x1a+.deployment.v1.GetDeploymentsStatusResponse\"C\x82\xd3\xe4\x93\x02=\x12;/deployment.orchestrator.apis/v1/summary/deployments_status\x12\xbe\x01\n" +
+	"\x16ListDeploymentClusters\x12,.deployment.v1.ListDeploymentClustersRequest\x1a-.deployment.v1.ListDeploymentClustersResponse\"G\x82\xd3\xe4\x93\x02A\x12?/deployment.orchestrator.apis/v1/deployments/{depl_id}/clusters\x12b\n" +
 	"\x0fGetAppNamespace\x12%.deployment.v1.GetAppNamespaceRequest\x1a&.deployment.v1.GetAppNamespaceResponse\"\x00B\xe6\x01\n" +
 	"\x11com.deployment.v1B\fServiceProtoP\x01Zngithub.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1;deploymentv1\xa2\x02\x03DXX\xaa\x02\rDeployment.V1\xca\x02\rDeployment\\V1\xe2\x02\x19Deployment\\V1\\GPBMetadata\xea\x02\x0eDeployment::V1b\x06proto3"
 

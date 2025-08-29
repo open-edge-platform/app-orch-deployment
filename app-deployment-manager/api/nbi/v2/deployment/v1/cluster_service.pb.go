@@ -10,7 +10,7 @@
 package deploymentv1
 
 import (
-	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -173,10 +173,10 @@ type ListClustersRequest struct {
 	// Optional. Selection criteria to list clusters.
 	Filter string `protobuf:"bytes,3,opt,name=filter,proto3" json:"filter,omitempty"`
 	// Optional. Select count of clusters to be listed per page.
-	PageSize uint32 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageSize int32 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	// Optional. Offset is used to select the correct page from which clusters list will be displayed.
 	// (E.g If there are 10 clusters, page size is 2 and offset is set as 4, then the response will display clusters 5 and 6).
-	Offset        uint32 `protobuf:"varint,5,opt,name=offset,proto3" json:"offset,omitempty"`
+	Offset        int32 `protobuf:"varint,5,opt,name=offset,proto3" json:"offset,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -232,14 +232,14 @@ func (x *ListClustersRequest) GetFilter() string {
 	return ""
 }
 
-func (x *ListClustersRequest) GetPageSize() uint32 {
+func (x *ListClustersRequest) GetPageSize() int32 {
 	if x != nil {
 		return x.PageSize
 	}
 	return 0
 }
 
-func (x *ListClustersRequest) GetOffset() uint32 {
+func (x *ListClustersRequest) GetOffset() int32 {
 	if x != nil {
 		return x.Offset
 	}
@@ -468,28 +468,28 @@ var File_deployment_v1_cluster_service_proto protoreflect.FileDescriptor
 
 const file_deployment_v1_cluster_service_proto_rawDesc = "" +
 	"\n" +
-	"#deployment/v1/cluster_service.proto\x12\rdeployment.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1ddeployment/v1/resources.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"k\n" +
+	"#deployment/v1/cluster_service.proto\x12\rdeployment.v1\x1a\x1ddeployment/v1/resources.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17validate/validate.proto\"k\n" +
 	"\x14GetKubeConfigRequest\x12S\n" +
 	"\n" +
-	"cluster_id\x18\x02 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\"`\n" +
+	"cluster_id\x18\x02 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\"`\n" +
 	"\x15GetKubeConfigResponse\x12G\n" +
 	"\x10kube_config_info\x18\x01 \x01(\v2\x1d.deployment.v1.KubeConfigInfoR\x0ekubeConfigInfo\"6\n" +
 	"\x0eKubeConfigInfo\x12$\n" +
 	"\vkube_config\x18\x01 \x01(\fB\x03\xe0A\x03R\n" +
-	"kubeConfig\"\x87\x02\n" +
+	"kubeConfig\"\xc6\x01\n" +
 	"\x13ListClustersRequest\x12#\n" +
-	"\x06labels\x18\x01 \x03(\tB\v\xe0A\x01\xbaH\x05\x92\x01\x02\b\x00R\x06labels\x12W\n" +
-	"\border_by\x18\x02 \x01(\tB<\xe0A\x01\xbaH6r4\x18d20^(name|id|status|created_time)?(\\s+(asc|desc))?$R\aorderBy\x12#\n" +
-	"\x06filter\x18\x03 \x01(\tB\v\xe0A\x01\xbaH\x05r\x03\x18\xf4\x03R\x06filter\x12)\n" +
-	"\tpage_size\x18\x04 \x01(\rB\f\xe0A\x01\xbaH\x06*\x04\x18d(\x00R\bpageSize\x12\"\n" +
-	"\x06offset\x18\x05 \x01(\rB\n" +
-	"\xe0A\x01\xbaH\x04*\x02(\x00R\x06offset\"\x7f\n" +
+	"\x06labels\x18\x01 \x03(\tB\v\xe0A\x01\xfaB\x05\x92\x01\x02\b\x00R\x06labels\x12\x1e\n" +
+	"\border_by\x18\x02 \x01(\tB\x03\xe0A\x01R\aorderBy\x12\x1b\n" +
+	"\x06filter\x18\x03 \x01(\tB\x03\xe0A\x01R\x06filter\x12)\n" +
+	"\tpage_size\x18\x04 \x01(\x05B\f\xe0A\x01\xfaB\x06\x1a\x04\x18d(\x00R\bpageSize\x12\"\n" +
+	"\x06offset\x18\x05 \x01(\x05B\n" +
+	"\xe0A\x01\xfaB\x04\x1a\x02(\x00R\x06offset\"\x7f\n" +
 	"\x14ListClustersResponse\x12;\n" +
 	"\bclusters\x18\x01 \x03(\v2\x1a.deployment.v1.ClusterInfoB\x03\xe0A\x02R\bclusters\x12*\n" +
 	"\x0etotal_elements\x18\x02 \x01(\x05B\x03\xe0A\x02R\rtotalElements\"h\n" +
 	"\x11GetClusterRequest\x12S\n" +
 	"\n" +
-	"cluster_id\x18\x01 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\"K\n" +
+	"cluster_id\x18\x01 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\"K\n" +
 	"\x12GetClusterResponse\x125\n" +
 	"\acluster\x18\x01 \x01(\v2\x16.deployment.v1.ClusterB\x03\xe0A\x03R\acluster\"\xfd\x01\n" +
 	"\vClusterInfo\x12\x13\n" +
@@ -500,12 +500,12 @@ const file_deployment_v1_cluster_service_proto_rawDesc = "" +
 	"\x04name\x18\x04 \x01(\tB\x03\xe0A\x03R\x04name\x1a9\n" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012\xdb\x02\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012\x8f\x03\n" +
 	"\x0eClusterService\x12\\\n" +
-	"\rGetKubeConfig\x12#.deployment.v1.GetKubeConfigRequest\x1a$.deployment.v1.GetKubeConfigResponse\"\x00\x12q\n" +
-	"\fListClusters\x12\".deployment.v1.ListClustersRequest\x1a#.deployment.v1.ListClustersResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/adm/v1/clusters\x12x\n" +
+	"\rGetKubeConfig\x12#.deployment.v1.GetKubeConfigRequest\x1a$.deployment.v1.GetKubeConfigResponse\"\x00\x12\x8a\x01\n" +
+	"\fListClusters\x12\".deployment.v1.ListClustersRequest\x1a#.deployment.v1.ListClustersResponse\"1\x82\xd3\xe4\x93\x02+\x12)/deployment.orchestrator.apis/v1/clusters\x12\x91\x01\n" +
 	"\n" +
-	"GetCluster\x12 .deployment.v1.GetClusterRequest\x1a!.deployment.v1.GetClusterResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/adm/v1/clusters/{cluster_id}B\xed\x01\n" +
+	"GetCluster\x12 .deployment.v1.GetClusterRequest\x1a!.deployment.v1.GetClusterResponse\">\x82\xd3\xe4\x93\x028\x126/deployment.orchestrator.apis/v1/clusters/{cluster_id}B\xed\x01\n" +
 	"\x11com.deployment.v1B\x13ClusterServiceProtoP\x01Zngithub.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1;deploymentv1\xa2\x02\x03DXX\xaa\x02\rDeployment.V1\xca\x02\rDeployment\\V1\xe2\x02\x19Deployment\\V1\\GPBMetadata\xea\x02\x0eDeployment::V1b\x06proto3"
 
 var (

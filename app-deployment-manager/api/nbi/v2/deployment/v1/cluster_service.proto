@@ -5,13 +5,13 @@ syntax = "proto3";
 
 package deployment.v1;
 
-option go_package = "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1";
-
-import "buf/validate/validate.proto";
-import "resources.proto";
+import "deployment/v1/resources.proto";
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/timestamp.proto";
+import "validate/validate.proto";
+
+option go_package = "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1";
 
 // ClusterService provides RPC methods to get clusters information.
 service ClusterService {
@@ -34,7 +34,7 @@ message GetKubeConfigRequest {
   // Required. The cluster id for the kubeconfig.
   string cluster_id = 2 [
     (google.api.field_behavior) = REQUIRED,
-    (buf.validate.field).string = {
+    (validate.rules).string = {
       min_len: 1
       max_len: 40
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
@@ -57,7 +57,7 @@ message ListClustersRequest {
   // displayed ie color=blue,customer=intel. Labels separated by a comma.
   repeated string labels = 1 [
     (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).repeated = {min_items: 0}
+    (validate.rules).repeated = {min_items: 0}
   ];
 
   // Optional. Select field and order based on which cluster list will be sorted.
@@ -69,7 +69,7 @@ message ListClustersRequest {
   // Optional. Select count of clusters to be listed per page.
   int32 page_size = 4 [
     (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).int32 = {
+    (validate.rules).int32 = {
       gte: 0
       lte: 100
     }
@@ -79,7 +79,7 @@ message ListClustersRequest {
   // (E.g If there are 10 clusters, page size is 2 and offset is set as 4, then the response will display clusters 5 and 6).
   int32 offset = 5 [
     (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).int32 = {gte: 0}
+    (validate.rules).int32 = {gte: 0}
   ];
 }
 
@@ -96,7 +96,7 @@ message GetClusterRequest {
   // Required. The id of the cluster.
   string cluster_id = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (buf.validate.field).string = {
+    (validate.rules).string = {
       min_len: 1
       max_len: 40
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
