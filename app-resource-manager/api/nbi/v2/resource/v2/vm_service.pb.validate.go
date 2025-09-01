@@ -138,7 +138,7 @@ type StartVirtualMachineRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m StartVirtualMachineRequestMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -244,7 +244,7 @@ type StartVirtualMachineResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m StartVirtualMachineResponseMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -411,7 +411,7 @@ type StopVirtualMachineRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m StopVirtualMachineRequestMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -517,7 +517,7 @@ type StopVirtualMachineResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m StopVirtualMachineResponseMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -683,7 +683,7 @@ type RestartVirtualMachineRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m RestartVirtualMachineRequestMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -790,7 +790,7 @@ type RestartVirtualMachineResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m RestartVirtualMachineResponseMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -957,7 +957,7 @@ type GetVNCRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m GetVNCRequestMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1063,7 +1063,7 @@ type GetVNCResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m GetVNCResponseMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

@@ -136,7 +136,7 @@ func GetVMStatus(armClient *restClient.ClientWithResponses, appID, virtMachineID
 		for _, appWorkload := range *appWorkloads {
 			appName = appWorkload.Name
 			currState = string(*appWorkload.VirtualMachine.Status.State)
-			if appWorkload.Id == virtMachineID {
+			if appWorkload.Id.String() == virtMachineID {
 				if currState == desiredState {
 					fmt.Printf("Waiting for VM %s state %s ---> %s\n", appName, currState, desiredState)
 					return nil
@@ -238,7 +238,7 @@ func GetPodStatus(armClient *restClient.ClientWithResponses, appID, workloadID, 
 			appName = appWorkload.Name
 			currState = string(*appWorkload.Pod.Status.State)
 
-			if appWorkload.Id == workloadID {
+			if appWorkload.Id.String() == workloadID {
 				if currState == desiredState {
 					fmt.Printf("Waiting for POD %s state %s ---> %s\n", appName, currState, desiredState)
 					return nil
