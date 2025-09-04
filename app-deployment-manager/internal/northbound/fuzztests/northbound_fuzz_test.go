@@ -314,7 +314,7 @@ func FuzzListDeploymentClusters(f *testing.F) {
 		resp, err := deploymentServer.ListDeploymentClusters(s.ctx, req)
 		if err != nil {
 			if err.Error() != `rpc error: code = InvalidArgument desc = incomplete request` &&
-				err.Error() != "rpc error: code = InvalidArgument desc = validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 100 [int32.gte_lte]" &&
+				err.Error() != "rpc error: code = InvalidArgument desc = validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 500 [int32.gte_lte]" &&
 				!strings.Contains(err.Error(), "invalid filter request") &&
 				!strings.Contains(err.Error(), "invalid order direction") &&
 				!strings.Contains(err.Error(), "invalid format for order by parameter") &&
@@ -370,7 +370,7 @@ func FuzzListClusters(f *testing.F) {
 			if err.Error() != `rpc error: code = InvalidArgument desc = invalid filter request` &&
 				err.Error() != `rpc error: code = InvalidArgument desc = invalid order direction; must be 'asc' or 'desc'` &&
 				err.Error() != `rpc error: code = InvalidArgument desc = invalid format for order by parameter` &&
-				err.Error() != "rpc error: code = InvalidArgument desc = validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 100 [int32.gte_lte]" {
+				err.Error() != "rpc error: code = InvalidArgument desc = validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 500 [int32.gte_lte]" {
 				assert.NoError(t, err)
 				t.Log(err)
 				assert.Nil(t, resp)

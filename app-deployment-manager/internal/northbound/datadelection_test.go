@@ -60,7 +60,7 @@ var _ = Describe("Data Selection", func() {
 		It("fails due to pagesize exceeds maximum", func() {
 			deployList = append(deployList, deploy)
 			var listDeployReq = deploymentpb.ListDeploymentsRequest{
-				PageSize: 101, // exceeds maximum of 100
+				PageSize: 501, // exceeds maximum of 500
 				Offset:   0,
 			}
 
@@ -69,7 +69,7 @@ var _ = Describe("Data Selection", func() {
 			Expect(err).To(HaveOccurred())
 			s, ok := status.FromError(err)
 			Expect(ok).To(BeFalse())
-			Expect(s.Message()).Should(Equal("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 100 [uint32.gte_lte]"))
+			Expect(s.Message()).Should(Equal("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 500 [uint32.gte_lte]"))
 		})
 
 		It("fails due to parse order by", func() {
@@ -141,7 +141,7 @@ var _ = Describe("Data Selection", func() {
 
 		It("fails due to pagesize exceeds maximum", func() {
 			var clusterListReq = deploymentpb.ListClustersRequest{
-				PageSize: 101, // exceeds maximum of 100
+				PageSize: 501, // exceeds maximum of 500
 				Offset:   0,
 			}
 
@@ -158,7 +158,7 @@ var _ = Describe("Data Selection", func() {
 			Expect(err).To(HaveOccurred())
 			s, ok := status.FromError(err)
 			Expect(ok).To(BeFalse())
-			Expect(s.Message()).Should(Equal("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 100 [uint32.gte_lte]"))
+			Expect(s.Message()).Should(Equal("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 500 [uint32.gte_lte]"))
 		})
 
 		It("fails due to parse order by", func() {
@@ -248,7 +248,7 @@ var _ = Describe("Data Selection", func() {
 
 		It("fails due to pagesize exceeds maximum", func() {
 			var clusterListReq = deploymentpb.ListDeploymentClustersRequest{
-				PageSize: 101, // exceeds maximum of 100
+				PageSize: 501, // exceeds maximum of 500
 				Offset:   0,
 			}
 
@@ -257,7 +257,7 @@ var _ = Describe("Data Selection", func() {
 			Expect(err).To(HaveOccurred())
 			s, ok := status.FromError(err)
 			Expect(ok).To(BeFalse())
-			Expect(s.Message()).Should(Equal("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 100 [uint32.gte_lte]"))
+			Expect(s.Message()).Should(Equal("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 500 [uint32.gte_lte]"))
 		})
 
 		It("fails due to parse order by", func() {
@@ -312,7 +312,7 @@ var _ = Describe("Data Selection", func() {
 			pageSize := 0
 
 			v := newPaginationQuery(uint32(pageSize), uint32(offset))
-			Expect(v.PageSize).To(Equal(10))
+			Expect(v.PageSize).To(Equal(20))
 			Expect(v.OffSet).To(Equal(1))
 		})
 

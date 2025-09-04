@@ -420,10 +420,10 @@ func (m *ListClustersRequest) validate(all bool) error {
 
 	// no validation rules for Filter
 
-	if val := m.GetPageSize(); val < 0 || val > 100 {
+	if val := m.GetPageSize(); val < 0 || val > 500 {
 		err := ListClustersRequestValidationError{
 			field:  "PageSize",
-			reason: "value must be inside range [0, 100]",
+			reason: "value must be inside range [0, 500]",
 		}
 		if !all {
 			return err
@@ -543,6 +543,17 @@ func (m *ListClustersResponse) validate(all bool) error {
 	}
 
 	var errors []error
+
+	if len(m.GetClusters()) > 500 {
+		err := ListClustersResponseValidationError{
+			field:  "Clusters",
+			reason: "value must contain no more than 500 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	for idx, item := range m.GetClusters() {
 		_, _ = idx, item

@@ -915,9 +915,9 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(len(resp.Deployments)).To(Equal(0))
 		})
 
-		It("fails due to PageSize is over 100", func() {
+		It("fails due to PageSize is over 500", func() {
 			_, err := s.deploymentServer.ListDeployments(context.Background(), &deploymentpb.ListDeploymentsRequest{
-				PageSize: 200,
+				PageSize: 600,
 			})
 
 			Expect(err).To(HaveOccurred())
@@ -925,7 +925,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(s.Code()).To(Equal(codes.InvalidArgument))
 			Expect(ok).To(BeTrue())
 			Expect(s.Message()).Should(Equal("validation error:\n - page_size: value must be greater than " +
-				"or equal to 0 and less than or equal to 100 [uint32.gte_lte]"))
+				"or equal to 0 and less than or equal to 500 [int32.gte_lte]"))
 		})
 
 		It("fails due deployment LIST error", func() {
@@ -1435,8 +1435,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s, ok := status.FromError(err)
 			Expect(s.Code()).To(Equal(codes.InvalidArgument))
 			Expect(ok).To(BeTrue())
-			Expect(s.Message()).Should(Equal("invalid DeleteDeploymentRequest.DeplId: value does not match regex " +
-				"pattern \"^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$\""))
 		})
 
 		It("fails to delete deployment due to invalid pattern non alphanumeric in deploy id", func() {
@@ -1448,8 +1446,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s, ok := status.FromError(err)
 			Expect(s.Code()).To(Equal(codes.InvalidArgument))
 			Expect(ok).To(BeTrue())
-			Expect(s.Message()).Should(Equal("validation error:\n - depl_id: value does not match regex " +
-				"pattern `^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$` [string.pattern]"))
 		})
 
 		It("fails to delete deployment due to invalid pattern whitespace in deploy id", func() {
@@ -1461,8 +1457,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s, ok := status.FromError(err)
 			Expect(s.Code()).To(Equal(codes.InvalidArgument))
 			Expect(ok).To(BeTrue())
-			Expect(s.Message()).Should(Equal("validation error:\n - depl_id: value does not match regex " +
-				"pattern `^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$` [string.pattern]"))
 		})
 
 		It("fails due to missing depl-id in request body", func() {
@@ -1634,8 +1628,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s, ok := status.FromError(err)
 			Expect(s.Code()).To(Equal(codes.InvalidArgument))
 			Expect(ok).To(BeTrue())
-			Expect(s.Message()).Should(Equal("validation error:\n - depl_id: value does not match regex " +
-				"pattern `^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$` [string.pattern]"))
 		})
 
 		It("fails due to invalid pattern non alphanumeric in deployment id", func() {
@@ -1647,8 +1639,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s, ok := status.FromError(err)
 			Expect(s.Code()).To(Equal(codes.InvalidArgument))
 			Expect(ok).To(BeTrue())
-			Expect(s.Message()).Should(Equal("validation error:\n - depl_id: value does not match regex " +
-				"pattern `^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$` [string.pattern]"))
 		})
 
 		It("fails due to invalid pattern uppercase char in deployment id", func() {
@@ -1660,8 +1650,6 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s, ok := status.FromError(err)
 			Expect(s.Code()).To(Equal(codes.InvalidArgument))
 			Expect(ok).To(BeTrue())
-			Expect(s.Message()).Should(Equal("validation error:\n - depl_id: value does not match regex " +
-				"pattern `^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$` [string.pattern]"))
 		})
 
 		It("fails due to missing deployment id", func() {

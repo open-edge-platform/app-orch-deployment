@@ -10,7 +10,7 @@
 package deploymentv1
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -818,40 +818,42 @@ var File_deployment_v1_resources_proto protoreflect.FileDescriptor
 
 const file_deployment_v1_resources_proto_rawDesc = "" +
 	"\n" +
-	"\x1ddeployment/v1/resources.proto\x12\rdeployment.v1\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17validate/validate.proto\"\xea\t\n" +
+	"\x1ddeployment/v1/resources.proto\x12\rdeployment.v1\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bbuf/validate/validate.proto\"\x8a\n" +
+	"\n" +
 	"\n" +
 	"Deployment\x12\x17\n" +
 	"\x04name\x18\x01 \x01(\tB\x03\xe0A\x03R\x04name\x12c\n" +
-	"\fdisplay_name\x18\x02 \x01(\tB@\xe0A\x01\xfaB:r8\x10\x00\x18(22^([a-zA-Z0-9][\\w\\- \\.\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$R\vdisplayName\x12O\n" +
-	"\bapp_name\x18\x03 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\aappName\x12V\n" +
-	"\vapp_version\x18\x04 \x01(\tB5\xe0A\x02\xfaB/r-\x10\x01\x18\x142'^[a-z0-9][a-z0-9-.]{0,18}[a-z0-9]{0,1}$R\n" +
+	"\fdisplay_name\x18\x02 \x01(\tB@\xe0A\x01\xbaH:r8\x10\x00\x18(22^([a-zA-Z0-9][\\w\\- \\.\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$R\vdisplayName\x12O\n" +
+	"\bapp_name\x18\x03 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\aappName\x12V\n" +
+	"\vapp_version\x18\x04 \x01(\tB5\xe0A\x02\xbaH/r-\x10\x01\x18\x142'^[a-z0-9][a-z0-9-.]{0,18}[a-z0-9]{0,1}$R\n" +
 	"appVersion\x12X\n" +
-	"\fprofile_name\x18\x05 \x01(\tB5\xe0A\x01\xfaB/r-\x10\x00\x18(2'^[a-z0-9]*[a-z0-9-]{0,38}[a-z0-9]{0,1}$R\vprofileName\x12@\n" +
+	"\fprofile_name\x18\x05 \x01(\tB5\xe0A\x01\xbaH/r-\x10\x00\x18(2'^[a-z0-9]*[a-z0-9-]{0,38}[a-z0-9]{0,1}$R\vprofileName\x12@\n" +
 	"\vcreate_time\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\n" +
 	"createTime\x12 \n" +
-	"\tdeploy_id\x18\a \x01(\tB\x03\xe0A\x03R\bdeployId\x12K\n" +
-	"\x0foverride_values\x18\b \x03(\v2\x1d.deployment.v1.OverrideValuesB\x03\xe0A\x01R\x0eoverrideValues\x12K\n" +
-	"\x0ftarget_clusters\x18\t \x03(\v2\x1d.deployment.v1.TargetClustersB\x03\xe0A\x01R\x0etargetClusters\x12=\n" +
+	"\tdeploy_id\x18\a \x01(\tB\x03\xe0A\x03R\bdeployId\x12S\n" +
+	"\x0foverride_values\x18\b \x03(\v2\x1d.deployment.v1.OverrideValuesB\v\xe0A\x01\xbaH\x05\x92\x01\x02\x10\x14R\x0eoverrideValues\x12S\n" +
+	"\x0ftarget_clusters\x18\t \x03(\v2\x1d.deployment.v1.TargetClustersB\v\xe0A\x01\xbaH\x05\x92\x01\x02\x102R\x0etargetClusters\x12=\n" +
 	"\x06status\x18\n" +
-	" \x01(\v2 .deployment.v1.Deployment.StatusB\x03\xe0A\x03R\x06status\x12+\n" +
-	"\x04apps\x18\v \x03(\v2\x12.deployment.v1.AppB\x03\xe0A\x03R\x04apps\x12^\n" +
-	"\x0fdeployment_type\x18\f \x01(\tB5\xe0A\x01\xfaB/r-\x10\x00\x18\x142'^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$R\x0edeploymentType\x12X\n" +
-	"\fnetwork_name\x18\r \x01(\tB5\xe0A\x01\xfaB/r-\x10\x00\x18(2'^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$R\vnetworkName\x12J\n" +
-	"\x0fservice_exports\x18\x0e \x03(\v2\x1c.deployment.v1.ServiceExportB\x03\xe0A\x01R\x0eserviceExports\x12Y\n" +
+	" \x01(\v2 .deployment.v1.Deployment.StatusB\x03\xe0A\x03R\x06status\x123\n" +
+	"\x04apps\x18\v \x03(\v2\x12.deployment.v1.AppB\v\xe0A\x03\xbaH\x05\x92\x01\x02\x10dR\x04apps\x12^\n" +
+	"\x0fdeployment_type\x18\f \x01(\tB5\xe0A\x01\xbaH/r-\x10\x00\x18\x142'^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$R\x0edeploymentType\x12X\n" +
+	"\fnetwork_name\x18\r \x01(\tB5\xe0A\x01\xbaH/r-\x10\x00\x18(2'^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$R\vnetworkName\x12R\n" +
+	"\x0fservice_exports\x18\x0e \x03(\v2\x1c.deployment.v1.ServiceExportB\v\xe0A\x01\xbaH\x05\x92\x01\x02\x10\n" +
+	"R\x0eserviceExports\x12Y\n" +
 	"\x17all_app_target_clusters\x18\x0f \x01(\v2\x1d.deployment.v1.TargetClustersB\x03\xe0A\x01R\x14allAppTargetClusters\x1a\x8f\x01\n" +
 	"\x06Status\x12/\n" +
 	"\x05state\x18\x01 \x01(\x0e2\x14.deployment.v1.StateB\x03\xe0A\x03R\x05state\x12\x1d\n" +
 	"\amessage\x18\x02 \x01(\tB\x03\xe0A\x03R\amessage\x125\n" +
 	"\asummary\x18\x03 \x01(\v2\x16.deployment.v1.SummaryB\x03\xe0A\x03R\asummary\"z\n" +
 	"\rServiceExport\x12O\n" +
-	"\bapp_name\x18\x01 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\aappName\x12\x18\n" +
+	"\bapp_name\x18\x01 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\aappName\x12\x18\n" +
 	"\aenabled\x18\x02 \x01(\bR\aenabled\"\xfb\x01\n" +
 	"\x0eOverrideValues\x12O\n" +
-	"\bapp_name\x18\x01 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\aappName\x12b\n" +
-	"\x10target_namespace\x18\x02 \x01(\tB7\xe0A\x01\xfaB1r/\x10\x00\x18?2)(^$)|^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$R\x0ftargetNamespace\x124\n" +
+	"\bapp_name\x18\x01 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\aappName\x12b\n" +
+	"\x10target_namespace\x18\x02 \x01(\tB7\xe0A\x01\xbaH1r/\x10\x00\x18?2)(^$)|^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$R\x0ftargetNamespace\x124\n" +
 	"\x06values\x18\x03 \x01(\v2\x17.google.protobuf.StructB\x03\xe0A\x01R\x06values\"\x8d\x02\n" +
 	"\x0eTargetClusters\x12T\n" +
-	"\bapp_name\x18\x01 \x01(\tB9\xe0A\x01\xfaB3r1\x10\x00\x18(2+(^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\aappName\x12F\n" +
+	"\bapp_name\x18\x01 \x01(\tB9\xe0A\x01\xbaH3r1\x10\x00\x18(2+(^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\aappName\x12F\n" +
 	"\x06labels\x18\x02 \x03(\v2).deployment.v1.TargetClusters.LabelsEntryB\x03\xe0A\x01R\x06labels\x12\"\n" +
 	"\n" +
 	"cluster_id\x18\x03 \x01(\tB\x03\xe0A\x01R\tclusterId\x1a9\n" +
@@ -867,18 +869,18 @@ const file_deployment_v1_resources_proto_rawDesc = "" +
 	"\x03App\x12\x17\n" +
 	"\x04name\x18\x01 \x01(\tB\x03\xe0A\x03R\x04name\x12\x13\n" +
 	"\x02id\x18\x02 \x01(\tB\x03\xe0A\x03R\x02id\x12=\n" +
-	"\x06status\x18\x03 \x01(\v2 .deployment.v1.Deployment.StatusB\x03\xe0A\x03R\x06status\"\xdc\x02\n" +
+	"\x06status\x18\x03 \x01(\v2 .deployment.v1.Deployment.StatusB\x03\xe0A\x03R\x06status\"\xe4\x02\n" +
 	"\x1aDeploymentInstancesCluster\x12*\n" +
 	"\x0edeployment_uid\x18\x01 \x01(\tB\x03\xe0A\x03R\rdeploymentUid\x12,\n" +
 	"\x0fdeployment_name\x18\x02 \x01(\tB\x03\xe0A\x03R\x0edeploymentName\x12x\n" +
-	"\x17deployment_display_name\x18\x03 \x01(\tB@\xe0A\x01\xfaB:r8\x10\x00\x18(22^([a-zA-Z0-9][\\w\\- \\.\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$R\x15deploymentDisplayName\x12=\n" +
-	"\x06status\x18\x04 \x01(\v2 .deployment.v1.Deployment.StatusB\x03\xe0A\x03R\x06status\x12+\n" +
-	"\x04apps\x18\x05 \x03(\v2\x12.deployment.v1.AppB\x03\xe0A\x03R\x04apps\"\xa3\x01\n" +
+	"\x17deployment_display_name\x18\x03 \x01(\tB@\xe0A\x01\xbaH:r8\x10\x00\x18(22^([a-zA-Z0-9][\\w\\- \\.\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$R\x15deploymentDisplayName\x12=\n" +
+	"\x06status\x18\x04 \x01(\v2 .deployment.v1.Deployment.StatusB\x03\xe0A\x03R\x06status\x123\n" +
+	"\x04apps\x18\x05 \x03(\v2\x12.deployment.v1.AppB\v\xe0A\x03\xbaH\x05\x92\x01\x02\x10dR\x04apps\"\xab\x01\n" +
 	"\aCluster\x12\x17\n" +
 	"\x04name\x18\x01 \x01(\tB\x03\xe0A\x03R\x04name\x12\x13\n" +
 	"\x02id\x18\x02 \x01(\tB\x03\xe0A\x03R\x02id\x12=\n" +
-	"\x06status\x18\x03 \x01(\v2 .deployment.v1.Deployment.StatusB\x03\xe0A\x03R\x06status\x12+\n" +
-	"\x04apps\x18\x04 \x03(\v2\x12.deployment.v1.AppB\x03\xe0A\x03R\x04apps*\x90\x01\n" +
+	"\x06status\x18\x03 \x01(\v2 .deployment.v1.Deployment.StatusB\x03\xe0A\x03R\x06status\x123\n" +
+	"\x04apps\x18\x04 \x03(\v2\x12.deployment.v1.AppB\v\xe0A\x03\xbaH\x05\x92\x01\x02\x10dR\x04apps*\x90\x01\n" +
 	"\x05State\x12\v\n" +
 	"\aUNKNOWN\x10\x00\x12\v\n" +
 	"\aRUNNING\x10\x01\x12\b\n" +

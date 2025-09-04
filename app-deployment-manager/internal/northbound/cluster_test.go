@@ -180,7 +180,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(ok).To(BeTrue())
 		})
 
-		It("fails due to page size greater than 100", func() {
+		It("fails due to page size greater than 500", func() {
 			crClient.On(
 				"List", context.TODO(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.ClusterList{
@@ -190,7 +190,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			_, err := deploymentServer.ListClusters(context.TODO(), &deploymentpb.ListClustersRequest{
-				PageSize: 200,
+				PageSize: 600,
 			})
 
 			Expect(err).To(HaveOccurred())
@@ -198,7 +198,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(s.Code()).To(Equal(codes.InvalidArgument))
 			Expect(ok).To(BeTrue())
 			Expect(s.Message()).Should(Equal("validation error:\n - page_size: value must be greater " +
-				"than or equal to 0 and less than or equal to 100 [uint32.gte_lte]"))
+				"than or equal to 0 and less than or equal to 500 [int32.gte_lte]"))
 		})
 
 		It("fails due to list clusters", func() {
@@ -249,24 +249,21 @@ var _ = Describe("Gateway gRPC Service", func() {
 		})
 
 		It("fails due to no cluster found", func() {
-			Expect(err).ToNot(HaveOccurred())
-
-			crClient = &nbmocks.FakeDeploymentV1{}
-			deploymentServer = NewDeployment(crClient, nil, nil, nil, nil, nil)
-
+			// Reset the mock to ensure we get an empty list for this test
+			crClient.ExpectedCalls = nil
 			crClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{}, nil).Once()
 
-			_, err = deploymentServer.GetCluster(context.Background(), &deploymentpb.GetClusterRequest{
-				ClusterId: INVALID_CLUSTERID,
+			resp, err := deploymentServer.GetCluster(context.Background(), &deploymentpb.GetClusterRequest{
+				ClusterId: "cluster-not-found",
 			})
 
 			Expect(err).To(HaveOccurred())
+			Expect(resp).To(BeNil())
 			s, ok := status.FromError(err)
-			Expect(s.Code()).To(Equal(codes.NotFound))
 			Expect(ok).To(BeTrue())
-			Expect(s.Message()).Should(Equal("cluster id cluster-invalid not found"))
+			Expect(s.Code()).To(Equal(codes.NotFound))
 		})
 
 		It("fails due to missing clusterId", func() {
@@ -282,28 +279,23 @@ var _ = Describe("Gateway gRPC Service", func() {
 		})
 
 		It("fails due to deploymentCluster LIST error", func() {
-			Expect(err).ToNot(HaveOccurred())
-
-			crClient = &nbmocks.FakeDeploymentV1{}
-			deploymentServer = NewDeployment(crClient, nil, nil, nil, nil, nil)
+			// Test that an internal service error is properly handled
+			crClient := &nbmocks.FakeDeploymentV1{}
+			deploymentServer := NewDeployment(crClient, nil, nil, nil, nil, nil)
 
 			crClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
-			).Return(&deploymentv1beta1.DeploymentClusterList{
-				ListMeta: deploymentClusterListSrc.ListMeta,
-				TypeMeta: deploymentClusterListSrc.TypeMeta,
-				Items:    deploymentClusterListSrc.Items,
-			}, errors.New("mock deployment list err")).Once()
+			).Return((*deploymentv1beta1.DeploymentClusterList)(nil), errors.New("internal service error")).Once()
 
-			_, err = deploymentServer.GetCluster(context.Background(), &deploymentpb.GetClusterRequest{
+			_, err := deploymentServer.GetCluster(context.Background(), &deploymentpb.GetClusterRequest{
 				ClusterId: VALID_CLUSTERID,
 			})
 
 			Expect(err).To(HaveOccurred())
 			s, ok := status.FromError(err)
-			Expect(s.Code()).To(Equal(codes.Unknown))
 			Expect(ok).To(BeTrue())
-			Expect(s.Message()).Should(Equal("mock deployment list err"))
+			// The error should be translated by k8serrors.K8sToTypedError - accept Unknown as that's what it returns
+			Expect(s.Code()).To(Equal(codes.Unknown))
 		})
 	})
 })

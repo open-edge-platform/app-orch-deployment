@@ -5,11 +5,12 @@ syntax = "proto3";
 
 package deployment.v1;
 
+import "buf/validate/validate.proto";
 import "deployment/v1/resources.proto";
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/empty.proto";
-import "validate/validate.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1";
 
@@ -80,7 +81,7 @@ message CreateDeploymentResponse {
   // Returns the new Deployment Id.
   string deployment_id = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (validate.rules).string = {
+    (buf.validate.field).string = {
       min_len: 1
       max_len: 40
     }
@@ -93,7 +94,7 @@ message ListDeploymentsRequest {
   // displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
   repeated string labels = 1 [
     (google.api.field_behavior) = OPTIONAL,
-    (validate.rules).repeated = {
+    (buf.validate.field).repeated = {
       min_items: 0
       max_items: 20
       items: {
@@ -115,9 +116,9 @@ message ListDeploymentsRequest {
   // Optional. Select count of Deployment to be listed per page.
   int32 page_size = 4 [
     (google.api.field_behavior) = OPTIONAL,
-    (validate.rules).int32 = {
+    (buf.validate.field).int32 = {
       gte: 0
-      lte: 100
+      lte: 500
     }
   ];
 
@@ -125,14 +126,17 @@ message ListDeploymentsRequest {
   // (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
   int32 offset = 5 [
     (google.api.field_behavior) = OPTIONAL,
-    (validate.rules).int32 = {gte: 0}
+    (buf.validate.field).int32 = {gte: 0}
   ];
 }
 
 // Response message for the ListDeployments method.
 message ListDeploymentsResponse {
   // A list of Deployment Objects.
-  repeated deployment.v1.Deployment deployments = 1 [(google.api.field_behavior) = REQUIRED];
+  repeated deployment.v1.Deployment deployments = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (buf.validate.field).repeated = {max_items: 500}
+  ];
 
   int32 total_elements = 2 [(google.api.field_behavior) = REQUIRED];
 }
@@ -141,7 +145,7 @@ message ListDeploymentsResponse {
 message ListDeploymentsPerClusterRequest {
   string cluster_id = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (validate.rules).string = {
+    (buf.validate.field).string = {
       min_len: 1
       max_len: 40
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
@@ -151,7 +155,7 @@ message ListDeploymentsPerClusterRequest {
   // displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
   repeated string labels = 2 [
     (google.api.field_behavior) = OPTIONAL,
-    (validate.rules).repeated = {
+    (buf.validate.field).repeated = {
       min_items: 0
       max_items: 20
       items: {
@@ -173,9 +177,9 @@ message ListDeploymentsPerClusterRequest {
   // Optional. Select count of Deployment to be listed per page.
   int32 page_size = 5 [
     (google.api.field_behavior) = OPTIONAL,
-    (validate.rules).int32 = {
+    (buf.validate.field).int32 = {
       gte: 0
-      lte: 100
+      lte: 500
     }
   ];
 
@@ -183,14 +187,17 @@ message ListDeploymentsPerClusterRequest {
   // (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
   int32 offset = 6 [
     (google.api.field_behavior) = OPTIONAL,
-    (validate.rules).int32 = {gte: 0}
+    (buf.validate.field).int32 = {gte: 0}
   ];
 }
 
 // Response message for the ListDeploymentsPerCluster method.
 message ListDeploymentsPerClusterResponse {
   // A list of Deployment Instance Cluster Objects.
-  repeated deployment.v1.DeploymentInstancesCluster deployment_instances_cluster = 1 [(google.api.field_behavior) = REQUIRED];
+  repeated deployment.v1.DeploymentInstancesCluster deployment_instances_cluster = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (buf.validate.field).repeated = {max_items: 500}
+  ];
 
   int32 total_elements = 2 [(google.api.field_behavior) = REQUIRED];
 }
@@ -200,7 +207,7 @@ message GetDeploymentRequest {
   // Required. The id of the deployment to get.
   string depl_id = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (validate.rules).string = {
+    (buf.validate.field).string = {
       min_len: 1
       max_len: 40
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
@@ -222,7 +229,7 @@ message UpdateDeploymentRequest {
   // Required. The id of the deployment to update.
   string depl_id = 2 [
     (google.api.field_behavior) = REQUIRED,
-    (validate.rules).string = {
+    (buf.validate.field).string = {
       min_len: 1
       max_len: 40
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
@@ -248,7 +255,7 @@ message DeleteDeploymentRequest {
   // Required. The id of the deployment to delete.
   string depl_id = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (validate.rules).string = {
+    (buf.validate.field).string = {
       min_len: 1
       max_len: 40
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
@@ -268,7 +275,7 @@ message GetDeploymentsStatusRequest {
   // displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
   repeated string labels = 1 [
     (google.api.field_behavior) = OPTIONAL,
-    (validate.rules).repeated = {
+    (buf.validate.field).repeated = {
       min_items: 0
       max_items: 20
       items: {
@@ -286,35 +293,35 @@ message GetDeploymentsStatusRequest {
 message GetDeploymentsStatusResponse {
   int32 total = 1 [
     (google.api.field_behavior) = OUTPUT_ONLY,
-    (validate.rules).int32.gte = 0
+    (buf.validate.field).int32.gte = 0
   ];
   int32 running = 2 [
     (google.api.field_behavior) = OUTPUT_ONLY,
-    (validate.rules).int32.gte = 0
+    (buf.validate.field).int32.gte = 0
   ];
   int32 down = 3 [
     (google.api.field_behavior) = OUTPUT_ONLY,
-    (validate.rules).int32.gte = 0
+    (buf.validate.field).int32.gte = 0
   ];
   int32 deploying = 4 [
     (google.api.field_behavior) = OUTPUT_ONLY,
-    (validate.rules).int32.gte = 0
+    (buf.validate.field).int32.gte = 0
   ];
   int32 updating = 5 [
     (google.api.field_behavior) = OUTPUT_ONLY,
-    (validate.rules).int32.gte = 0
+    (buf.validate.field).int32.gte = 0
   ];
   int32 terminating = 6 [
     (google.api.field_behavior) = OUTPUT_ONLY,
-    (validate.rules).int32.gte = 0
+    (buf.validate.field).int32.gte = 0
   ];
   int32 error = 7 [
     (google.api.field_behavior) = OUTPUT_ONLY,
-    (validate.rules).int32.gte = 0
+    (buf.validate.field).int32.gte = 0
   ];
   int32 unknown = 8 [
     (google.api.field_behavior) = OUTPUT_ONLY,
-    (validate.rules).int32.gte = 0
+    (buf.validate.field).int32.gte = 0
   ];
 }
 
@@ -322,7 +329,7 @@ message GetDeploymentsStatusResponse {
 message GetAppNamespaceRequest {
   string app_id = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (validate.rules).string = {
+    (buf.validate.field).string = {
       min_len: 1
       max_len: 80
       pattern: "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
@@ -340,7 +347,7 @@ message ListDeploymentClustersRequest {
   // Required. The id of the deployment to get.
   string depl_id = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (validate.rules).string = {
+    (buf.validate.field).string = {
       min_len: 1
       max_len: 40
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
@@ -356,9 +363,9 @@ message ListDeploymentClustersRequest {
   // Optional. Select count of Deployment clusters to be listed per page.
   int32 page_size = 4 [
     (google.api.field_behavior) = OPTIONAL,
-    (validate.rules).int32 = {
+    (buf.validate.field).int32 = {
       gte: 0
-      lte: 100
+      lte: 500
     }
   ];
 
@@ -369,7 +376,10 @@ message ListDeploymentClustersRequest {
 
 // Response message for ListDeploymentClusters method.
 message ListDeploymentClustersResponse {
-  repeated deployment.v1.Cluster clusters = 1 [(google.api.field_behavior) = REQUIRED];
+  repeated deployment.v1.Cluster clusters = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (buf.validate.field).repeated = {max_items: 500}
+  ];
 
   int32 total_elements = 2 [(google.api.field_behavior) = REQUIRED];
 }

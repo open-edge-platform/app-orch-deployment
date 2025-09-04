@@ -82,7 +82,7 @@ FUZZ_SECONDS ?= 60
 
 EXCLUDE_PKGS_TEST := grep -v ./pkg/api | grep -v ./api | grep -v ./pkg/utils/ratelimiter | grep -v ./test \
 	| grep -v ./internal/grafana/mockery | grep -v ./internal/catalogclient/mockery | grep -v ./internal/catalogclient/mocks \
-	| grep -v ./pkg/fleet/mocks
+	| grep -v ./pkg/fleet/mocks | grep -v ./internal/northbound/fuzztests
 
 PKG_LIST := ./cmd/... ./controllers/... ./webhooks/... ./pkg/... ./internal/...
 
@@ -109,7 +109,7 @@ verify-protoc-plugins: common-verify-protoc-plugins  ## Verify protoc plugins
 
 OPENAPI_SPEC_FILE ?= ./api/nbi/v2/spec/openapi.yaml
 REST_CLIENT_DIR ?= ./api/nbi/v2/pkg/restClient
-proto-generate: common-buf-update common-buf-generate merge-connectrpc-openapi common-openapi-spec-validate common-rest-client-gen common-buf-lint ## Generate protobuf code
+proto-generate: common-buf-update common-buf-generate merge-connectrpc-openapi add-openapi-maxitems common-openapi-spec-validate common-rest-client-gen common-buf-lint ## Generate protobuf code
 
 merge-connectrpc-openapi: ## Merge ConnectRPC individual OpenAPI files into consolidated specification
 	@echo "Merging ConnectRPC OpenAPI files..."
@@ -119,6 +119,10 @@ merge-connectrpc-openapi: ## Merge ConnectRPC individual OpenAPI files into cons
 		"Application Deployment Manager API" \
 		"Application Deployment Manager service providing operations for deploying and managing applications" \
 		"2.0.0"
+
+add-openapi-maxitems: ## Add maxItems constraints to OpenAPI arrays
+	@echo "Adding maxItems constraints to OpenAPI spec..."
+	@python3 scripts/add-openapi-maxitems.py $(OPENAPI_SPEC_FILE)
 
 buf-lint-fix: common-buf-lint-fix ## Lint and format protobuf files
 

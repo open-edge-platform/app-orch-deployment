@@ -178,6 +178,17 @@ func (m *Deployment) validate(all bool) error {
 
 	// no validation rules for DeployId
 
+	if len(m.GetOverrideValues()) > 20 {
+		err := DeploymentValidationError{
+			field:  "OverrideValues",
+			reason: "value must contain no more than 20 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	for idx, item := range m.GetOverrideValues() {
 		_, _ = idx, item
 
@@ -210,6 +221,17 @@ func (m *Deployment) validate(all bool) error {
 			}
 		}
 
+	}
+
+	if len(m.GetTargetClusters()) > 50 {
+		err := DeploymentValidationError{
+			field:  "TargetClusters",
+			reason: "value must contain no more than 50 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
 	}
 
 	for idx, item := range m.GetTargetClusters() {
@@ -273,6 +295,17 @@ func (m *Deployment) validate(all bool) error {
 				cause:  err,
 			}
 		}
+	}
+
+	if len(m.GetApps()) > 100 {
+		err := DeploymentValidationError{
+			field:  "Apps",
+			reason: "value must contain no more than 100 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
 	}
 
 	for idx, item := range m.GetApps() {
@@ -346,6 +379,17 @@ func (m *Deployment) validate(all bool) error {
 		err := DeploymentValidationError{
 			field:  "NetworkName",
 			reason: "value does not match regex pattern \"^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(m.GetServiceExports()) > 10 {
+		err := DeploymentValidationError{
+			field:  "ServiceExports",
+			reason: "value must contain no more than 10 item(s)",
 		}
 		if !all {
 			return err
@@ -1252,6 +1296,17 @@ func (m *DeploymentInstancesCluster) validate(all bool) error {
 		}
 	}
 
+	if len(m.GetApps()) > 100 {
+		err := DeploymentInstancesClusterValidationError{
+			field:  "Apps",
+			reason: "value must contain no more than 100 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	for idx, item := range m.GetApps() {
 		_, _ = idx, item
 
@@ -1420,6 +1475,17 @@ func (m *Cluster) validate(all bool) error {
 				cause:  err,
 			}
 		}
+	}
+
+	if len(m.GetApps()) > 100 {
+		err := ClusterValidationError{
+			field:  "Apps",
+			reason: "value must contain no more than 100 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
 	}
 
 	for idx, item := range m.GetApps() {

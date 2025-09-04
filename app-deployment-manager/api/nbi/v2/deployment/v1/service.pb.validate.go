@@ -343,10 +343,10 @@ func (m *ListDeploymentsRequest) validate(all bool) error {
 
 	// no validation rules for Filter
 
-	if val := m.GetPageSize(); val < 0 || val > 100 {
+	if val := m.GetPageSize(); val < 0 || val > 500 {
 		err := ListDeploymentsRequestValidationError{
 			field:  "PageSize",
-			reason: "value must be inside range [0, 100]",
+			reason: "value must be inside range [0, 500]",
 		}
 		if !all {
 			return err
@@ -468,6 +468,17 @@ func (m *ListDeploymentsResponse) validate(all bool) error {
 	}
 
 	var errors []error
+
+	if len(m.GetDeployments()) > 500 {
+		err := ListDeploymentsResponseValidationError{
+			field:  "Deployments",
+			reason: "value must contain no more than 500 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	for idx, item := range m.GetDeployments() {
 		_, _ = idx, item
@@ -672,10 +683,10 @@ func (m *ListDeploymentsPerClusterRequest) validate(all bool) error {
 
 	// no validation rules for Filter
 
-	if val := m.GetPageSize(); val < 0 || val > 100 {
+	if val := m.GetPageSize(); val < 0 || val > 500 {
 		err := ListDeploymentsPerClusterRequestValidationError{
 			field:  "PageSize",
-			reason: "value must be inside range [0, 100]",
+			reason: "value must be inside range [0, 500]",
 		}
 		if !all {
 			return err
@@ -802,6 +813,17 @@ func (m *ListDeploymentsPerClusterResponse) validate(all bool) error {
 	}
 
 	var errors []error
+
+	if len(m.GetDeploymentInstancesCluster()) > 500 {
+		err := ListDeploymentsPerClusterResponseValidationError{
+			field:  "DeploymentInstancesCluster",
+			reason: "value must contain no more than 500 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	for idx, item := range m.GetDeploymentInstancesCluster() {
 		_, _ = idx, item
@@ -2204,10 +2226,10 @@ func (m *ListDeploymentClustersRequest) validate(all bool) error {
 
 	// no validation rules for Filter
 
-	if val := m.GetPageSize(); val < 0 || val > 100 {
+	if val := m.GetPageSize(); val < 0 || val > 500 {
 		err := ListDeploymentClustersRequestValidationError{
 			field:  "PageSize",
-			reason: "value must be inside range [0, 100]",
+			reason: "value must be inside range [0, 500]",
 		}
 		if !all {
 			return err
@@ -2321,6 +2343,17 @@ func (m *ListDeploymentClustersResponse) validate(all bool) error {
 	}
 
 	var errors []error
+
+	if len(m.GetClusters()) > 500 {
+		err := ListDeploymentClustersResponseValidationError{
+			field:  "Clusters",
+			reason: "value must contain no more than 500 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	for idx, item := range m.GetClusters() {
 		_, _ = idx, item

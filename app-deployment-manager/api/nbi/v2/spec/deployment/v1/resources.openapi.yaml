@@ -74,6 +74,7 @@ components:
           items:
             $ref: '#/components/schemas/deployment.v1.App'
           title: apps
+          maxItems: 100
           description: Apps has per-app details.
           readOnly: true
       title: Cluster
@@ -90,19 +91,45 @@ components:
         displayName:
           type: string
           title: display_name
-          description: (OPTIONAL) Deployment display name.
+          maxLength: 40
+          pattern: ^([a-zA-Z0-9][\w\- \.\/_]{0,38}[a-zA-Z0-9]{0,1}|)$
+          description: |
+            (OPTIONAL) Deployment display name.
+            string.max_len = 40
+            string.min_len = 0
+            string.pattern = "^([a-zA-Z0-9][\\w\\- \\.\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$"
         appName:
           type: string
           title: app_name
-          description: The deployment package name to deploy from the catalog.
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: |
+            The deployment package name to deploy from the catalog.
+            string.max_len = 40
+            string.min_len = 1
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
         appVersion:
           type: string
           title: app_version
-          description: The version of the deployment package.
+          maxLength: 20
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-.]{0,18}[a-z0-9]{0,1}$
+          description: |
+            The version of the deployment package.
+            string.max_len = 20
+            string.min_len = 1
+            string.pattern = "^[a-z0-9][a-z0-9-.]{0,18}[a-z0-9]{0,1}$"
         profileName:
           type: string
           title: profile_name
-          description: (OPTIONAL) The selected profile name to be used for the base Helm values of the different applications in the deployment package
+          maxLength: 40
+          pattern: ^[a-z0-9]*[a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: |
+            (OPTIONAL) The selected profile name to be used for the base Helm values of the different applications in the deployment package
+            string.max_len = 40
+            string.min_len = 0
+            string.pattern = "^[a-z0-9]*[a-z0-9-]{0,38}[a-z0-9]{0,1}$"
         createTime:
           title: create_time
           description: The creation time of the deployment.
@@ -118,12 +145,14 @@ components:
           items:
             $ref: '#/components/schemas/deployment.v1.OverrideValues'
           title: override_values
+          maxItems: 20
           description: (OPTIONAL) The Override values can be used to override any of the base profile values based on Deployment scenario.
         targetClusters:
           type: array
           items:
             $ref: '#/components/schemas/deployment.v1.TargetClusters'
           title: target_clusters
+          maxItems: 50
           description: (OPTIONAL) Cluster labels on which we want to deploy the application.
         status:
           title: status
@@ -135,25 +164,38 @@ components:
           items:
             $ref: '#/components/schemas/deployment.v1.App'
           title: apps
+          maxItems: 100
           description: Application details.
           readOnly: true
         deploymentType:
           type: string
           title: deployment_type
-          description: |-
+          maxLength: 20
+          pattern: ^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$
+          description: |
             (OPTIONAL) The deployment type for the target cluster deployment can be either auto-scaling or targeted.
              In Auto-scaling type, the application will be automatically deployed on all the
              clusters which match the Target cluster label. In Targeted type, the user has to select among pre created
              clusters to deploy the application.
+            string.max_len = 20
+            string.min_len = 0
+            string.pattern = "^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$"
         networkName:
           type: string
           title: network_name
-          description: (OPTIONAL) network_name is the name of the interconnect network that deployment be part of
+          maxLength: 40
+          pattern: ^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$
+          description: |
+            (OPTIONAL) network_name is the name of the interconnect network that deployment be part of
+            string.max_len = 40
+            string.min_len = 0
+            string.pattern = "^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$"
         serviceExports:
           type: array
           items:
             $ref: '#/components/schemas/deployment.v1.ServiceExport'
           title: service_exports
+          maxItems: 10
           description: '(OPTIONAL) '
         allAppTargetClusters:
           title: all_app_target_clusters
@@ -201,7 +243,13 @@ components:
         deploymentDisplayName:
           type: string
           title: deployment_display_name
-          description: (OPTIONAL) Deployment display name.
+          maxLength: 40
+          pattern: ^([a-zA-Z0-9][\w\- \.\/_]{0,38}[a-zA-Z0-9]{0,1}|)$
+          description: |
+            (OPTIONAL) Deployment display name.
+            string.max_len = 40
+            string.min_len = 0
+            string.pattern = "^([a-zA-Z0-9][\\w\\- \\.\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$"
         status:
           title: status
           description: Status has details of the cluster.
@@ -212,6 +260,7 @@ components:
           items:
             $ref: '#/components/schemas/deployment.v1.App'
           title: apps
+          maxItems: 100
           description: Apps has per-app details.
           readOnly: true
       title: DeploymentInstancesCluster
@@ -222,11 +271,24 @@ components:
         appName:
           type: string
           title: app_name
-          description: deployment package name to use when overriding values.
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: |
+            deployment package name to use when overriding values.
+            string.max_len = 40
+            string.min_len = 1
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
         targetNamespace:
           type: string
           title: target_namespace
-          description: (OPTIONAL) The namespace to deploy the app onto, default namespace is default.
+          maxLength: 63
+          pattern: (^$)|^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$
+          description: |
+            (OPTIONAL) The namespace to deploy the app onto, default namespace is default.
+            string.max_len = 63
+            string.min_len = 0
+            string.pattern = "(^$)|^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$"
         values:
           title: values
           description: (OPTIONAL) The YAML representing Helm overrides
@@ -244,6 +306,13 @@ components:
         appName:
           type: string
           title: app_name
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: |
+            string.max_len = 40
+            string.min_len = 1
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
         enabled:
           type: boolean
           title: enabled
@@ -292,7 +361,13 @@ components:
         appName:
           type: string
           title: app_name
-          description: (OPTIONAL) The targeted deployment package name.
+          maxLength: 40
+          pattern: (^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: |
+            (OPTIONAL) The targeted deployment package name.
+            string.max_len = 40
+            string.min_len = 0
+            string.pattern = "(^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
         labels:
           type: object
           title: labels

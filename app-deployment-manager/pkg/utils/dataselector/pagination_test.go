@@ -31,8 +31,8 @@ func TestNewPaginationQuery(t *testing.T) {
 
 func TestIsValidPagination(t *testing.T) {
 	offsetErr := errors.NewInvalid("validation error:\n - offset: value must be greater than or equal to 0 [uint32.gte]")
-	pageSizeErr := errors.NewInvalid("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 100 [uint32.gte_lte]")
-	pageSizeMaxErr := errors.NewInvalid("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 100 [uint32.gte_lte]")
+	pageSizeErr := errors.NewInvalid("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 500 [uint32.gte_lte]")
+	pageSizeMaxErr := errors.NewInvalid("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 500 [uint32.gte_lte]")
 	cases := []struct {
 		pQuery   *PaginationQuery
 		expected error
@@ -42,15 +42,19 @@ func TestIsValidPagination(t *testing.T) {
 		{&PaginationQuery{10, 1}, nil},
 		{&PaginationQuery{0, 2}, nil},
 		{&PaginationQuery{100, 0}, nil},
-		{&PaginationQuery{101, 0}, pageSizeMaxErr},
+		{&PaginationQuery{101, 0}, nil},
+		{&PaginationQuery{501, 0}, pageSizeMaxErr},
 		{&PaginationQuery{10, -1}, offsetErr},
 		{&PaginationQuery{-1, 0}, pageSizeErr},
 		{&PaginationQuery{-1, -1}, pageSizeErr}, // pagesize is checked first
 	}
 
-	for _, c := range cases {
+	for i, c := range cases {
 		actual := c.pQuery.IsValidPagination()
-		assert.Equal(t, actual, c.expected)
+		if !assert.Equal(t, actual, c.expected) {
+			t.Errorf("Test case %d failed: PaginationQuery{%d, %d}, expected: %v, actual: %v",
+				i, c.pQuery.PageSize, c.pQuery.OffSet, c.expected, actual)
+		}
 	}
 }
 
