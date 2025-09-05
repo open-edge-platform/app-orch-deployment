@@ -818,7 +818,7 @@ var File_deployment_v1_resources_proto protoreflect.FileDescriptor
 
 const file_deployment_v1_resources_proto_rawDesc = "" +
 	"\n" +
-	"\x1ddeployment/v1/resources.proto\x12\rdeployment.v1\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bbuf/validate/validate.proto\"\x8a\n" +
+	"\x1ddeployment/v1/resources.proto\x12\rdeployment.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8a\n" +
 	"\n" +
 	"\n" +
 	"Deployment\x12\x17\n" +

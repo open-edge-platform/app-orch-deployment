@@ -468,7 +468,7 @@ var File_deployment_v1_cluster_service_proto protoreflect.FileDescriptor
 
 const file_deployment_v1_cluster_service_proto_rawDesc = "" +
 	"\n" +
-	"#deployment/v1/cluster_service.proto\x12\rdeployment.v1\x1a\x1ddeployment/v1/resources.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bbuf/validate/validate.proto\"k\n" +
+	"#deployment/v1/cluster_service.proto\x12\rdeployment.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1ddeployment/v1/resources.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"k\n" +
 	"\x14GetKubeConfigRequest\x12S\n" +
 	"\n" +
 	"cluster_id\x18\x02 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\"`\n" +
