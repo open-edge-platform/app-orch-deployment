@@ -94,6 +94,17 @@ func (m *AppEndpoint) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if len(m.GetFqdns()) > 10 {
+		err := AppEndpointValidationError{
+			field:  "Fqdns",
+			reason: "value must contain no more than 10 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	for idx, item := range m.GetFqdns() {
 		_, _ = idx, item
 
@@ -126,6 +137,17 @@ func (m *AppEndpoint) validate(all bool) error {
 			}
 		}
 
+	}
+
+	if len(m.GetPorts()) > 20 {
+		err := AppEndpointValidationError{
+			field:  "Ports",
+			reason: "value must contain no more than 20 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
 	}
 
 	for idx, item := range m.GetPorts() {
@@ -212,7 +234,7 @@ type AppEndpointMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AppEndpointMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -354,7 +376,7 @@ type FqdnMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m FqdnMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -480,7 +502,7 @@ type PortMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m PortMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -584,7 +606,7 @@ type EndpointStatusMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m EndpointStatusMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

@@ -11,7 +11,7 @@ path = ["VERSION", "**.json",
         "internal/catalogclient/mockery/**", "internal/grafana/mockery/**",
         "internal/catalogclient/mocks/m*.go",
         "config/certmanager/kustom*.yaml",
-        "config/**",
+        "config/**", "bin/**", "build/_output/**", "app-deployment-manager", "rest-proxy",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2025 Intel Corporation"

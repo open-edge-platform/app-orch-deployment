@@ -11,6 +11,8 @@ import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/timestamp.proto";
 
+option go_package = "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1";
+
 // ClusterService provides RPC methods to get clusters information.
 service ClusterService {
   // GetKubeConfig gets kubeConfig based on a given cluster id
@@ -69,7 +71,7 @@ message ListClustersRequest {
     (google.api.field_behavior) = OPTIONAL,
     (buf.validate.field).int32 = {
       gte: 0
-      lte: 100
+      lte: 500
     }
   ];
 
@@ -84,7 +86,10 @@ message ListClustersRequest {
 // Response message for the ListClusters method.
 message ListClustersResponse {
   // A list of Cluster Objects.
-  repeated ClusterInfo clusters = 1 [(google.api.field_behavior) = REQUIRED];
+  repeated ClusterInfo clusters = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (buf.validate.field).repeated = {max_items: 500}
+  ];
 
   int32 total_elements = 2 [(google.api.field_behavior) = REQUIRED];
 }

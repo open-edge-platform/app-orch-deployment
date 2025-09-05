@@ -32,7 +32,7 @@ func CallMethod(url, verb, token, projectID string) (*http.Response, error) {
 }
 
 func StartVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) (int, error) {
-	resp, err := armClient.VirtualMachineServiceStartVirtualMachineWithResponse(context.TODO(), appID, types.TestClusterID, virtMachineID)
+	resp, err := armClient.ResourceV2VirtualMachineServiceStartVirtualMachineWithResponse(context.TODO(), appID, types.TestClusterID, virtMachineID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return resp.StatusCode(), fmt.Errorf("%v", err)
@@ -44,7 +44,7 @@ func StartVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtM
 }
 
 func StopVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) (int, error) {
-	resp, err := armClient.VirtualMachineServiceStopVirtualMachineWithResponse(context.TODO(), appID, types.TestClusterID, virtMachineID)
+	resp, err := armClient.ResourceV2VirtualMachineServiceStopVirtualMachineWithResponse(context.TODO(), appID, types.TestClusterID, virtMachineID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return resp.StatusCode(), fmt.Errorf("%v", err)
@@ -56,7 +56,7 @@ func StopVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMa
 }
 
 func RestartVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) (int, error) {
-	resp, err := armClient.VirtualMachineServiceRestartVirtualMachineWithResponse(context.TODO(), appID, types.TestClusterID, virtMachineID)
+	resp, err := armClient.ResourceV2VirtualMachineServiceRestartVirtualMachineWithResponse(context.TODO(), appID, types.TestClusterID, virtMachineID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return resp.StatusCode(), fmt.Errorf("%v", err)
@@ -68,7 +68,7 @@ func RestartVirtualMachine(armClient *restClient.ClientWithResponses, appID, vir
 }
 
 func GetVNC(armClient *restClient.ClientWithResponses, appID, virtMachineID string) (int, error) {
-	resp, err := armClient.VirtualMachineServiceGetVNCWithResponse(context.TODO(), appID, types.TestClusterID, virtMachineID)
+	resp, err := armClient.ResourceV2VirtualMachineServiceGetVNCWithResponse(context.TODO(), appID, types.TestClusterID, virtMachineID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return resp.StatusCode(), fmt.Errorf("%v", err)
@@ -134,12 +134,18 @@ func GetVMStatus(armClient *restClient.ClientWithResponses, appID, virtMachineID
 		}
 
 		for _, appWorkload := range *appWorkloads {
-			appName = appWorkload.Name
-			currState = string(*appWorkload.VirtualMachine.Status.State)
-			if appWorkload.Id == virtMachineID {
-				if currState == desiredState {
-					fmt.Printf("Waiting for VM %s state %s ---> %s\n", appName, currState, desiredState)
-					return nil
+			if appWorkload.Name != nil {
+				appName = *appWorkload.Name
+			}
+			if appWorkload.Type != nil && *appWorkload.Type == restClient.TYPEVIRTUALMACHINE {
+				if vmWorkload, err := appWorkload.AsResourceV2AppWorkload1(); err == nil {
+					currState = string(*vmWorkload.VirtualMachine.Status.State)
+					if appWorkload.Id != nil && *appWorkload.Id == virtMachineID {
+						if currState == desiredState {
+							fmt.Printf("Waiting for VM %s state %s ---> %s\n", appName, currState, desiredState)
+							return nil
+						}
+					}
 				}
 			}
 		}
@@ -151,32 +157,32 @@ func GetVMStatus(armClient *restClient.ClientWithResponses, appID, virtMachineID
 	return fmt.Errorf("VM %s failed to reach desired state %s. Last known state: %s", appName, desiredState, currState)
 }
 
-func AppWorkloadsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppWorkload, int, error) {
-	resp, err := armClient.AppWorkloadServiceListAppWorkloadsWithResponse(context.TODO(), appID, types.TestClusterID)
+func AppWorkloadsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.ResourceV2AppWorkload, int, error) {
+	resp, err := armClient.ResourceV2AppWorkloadServiceListAppWorkloadsWithResponse(context.TODO(), appID, types.TestClusterID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
-			return &[]restClient.AppWorkload{}, resp.StatusCode(), fmt.Errorf("%v", err)
+			return &[]restClient.ResourceV2AppWorkload{}, resp.StatusCode(), fmt.Errorf("%v", err)
 		}
-		return &[]restClient.AppWorkload{}, resp.StatusCode(), fmt.Errorf("failed to list app workloads: %v", string(resp.Body))
+		return &[]restClient.ResourceV2AppWorkload{}, resp.StatusCode(), fmt.Errorf("failed to list app workloads: %v", string(resp.Body))
 	}
 
 	return resp.JSON200.AppWorkloads, resp.StatusCode(), nil
 }
 
-func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppEndpoint, int, error) {
-	resp, err := armClient.EndpointsServiceListAppEndpointsWithResponse(context.TODO(), appID, types.TestClusterID)
+func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.ResourceV2AppEndpoint, int, error) {
+	resp, err := armClient.ResourceV2EndpointsServiceListAppEndpointsWithResponse(context.TODO(), appID, types.TestClusterID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
-			return &[]restClient.AppEndpoint{}, resp.StatusCode(), fmt.Errorf("%v", err)
+			return &[]restClient.ResourceV2AppEndpoint{}, resp.StatusCode(), fmt.Errorf("%v", err)
 		}
-		return &[]restClient.AppEndpoint{}, resp.StatusCode(), fmt.Errorf("failed to list app endpoints: %v", string(resp.Body))
+		return &[]restClient.ResourceV2AppEndpoint{}, resp.StatusCode(), fmt.Errorf("failed to list app endpoints: %v", string(resp.Body))
 	}
 
 	return resp.JSON200.AppEndpoints, resp.StatusCode(), nil
 }
 
 func PodDelete(armClient *restClient.ClientWithResponses, namespace, podName, appID string) (int, error) {
-	resp, err := armClient.PodServiceDeletePodWithResponse(context.TODO(), types.TestClusterID, namespace, podName)
+	resp, err := armClient.ResourceV2PodServiceDeletePodWithResponse(context.TODO(), types.TestClusterID, namespace, podName)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return resp.StatusCode(), fmt.Errorf("%v", err)
@@ -235,13 +241,19 @@ func GetPodStatus(armClient *restClient.ClientWithResponses, appID, workloadID, 
 		}
 
 		for _, appWorkload := range *appWorkloads {
-			appName = appWorkload.Name
-			currState = string(*appWorkload.Pod.Status.State)
+			if appWorkload.Name != nil {
+				appName = *appWorkload.Name
+			}
+			if appWorkload.Type != nil && *appWorkload.Type == restClient.TYPEPOD {
+				if podWorkload, err := appWorkload.AsResourceV2AppWorkload0(); err == nil {
+					currState = string(*podWorkload.Pod.Status.State)
 
-			if appWorkload.Id == workloadID {
-				if currState == desiredState {
-					fmt.Printf("Waiting for POD %s state %s ---> %s\n", appName, currState, desiredState)
-					return nil
+					if appWorkload.Id != nil && *appWorkload.Id == workloadID {
+						if currState == desiredState {
+							fmt.Printf("Waiting for POD %s state %s ---> %s\n", appName, currState, desiredState)
+							return nil
+						}
+					}
 				}
 			}
 		}

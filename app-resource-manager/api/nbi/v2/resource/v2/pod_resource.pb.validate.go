@@ -56,6 +56,17 @@ func (m *Pod) validate(all bool) error {
 
 	var errors []error
 
+	if len(m.GetContainers()) > 50 {
+		err := PodValidationError{
+			field:  "Containers",
+			reason: "value must contain no more than 50 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	for idx, item := range m.GetContainers() {
 		_, _ = idx, item
 
@@ -132,7 +143,7 @@ type PodMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m PodMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -233,7 +244,7 @@ type PodStatusMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m PodStatusMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -387,7 +398,7 @@ type ContainerMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ContainerMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -617,7 +628,7 @@ type ContainerStatusMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ContainerStatusMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -721,7 +732,7 @@ type ContainerStateWaitingMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ContainerStateWaitingMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -823,7 +834,7 @@ type ContainerStateRunningMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ContainerStateRunningMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -931,7 +942,7 @@ type ContainerStateTerminatedMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ContainerStateTerminatedMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

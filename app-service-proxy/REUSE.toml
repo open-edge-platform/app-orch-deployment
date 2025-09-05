@@ -8,7 +8,7 @@ path = [
     "pkg/api/**.pb**.go", "api/spec/**", "api/nbi/v2/pkg/restClient/**", "artifacts/**", "internal/southbound/mocks/**",
     "artifacts/**", "BDBA/**", "internal/kubernetes/mocks/**", "internal/kubevirt/mocks/**", "internal/wsproxy/mocks/**",
     "internal/adm/mocks/**", "api/nbi/v2/spec/**", "api/nbi/v2/resource/v2/**", "PROJECT", ".htmllintrc",
-    "web-login/*.js"
+    "web-login/*.js", "bin/**", "build/_output/**", "app-service-proxy"
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2024 Intel Corporation"

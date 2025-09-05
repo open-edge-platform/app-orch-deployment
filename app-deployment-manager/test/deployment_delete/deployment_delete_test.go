@@ -5,7 +5,7 @@
 package deployment
 
 import (
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
+	deploymentv1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
 	deploymentutils "github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/deployment"
 
 	"net/http"
@@ -60,7 +60,7 @@ func (s *TestSuite) TestDeleteDeploymentParentOnlyDeleteType() {
 	s.Equal(http.StatusOK, status, "Expected HTTP status 200 for successful deployment creation")
 
 	// Delete the created deployment with delete type
-	status, err = deploymentutils.DeleteDeploymentWithDeleteType(s.AdmClient, deploymentID, restClient.PARENTONLY)
+	status, err = deploymentutils.DeleteDeploymentWithDeleteType(s.AdmClient, deploymentID, deploymentv1.DeleteType_PARENT_ONLY)
 	s.NoError(err)
 	s.Equal(http.StatusOK, status, "Expected HTTP status 200 for successful deletion with delete type")
 
@@ -83,7 +83,7 @@ func (s *TestSuite) TestDeleteDeploymentAllDeleteType() {
 	s.Equal(http.StatusOK, status, "Expected HTTP status 200 for successful deployment creation")
 
 	// Delete the created deployment with delete type
-	status, err = deploymentutils.DeleteDeploymentWithDeleteType(s.AdmClient, deploymentID, restClient.ALL)
+	status, err = deploymentutils.DeleteDeploymentWithDeleteType(s.AdmClient, deploymentID, deploymentv1.DeleteType_ALL)
 	s.NoError(err)
 	s.Equal(http.StatusOK, status, "Expected HTTP status 200 for successful deletion with delete type")
 

@@ -27,10 +27,16 @@ message AppEndpoint {
   ];
 
   // Fully qualified domain name (FQDN) for external access.
-  repeated Fqdn fqdns = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated Fqdn fqdns = 5 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (validate.rules).repeated = {max_items: 10}
+  ];
 
   // List of ports exposed by a service for external access
-  repeated Port ports = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated Port ports = 6 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (validate.rules).repeated = {max_items: 20}
+  ];
 
   // EndpointStatus status of an endpoint
   EndpointStatus endpoint_status = 7 [(google.api.field_behavior) = OUTPUT_ONLY];

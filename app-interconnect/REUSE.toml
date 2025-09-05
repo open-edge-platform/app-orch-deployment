@@ -1,11 +1,13 @@
 # SPDX-FileCopyrightText: (C) 2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+
 version = 1
 
 [[annotations]]
 path = [
-    "VERSION", "go.sum", "build/_output/**", "internal/skupper/**", "artifacts/**",
-    "config/**", "deploy/charts/app-interconnect-manager/crds/**"
+    "VERSION", "go.sum", "build/_output/**", "artifacts/**",
+    "config/**", "deploy/charts/app-interconnect-manager/crds/**", "bin/**", "app-interconnect",
+    "internal/skupper/**"
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2025 Intel Corporation"

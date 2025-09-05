@@ -7,23 +7,24 @@ package restproxy
 import (
 	"context"
 	"fmt"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/open-edge-platform/orch-library/go/dazl"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"net/http"
 	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/secure"
 	"github.com/gin-gonic/gin"
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils"
-	ginlogger "github.com/open-edge-platform/orch-library/go/pkg/logging/gin"
-	"google.golang.org/grpc/metadata"
-
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	deploymentpb "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
+	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils"
+	"github.com/open-edge-platform/orch-library/go/dazl"
+	ginlogger "github.com/open-edge-platform/orch-library/go/pkg/logging/gin"
 	ginutils "github.com/open-edge-platform/orch-library/go/pkg/middleware/gin"
 	openapiutils "github.com/open-edge-platform/orch-library/go/pkg/openapi"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 var log = dazl.GetPackageLogger()
@@ -33,6 +34,85 @@ var allowedHeaders = map[string]struct{}{
 }
 
 const ActiveProjectID = "ActiveProjectID"
+
+// ErrorResponse represents a structured error response for REST API
+type ErrorResponse struct {
+	Error ErrorDetail `json:"error"`
+}
+
+// ErrorDetail contains the detailed error information
+type ErrorDetail struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Status  string `json:"status"`
+}
+
+// mapGrpcToHTTPStatus maps gRPC status codes to appropriate HTTP status codes
+func mapGrpcToHTTPStatus(grpcCode codes.Code) int {
+	switch grpcCode {
+	case codes.InvalidArgument:
+		return http.StatusBadRequest
+	case codes.NotFound:
+		return http.StatusNotFound
+	case codes.AlreadyExists:
+		return http.StatusConflict
+	case codes.PermissionDenied:
+		return http.StatusForbidden
+	case codes.Unauthenticated:
+		return http.StatusUnauthorized
+	case codes.ResourceExhausted:
+		return http.StatusTooManyRequests
+	case codes.Unimplemented:
+		return http.StatusNotImplemented
+	case codes.Unavailable:
+		return http.StatusServiceUnavailable
+	case codes.DeadlineExceeded:
+		return http.StatusGatewayTimeout
+	default:
+		return http.StatusInternalServerError
+	}
+}
+
+// createErrorResponse creates a structured error response from gRPC status
+func createErrorResponse(s *status.Status) ErrorResponse {
+	return ErrorResponse{
+		Error: ErrorDetail{
+			Code:    int(s.Code()),
+			Message: s.Message(),
+			Status:  s.Code().String(),
+		},
+	}
+}
+
+// writeErrorResponse writes the error response to the HTTP response writer
+func writeErrorResponse(w http.ResponseWriter, marshaler runtime.Marshaler, httpStatus int, errorResponse ErrorResponse) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(httpStatus)
+
+	if buf, err := marshaler.Marshal(errorResponse); err == nil {
+		_, _ = w.Write(buf)
+	}
+}
+
+// handleGrpcError processes gRPC errors and writes appropriate HTTP responses
+func handleGrpcError(w http.ResponseWriter, marshaler runtime.Marshaler, grpcStatus *status.Status) {
+	httpStatus := mapGrpcToHTTPStatus(grpcStatus.Code())
+	errorResponse := createErrorResponse(grpcStatus)
+	writeErrorResponse(w, marshaler, httpStatus, errorResponse)
+}
+
+// errorHandler provides enhanced error handling for gRPC-Gateway responses
+// This filters and formats error details for better REST API responses
+func errorHandler(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.Marshaler, w http.ResponseWriter, r *http.Request, err error) {
+	// Check if this is a gRPC error
+	if grpcStatus, ok := status.FromError(err); ok {
+		handleGrpcError(w, marshaler, grpcStatus)
+		return
+	}
+
+	// Fall back to default handler for non-gRPC errors
+	runtime.DefaultHTTPErrorHandler(ctx, mux, marshaler, w, r, err)
+}
 
 func isHeaderAllowed(s string) (string, bool) {
 	// check if allowedHeaders contain the header
@@ -49,7 +129,7 @@ func Run(grpcAddr string, gwAddr int, allowedCorsOrigins string, basePath string
 
 	gin.DefaultWriter = ginlogger.NewWriter(log)
 
-	// creating mux for gRPC gateway. This will multiplex or route request different gRPC service
+	// creating mux for gRPC gateway with enhanced error handling
 	gwmux := runtime.NewServeMux(
 		// convert header in response(going from gateway) from metadata received.
 		runtime.WithOutgoingHeaderMatcher(isHeaderAllowed),
@@ -63,6 +143,8 @@ func Run(grpcAddr string, gwAddr int, allowedCorsOrigins string, basePath string
 		}),
 		// handle 405 method not allowed
 		runtime.WithRoutingErrorHandler(ginutils.HandleRoutingError),
+		// Enhanced error handling for better REST API responses
+		runtime.WithErrorHandler(errorHandler),
 	)
 
 	// Register DeploymentService

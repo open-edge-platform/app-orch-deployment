@@ -23,3 +23,7 @@ testdata
 node_modules
 package-lock.json
 package.json
+
+# Generated files from protoc-gen-connect-go and protoc-gen-connect-openapi
+api/nbi/v2/resource/v2/resourcev2connect/
+api/nbi/v2/spec/v2/
