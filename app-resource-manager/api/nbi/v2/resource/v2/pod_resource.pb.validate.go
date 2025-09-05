@@ -56,6 +56,17 @@ func (m *Pod) validate(all bool) error {
 
 	var errors []error
 
+	if len(m.GetContainers()) > 50 {
+		err := PodValidationError{
+			field:  "Containers",
+			reason: "value must contain no more than 50 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	for idx, item := range m.GetContainers() {
 		_, _ = idx, item
 

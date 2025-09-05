@@ -514,10 +514,10 @@ var File_resource_v2_pod_resource_proto protoreflect.FileDescriptor
 
 const file_resource_v2_pod_resource_proto_rawDesc = "" +
 	"\n" +
-	"\x1eresource/v2/pod_resource.proto\x12\vresource.v2\x1a\x1fgoogle/api/field_behavior.proto\x1a\x17validate/validate.proto\"r\n" +
-	"\x03Pod\x126\n" +
+	"\x1eresource/v2/pod_resource.proto\x12\vresource.v2\x1a\x1fgoogle/api/field_behavior.proto\x1a\x17validate/validate.proto\"|\n" +
+	"\x03Pod\x12@\n" +
 	"\n" +
-	"containers\x18\x01 \x03(\v2\x16.resource.v2.ContainerR\n" +
+	"containers\x18\x01 \x03(\v2\x16.resource.v2.ContainerB\b\xfaB\x05\x92\x01\x02\x102R\n" +
 	"containers\x123\n" +
 	"\x06status\x18\x02 \x01(\v2\x16.resource.v2.PodStatusB\x03\xe0A\x03R\x06status\"\xac\x01\n" +
 	"\tPodStatus\x122\n" +

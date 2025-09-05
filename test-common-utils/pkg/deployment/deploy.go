@@ -395,9 +395,15 @@ func createDeployment(client *restClient.ClientWithResponses, params CreateDeplo
 		}
 	} else if params.DeploymentType == "auto-scaling" {
 		for _, v := range *ptr(params.AppNames) {
+			labels := make(map[string]string)
+			if params.Labels != nil {
+				for k, v := range *params.Labels {
+					labels[k] = v
+				}
+			}
 			targetClusters = append(targetClusters, restClient.DeploymentV1TargetClusters{
 				AppName: ptr(v),
-				Labels:  params.Labels,
+				Labels:  &labels,
 			})
 		}
 	}
@@ -414,9 +420,9 @@ func createDeployment(client *restClient.ClientWithResponses, params CreateDeplo
 				}
 				structMap := make(restClient.GoogleProtobufStruct)
 				for key, value := range v["targetValues"].(map[string]any) {
-					valueMap := make(restClient.GoogleProtobufValue)
-					valueMap["value"] = value
-					structMap[key] = &valueMap
+					structMap[key] = &restClient.GoogleProtobufValue{
+						"value": value,
+					}
 				}
 				return &structMap
 			}(),

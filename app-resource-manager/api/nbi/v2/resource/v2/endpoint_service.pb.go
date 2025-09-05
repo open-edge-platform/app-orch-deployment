@@ -135,11 +135,11 @@ const file_resource_v2_endpoint_service_proto_rawDesc = "" +
 	"\x17ListAppEndpointsRequest\x12K\n" +
 	"\x06app_id\x18\x01 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18P2&^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$R\x05appId\x12S\n" +
 	"\n" +
-	"cluster_id\x18\x02 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\"^\n" +
-	"\x18ListAppEndpointsResponse\x12B\n" +
-	"\rapp_endpoints\x18\x01 \x03(\v2\x18.resource.v2.AppEndpointB\x03\xe0A\x03R\fappEndpoints2\xa5\x01\n" +
-	"\x10EndpointsService\x12\x90\x01\n" +
-	"\x10ListAppEndpoints\x12$.resource.v2.ListAppEndpointsRequest\x1a%.resource.v2.ListAppEndpointsResponse\"/\x82\xd3\xe4\x93\x02)\x12'/arm/v2/endpoints/{app_id}/{cluster_id}B\xde\x01\n" +
+	"cluster_id\x18\x02 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\"f\n" +
+	"\x18ListAppEndpointsResponse\x12J\n" +
+	"\rapp_endpoints\x18\x01 \x03(\v2\x18.resource.v2.AppEndpointB\v\xe0A\x03\xfaB\x05\x92\x01\x02\x10dR\fappEndpoints2\xbc\x01\n" +
+	"\x10EndpointsService\x12\xa7\x01\n" +
+	"\x10ListAppEndpoints\x12$.resource.v2.ListAppEndpointsRequest\x1a%.resource.v2.ListAppEndpointsResponse\"F\x82\xd3\xe4\x93\x02@\x12>/resource.orchestrator.apis/v2/endpoints/{app_id}/{cluster_id}B\xde\x01\n" +
 	"\x0fcom.resource.v2B\x14EndpointServiceProtoP\x01Zhgithub.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/resource/v2;resourcev2\xa2\x02\x03RXX\xaa\x02\vResource.V2\xca\x02\vResource\\V2\xe2\x02\x17Resource\\V2\\GPBMetadata\xea\x02\fResource::V2b\x06proto3"
 
 var (

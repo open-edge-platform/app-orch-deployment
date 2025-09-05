@@ -94,6 +94,17 @@ func (m *AppEndpoint) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if len(m.GetFqdns()) > 10 {
+		err := AppEndpointValidationError{
+			field:  "Fqdns",
+			reason: "value must contain no more than 10 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	for idx, item := range m.GetFqdns() {
 		_, _ = idx, item
 
@@ -126,6 +137,17 @@ func (m *AppEndpoint) validate(all bool) error {
 			}
 		}
 
+	}
+
+	if len(m.GetPorts()) > 20 {
+		err := AppEndpointValidationError{
+			field:  "Ports",
+			reason: "value must contain no more than 20 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
 	}
 
 	for idx, item := range m.GetPorts() {

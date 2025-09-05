@@ -413,7 +413,7 @@ func RegisterVirtualMachineServiceHandlerServer(ctx context.Context, mux *runtim
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/resource.v2.VirtualMachineService/StartVirtualMachine", runtime.WithHTTPPathPattern("/arm/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/start"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/resource.v2.VirtualMachineService/StartVirtualMachine", runtime.WithHTTPPathPattern("/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/start"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -438,7 +438,7 @@ func RegisterVirtualMachineServiceHandlerServer(ctx context.Context, mux *runtim
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/resource.v2.VirtualMachineService/StopVirtualMachine", runtime.WithHTTPPathPattern("/arm/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/stop"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/resource.v2.VirtualMachineService/StopVirtualMachine", runtime.WithHTTPPathPattern("/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/stop"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -463,7 +463,7 @@ func RegisterVirtualMachineServiceHandlerServer(ctx context.Context, mux *runtim
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/resource.v2.VirtualMachineService/RestartVirtualMachine", runtime.WithHTTPPathPattern("/arm/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/restart"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/resource.v2.VirtualMachineService/RestartVirtualMachine", runtime.WithHTTPPathPattern("/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/restart"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -488,7 +488,7 @@ func RegisterVirtualMachineServiceHandlerServer(ctx context.Context, mux *runtim
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/resource.v2.VirtualMachineService/GetVNC", runtime.WithHTTPPathPattern("/arm/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/vnc"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/resource.v2.VirtualMachineService/GetVNC", runtime.WithHTTPPathPattern("/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/vnc"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -552,7 +552,7 @@ func RegisterVirtualMachineServiceHandlerClient(ctx context.Context, mux *runtim
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/resource.v2.VirtualMachineService/StartVirtualMachine", runtime.WithHTTPPathPattern("/arm/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/start"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/resource.v2.VirtualMachineService/StartVirtualMachine", runtime.WithHTTPPathPattern("/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/start"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -574,7 +574,7 @@ func RegisterVirtualMachineServiceHandlerClient(ctx context.Context, mux *runtim
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/resource.v2.VirtualMachineService/StopVirtualMachine", runtime.WithHTTPPathPattern("/arm/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/stop"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/resource.v2.VirtualMachineService/StopVirtualMachine", runtime.WithHTTPPathPattern("/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/stop"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -596,7 +596,7 @@ func RegisterVirtualMachineServiceHandlerClient(ctx context.Context, mux *runtim
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/resource.v2.VirtualMachineService/RestartVirtualMachine", runtime.WithHTTPPathPattern("/arm/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/restart"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/resource.v2.VirtualMachineService/RestartVirtualMachine", runtime.WithHTTPPathPattern("/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/restart"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -618,7 +618,7 @@ func RegisterVirtualMachineServiceHandlerClient(ctx context.Context, mux *runtim
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/resource.v2.VirtualMachineService/GetVNC", runtime.WithHTTPPathPattern("/arm/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/vnc"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/resource.v2.VirtualMachineService/GetVNC", runtime.WithHTTPPathPattern("/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/vnc"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -638,13 +638,13 @@ func RegisterVirtualMachineServiceHandlerClient(ctx context.Context, mux *runtim
 }
 
 var (
-	pattern_VirtualMachineService_StartVirtualMachine_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"arm", "v2", "workloads", "virtual-machines", "app_id", "cluster_id", "virtual_machine_id", "start"}, ""))
+	pattern_VirtualMachineService_StartVirtualMachine_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"resource.orchestrator.apis", "v2", "workloads", "virtual-machines", "app_id", "cluster_id", "virtual_machine_id", "start"}, ""))
 
-	pattern_VirtualMachineService_StopVirtualMachine_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"arm", "v2", "workloads", "virtual-machines", "app_id", "cluster_id", "virtual_machine_id", "stop"}, ""))
+	pattern_VirtualMachineService_StopVirtualMachine_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"resource.orchestrator.apis", "v2", "workloads", "virtual-machines", "app_id", "cluster_id", "virtual_machine_id", "stop"}, ""))
 
-	pattern_VirtualMachineService_RestartVirtualMachine_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"arm", "v2", "workloads", "virtual-machines", "app_id", "cluster_id", "virtual_machine_id", "restart"}, ""))
+	pattern_VirtualMachineService_RestartVirtualMachine_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"resource.orchestrator.apis", "v2", "workloads", "virtual-machines", "app_id", "cluster_id", "virtual_machine_id", "restart"}, ""))
 
-	pattern_VirtualMachineService_GetVNC_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"arm", "v2", "workloads", "virtual-machines", "app_id", "cluster_id", "virtual_machine_id", "vnc"}, ""))
+	pattern_VirtualMachineService_GetVNC_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"resource.orchestrator.apis", "v2", "workloads", "virtual-machines", "app_id", "cluster_id", "virtual_machine_id", "vnc"}, ""))
 )
 
 var (

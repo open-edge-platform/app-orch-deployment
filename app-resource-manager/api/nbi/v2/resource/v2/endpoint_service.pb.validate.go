@@ -207,6 +207,17 @@ func (m *ListAppEndpointsResponse) validate(all bool) error {
 
 	var errors []error
 
+	if len(m.GetAppEndpoints()) > 100 {
+		err := ListAppEndpointsResponseValidationError{
+			field:  "AppEndpoints",
+			reason: "value must contain no more than 100 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	for idx, item := range m.GetAppEndpoints() {
 		_, _ = idx, item
 

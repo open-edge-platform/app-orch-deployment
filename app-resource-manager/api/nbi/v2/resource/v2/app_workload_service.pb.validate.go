@@ -207,6 +207,17 @@ func (m *ListAppWorkloadsResponse) validate(all bool) error {
 
 	var errors []error
 
+	if len(m.GetAppWorkloads()) > 500 {
+		err := ListAppWorkloadsResponseValidationError{
+			field:  "AppWorkloads",
+			reason: "value must contain no more than 500 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	for idx, item := range m.GetAppWorkloads() {
 		_, _ = idx, item
 

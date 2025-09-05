@@ -135,11 +135,11 @@ const file_resource_v2_app_workload_service_proto_rawDesc = "" +
 	"\x17ListAppWorkloadsRequest\x12K\n" +
 	"\x06app_id\x18\x01 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18P2&^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$R\x05appId\x12S\n" +
 	"\n" +
-	"cluster_id\x18\x02 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\"Y\n" +
-	"\x18ListAppWorkloadsResponse\x12=\n" +
-	"\rapp_workloads\x18\x01 \x03(\v2\x18.resource.v2.AppWorkloadR\fappWorkloads2\xa7\x01\n" +
-	"\x12AppWorkloadService\x12\x90\x01\n" +
-	"\x10ListAppWorkloads\x12$.resource.v2.ListAppWorkloadsRequest\x1a%.resource.v2.ListAppWorkloadsResponse\"/\x82\xd3\xe4\x93\x02)\x12'/arm/v2/workloads/{app_id}/{cluster_id}B\xe1\x01\n" +
+	"cluster_id\x18\x02 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\"d\n" +
+	"\x18ListAppWorkloadsResponse\x12H\n" +
+	"\rapp_workloads\x18\x01 \x03(\v2\x18.resource.v2.AppWorkloadB\t\xfaB\x06\x92\x01\x03\x10\xf4\x03R\fappWorkloads2\xbe\x01\n" +
+	"\x12AppWorkloadService\x12\xa7\x01\n" +
+	"\x10ListAppWorkloads\x12$.resource.v2.ListAppWorkloadsRequest\x1a%.resource.v2.ListAppWorkloadsResponse\"F\x82\xd3\xe4\x93\x02@\x12>/resource.orchestrator.apis/v2/workloads/{app_id}/{cluster_id}B\xe1\x01\n" +
 	"\x0fcom.resource.v2B\x17AppWorkloadServiceProtoP\x01Zhgithub.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/resource/v2;resourcev2\xa2\x02\x03RXX\xaa\x02\vResource.V2\xca\x02\vResource\\V2\xe2\x02\x17Resource\\V2\\GPBMetadata\xea\x02\fResource::V2b\x06proto3"
 
 var (

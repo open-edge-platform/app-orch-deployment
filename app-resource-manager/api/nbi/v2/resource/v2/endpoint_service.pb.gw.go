@@ -117,7 +117,7 @@ func RegisterEndpointsServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/resource.v2.EndpointsService/ListAppEndpoints", runtime.WithHTTPPathPattern("/arm/v2/endpoints/{app_id}/{cluster_id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/resource.v2.EndpointsService/ListAppEndpoints", runtime.WithHTTPPathPattern("/resource.orchestrator.apis/v2/endpoints/{app_id}/{cluster_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -181,7 +181,7 @@ func RegisterEndpointsServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/resource.v2.EndpointsService/ListAppEndpoints", runtime.WithHTTPPathPattern("/arm/v2/endpoints/{app_id}/{cluster_id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/resource.v2.EndpointsService/ListAppEndpoints", runtime.WithHTTPPathPattern("/resource.orchestrator.apis/v2/endpoints/{app_id}/{cluster_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -201,7 +201,7 @@ func RegisterEndpointsServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 }
 
 var (
-	pattern_EndpointsService_ListAppEndpoints_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"arm", "v2", "endpoints", "app_id", "cluster_id"}, ""))
+	pattern_EndpointsService_ListAppEndpoints_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"resource.orchestrator.apis", "v2", "endpoints", "app_id", "cluster_id"}, ""))
 )
 
 var (

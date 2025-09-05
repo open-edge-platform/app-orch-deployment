@@ -4,7 +4,7 @@ version = 1
 
 [[annotations]]
 path = ["venv_/**", "out/*", "**go.sum", ".tool-versions", "**.json", "VERSION", "artifacts/**",
-        "artifacts/**", "internal/**/mocks/**", ".htmllintrc"]
+        "artifacts/**", "internal/**/mocks/**", ".htmllintrc", "bin/**", "build/_output/**"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2025 Intel Corporation"
 SPDX-License-Identifier = "Apache-2.0"

@@ -4,7 +4,7 @@ info:
   description: App Resource Manager service providing operations for resource management
   version: 1.0.0
 paths:
-  /arm/v2/workloads/{app_id}/{cluster_id}:
+  /resource.orchestrator.apis/v2/workloads/{app_id}/{cluster_id}:
     get:
       tags:
       - resource.v2.AppWorkloadService
@@ -36,7 +36,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/resource.v2.ListAppWorkloadsResponse'
-  /arm/v2/endpoints/{app_id}/{cluster_id}:
+  /resource.orchestrator.apis/v2/endpoints/{app_id}/{cluster_id}:
     get:
       tags:
       - resource.v2.EndpointsService
@@ -68,7 +68,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/resource.v2.ListAppEndpointsResponse'
-  /arm/v2/workloads/pods/{cluster_id}/{namespace}/{pod_name}/delete:
+  /resource.orchestrator.apis/v2/workloads/pods/{cluster_id}/{namespace}/{pod_name}/delete:
     put:
       tags:
       - resource.v2.PodService
@@ -107,7 +107,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/resource.v2.DeletePodResponse'
-  /arm/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/start:
+  /resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/start:
     put:
       tags:
       - resource.v2.VirtualMachineService
@@ -147,7 +147,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/resource.v2.StartVirtualMachineResponse'
-  /arm/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/stop:
+  /resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/stop:
     put:
       tags:
       - resource.v2.VirtualMachineService
@@ -187,7 +187,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/resource.v2.StopVirtualMachineResponse'
-  /arm/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/restart:
+  /resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/restart:
     put:
       tags:
       - resource.v2.VirtualMachineService
@@ -227,7 +227,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/resource.v2.RestartVirtualMachineResponse'
-  /arm/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/vnc:
+  /resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/vnc:
     get:
       tags:
       - resource.v2.VirtualMachineService

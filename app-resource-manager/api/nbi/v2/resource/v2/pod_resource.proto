@@ -11,7 +11,9 @@ import "validate/validate.proto";
 // Represents a pod resource.
 message Pod {
   // containers list of containers per pod
-  repeated Container containers = 1;
+  repeated Container containers = 1 [
+    (validate.rules).repeated = {max_items: 50}
+  ];
 
   // status pod status
   PodStatus status = 2 [(google.api.field_behavior) = OUTPUT_ONLY];

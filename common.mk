@@ -294,14 +294,14 @@ common-go-fuzz-test: ## GO fuzz tests
 #### Protobuf Targets ####
 
 common-buf-lint-fix: $(VENV_NAME) ## Lint and when possible fix protobuf files
-	buf --version
-	buf format -d -w
-	buf lint
+	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf --version
+	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf format -d -w
+	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf lint
 
 common-buf-generate: $(VENV_NAME) ## Compile protobuf files in api into code
 	set +u; . ./$</bin/activate; set -u ;\
-        buf --version ;\
-        buf generate
+        PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf --version ;\
+        PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf generate
 
 common-openapi-spec-validate: $(VENV_NAME)
 		set +u; . ./$</bin/activate; set -u ;\
@@ -314,9 +314,9 @@ common-buf-update: $(VENV_NAME) ## Update buf modules
   PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf build
 
 common-buf-lint: $(VENV_NAME) ## Lint and format protobuf files
-	buf --version
-	buf format -d --exit-code
-	buf lint
+	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf --version
+	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf format -d --exit-code
+	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf lint
 
 #### Rest Client Targets ####
 common-rest-client-gen: ## Generate rest-client.

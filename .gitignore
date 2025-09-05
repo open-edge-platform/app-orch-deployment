@@ -30,3 +30,53 @@ app-deployment-manager/pkg/utils/tmpdir/
 app-deployment-manager/internal/northbound/fuzztests/testdata/
 app-resource-manager/internal/northbound/services/v2/resource/testdata/
 app-service-proxy/internal/server/fuzztests/testdata/
+
+# Generated files from protoc-gen-connect-go and protoc-gen-connect-openapi
+# Generated code patterns
+*/api/nbi/v2/deployment/v1/deploymentv1connect/
+*/api/nbi/v2/resource/v2/resourcev2connect/
+*/api/nbi/v2/spec/v2/
+
+# Virtual environments
+venv/
+venv_*/
+env/
+.env/
+
+# Node.js dependencies
+node_modules/
+
+# Build outputs
+*/build/
+!*/build/Dockerfile.*
+*/out/
+*/bin/app-*
+*/bin/manager
+*/bin/rest-proxy
+*/bin/vnc-proxy
+
+# Root-level binary artifacts that might be created during builds
+app-deployment-manager/app-deployment-manager
+app-deployment-manager/rest-proxy
+app-resource-manager/app-resource-manager
+app-interconnect/app-interconnect
+app-service-proxy/app-service-proxy
+
+# Test coverage
+coverage.*
+*.out
+.coverage
+cover.out
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+
+# OS specific files
+.DS_Store
+Thumbs.db

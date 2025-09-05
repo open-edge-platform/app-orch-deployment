@@ -137,10 +137,10 @@ const file_resource_v2_pod_service_proto_rawDesc = "" +
 	"cluster_id\x18\x01 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\x12M\n" +
 	"\tnamespace\x18\x02 \x01(\tB/\xe0A\x02\xfaB)r'\x10\x01\x18\xfd\x012 ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$R\tnamespace\x12J\n" +
 	"\bpod_name\x18\x03 \x01(\tB/\xe0A\x02\xfaB)r'\x10\x01\x18\xfd\x012 ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$R\apodName\"\x13\n" +
-	"\x11DeletePodResponse2\xa4\x01\n" +
+	"\x11DeletePodResponse2\xbb\x01\n" +
 	"\n" +
-	"PodService\x12\x95\x01\n" +
-	"\tDeletePod\x12\x1d.resource.v2.DeletePodRequest\x1a\x1e.resource.v2.DeletePodResponse\"I\x82\xd3\xe4\x93\x02C\x1aA/arm/v2/workloads/pods/{cluster_id}/{namespace}/{pod_name}/deleteB\xd9\x01\n" +
+	"PodService\x12\xac\x01\n" +
+	"\tDeletePod\x12\x1d.resource.v2.DeletePodRequest\x1a\x1e.resource.v2.DeletePodResponse\"`\x82\xd3\xe4\x93\x02Z\x1aX/resource.orchestrator.apis/v2/workloads/pods/{cluster_id}/{namespace}/{pod_name}/deleteB\xd9\x01\n" +
 	"\x0fcom.resource.v2B\x0fPodServiceProtoP\x01Zhgithub.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/resource/v2;resourcev2\xa2\x02\x03RXX\xaa\x02\vResource.V2\xca\x02\vResource\\V2\xe2\x02\x17Resource\\V2\\GPBMetadata\xea\x02\fResource::V2b\x06proto3"
 
 var (

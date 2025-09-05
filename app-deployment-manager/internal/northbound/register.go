@@ -12,6 +12,7 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/fleet"
 	"k8s.io/client-go/kubernetes"
 
+	deploymentpb "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
 	deploymentv1beta1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/v1beta1"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/catalogclient"
 	"github.com/open-edge-platform/orch-library/go/pkg/auth"
@@ -64,8 +65,8 @@ type DeploymentSvc struct {
 	apiMutex          sync.Mutex
 }
 
-// Register is a stub method to satisfy the northbound.Service interface
-// The actual API endpoints are handled by Connect-RPC in the restproxy package
-func (s *DeploymentSvc) Register(_ *grpc.Server) {
-	// No-op: Connect-RPC handles the API endpoints
+// Register registers the gRPC services with the server
+func (s *DeploymentSvc) Register(grpcServer *grpc.Server) {
+	deploymentpb.RegisterDeploymentServiceServer(grpcServer, s)
+	deploymentpb.RegisterClusterServiceServer(grpcServer, s)
 }

@@ -467,12 +467,12 @@ const file_resource_v2_vm_service_proto_rawDesc = "" +
 	"cluster_id\x18\x02 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\x129\n" +
 	"\x12virtual_machine_id\x18\x03 \x01(\tB\v\xe0A\x02\xfaB\x05r\x03\xb0\x01\x01R\x10virtualMachineId\"/\n" +
 	"\x0eGetVNCResponse\x12\x1d\n" +
-	"\aaddress\x18\x01 \x01(\tB\x03\xe0A\x02R\aaddress2\x92\x06\n" +
-	"\x15VirtualMachineService\x12\xc5\x01\n" +
-	"\x13StartVirtualMachine\x12'.resource.v2.StartVirtualMachineRequest\x1a(.resource.v2.StartVirtualMachineResponse\"[\x82\xd3\xe4\x93\x02U\x1aS/arm/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/start\x12\xc1\x01\n" +
-	"\x12StopVirtualMachine\x12&.resource.v2.StopVirtualMachineRequest\x1a'.resource.v2.StopVirtualMachineResponse\"Z\x82\xd3\xe4\x93\x02T\x1aR/arm/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/stop\x12\xcd\x01\n" +
-	"\x15RestartVirtualMachine\x12).resource.v2.RestartVirtualMachineRequest\x1a*.resource.v2.RestartVirtualMachineResponse\"]\x82\xd3\xe4\x93\x02W\x1aU/arm/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/restart\x12\x9c\x01\n" +
-	"\x06GetVNC\x12\x1a.resource.v2.GetVNCRequest\x1a\x1b.resource.v2.GetVNCResponse\"Y\x82\xd3\xe4\x93\x02S\x12Q/arm/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/vncB\xd8\x01\n" +
+	"\aaddress\x18\x01 \x01(\tB\x03\xe0A\x02R\aaddress2\xee\x06\n" +
+	"\x15VirtualMachineService\x12\xdc\x01\n" +
+	"\x13StartVirtualMachine\x12'.resource.v2.StartVirtualMachineRequest\x1a(.resource.v2.StartVirtualMachineResponse\"r\x82\xd3\xe4\x93\x02l\x1aj/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/start\x12\xd8\x01\n" +
+	"\x12StopVirtualMachine\x12&.resource.v2.StopVirtualMachineRequest\x1a'.resource.v2.StopVirtualMachineResponse\"q\x82\xd3\xe4\x93\x02k\x1ai/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/stop\x12\xe4\x01\n" +
+	"\x15RestartVirtualMachine\x12).resource.v2.RestartVirtualMachineRequest\x1a*.resource.v2.RestartVirtualMachineResponse\"t\x82\xd3\xe4\x93\x02n\x1al/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/restart\x12\xb3\x01\n" +
+	"\x06GetVNC\x12\x1a.resource.v2.GetVNCRequest\x1a\x1b.resource.v2.GetVNCResponse\"p\x82\xd3\xe4\x93\x02j\x12h/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/vncB\xd8\x01\n" +
 	"\x0fcom.resource.v2B\x0eVmServiceProtoP\x01Zhgithub.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/resource/v2;resourcev2\xa2\x02\x03RXX\xaa\x02\vResource.V2\xca\x02\vResource\\V2\xe2\x02\x17Resource\\V2\\GPBMetadata\xea\x02\fResource::V2b\x06proto3"
 
 var (

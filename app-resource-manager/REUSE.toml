@@ -7,7 +7,8 @@ path = ["venv_app-resource-manager/**", "out/*", "**go.sum", ".tool-versions", "
     "pkg/api/**.pb**.go", "api/spec/**", "api/nbi/v2/pkg/restClient/**", "artifacts/**",
     "artifacts/**", "internal/**/mocks/**",
     "api/nbi/v2/spec/**", "api/nbi/v2/resource/v2/**",
-    "vnc-proxy-web-ui/rfb.js","vnc-proxy-web-ui/keycloak.min.js", ".htmllintrc"]
+    "vnc-proxy-web-ui/rfb.js","vnc-proxy-web-ui/keycloak.min.js", ".htmllintrc", 
+    "bin/**", "build/_output/**", "app-resource-manager"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2025 Intel Corporation"
 SPDX-License-Identifier = "Apache-2.0"
