@@ -5,27 +5,29 @@
 package northbound
 
 import (
-	"fmt"
-
 	deploymentpb "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils/dataselector"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils/dataselector/datatypes"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils/parser"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func selectDeployments(in *deploymentpb.ListDeploymentsRequest, deployments []*deploymentpb.Deployment) ([]*deploymentpb.Deployment, error) {
 	var orderByList []dataselector.OrderBy
 	var pageSize, offset uint32
 
-	// Validate PageSize before conversion
+	// Validate non-negative values before conversion to prevent overflow
 	if in.PageSize < 0 {
-		return nil, fmt.Errorf("invalid PageSize: must be non-negative, got %d", in.PageSize)
+		return nil, status.Errorf(codes.InvalidArgument, "invalid PageSize: must be non-negative, got %d", in.PageSize)
 	}
 	if in.Offset < 0 {
-		return nil, fmt.Errorf("invalid Offset: must be non-negative, got %d", in.Offset)
+		return nil, status.Errorf(codes.InvalidArgument, "invalid Offset: must be non-negative, got %d", in.Offset)
 	}
 
+	//nolint:gosec // G115: Validated non-negative above, safe conversion
 	pageSize = uint32(in.PageSize)
+	//nolint:gosec // G115: Validated non-negative above, safe conversion
 	offset = uint32(in.Offset)
 	paginationQuery := newPaginationQuery(pageSize, offset)
 
@@ -74,15 +76,17 @@ func selectClusters(in *deploymentpb.ListClustersRequest, clusterInfoList []*dep
 	var orderByList []dataselector.OrderBy
 	var pageSize, offset uint32
 
-	// Validate PageSize before conversion
+	// Validate non-negative values before conversion to prevent overflow
 	if in.PageSize < 0 {
-		return nil, fmt.Errorf("invalid PageSize: must be non-negative, got %d", in.PageSize)
+		return nil, status.Errorf(codes.InvalidArgument, "invalid PageSize: must be non-negative, got %d", in.PageSize)
 	}
 	if in.Offset < 0 {
-		return nil, fmt.Errorf("invalid Offset: must be non-negative, got %d", in.Offset)
+		return nil, status.Errorf(codes.InvalidArgument, "invalid Offset: must be non-negative, got %d", in.Offset)
 	}
 
+	//nolint:gosec // G115: Validated non-negative above, safe conversion
 	pageSize = uint32(in.PageSize)
+	//nolint:gosec // G115: Validated non-negative above, safe conversion
 	offset = uint32(in.Offset)
 	paginationQuery := newPaginationQuery(pageSize, offset)
 
@@ -129,15 +133,17 @@ func selectClustersPerDeployment(in *deploymentpb.ListDeploymentClustersRequest,
 	var orderByList []dataselector.OrderBy
 	var pageSize, offset uint32
 
-	// Validate PageSize before conversion
+	// Validate non-negative values before conversion to prevent overflow
 	if in.PageSize < 0 {
-		return nil, fmt.Errorf("invalid PageSize: must be non-negative, got %d", in.PageSize)
+		return nil, status.Errorf(codes.InvalidArgument, "invalid PageSize: must be non-negative, got %d", in.PageSize)
 	}
 	if in.Offset < 0 {
-		return nil, fmt.Errorf("invalid Offset: must be non-negative, got %d", in.Offset)
+		return nil, status.Errorf(codes.InvalidArgument, "invalid Offset: must be non-negative, got %d", in.Offset)
 	}
 
+	//nolint:gosec // G115: Validated non-negative above, safe conversion
 	pageSize = uint32(in.PageSize)
+	//nolint:gosec // G115: Validated non-negative above, safe conversion
 	offset = uint32(in.Offset)
 	paginationQuery := newPaginationQuery(pageSize, offset)
 

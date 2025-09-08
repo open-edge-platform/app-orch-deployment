@@ -30,7 +30,11 @@ func NewDeployment(crClient clientv1beta1.AppDeploymentClientInterface,
 		validator = protoValidator[0]
 	} else {
 		// Create a default validator for backward compatibility
-		validator, _ = protovalidate.New()
+		var err error
+		validator, err = protovalidate.New()
+		if err != nil {
+			log.Fatalf("Failed to create default protobuf validator: %v", err)
+		}
 	}
 
 	return &DeploymentSvc{
