@@ -619,6 +619,9 @@ type DeploymentV1TargetClusters struct {
 	AppName *string `json:"appName,omitempty"`
 
 	// ClusterId (OPTIONAL) Cluster id to match the target cluster when targeted deployment.
+	// string.max_len = 100
+	// string.min_len = 0
+	// string.pattern = "(^$)|^[a-zA-Z0-9][a-zA-Z0-9-_\\.]{0,98}[a-zA-Z0-9]?$"
 	ClusterId *string `json:"clusterId,omitempty"`
 
 	// Labels (OPTIONAL) Cluster labels to match the target cluster when auto-scaling deployment.

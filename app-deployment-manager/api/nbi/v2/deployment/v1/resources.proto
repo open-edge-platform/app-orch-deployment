@@ -177,10 +177,36 @@ message TargetClusters {
   ];
 
   // Cluster labels to match the target cluster when auto-scaling deployment.
-  map<string, string> labels = 2 [(google.api.field_behavior) = OPTIONAL];
+  map<string, string> labels = 2 [
+    (google.api.field_behavior) = OPTIONAL,
+    (buf.validate.field).map = {
+      keys: {
+        string: {
+          min_len: 1
+          max_len: 40
+          pattern: "(^$)|^[a-z0-9]([-_.=,a-z0-9/]{0,38}[a-z0-9])?$"
+        }
+      }
+      values: {
+        string: {
+          min_len: 1
+          max_len: 40
+          pattern: "(^$)|^[a-z0-9]([-_.=,a-z0-9/]{0,38}[a-z0-9])?$"
+        }
+      }
+      max_pairs: 10
+    }
+  ];
 
   // Cluster id to match the target cluster when targeted deployment.
-  string cluster_id = 3 [(google.api.field_behavior) = OPTIONAL];
+  string cluster_id = 3 [
+    (google.api.field_behavior) = OPTIONAL,
+    (buf.validate.field).string = {
+      min_len: 0
+      max_len: 100
+      pattern: "(^$)|^[a-zA-Z0-9][a-zA-Z0-9-_\\.]{0,98}[a-zA-Z0-9]?$"
+    }
+  ];
 }
 
 // State are the different states a deployment/cluster/app can be in.

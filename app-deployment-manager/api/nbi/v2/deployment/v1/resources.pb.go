@@ -851,12 +851,13 @@ const file_deployment_v1_resources_proto_rawDesc = "" +
 	"\x0eOverrideValues\x12O\n" +
 	"\bapp_name\x18\x01 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\aappName\x12b\n" +
 	"\x10target_namespace\x18\x02 \x01(\tB7\xe0A\x01\xbaH1r/\x10\x00\x18?2)(^$)|^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$R\x0ftargetNamespace\x124\n" +
-	"\x06values\x18\x03 \x01(\v2\x17.google.protobuf.StructB\x03\xe0A\x01R\x06values\"\x8d\x02\n" +
+	"\x06values\x18\x03 \x01(\v2\x17.google.protobuf.StructB\x03\xe0A\x01R\x06values\"\xc4\x03\n" +
 	"\x0eTargetClusters\x12T\n" +
-	"\bapp_name\x18\x01 \x01(\tB9\xe0A\x01\xbaH3r1\x10\x00\x18(2+(^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\aappName\x12F\n" +
-	"\x06labels\x18\x02 \x03(\v2).deployment.v1.TargetClusters.LabelsEntryB\x03\xe0A\x01R\x06labels\x12\"\n" +
+	"\bapp_name\x18\x01 \x01(\tB9\xe0A\x01\xbaH3r1\x10\x00\x18(2+(^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\aappName\x12\xbe\x01\n" +
+	"\x06labels\x18\x02 \x03(\v2).deployment.v1.TargetClusters.LabelsEntryB{\xe0A\x01\xbaHu\x9a\x01r\x10\n" +
+	"\"6r4\x10\x01\x18(2.(^$)|^[a-z0-9]([-_.=,a-z0-9/]{0,38}[a-z0-9])?$*6r4\x10\x01\x18(2.(^$)|^[a-z0-9]([-_.=,a-z0-9/]{0,38}[a-z0-9])?$R\x06labels\x12`\n" +
 	"\n" +
-	"cluster_id\x18\x03 \x01(\tB\x03\xe0A\x01R\tclusterId\x1a9\n" +
+	"cluster_id\x18\x03 \x01(\tBA\xe0A\x01\xbaH;r9\x10\x00\x18d23(^$)|^[a-zA-Z0-9][a-zA-Z0-9-_\\.]{0,98}[a-zA-Z0-9]?$R\tclusterId\x1a9\n" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x94\x01\n" +

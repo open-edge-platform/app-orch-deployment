@@ -10,7 +10,7 @@
 package resourcev2
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -325,18 +325,18 @@ var File_resource_v2_endpoint_resource_proto protoreflect.FileDescriptor
 
 const file_resource_v2_endpoint_resource_proto_rawDesc = "" +
 	"\n" +
-	"#resource/v2/endpoint_resource.proto\x12\vresource.v2\x1a\x1fgoogle/api/field_behavior.proto\x1a\x17validate/validate.proto\"\xab\x02\n" +
+	"#resource/v2/endpoint_resource.proto\x12\vresource.v2\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bbuf/validate/validate.proto\"\xab\x02\n" +
 	"\vAppEndpoint\x12\x1b\n" +
-	"\x02id\x18\x01 \x01(\tB\v\xe0A\x03\xfaB\x05r\x03\xb0\x01\x01R\x02id\x12H\n" +
-	"\x04name\x18\x02 \x01(\tB4\xe0A\x03\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\x04name\x124\n" +
-	"\x05fqdns\x18\x05 \x03(\v2\x11.resource.v2.FqdnB\v\xe0A\x03\xfaB\x05\x92\x01\x02\x10\n" +
+	"\x02id\x18\x01 \x01(\tB\v\xe0A\x03\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12H\n" +
+	"\x04name\x18\x02 \x01(\tB4\xe0A\x03\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\x04name\x124\n" +
+	"\x05fqdns\x18\x05 \x03(\v2\x11.resource.v2.FqdnB\v\xe0A\x03\xbaH\x05\x92\x01\x02\x10\n" +
 	"R\x05fqdns\x124\n" +
-	"\x05ports\x18\x06 \x03(\v2\x11.resource.v2.PortB\v\xe0A\x03\xfaB\x05\x92\x01\x02\x10\x14R\x05ports\x12I\n" +
+	"\x05ports\x18\x06 \x03(\v2\x11.resource.v2.PortB\v\xe0A\x03\xbaH\x05\x92\x01\x02\x10\x14R\x05ports\x12I\n" +
 	"\x0fendpoint_status\x18\a \x01(\v2\x1b.resource.v2.EndpointStatusB\x03\xe0A\x03R\x0eendpointStatus\"#\n" +
 	"\x04Fqdn\x12\x1b\n" +
-	"\x04fqdn\x18\x05 \x01(\tB\a\xfaB\x04r\x02h\x01R\x04fqdn\"\xbd\x01\n" +
+	"\x04fqdn\x18\x05 \x01(\tB\a\xbaH\x04r\x02h\x01R\x04fqdn\"\xbd\x01\n" +
 	"\x04Port\x12H\n" +
-	"\x04name\x18\x01 \x01(\tB4\xe0A\x03\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\x04name\x12\x19\n" +
+	"\x04name\x18\x01 \x01(\tB4\xe0A\x03\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\x04name\x12\x19\n" +
 	"\x05value\x18\x02 \x01(\x05B\x03\xe0A\x03R\x05value\x12\x1f\n" +
 	"\bprotocol\x18\x03 \x01(\tB\x03\xe0A\x03R\bprotocol\x12/\n" +
 	"\x11service_proxy_url\x18\x04 \x01(\tB\x03\xe0A\x03R\x0fserviceProxyUrl\"\x94\x01\n" +

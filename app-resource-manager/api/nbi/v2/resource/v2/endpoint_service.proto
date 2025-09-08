@@ -5,10 +5,10 @@ syntax = "proto3";
 
 package resource.v2;
 
+import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "resource/v2/endpoint_resource.proto";
-import "validate/validate.proto";
 
 // Provides API to list endpoints.
 service EndpointsService {
@@ -23,7 +23,7 @@ message ListAppEndpointsRequest {
   // Application ID
   string app_id = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (validate.rules).string = {
+    (buf.validate.field).string = {
       min_len: 1
       max_len: 80
       pattern: "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
@@ -32,7 +32,7 @@ message ListAppEndpointsRequest {
   // Cluster ID
   string cluster_id = 2 [
     (google.api.field_behavior) = REQUIRED,
-    (validate.rules).string = {
+    (buf.validate.field).string = {
       min_len: 1
       max_len: 40
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
@@ -45,6 +45,6 @@ message ListAppEndpointsResponse {
   // List of services.
   repeated resource.v2.AppEndpoint app_endpoints = 1 [
     (google.api.field_behavior) = OUTPUT_ONLY,
-    (validate.rules).repeated = {max_items: 100}
+    (buf.validate.field).repeated = {max_items: 100}
   ];
 }

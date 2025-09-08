@@ -20,7 +20,18 @@ paths:
         schema:
           type: string
           title: app_id
-          description: Application ID
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: 'Application ID
+
+            string.max_len = 80
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+
+            '
       - name: cluster_id
         in: path
         description: Cluster ID
@@ -28,7 +39,18 @@ paths:
         schema:
           type: string
           title: cluster_id
-          description: Cluster ID
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: 'Cluster ID
+
+            string.max_len = 40
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+
+            '
       responses:
         '200':
           description: Success
@@ -52,7 +74,18 @@ paths:
         schema:
           type: string
           title: app_id
-          description: Application ID
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: 'Application ID
+
+            string.max_len = 80
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+
+            '
       - name: cluster_id
         in: path
         description: Cluster ID
@@ -60,7 +93,18 @@ paths:
         schema:
           type: string
           title: cluster_id
-          description: Cluster ID
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: 'Cluster ID
+
+            string.max_len = 40
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+
+            '
       responses:
         '200':
           description: Success
@@ -83,7 +127,18 @@ paths:
         schema:
           type: string
           title: cluster_id
-          description: Cluster ID
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: 'Cluster ID
+
+            string.max_len = 40
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+
+            '
       - name: namespace
         in: path
         description: Namespace that the pod is running on.
@@ -91,7 +146,18 @@ paths:
         schema:
           type: string
           title: namespace
-          description: Namespace that the pod is running on.
+          maxLength: 253
+          minLength: 1
+          pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
+          description: 'Namespace that the pod is running on.
+
+            string.max_len = 253
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$"
+
+            '
       - name: pod_name
         in: path
         description: Name of the pod.
@@ -99,7 +165,18 @@ paths:
         schema:
           type: string
           title: pod_name
-          description: Name of the pod.
+          maxLength: 253
+          minLength: 1
+          pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
+          description: 'Name of the pod.
+
+            string.max_len = 253
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$"
+
+            '
       responses:
         '200':
           description: Success
@@ -123,7 +200,18 @@ paths:
         schema:
           type: string
           title: app_id
-          description: Application ID
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: 'Application ID
+
+            string.max_len = 80
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+
+            '
       - name: cluster_id
         in: path
         description: Cluster ID
@@ -131,7 +219,18 @@ paths:
         schema:
           type: string
           title: cluster_id
-          description: Cluster ID
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: 'Cluster ID
+
+            string.max_len = 40
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+
+            '
       - name: virtual_machine_id
         in: path
         description: Virtual machine ID
@@ -139,7 +238,14 @@ paths:
         schema:
           type: string
           title: virtual_machine_id
-          description: Virtual machine ID
+          format: uuid
+          description: 'Virtual machine ID
+
+            string.uuid = true // value must be a valid UUID
+
+            string.uuid_empty = true // value is empty, which is not a valid UUID
+
+            '
       responses:
         '200':
           description: Success
@@ -163,7 +269,18 @@ paths:
         schema:
           type: string
           title: app_id
-          description: Application ID
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: 'Application ID
+
+            string.max_len = 80
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+
+            '
       - name: cluster_id
         in: path
         description: Cluster ID
@@ -171,7 +288,18 @@ paths:
         schema:
           type: string
           title: cluster_id
-          description: Cluster ID
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: 'Cluster ID
+
+            string.max_len = 40
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+
+            '
       - name: virtual_machine_id
         in: path
         description: Virtual machine ID
@@ -179,7 +307,14 @@ paths:
         schema:
           type: string
           title: virtual_machine_id
-          description: Virtual machine ID
+          format: uuid
+          description: 'Virtual machine ID
+
+            string.uuid = true // value must be a valid UUID
+
+            string.uuid_empty = true // value is empty, which is not a valid UUID
+
+            '
       responses:
         '200':
           description: Success
@@ -203,7 +338,18 @@ paths:
         schema:
           type: string
           title: app_id
-          description: Application ID
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: 'Application ID
+
+            string.max_len = 80
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+
+            '
       - name: cluster_id
         in: path
         description: Cluster ID
@@ -211,7 +357,18 @@ paths:
         schema:
           type: string
           title: cluster_id
-          description: Cluster ID
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: 'Cluster ID
+
+            string.max_len = 40
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+
+            '
       - name: virtual_machine_id
         in: path
         description: Virtual machine ID
@@ -219,7 +376,14 @@ paths:
         schema:
           type: string
           title: virtual_machine_id
-          description: Virtual machine ID
+          format: uuid
+          description: 'Virtual machine ID
+
+            string.uuid = true // value must be a valid UUID
+
+            string.uuid_empty = true // value is empty, which is not a valid UUID
+
+            '
       responses:
         '200':
           description: Success
@@ -242,7 +406,18 @@ paths:
         schema:
           type: string
           title: app_id
-          description: Application ID
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: 'Application ID
+
+            string.max_len = 80
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+
+            '
       - name: cluster_id
         in: path
         description: Cluster ID
@@ -250,7 +425,18 @@ paths:
         schema:
           type: string
           title: cluster_id
-          description: Cluster ID
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: 'Cluster ID
+
+            string.max_len = 40
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+
+            '
       - name: virtual_machine_id
         in: path
         description: Virtual machine ID
@@ -258,7 +444,14 @@ paths:
         schema:
           type: string
           title: virtual_machine_id
-          description: Virtual machine ID
+          format: uuid
+          description: 'Virtual machine ID
+
+            string.uuid = true // value must be a valid UUID
+
+            string.uuid_empty = true // value is empty, which is not a valid UUID
+
+            '
       responses:
         '200':
           description: Success
@@ -283,7 +476,18 @@ components:
         name:
           type: string
           title: name
-          description: Container name
+          maxLength: 63
+          minLength: 1
+          pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
+          description: 'Container name
+
+            string.max_len = 63
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$"
+
+            '
         imageName:
           type: string
           title: image_name
@@ -383,6 +587,7 @@ components:
           items:
             $ref: '#/components/schemas/resource.v2.Container'
           title: containers
+          maxItems: 50
           description: containers list of containers per pod
         status:
           title: status
@@ -509,11 +714,29 @@ components:
           id:
             type: string
             title: id
-            description: Workload UUID
+            format: uuid
+            description: 'Workload UUID
+
+              string.uuid = true // value must be a valid UUID
+
+              string.uuid_empty = true // value is empty, which is not a valid UUID
+
+              '
           name:
             type: string
             title: name
-            description: Workload name
+            maxLength: 253
+            minLength: 1
+            pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
+            description: 'Workload name
+
+              string.max_len = 253
+
+              string.min_len = 1
+
+              string.pattern = "^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$"
+
+              '
           namespace:
             type: string
             title: namespace
@@ -586,11 +809,33 @@ components:
         appId:
           type: string
           title: app_id
-          description: Application ID
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: 'Application ID
+
+            string.max_len = 80
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+
+            '
         clusterId:
           type: string
           title: cluster_id
-          description: Cluster ID
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: 'Cluster ID
+
+            string.max_len = 40
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+
+            '
       title: ListAppWorkloadsRequest
       required:
       - appId
@@ -605,6 +850,7 @@ components:
           items:
             $ref: '#/components/schemas/resource.v2.AppWorkload'
           title: app_workloads
+          maxItems: 500
           description: A list of virtual machines.
       title: ListAppWorkloadsResponse
       additionalProperties: false
@@ -622,18 +868,37 @@ components:
         id:
           type: string
           title: id
-          description: Endpoint object UID (e.g. service or ingress UID)
+          format: uuid
+          description: 'Endpoint object UID (e.g. service or ingress UID)
+
+            string.uuid = true // value must be a valid UUID
+
+            string.uuid_empty = true // value is empty, which is not a valid UUID
+
+            '
           readOnly: true
         name:
           type: string
           title: name
-          description: Endpoint name
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: 'Endpoint name
+
+            string.max_len = 40
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+
+            '
           readOnly: true
         fqdns:
           type: array
           items:
             $ref: '#/components/schemas/resource.v2.Fqdn'
           title: fqdns
+          maxItems: 10
           description: Fully qualified domain name (FQDN) for external access.
           readOnly: true
         ports:
@@ -641,6 +906,7 @@ components:
           items:
             $ref: '#/components/schemas/resource.v2.Port'
           title: ports
+          maxItems: 20
           description: List of ports exposed by a service for external access
           readOnly: true
         endpointStatus:
@@ -669,6 +935,12 @@ components:
         fqdn:
           type: string
           title: fqdn
+          format: hostname
+          description: 'string.hostname = true // value must be a valid hostname
+
+            string.hostname_empty = true // value is empty, which is not a valid hostname
+
+            '
       title: Fqdn
       additionalProperties: false
       description: Fully qualified domain name.
@@ -678,11 +950,33 @@ components:
         appId:
           type: string
           title: app_id
-          description: Application ID
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: 'Application ID
+
+            string.max_len = 80
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+
+            '
         clusterId:
           type: string
           title: cluster_id
-          description: Cluster ID
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: 'Cluster ID
+
+            string.max_len = 40
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+
+            '
       title: ListAppEndpointsRequest
       required:
       - appId
@@ -697,6 +991,7 @@ components:
           items:
             $ref: '#/components/schemas/resource.v2.AppEndpoint'
           title: app_endpoints
+          maxItems: 100
           description: List of services.
           readOnly: true
       title: ListAppEndpointsResponse
@@ -708,7 +1003,18 @@ components:
         name:
           type: string
           title: name
-          description: Port name
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: 'Port name
+
+            string.max_len = 40
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+
+            '
           readOnly: true
         value:
           type: integer
@@ -735,15 +1041,48 @@ components:
         clusterId:
           type: string
           title: cluster_id
-          description: Cluster ID
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: 'Cluster ID
+
+            string.max_len = 40
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+
+            '
         namespace:
           type: string
           title: namespace
-          description: Namespace that the pod is running on.
+          maxLength: 253
+          minLength: 1
+          pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
+          description: 'Namespace that the pod is running on.
+
+            string.max_len = 253
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$"
+
+            '
         podName:
           type: string
           title: pod_name
-          description: Name of the pod.
+          maxLength: 253
+          minLength: 1
+          pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
+          description: 'Name of the pod.
+
+            string.max_len = 253
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$"
+
+            '
       title: DeletePodRequest
       required:
       - clusterId
@@ -762,15 +1101,44 @@ components:
         appId:
           type: string
           title: app_id
-          description: Application ID
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: 'Application ID
+
+            string.max_len = 80
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+
+            '
         clusterId:
           type: string
           title: cluster_id
-          description: Cluster ID
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: 'Cluster ID
+
+            string.max_len = 40
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+
+            '
         virtualMachineId:
           type: string
           title: virtual_machine_id
-          description: Virtual machine ID
+          format: uuid
+          description: 'Virtual machine ID
+
+            string.uuid = true // value must be a valid UUID
+
+            string.uuid_empty = true // value is empty, which is not a valid UUID
+
+            '
       title: GetVNCRequest
       required:
       - appId
@@ -795,15 +1163,44 @@ components:
         appId:
           type: string
           title: app_id
-          description: Application ID
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: 'Application ID
+
+            string.max_len = 80
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+
+            '
         clusterId:
           type: string
           title: cluster_id
-          description: Cluster ID
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: 'Cluster ID
+
+            string.max_len = 40
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+
+            '
         virtualMachineId:
           type: string
           title: virtual_machine_id
-          description: Virtual machine ID
+          format: uuid
+          description: 'Virtual machine ID
+
+            string.uuid = true // value must be a valid UUID
+
+            string.uuid_empty = true // value is empty, which is not a valid UUID
+
+            '
       title: RestartVirtualMachineRequest
       required:
       - appId
@@ -822,15 +1219,44 @@ components:
         appId:
           type: string
           title: app_id
-          description: Application ID
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: 'Application ID
+
+            string.max_len = 80
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+
+            '
         clusterId:
           type: string
           title: cluster_id
-          description: Cluster ID
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: 'Cluster ID
+
+            string.max_len = 40
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+
+            '
         virtualMachineId:
           type: string
           title: virtual_machine_id
-          description: Virtual machine ID
+          format: uuid
+          description: 'Virtual machine ID
+
+            string.uuid = true // value must be a valid UUID
+
+            string.uuid_empty = true // value is empty, which is not a valid UUID
+
+            '
       title: StartVirtualMachineRequest
       required:
       - appId
@@ -849,15 +1275,44 @@ components:
         appId:
           type: string
           title: app_id
-          description: Application ID
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: 'Application ID
+
+            string.max_len = 80
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
+
+            '
         clusterId:
           type: string
           title: cluster_id
-          description: Cluster ID
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: 'Cluster ID
+
+            string.max_len = 40
+
+            string.min_len = 1
+
+            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+
+            '
         virtualMachineId:
           type: string
           title: virtual_machine_id
-          description: Virtual machine ID
+          format: uuid
+          description: 'Virtual machine ID
+
+            string.uuid = true // value must be a valid UUID
+
+            string.uuid_empty = true // value is empty, which is not a valid UUID
+
+            '
       title: StopVirtualMachineRequest
       required:
       - appId

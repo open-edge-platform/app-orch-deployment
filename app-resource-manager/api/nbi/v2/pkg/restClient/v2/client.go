@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/oapi-codegen/runtime"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
@@ -95,16 +96,16 @@ type ClientInterface interface {
 	ResourceV2PodServiceDeletePod(ctx context.Context, clusterId string, namespace string, podName string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ResourceV2VirtualMachineServiceRestartVirtualMachine request
-	ResourceV2VirtualMachineServiceRestartVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ResourceV2VirtualMachineServiceRestartVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ResourceV2VirtualMachineServiceStartVirtualMachine request
-	ResourceV2VirtualMachineServiceStartVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ResourceV2VirtualMachineServiceStartVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ResourceV2VirtualMachineServiceStopVirtualMachine request
-	ResourceV2VirtualMachineServiceStopVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ResourceV2VirtualMachineServiceStopVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ResourceV2VirtualMachineServiceGetVNC request
-	ResourceV2VirtualMachineServiceGetVNC(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ResourceV2VirtualMachineServiceGetVNC(ctx context.Context, appId string, clusterId string, virtualMachineId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ResourceV2AppWorkloadServiceListAppWorkloads request
 	ResourceV2AppWorkloadServiceListAppWorkloads(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -134,7 +135,7 @@ func (c *Client) ResourceV2PodServiceDeletePod(ctx context.Context, clusterId st
 	return c.Client.Do(req)
 }
 
-func (c *Client) ResourceV2VirtualMachineServiceRestartVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) ResourceV2VirtualMachineServiceRestartVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewResourceV2VirtualMachineServiceRestartVirtualMachineRequest(c.Server, appId, clusterId, virtualMachineId)
 	if err != nil {
 		return nil, err
@@ -146,7 +147,7 @@ func (c *Client) ResourceV2VirtualMachineServiceRestartVirtualMachine(ctx contex
 	return c.Client.Do(req)
 }
 
-func (c *Client) ResourceV2VirtualMachineServiceStartVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) ResourceV2VirtualMachineServiceStartVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewResourceV2VirtualMachineServiceStartVirtualMachineRequest(c.Server, appId, clusterId, virtualMachineId)
 	if err != nil {
 		return nil, err
@@ -158,7 +159,7 @@ func (c *Client) ResourceV2VirtualMachineServiceStartVirtualMachine(ctx context.
 	return c.Client.Do(req)
 }
 
-func (c *Client) ResourceV2VirtualMachineServiceStopVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) ResourceV2VirtualMachineServiceStopVirtualMachine(ctx context.Context, appId string, clusterId string, virtualMachineId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewResourceV2VirtualMachineServiceStopVirtualMachineRequest(c.Server, appId, clusterId, virtualMachineId)
 	if err != nil {
 		return nil, err
@@ -170,7 +171,7 @@ func (c *Client) ResourceV2VirtualMachineServiceStopVirtualMachine(ctx context.C
 	return c.Client.Do(req)
 }
 
-func (c *Client) ResourceV2VirtualMachineServiceGetVNC(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) ResourceV2VirtualMachineServiceGetVNC(ctx context.Context, appId string, clusterId string, virtualMachineId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewResourceV2VirtualMachineServiceGetVNCRequest(c.Server, appId, clusterId, virtualMachineId)
 	if err != nil {
 		return nil, err
@@ -284,7 +285,7 @@ func NewResourceV2PodServiceDeletePodRequest(server string, clusterId string, na
 }
 
 // NewResourceV2VirtualMachineServiceRestartVirtualMachineRequest generates requests for ResourceV2VirtualMachineServiceRestartVirtualMachine
-func NewResourceV2VirtualMachineServiceRestartVirtualMachineRequest(server string, appId string, clusterId string, virtualMachineId string) (*http.Request, error) {
+func NewResourceV2VirtualMachineServiceRestartVirtualMachineRequest(server string, appId string, clusterId string, virtualMachineId openapi_types.UUID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -332,7 +333,7 @@ func NewResourceV2VirtualMachineServiceRestartVirtualMachineRequest(server strin
 }
 
 // NewResourceV2VirtualMachineServiceStartVirtualMachineRequest generates requests for ResourceV2VirtualMachineServiceStartVirtualMachine
-func NewResourceV2VirtualMachineServiceStartVirtualMachineRequest(server string, appId string, clusterId string, virtualMachineId string) (*http.Request, error) {
+func NewResourceV2VirtualMachineServiceStartVirtualMachineRequest(server string, appId string, clusterId string, virtualMachineId openapi_types.UUID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -380,7 +381,7 @@ func NewResourceV2VirtualMachineServiceStartVirtualMachineRequest(server string,
 }
 
 // NewResourceV2VirtualMachineServiceStopVirtualMachineRequest generates requests for ResourceV2VirtualMachineServiceStopVirtualMachine
-func NewResourceV2VirtualMachineServiceStopVirtualMachineRequest(server string, appId string, clusterId string, virtualMachineId string) (*http.Request, error) {
+func NewResourceV2VirtualMachineServiceStopVirtualMachineRequest(server string, appId string, clusterId string, virtualMachineId openapi_types.UUID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -428,7 +429,7 @@ func NewResourceV2VirtualMachineServiceStopVirtualMachineRequest(server string, 
 }
 
 // NewResourceV2VirtualMachineServiceGetVNCRequest generates requests for ResourceV2VirtualMachineServiceGetVNC
-func NewResourceV2VirtualMachineServiceGetVNCRequest(server string, appId string, clusterId string, virtualMachineId string) (*http.Request, error) {
+func NewResourceV2VirtualMachineServiceGetVNCRequest(server string, appId string, clusterId string, virtualMachineId openapi_types.UUID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -566,16 +567,16 @@ type ClientWithResponsesInterface interface {
 	ResourceV2PodServiceDeletePodWithResponse(ctx context.Context, clusterId string, namespace string, podName string, reqEditors ...RequestEditorFn) (*ResourceV2PodServiceDeletePodResponse, error)
 
 	// ResourceV2VirtualMachineServiceRestartVirtualMachineWithResponse request
-	ResourceV2VirtualMachineServiceRestartVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceRestartVirtualMachineResponse, error)
+	ResourceV2VirtualMachineServiceRestartVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId openapi_types.UUID, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceRestartVirtualMachineResponse, error)
 
 	// ResourceV2VirtualMachineServiceStartVirtualMachineWithResponse request
-	ResourceV2VirtualMachineServiceStartVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceStartVirtualMachineResponse, error)
+	ResourceV2VirtualMachineServiceStartVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId openapi_types.UUID, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceStartVirtualMachineResponse, error)
 
 	// ResourceV2VirtualMachineServiceStopVirtualMachineWithResponse request
-	ResourceV2VirtualMachineServiceStopVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceStopVirtualMachineResponse, error)
+	ResourceV2VirtualMachineServiceStopVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId openapi_types.UUID, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceStopVirtualMachineResponse, error)
 
 	// ResourceV2VirtualMachineServiceGetVNCWithResponse request
-	ResourceV2VirtualMachineServiceGetVNCWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceGetVNCResponse, error)
+	ResourceV2VirtualMachineServiceGetVNCWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId openapi_types.UUID, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceGetVNCResponse, error)
 
 	// ResourceV2AppWorkloadServiceListAppWorkloadsWithResponse request
 	ResourceV2AppWorkloadServiceListAppWorkloadsWithResponse(ctx context.Context, appId string, clusterId string, reqEditors ...RequestEditorFn) (*ResourceV2AppWorkloadServiceListAppWorkloadsResponse, error)
@@ -754,7 +755,7 @@ func (c *ClientWithResponses) ResourceV2PodServiceDeletePodWithResponse(ctx cont
 }
 
 // ResourceV2VirtualMachineServiceRestartVirtualMachineWithResponse request returning *ResourceV2VirtualMachineServiceRestartVirtualMachineResponse
-func (c *ClientWithResponses) ResourceV2VirtualMachineServiceRestartVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceRestartVirtualMachineResponse, error) {
+func (c *ClientWithResponses) ResourceV2VirtualMachineServiceRestartVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId openapi_types.UUID, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceRestartVirtualMachineResponse, error) {
 	rsp, err := c.ResourceV2VirtualMachineServiceRestartVirtualMachine(ctx, appId, clusterId, virtualMachineId, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -763,7 +764,7 @@ func (c *ClientWithResponses) ResourceV2VirtualMachineServiceRestartVirtualMachi
 }
 
 // ResourceV2VirtualMachineServiceStartVirtualMachineWithResponse request returning *ResourceV2VirtualMachineServiceStartVirtualMachineResponse
-func (c *ClientWithResponses) ResourceV2VirtualMachineServiceStartVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceStartVirtualMachineResponse, error) {
+func (c *ClientWithResponses) ResourceV2VirtualMachineServiceStartVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId openapi_types.UUID, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceStartVirtualMachineResponse, error) {
 	rsp, err := c.ResourceV2VirtualMachineServiceStartVirtualMachine(ctx, appId, clusterId, virtualMachineId, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -772,7 +773,7 @@ func (c *ClientWithResponses) ResourceV2VirtualMachineServiceStartVirtualMachine
 }
 
 // ResourceV2VirtualMachineServiceStopVirtualMachineWithResponse request returning *ResourceV2VirtualMachineServiceStopVirtualMachineResponse
-func (c *ClientWithResponses) ResourceV2VirtualMachineServiceStopVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceStopVirtualMachineResponse, error) {
+func (c *ClientWithResponses) ResourceV2VirtualMachineServiceStopVirtualMachineWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId openapi_types.UUID, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceStopVirtualMachineResponse, error) {
 	rsp, err := c.ResourceV2VirtualMachineServiceStopVirtualMachine(ctx, appId, clusterId, virtualMachineId, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -781,7 +782,7 @@ func (c *ClientWithResponses) ResourceV2VirtualMachineServiceStopVirtualMachineW
 }
 
 // ResourceV2VirtualMachineServiceGetVNCWithResponse request returning *ResourceV2VirtualMachineServiceGetVNCResponse
-func (c *ClientWithResponses) ResourceV2VirtualMachineServiceGetVNCWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId string, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceGetVNCResponse, error) {
+func (c *ClientWithResponses) ResourceV2VirtualMachineServiceGetVNCWithResponse(ctx context.Context, appId string, clusterId string, virtualMachineId openapi_types.UUID, reqEditors ...RequestEditorFn) (*ResourceV2VirtualMachineServiceGetVNCResponse, error) {
 	rsp, err := c.ResourceV2VirtualMachineServiceGetVNC(ctx, appId, clusterId, virtualMachineId, reqEditors...)
 	if err != nil {
 		return nil, err

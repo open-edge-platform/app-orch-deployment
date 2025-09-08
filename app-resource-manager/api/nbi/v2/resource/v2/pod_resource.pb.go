@@ -10,7 +10,7 @@
 package resourcev2
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -514,10 +514,10 @@ var File_resource_v2_pod_resource_proto protoreflect.FileDescriptor
 
 const file_resource_v2_pod_resource_proto_rawDesc = "" +
 	"\n" +
-	"\x1eresource/v2/pod_resource.proto\x12\vresource.v2\x1a\x1fgoogle/api/field_behavior.proto\x1a\x17validate/validate.proto\"|\n" +
+	"\x1eresource/v2/pod_resource.proto\x12\vresource.v2\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bbuf/validate/validate.proto\"|\n" +
 	"\x03Pod\x12@\n" +
 	"\n" +
-	"containers\x18\x01 \x03(\v2\x16.resource.v2.ContainerB\b\xfaB\x05\x92\x01\x02\x102R\n" +
+	"containers\x18\x01 \x03(\v2\x16.resource.v2.ContainerB\b\xbaH\x05\x92\x01\x02\x102R\n" +
 	"containers\x123\n" +
 	"\x06status\x18\x02 \x01(\v2\x16.resource.v2.PodStatusB\x03\xe0A\x03R\x06status\"\xac\x01\n" +
 	"\tPodStatus\x122\n" +
@@ -529,7 +529,7 @@ const file_resource_v2_pod_resource_proto_rawDesc = "" +
 	"\x0fSTATE_SUCCEEDED\x10\x03\x12\x10\n" +
 	"\fSTATE_FAILED\x10\x04\"\xd8\x01\n" +
 	"\tContainer\x12B\n" +
-	"\x04name\x18\x01 \x01(\tB.\xe0A\x02\xfaB(r&\x10\x01\x18?2 ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$R\x04name\x12\"\n" +
+	"\x04name\x18\x01 \x01(\tB.\xe0A\x02\xbaH(r&\x10\x01\x18?2 ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$R\x04name\x12\"\n" +
 	"\n" +
 	"image_name\x18\x02 \x01(\tB\x03\xe0A\x03R\timageName\x12(\n" +
 	"\rrestart_count\x18\x03 \x01(\x05B\x03\xe0A\x03R\frestartCount\x129\n" +

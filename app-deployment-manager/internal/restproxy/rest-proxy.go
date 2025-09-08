@@ -17,11 +17,11 @@ import (
 	deploymentpb "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils"
 	"github.com/open-edge-platform/orch-library/go/dazl"
+	orcherror "github.com/open-edge-platform/orch-library/go/pkg/errors"
 	ginlogger "github.com/open-edge-platform/orch-library/go/pkg/logging/gin"
 	ginutils "github.com/open-edge-platform/orch-library/go/pkg/middleware/gin"
 	openapiutils "github.com/open-edge-platform/orch-library/go/pkg/openapi"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -35,78 +35,20 @@ var allowedHeaders = map[string]struct{}{
 
 const ActiveProjectID = "ActiveProjectID"
 
-// ErrorResponse represents a structured error response for REST API
-type ErrorResponse struct {
-	Error ErrorDetail `json:"error"`
-}
-
-// ErrorDetail contains the detailed error information
-type ErrorDetail struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-	Status  string `json:"status"`
-}
-
 // mapGrpcToHTTPStatus maps gRPC status codes to appropriate HTTP status codes
-func mapGrpcToHTTPStatus(grpcCode codes.Code) int {
-	switch grpcCode {
-	case codes.InvalidArgument:
-		return http.StatusBadRequest
-	case codes.NotFound:
-		return http.StatusNotFound
-	case codes.AlreadyExists:
-		return http.StatusConflict
-	case codes.PermissionDenied:
-		return http.StatusForbidden
-	case codes.Unauthenticated:
-		return http.StatusUnauthorized
-	case codes.ResourceExhausted:
-		return http.StatusTooManyRequests
-	case codes.Unimplemented:
-		return http.StatusNotImplemented
-	case codes.Unavailable:
-		return http.StatusServiceUnavailable
-	case codes.DeadlineExceeded:
-		return http.StatusGatewayTimeout
-	default:
-		return http.StatusInternalServerError
-	}
-}
-
-// createErrorResponse creates a structured error response from gRPC status
-func createErrorResponse(s *status.Status) ErrorResponse {
-	return ErrorResponse{
-		Error: ErrorDetail{
-			Code:    int(s.Code()),
-			Message: s.Message(),
-			Status:  s.Code().String(),
-		},
-	}
-}
-
-// writeErrorResponse writes the error response to the HTTP response writer
-func writeErrorResponse(w http.ResponseWriter, marshaler runtime.Marshaler, httpStatus int, errorResponse ErrorResponse) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(httpStatus)
-
-	if buf, err := marshaler.Marshal(errorResponse); err == nil {
-		_, _ = w.Write(buf)
-	}
-}
-
-// handleGrpcError processes gRPC errors and writes appropriate HTTP responses
-func handleGrpcError(w http.ResponseWriter, marshaler runtime.Marshaler, grpcStatus *status.Status) {
-	httpStatus := mapGrpcToHTTPStatus(grpcStatus.Code())
-	errorResponse := createErrorResponse(grpcStatus)
-	writeErrorResponse(w, marshaler, httpStatus, errorResponse)
-}
-
 // errorHandler provides enhanced error handling for gRPC-Gateway responses
-// This filters and formats error details for better REST API responses
+// Uses orch-library error handling utilities for consistency across the platform
 func errorHandler(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.Marshaler, w http.ResponseWriter, r *http.Request, err error) {
-	// Check if this is a gRPC error
+	// Check if this is a gRPC error and handle it with orch-library utilities
 	if grpcStatus, ok := status.FromError(err); ok {
-		handleGrpcError(w, marshaler, grpcStatus)
+		// Convert gRPC status to orch-library typed error
+		typedErr := orcherror.FromStatus(grpcStatus)
+
+		// Convert back to gRPC status to get the proper HTTP status code
+		newStatus := orcherror.Status(typedErr)
+
+		// Use the existing gRPC-Gateway error handler with the processed error
+		runtime.DefaultHTTPErrorHandler(ctx, mux, marshaler, w, r, newStatus.Err())
 		return
 	}
 

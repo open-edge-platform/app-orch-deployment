@@ -10,7 +10,7 @@
 package resourcev2
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -221,11 +221,11 @@ var File_resource_v2_app_workload_resource_proto protoreflect.FileDescriptor
 
 const file_resource_v2_app_workload_resource_proto_rawDesc = "" +
 	"\n" +
-	"'resource/v2/app_workload_resource.proto\x12\vresource.v2\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1eresource/v2/pod_resource.proto\x1a\x1dresource/v2/vm_resource.proto\x1a\x17validate/validate.proto\"\xf3\x03\n" +
+	"'resource/v2/app_workload_resource.proto\x12\vresource.v2\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1eresource/v2/pod_resource.proto\x1a\x1dresource/v2/vm_resource.proto\x1a\x1bbuf/validate/validate.proto\"\xf3\x03\n" +
 	"\vAppWorkload\x121\n" +
 	"\x04type\x18\x01 \x01(\x0e2\x1d.resource.v2.AppWorkload.TypeR\x04type\x12\x1b\n" +
-	"\x02id\x18\x02 \x01(\tB\v\xe0A\x02\xfaB\x05r\x03\xb0\x01\x01R\x02id\x12C\n" +
-	"\x04name\x18\x03 \x01(\tB/\xe0A\x02\xfaB)r'\x10\x01\x18\xfd\x012 ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$R\x04name\x12!\n" +
+	"\x02id\x18\x02 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12C\n" +
+	"\x04name\x18\x03 \x01(\tB/\xe0A\x02\xbaH)r'\x10\x01\x18\xfd\x012 ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$R\x04name\x12!\n" +
 	"\tnamespace\x18\x04 \x01(\tB\x03\xe0A\x03R\tnamespace\x12@\n" +
 	"\vcreate_time\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\n" +
 	"createTime\x12*\n" +

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/oapi-codegen/runtime"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // Defines values for ResourceV2AdminStatusState.
@@ -170,9 +171,14 @@ type ResourceV2AppEndpoint struct {
 	Fqdns *[]ResourceV2Fqdn `json:"fqdns,omitempty"`
 
 	// Id Endpoint object UID (e.g. service or ingress UID)
-	Id *string `json:"id,omitempty"`
+	// string.uuid = true // value must be a valid UUID
+	// string.uuid_empty = true // value is empty, which is not a valid UUID
+	Id *openapi_types.UUID `json:"id,omitempty"`
 
 	// Name Endpoint name
+	// string.max_len = 40
+	// string.min_len = 1
+	// string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
 	Name *string `json:"name,omitempty"`
 
 	// Ports List of ports exposed by a service for external access
@@ -273,9 +279,14 @@ type ResourceV2AppWorkload struct {
 	CreateTime *GoogleProtobufTimestamp `json:"createTime,omitempty"`
 
 	// Id Workload UUID
-	Id *string `json:"id,omitempty"`
+	// string.uuid = true // value must be a valid UUID
+	// string.uuid_empty = true // value is empty, which is not a valid UUID
+	Id *openapi_types.UUID `json:"id,omitempty"`
 
 	// Name Workload name
+	// string.max_len = 253
+	// string.min_len = 1
+	// string.pattern = "^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$"
 	Name *string `json:"name,omitempty"`
 
 	// Namespace Namespace where the workload is created.
@@ -308,6 +319,9 @@ type ResourceV2Container struct {
 	ImageName *string `json:"imageName,omitempty"`
 
 	// Name Container name
+	// string.max_len = 63
+	// string.min_len = 1
+	// string.pattern = "^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$"
 	Name string `json:"name"`
 
 	// RestartCount Number of times that a container is restarted.
@@ -377,6 +391,8 @@ type ResourceV2EndpointStatusState string
 
 // ResourceV2Fqdn Fully qualified domain name.
 type ResourceV2Fqdn struct {
+	// Fqdn string.hostname = true // value must be a valid hostname
+	// string.hostname_empty = true // value is empty, which is not a valid hostname
 	Fqdn *string `json:"fqdn,omitempty"`
 }
 
@@ -417,6 +433,9 @@ type ResourceV2PodStatusState string
 // ResourceV2Port Port information
 type ResourceV2Port struct {
 	// Name Port name
+	// string.max_len = 40
+	// string.min_len = 1
+	// string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
 	Name *string `json:"name,omitempty"`
 
 	// Protocol Protocol for a port.

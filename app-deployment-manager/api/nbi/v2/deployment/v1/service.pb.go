@@ -15,7 +15,6 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
-	_ "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -1079,7 +1078,7 @@ var File_deployment_v1_service_proto protoreflect.FileDescriptor
 
 const file_deployment_v1_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1bdeployment/v1/service.proto\x12\rdeployment.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1ddeployment/v1/resources.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"Y\n" +
+	"\x1bdeployment/v1/service.proto\x12\rdeployment.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1ddeployment/v1/resources.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bgoogle/protobuf/empty.proto\"Y\n" +
 	"\x17CreateDeploymentRequest\x12>\n" +
 	"\n" +
 	"deployment\x18\x01 \x01(\v2\x19.deployment.v1.DeploymentB\x03\xe0A\x02R\n" +

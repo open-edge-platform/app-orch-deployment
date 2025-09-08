@@ -10,7 +10,7 @@
 package resourcev2
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -131,12 +131,12 @@ var File_resource_v2_pod_service_proto protoreflect.FileDescriptor
 
 const file_resource_v2_pod_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1dresource/v2/pod_service.proto\x12\vresource.v2\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x17validate/validate.proto\"\x82\x02\n" +
+	"\x1dresource/v2/pod_service.proto\x12\vresource.v2\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bbuf/validate/validate.proto\"\x82\x02\n" +
 	"\x10DeletePodRequest\x12S\n" +
 	"\n" +
-	"cluster_id\x18\x01 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\x12M\n" +
-	"\tnamespace\x18\x02 \x01(\tB/\xe0A\x02\xfaB)r'\x10\x01\x18\xfd\x012 ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$R\tnamespace\x12J\n" +
-	"\bpod_name\x18\x03 \x01(\tB/\xe0A\x02\xfaB)r'\x10\x01\x18\xfd\x012 ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$R\apodName\"\x13\n" +
+	"cluster_id\x18\x01 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\x12M\n" +
+	"\tnamespace\x18\x02 \x01(\tB/\xe0A\x02\xbaH)r'\x10\x01\x18\xfd\x012 ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$R\tnamespace\x12J\n" +
+	"\bpod_name\x18\x03 \x01(\tB/\xe0A\x02\xbaH)r'\x10\x01\x18\xfd\x012 ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$R\apodName\"\x13\n" +
 	"\x11DeletePodResponse2\xbb\x01\n" +
 	"\n" +
 	"PodService\x12\xac\x01\n" +

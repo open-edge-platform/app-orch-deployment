@@ -10,7 +10,7 @@
 package resourcev2
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -442,30 +442,30 @@ var File_resource_v2_vm_service_proto protoreflect.FileDescriptor
 
 const file_resource_v2_vm_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1cresource/v2/vm_service.proto\x12\vresource.v2\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x17validate/validate.proto\"\xf9\x01\n" +
+	"\x1cresource/v2/vm_service.proto\x12\vresource.v2\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1bbuf/validate/validate.proto\"\xf9\x01\n" +
 	"\x1aStartVirtualMachineRequest\x12K\n" +
-	"\x06app_id\x18\x01 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18P2&^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$R\x05appId\x12S\n" +
+	"\x06app_id\x18\x01 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18P2&^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$R\x05appId\x12S\n" +
 	"\n" +
-	"cluster_id\x18\x02 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\x129\n" +
-	"\x12virtual_machine_id\x18\x03 \x01(\tB\v\xe0A\x02\xfaB\x05r\x03\xb0\x01\x01R\x10virtualMachineId\"\x1d\n" +
+	"cluster_id\x18\x02 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\x129\n" +
+	"\x12virtual_machine_id\x18\x03 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x10virtualMachineId\"\x1d\n" +
 	"\x1bStartVirtualMachineResponse\"\xf8\x01\n" +
 	"\x19StopVirtualMachineRequest\x12K\n" +
-	"\x06app_id\x18\x01 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18P2&^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$R\x05appId\x12S\n" +
+	"\x06app_id\x18\x01 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18P2&^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$R\x05appId\x12S\n" +
 	"\n" +
-	"cluster_id\x18\x02 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\x129\n" +
-	"\x12virtual_machine_id\x18\x03 \x01(\tB\v\xe0A\x02\xfaB\x05r\x03\xb0\x01\x01R\x10virtualMachineId\"\x1c\n" +
+	"cluster_id\x18\x02 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\x129\n" +
+	"\x12virtual_machine_id\x18\x03 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x10virtualMachineId\"\x1c\n" +
 	"\x1aStopVirtualMachineResponse\"\xfb\x01\n" +
 	"\x1cRestartVirtualMachineRequest\x12K\n" +
-	"\x06app_id\x18\x01 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18P2&^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$R\x05appId\x12S\n" +
+	"\x06app_id\x18\x01 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18P2&^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$R\x05appId\x12S\n" +
 	"\n" +
-	"cluster_id\x18\x02 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\x129\n" +
-	"\x12virtual_machine_id\x18\x03 \x01(\tB\v\xe0A\x02\xfaB\x05r\x03\xb0\x01\x01R\x10virtualMachineId\"\x1f\n" +
+	"cluster_id\x18\x02 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\x129\n" +
+	"\x12virtual_machine_id\x18\x03 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x10virtualMachineId\"\x1f\n" +
 	"\x1dRestartVirtualMachineResponse\"\xec\x01\n" +
 	"\rGetVNCRequest\x12K\n" +
-	"\x06app_id\x18\x01 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18P2&^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$R\x05appId\x12S\n" +
+	"\x06app_id\x18\x01 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18P2&^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$R\x05appId\x12S\n" +
 	"\n" +
-	"cluster_id\x18\x02 \x01(\tB4\xe0A\x02\xfaB.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\x129\n" +
-	"\x12virtual_machine_id\x18\x03 \x01(\tB\v\xe0A\x02\xfaB\x05r\x03\xb0\x01\x01R\x10virtualMachineId\"/\n" +
+	"cluster_id\x18\x02 \x01(\tB4\xe0A\x02\xbaH.r,\x10\x01\x18(2&^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$R\tclusterId\x129\n" +
+	"\x12virtual_machine_id\x18\x03 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x10virtualMachineId\"/\n" +
 	"\x0eGetVNCResponse\x12\x1d\n" +
 	"\aaddress\x18\x01 \x01(\tB\x03\xe0A\x02R\aaddress2\xee\x06\n" +
 	"\x15VirtualMachineService\x12\xdc\x01\n" +
