@@ -7,6 +7,6 @@ name: app-service-proxy
 version: "1.5.0"
 description: Application Service Proxy
 annotations:
-  revision: "0ba6cad"
-  created: "2025-09-09T04:08:48Z"
+  revision: "65ba43e"
+  created: "2025-09-09T14:30:31Z"
 appVersion: 1.5.0

@@ -12,9 +12,9 @@ import (
 )
 
 // convertPaginationParams safely converts pagination parameters from int32 to uint32
-// Validation is handled by protobuf validation (page_size lte: 500, offset gte: 0)
 func convertPaginationParams(pageSize, offset int32) (uint32, uint32) {
-	//nolint:gosec // G115: Protobuf validation ensures non-negative values, safe conversion
+	// Protobuf validation guarantees pageSize >= 0 and offset >= 0
+	//nolint:gosec // G115: Values guaranteed non-negative by prior protobuf validation
 	return uint32(pageSize), uint32(offset)
 }
 

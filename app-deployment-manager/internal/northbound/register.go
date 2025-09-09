@@ -28,16 +28,28 @@ func NewDeployment(crClient clientv1beta1.AppDeploymentClientInterface,
 	k8sClient *kubernetes.Clientset, fleetBundleClient *fleet.BundleClient, catalogClient catalogclient.CatalogClient, vaultAuthClient auth.VaultAuth, protoValidator *protovalidate.Validator) (*DeploymentSvc, error) {
 
 	var validator protovalidate.Validator
+	var err error
 
 	if protoValidator != nil {
+		// validate the validator it catch cases where an uninitialized validator is passed
+		defer func() {
+			if r := recover(); r != nil {
+				// If we get a panic from the validator, it's likely uninitialized
+				err = fmt.Errorf("provided protobuf validator appears to be uninitialized: %v", r)
+			}
+		}()
 		validator = *protoValidator
 	} else {
 		// Create a default validator for backward compatibility
-		var err error
 		validator, err = protovalidate.New()
 		if err != nil {
 			return nil, fmt.Errorf("failed to create protobuf validator: %w", err)
 		}
+	}
+
+	// Check if there was a panic during validator assignment
+	if err != nil {
+		return nil, err
 	}
 
 	return &DeploymentSvc{
@@ -48,7 +60,6 @@ func NewDeployment(crClient clientv1beta1.AppDeploymentClientInterface,
 		catalogClient:     catalogClient,
 		vaultAuthClient:   vaultAuthClient,
 		protoValidator:    validator,
-		apiMutex:          sync.Mutex{},
 	}, nil
 }
 
