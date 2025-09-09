@@ -124,7 +124,7 @@ func setupFuzzTest() *FuzzTestSuite {
 
 	s.catalogClient = mockerymock.FuzzNewMockeryCatalogClient(st)
 
-	s.deploymentServer = northbound.NewDeployment(s.k8sClient, s.opaMock, s.kc, nil, s.catalogClient, s.vaultAuthMock, &s.protoValidator)
+	s.deploymentServer = northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, s.kc, nil, s.catalogClient, s.vaultAuthMock, &s.protoValidator)
 
 	md := metadata.Pairs("activeprojectid", VALID_PROJECT_ID, "authorization", "test-token")
 	s.ctx = metadata.NewIncomingContext(context.Background(), md)
@@ -166,7 +166,7 @@ func FuzzCreateDeployment(f *testing.F) {
 
 	kc := mockK8Client(ts.URL)
 
-	deploymentServer := northbound.NewDeployment(s.k8sClient, s.opaMock, kc, nil, s.catalogClient, s.vaultAuthMock, &s.protoValidator)
+	deploymentServer := northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, kc, nil, s.catalogClient, s.vaultAuthMock, &s.protoValidator)
 
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
@@ -247,7 +247,7 @@ func FuzzListDeployments(f *testing.F) {
 
 	kc := mockK8Client(ts.URL)
 
-	deploymentServer := northbound.NewDeployment(s.k8sClient, s.opaMock, kc, nil, s.catalogClient, s.vaultAuthMock, &s.protoValidator)
+	deploymentServer := northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, kc, nil, s.catalogClient, s.vaultAuthMock, &s.protoValidator)
 
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
@@ -297,7 +297,7 @@ func FuzzListDeploymentClusters(f *testing.F) {
 
 	kc := mockK8Client(ts.URL)
 
-	deploymentServer := northbound.NewDeployment(s.k8sClient, s.opaMock, kc, nil, s.catalogClient, s.vaultAuthMock, &s.protoValidator)
+	deploymentServer := northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, kc, nil, s.catalogClient, s.vaultAuthMock, &s.protoValidator)
 
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
@@ -350,7 +350,7 @@ func FuzzListClusters(f *testing.F) {
 
 	kc := mockK8Client(ts.URL)
 
-	deploymentServer := northbound.NewDeployment(s.k8sClient, s.opaMock, kc, nil, s.catalogClient, s.vaultAuthMock, &s.protoValidator)
+	deploymentServer := northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, kc, nil, s.catalogClient, s.vaultAuthMock, &s.protoValidator)
 
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
@@ -400,7 +400,7 @@ func FuzzDeploymentsStatus(f *testing.F) {
 
 	kc := mockK8Client(ts.URL)
 
-	deploymentServer := northbound.NewDeployment(s.k8sClient, s.opaMock, kc, nil, s.catalogClient, s.vaultAuthMock, &s.protoValidator)
+	deploymentServer := northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, kc, nil, s.catalogClient, s.vaultAuthMock, &s.protoValidator)
 
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
@@ -448,7 +448,7 @@ func FuzzGetDeployment(f *testing.F) {
 	f.Add(seedData1)
 	f.Add(seedData2)
 
-	deploymentServer := northbound.NewDeployment(s.k8sClient, s.opaMock, nil, nil, nil, nil, &s.protoValidator)
+	deploymentServer := northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, nil, nil, nil, nil, &s.protoValidator)
 
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
@@ -480,7 +480,7 @@ func FuzzGetCluster(f *testing.F) {
 	assert.NoError(f, err)
 	f.Add(seedData1)
 
-	deploymentServer := northbound.NewDeployment(s.k8sClient, s.opaMock, nil, nil, nil, nil, &s.protoValidator)
+	deploymentServer := northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, nil, nil, nil, nil, &s.protoValidator)
 
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
@@ -532,7 +532,7 @@ func FuzzGetAppNamespace(f *testing.F) {
 	bundleClient, err := newMockBundleClient(ts.URL)
 	assert.NoError(f, err)
 
-	deploymentServer := northbound.NewDeployment(nil, s.opaMock, nil, bundleClient, nil, nil, &s.protoValidator)
+	deploymentServer := northbound.NewDeploymentMustSucceed(nil, s.opaMock, nil, bundleClient, nil, nil, &s.protoValidator)
 
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
@@ -569,7 +569,7 @@ func FuzzGetKubeConfig(f *testing.F) {
 
 	kc := mockK8Client(ts.URL)
 
-	deploymentServer := northbound.NewDeployment(s.k8sClient, s.opaMock, kc, nil, nil, nil, &s.protoValidator)
+	deploymentServer := northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, kc, nil, nil, nil, &s.protoValidator)
 
 	f.Add(seedData1)
 	f.Fuzz(func(t *testing.T, seedData []byte) {
@@ -692,7 +692,7 @@ func FuzzListDeploymentsPerCluster(f *testing.F) {
 
 	kc := mockK8Client(ts.URL)
 
-	deploymentServer := northbound.NewDeployment(s.k8sClient, s.opaMock, kc, nil, nil, nil, &s.protoValidator)
+	deploymentServer := northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, kc, nil, nil, nil, &s.protoValidator)
 
 	f.Add(seedData)
 	f.Fuzz(func(t *testing.T, seedData []byte) {

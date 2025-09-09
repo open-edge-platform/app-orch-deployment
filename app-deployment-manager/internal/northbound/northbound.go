@@ -67,6 +67,13 @@ type Deployment struct {
 	ParameterTemplateSecrets   map[string]string                                  `yaml:"parameterTemplateSecret"`
 }
 
+// formatAppNameValidationError creates a standardized error message for app name validation failures.
+// It returns a formatted error message indicating that the app name at the specified index is invalid
+// due to either being empty or not matching the required regex pattern.
+func formatAppNameValidationError(index int) string {
+	return fmt.Sprintf("validation error:\n - deployment.override_values[%d].app_name: value length must be at least 1 characters [string.min_len]\n - deployment.override_values[%d].app_name: value does not match regex pattern `^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$` [string.pattern]", index, index)
+}
+
 // Sets values to create or update Deployment CR.
 func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *deploymentpb.Deployment, dependentDepls map[string]*Deployment, activeProjectID string) (*Deployment, error) {
 	d := &Deployment{}
@@ -139,7 +146,7 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 	if len(d.OverrideValues) != 0 {
 		for i, val := range d.OverrideValues {
 			if (val.AppName) == "" {
-				return d, errors.NewInvalid(fmt.Sprintf("validation error:\n - deployment.override_values[%d].app_name: value length must be at least 1 characters [string.min_len]\n - deployment.override_values[%d].app_name: value does not match regex pattern `^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$` [string.pattern]", i, i))
+				return d, errors.NewInvalid(formatAppNameValidationError(i))
 			}
 			if (val.Values) == nil && val.TargetNamespace == "" {
 				return d, errors.NewInvalid("missing overrideValues.targetNamespace or overrideValues.values in request")
@@ -181,7 +188,7 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 
 			// Check ns name that doesn't have prefix kube-
 			checkKindName := strings.Split(ns.Name, "-")
-			if checkKindName[0] == "kind" {
+			if len(checkKindName) > 0 && checkKindName[0] == "kind" {
 				return d, errors.NewInvalid("namespace name \"%s\" is invalid. Prefix \"kube-\", is reserved for Kubernetes system namespaces", ns.Name)
 			}
 

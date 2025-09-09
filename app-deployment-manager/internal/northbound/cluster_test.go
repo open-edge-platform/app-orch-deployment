@@ -44,7 +44,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 			crClient = &nbmocks.FakeDeploymentV1{}
 
-			deploymentServer = NewDeployment(crClient, nil, nil, nil, nil, nil, nil)
+			deploymentServer = NewDeploymentMustSucceed(crClient, nil, nil, nil, nil, nil, nil)
 		})
 
 		It("successfully get kubeconfig", func() {
@@ -61,7 +61,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 			kc := mockK8Client(ts.URL)
 
-			deploymentServer := NewDeployment(crClient, nil, kc, nil, nil, nil, nil)
+			deploymentServer := NewDeploymentMustSucceed(crClient, nil, kc, nil, nil, nil, nil)
 
 			crClient.On(
 				"Get", context.TODO(), mock.AnythingOfType("string"), mock.AnythingOfType("v1.GetOptions"),
@@ -91,7 +91,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 			kc := mockK8Client(ts.URL)
 
-			deploymentServer := NewDeployment(crClient, nil, kc, nil, nil, nil, nil)
+			deploymentServer := NewDeploymentMustSucceed(crClient, nil, kc, nil, nil, nil, nil)
 
 			crClient.On(
 				"Get", context.TODO(), mock.AnythingOfType("string"), mock.AnythingOfType("v1.GetOptions"),
@@ -160,7 +160,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 			crClient = &nbmocks.FakeDeploymentV1{}
 
-			deploymentServer = NewDeployment(crClient, nil, nil, nil, nil, nil, nil)
+			deploymentServer = NewDeploymentMustSucceed(crClient, nil, nil, nil, nil, nil, nil)
 		})
 
 		It("successfully list clusters", func() {
@@ -225,7 +225,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 		BeforeEach(func() {
 			crClient = &nbmocks.FakeDeploymentV1{}
-			deploymentServer = NewDeployment(crClient, nil, nil, nil, nil, nil, nil)
+			deploymentServer = NewDeploymentMustSucceed(crClient, nil, nil, nil, nil, nil, nil)
 
 			// populates a mock deployment object
 			setDeploymentClusterListObject(&deploymentClusterListSrc)
@@ -281,7 +281,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 		It("fails due to deploymentCluster LIST error", func() {
 			// Test that an internal service error is properly handled
 			crClient := &nbmocks.FakeDeploymentV1{}
-			deploymentServer := NewDeployment(crClient, nil, nil, nil, nil, nil, nil)
+			deploymentServer := NewDeploymentMustSucceed(crClient, nil, nil, nil, nil, nil, nil)
 
 			crClient.On(
 				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),

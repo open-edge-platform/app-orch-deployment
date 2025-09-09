@@ -9,35 +9,20 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils/dataselector"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils/dataselector/datatypes"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils/parser"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
+
+// convertPaginationParams safely converts pagination parameters from int32 to uint32
+// Validation is handled by protobuf validation (page_size lte: 500, offset gte: 0)
+func convertPaginationParams(pageSize, offset int32) (uint32, uint32) {
+	//nolint:gosec // G115: Protobuf validation ensures non-negative values, safe conversion
+	return uint32(pageSize), uint32(offset)
+}
 
 func selectDeployments(in *deploymentpb.ListDeploymentsRequest, deployments []*deploymentpb.Deployment) ([]*deploymentpb.Deployment, error) {
 	var orderByList []dataselector.OrderBy
-	var pageSize, offset uint32
 
-	// Validate PageSize: must be non-negative and within safe conversion range
-	if in.PageSize < 0 {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid PageSize: must be non-negative, got %d", in.PageSize)
-	}
-	// Check maximum safe conversion value (math.MaxInt32 >> 1 to ensure safe uint32 conversion)
-	if in.PageSize > 1073741823 { // 2^30 - 1, safe margin below math.MaxInt32
-		return nil, status.Errorf(codes.InvalidArgument, "invalid PageSize: exceeds maximum safe value, got %d", in.PageSize)
-	}
-
-	// Validate Offset: must be non-negative and within safe conversion range
-	if in.Offset < 0 {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid Offset: must be non-negative, got %d", in.Offset)
-	}
-	if in.Offset > 1073741823 { // 2^30 - 1, safe margin below math.MaxInt32
-		return nil, status.Errorf(codes.InvalidArgument, "invalid Offset: exceeds maximum safe value, got %d", in.Offset)
-	}
-
-	//nolint:gosec // G115: Validated range above, safe conversion
-	pageSize = uint32(in.PageSize)
-	//nolint:gosec // G115: Validated range above, safe conversion
-	offset = uint32(in.Offset)
+	// Convert pagination parameters (validation handled by protobuf)
+	pageSize, offset := convertPaginationParams(in.PageSize, in.Offset)
 	paginationQuery := newPaginationQuery(pageSize, offset)
 
 	err := paginationQuery.IsValidPagination()
@@ -83,29 +68,9 @@ func selectDeployments(in *deploymentpb.ListDeploymentsRequest, deployments []*d
 
 func selectClusters(in *deploymentpb.ListClustersRequest, clusterInfoList []*deploymentpb.ClusterInfo) ([]*deploymentpb.ClusterInfo, error) {
 	var orderByList []dataselector.OrderBy
-	var pageSize, offset uint32
 
-	// Validate PageSize: must be non-negative and within safe conversion range
-	if in.PageSize < 0 {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid PageSize: must be non-negative, got %d", in.PageSize)
-	}
-	// Check maximum safe conversion value (math.MaxInt32 >> 1 to ensure safe uint32 conversion)
-	if in.PageSize > 1073741823 { // 2^30 - 1, safe margin below math.MaxInt32
-		return nil, status.Errorf(codes.InvalidArgument, "invalid PageSize: exceeds maximum safe value, got %d", in.PageSize)
-	}
-
-	// Validate Offset: must be non-negative and within safe conversion range
-	if in.Offset < 0 {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid Offset: must be non-negative, got %d", in.Offset)
-	}
-	if in.Offset > 1073741823 { // 2^30 - 1, safe margin below math.MaxInt32
-		return nil, status.Errorf(codes.InvalidArgument, "invalid Offset: exceeds maximum safe value, got %d", in.Offset)
-	}
-
-	//nolint:gosec // G115: Validated range above, safe conversion
-	pageSize = uint32(in.PageSize)
-	//nolint:gosec // G115: Validated range above, safe conversion
-	offset = uint32(in.Offset)
+	// Convert pagination parameters (validation handled by protobuf)
+	pageSize, offset := convertPaginationParams(in.PageSize, in.Offset)
 	paginationQuery := newPaginationQuery(pageSize, offset)
 
 	err := paginationQuery.IsValidPagination()
@@ -149,29 +114,9 @@ func selectClusters(in *deploymentpb.ListClustersRequest, clusterInfoList []*dep
 
 func selectClustersPerDeployment(in *deploymentpb.ListDeploymentClustersRequest, clusterList []*deploymentpb.Cluster) ([]*deploymentpb.Cluster, error) {
 	var orderByList []dataselector.OrderBy
-	var pageSize, offset uint32
 
-	// Validate PageSize: must be non-negative and within safe conversion range
-	if in.PageSize < 0 {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid PageSize: must be non-negative, got %d", in.PageSize)
-	}
-	// Check maximum safe conversion value (math.MaxInt32 >> 1 to ensure safe uint32 conversion)
-	if in.PageSize > 1073741823 { // 2^30 - 1, safe margin below math.MaxInt32
-		return nil, status.Errorf(codes.InvalidArgument, "invalid PageSize: exceeds maximum safe value, got %d", in.PageSize)
-	}
-
-	// Validate Offset: must be non-negative and within safe conversion range
-	if in.Offset < 0 {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid Offset: must be non-negative, got %d", in.Offset)
-	}
-	if in.Offset > 1073741823 { // 2^30 - 1, safe margin below math.MaxInt32
-		return nil, status.Errorf(codes.InvalidArgument, "invalid Offset: exceeds maximum safe value, got %d", in.Offset)
-	}
-
-	//nolint:gosec // G115: Validated range above, safe conversion
-	pageSize = uint32(in.PageSize)
-	//nolint:gosec // G115: Validated range above, safe conversion
-	offset = uint32(in.Offset)
+	// Convert pagination parameters (validation handled by protobuf)
+	pageSize, offset := convertPaginationParams(in.PageSize, in.Offset)
 	paginationQuery := newPaginationQuery(pageSize, offset)
 
 	err := paginationQuery.IsValidPagination()

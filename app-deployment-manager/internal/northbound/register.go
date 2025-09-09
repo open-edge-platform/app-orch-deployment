@@ -22,11 +22,13 @@ import (
 )
 
 // NewDeployment creates and initializes a new deployment service.
+// Returns an error if protobuf validator creation fails.
 func NewDeployment(crClient clientv1beta1.AppDeploymentClientInterface,
 	opaClient openpolicyagent.ClientWithResponsesInterface,
-	k8sClient *kubernetes.Clientset, fleetBundleClient *fleet.BundleClient, catalogClient catalogclient.CatalogClient, vaultAuthClient auth.VaultAuth, protoValidator *protovalidate.Validator) *DeploymentSvc {
+	k8sClient *kubernetes.Clientset, fleetBundleClient *fleet.BundleClient, catalogClient catalogclient.CatalogClient, vaultAuthClient auth.VaultAuth, protoValidator *protovalidate.Validator) (*DeploymentSvc, error) {
 
 	var validator protovalidate.Validator
+
 	if protoValidator != nil {
 		validator = *protoValidator
 	} else {
@@ -34,8 +36,7 @@ func NewDeployment(crClient clientv1beta1.AppDeploymentClientInterface,
 		var err error
 		validator, err = protovalidate.New()
 		if err != nil {
-			// Handle error appropriately - return error rather than fatal
-			panic(fmt.Sprintf("Failed to create default protobuf validator: %v", err))
+			return nil, fmt.Errorf("failed to create protobuf validator: %w", err)
 		}
 	}
 
@@ -47,7 +48,8 @@ func NewDeployment(crClient clientv1beta1.AppDeploymentClientInterface,
 		catalogClient:     catalogClient,
 		vaultAuthClient:   vaultAuthClient,
 		protoValidator:    validator,
-	}
+		apiMutex:          sync.Mutex{},
+	}, nil
 }
 
 type DeploymentInstance struct {
@@ -69,6 +71,20 @@ type DeploymentSvc struct {
 	vaultAuthClient   auth.VaultAuth
 	protoValidator    protovalidate.Validator
 	apiMutex          sync.Mutex
+}
+
+// NewDeploymentMustSucceed is a convenience wrapper for tests that panics on validator creation failure.
+// This maintains backward compatibility with existing test code.
+// For production code, use NewDeployment which returns an error.
+func NewDeploymentMustSucceed(crClient clientv1beta1.AppDeploymentClientInterface,
+	opaClient openpolicyagent.ClientWithResponsesInterface,
+	k8sClient *kubernetes.Clientset, fleetBundleClient *fleet.BundleClient, catalogClient catalogclient.CatalogClient, vaultAuthClient auth.VaultAuth, protoValidator *protovalidate.Validator) *DeploymentSvc {
+
+	svc, err := NewDeployment(crClient, opaClient, k8sClient, fleetBundleClient, catalogClient, vaultAuthClient, protoValidator)
+	if err != nil {
+		panic(fmt.Sprintf("NewDeployment failed in test: %v", err))
+	}
+	return svc
 }
 
 // Register registers the gRPC services with the server

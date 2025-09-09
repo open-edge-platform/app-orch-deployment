@@ -78,7 +78,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 				}, nil,
 			).AnyTimes()
 
-			deploymentServer = NewDeployment(k8sClient, opaMock, nil, nil, nil, nil, &protoValidator)
+			deploymentServer = NewDeploymentMustSucceed(k8sClient, opaMock, nil, nil, nil, nil, &protoValidator)
 
 			err = deploymentServer.AuthCheckAllowed(ctx, &deploymentpb.CreateDeploymentRequest{
 				Deployment: deployInstanceResp,
@@ -112,7 +112,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 				}, nil,
 			).AnyTimes()
 
-			deploymentServer = NewDeployment(k8sClient, opaMock, nil, nil, nil, nil, &protoValidator)
+			deploymentServer = NewDeploymentMustSucceed(k8sClient, opaMock, nil, nil, nil, nil, &protoValidator)
 
 			err = deploymentServer.AuthCheckAllowed(ctx, &deploymentpb.CreateDeploymentRequest{
 				Deployment: deployInstanceResp,
@@ -145,7 +145,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 				}, errors.New("mock err"),
 			).AnyTimes()
 
-			deploymentServer = NewDeployment(k8sClient, opaMock, nil, nil, nil, nil, &protoValidator)
+			deploymentServer = NewDeploymentMustSucceed(k8sClient, opaMock, nil, nil, nil, nil, &protoValidator)
 
 			err = deploymentServer.AuthCheckAllowed(ctx, &deploymentpb.CreateDeploymentRequest{
 				Deployment: deployInstanceResp,
@@ -178,7 +178,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 				}, nil,
 			).AnyTimes()
 
-			deploymentServer = NewDeployment(k8sClient, opaMock, nil, nil, nil, nil, &protoValidator)
+			deploymentServer = NewDeploymentMustSucceed(k8sClient, opaMock, nil, nil, nil, nil, &protoValidator)
 
 			emptyCtx := context.TODO()
 			err = deploymentServer.AuthCheckAllowed(emptyCtx, &deploymentpb.CreateDeploymentRequest{

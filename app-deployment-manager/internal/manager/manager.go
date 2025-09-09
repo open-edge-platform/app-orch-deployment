@@ -165,7 +165,13 @@ func (m *Manager) Start() error {
 	}
 
 	s := northbound.NewServer(serverConfig)
-	s.AddService(internalgrpc.NewDeployment(crClient, opaClient, k8sClient, fleetBundleClient, catalogClient, vaultAuthClient, &protoValidator))
+
+	deploymentService, err := internalgrpc.NewDeployment(crClient, opaClient, k8sClient, fleetBundleClient, catalogClient, vaultAuthClient, &protoValidator)
+	if err != nil {
+		log.Fatalf("Failed to create deployment service: %v", err)
+		return err
+	}
+	s.AddService(deploymentService)
 
 	msgSizeLimitBytes, err := utils.GetMessageSizeLimit()
 	if err != nil {
