@@ -165,7 +165,7 @@ func (m *Manager) Start() error {
 	}
 
 	s := northbound.NewServer(serverConfig)
-	s.AddService(internalgrpc.NewDeployment(crClient, opaClient, k8sClient, fleetBundleClient, catalogClient, vaultAuthClient, protoValidator))
+	s.AddService(internalgrpc.NewDeployment(crClient, opaClient, k8sClient, fleetBundleClient, catalogClient, vaultAuthClient, &protoValidator))
 
 	msgSizeLimitBytes, err := utils.GetMessageSizeLimit()
 	if err != nil {

@@ -4,6 +4,7 @@
 package dataselector
 
 import (
+	"fmt"
 	"github.com/open-edge-platform/orch-library/go/pkg/errors"
 )
 
@@ -40,15 +41,21 @@ func NewPaginationQuery(pageSize, offSet int) *PaginationQuery {
 
 // IsValidPagination returns true if pagination has non negative parameters and pageSize is within limits
 func (p *PaginationQuery) IsValidPagination() error {
+	// Check if PageSize is less than the minimum
 	if p.PageSize < MinPageSize {
-		return errors.NewInvalid("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 500 [uint32.gte_lte]")
+		return errors.NewInvalid(fmt.Sprintf("validation error:\n - page_size: value must be greater than or equal to %d [uint32.gte]", MinPageSize))
 	}
+
+	// Check if PageSize exceeds the maximum
 	if p.PageSize > MaxPageSize {
-		return errors.NewInvalid("validation error:\n - page_size: value must be greater than or equal to 0 and less than or equal to 500 [uint32.gte_lte]")
+		return errors.NewInvalid(fmt.Sprintf("validation error:\n - page_size: value must be less than or equal to %d [uint32.lte]", MaxPageSize))
 	}
+
+	// Check if Offset is less than the minimum
 	if p.OffSet < MinOffset {
 		return errors.NewInvalid("validation error:\n - offset: value must be greater than or equal to 0 [uint32.gte]")
 	}
+
 	return nil
 }
 

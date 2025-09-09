@@ -17,17 +17,26 @@ func selectDeployments(in *deploymentpb.ListDeploymentsRequest, deployments []*d
 	var orderByList []dataselector.OrderBy
 	var pageSize, offset uint32
 
-	// Validate non-negative values before conversion to prevent overflow
+	// Validate PageSize: must be non-negative and within safe conversion range
 	if in.PageSize < 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid PageSize: must be non-negative, got %d", in.PageSize)
 	}
+	// Check maximum safe conversion value (math.MaxInt32 >> 1 to ensure safe uint32 conversion)
+	if in.PageSize > 1073741823 { // 2^30 - 1, safe margin below math.MaxInt32
+		return nil, status.Errorf(codes.InvalidArgument, "invalid PageSize: exceeds maximum safe value, got %d", in.PageSize)
+	}
+
+	// Validate Offset: must be non-negative and within safe conversion range
 	if in.Offset < 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid Offset: must be non-negative, got %d", in.Offset)
 	}
+	if in.Offset > 1073741823 { // 2^30 - 1, safe margin below math.MaxInt32
+		return nil, status.Errorf(codes.InvalidArgument, "invalid Offset: exceeds maximum safe value, got %d", in.Offset)
+	}
 
-	//nolint:gosec // G115: Validated non-negative above, safe conversion
+	//nolint:gosec // G115: Validated range above, safe conversion
 	pageSize = uint32(in.PageSize)
-	//nolint:gosec // G115: Validated non-negative above, safe conversion
+	//nolint:gosec // G115: Validated range above, safe conversion
 	offset = uint32(in.Offset)
 	paginationQuery := newPaginationQuery(pageSize, offset)
 
@@ -76,17 +85,26 @@ func selectClusters(in *deploymentpb.ListClustersRequest, clusterInfoList []*dep
 	var orderByList []dataselector.OrderBy
 	var pageSize, offset uint32
 
-	// Validate non-negative values before conversion to prevent overflow
+	// Validate PageSize: must be non-negative and within safe conversion range
 	if in.PageSize < 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid PageSize: must be non-negative, got %d", in.PageSize)
 	}
+	// Check maximum safe conversion value (math.MaxInt32 >> 1 to ensure safe uint32 conversion)
+	if in.PageSize > 1073741823 { // 2^30 - 1, safe margin below math.MaxInt32
+		return nil, status.Errorf(codes.InvalidArgument, "invalid PageSize: exceeds maximum safe value, got %d", in.PageSize)
+	}
+
+	// Validate Offset: must be non-negative and within safe conversion range
 	if in.Offset < 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid Offset: must be non-negative, got %d", in.Offset)
 	}
+	if in.Offset > 1073741823 { // 2^30 - 1, safe margin below math.MaxInt32
+		return nil, status.Errorf(codes.InvalidArgument, "invalid Offset: exceeds maximum safe value, got %d", in.Offset)
+	}
 
-	//nolint:gosec // G115: Validated non-negative above, safe conversion
+	//nolint:gosec // G115: Validated range above, safe conversion
 	pageSize = uint32(in.PageSize)
-	//nolint:gosec // G115: Validated non-negative above, safe conversion
+	//nolint:gosec // G115: Validated range above, safe conversion
 	offset = uint32(in.Offset)
 	paginationQuery := newPaginationQuery(pageSize, offset)
 
@@ -133,17 +151,26 @@ func selectClustersPerDeployment(in *deploymentpb.ListDeploymentClustersRequest,
 	var orderByList []dataselector.OrderBy
 	var pageSize, offset uint32
 
-	// Validate non-negative values before conversion to prevent overflow
+	// Validate PageSize: must be non-negative and within safe conversion range
 	if in.PageSize < 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid PageSize: must be non-negative, got %d", in.PageSize)
 	}
+	// Check maximum safe conversion value (math.MaxInt32 >> 1 to ensure safe uint32 conversion)
+	if in.PageSize > 1073741823 { // 2^30 - 1, safe margin below math.MaxInt32
+		return nil, status.Errorf(codes.InvalidArgument, "invalid PageSize: exceeds maximum safe value, got %d", in.PageSize)
+	}
+
+	// Validate Offset: must be non-negative and within safe conversion range
 	if in.Offset < 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid Offset: must be non-negative, got %d", in.Offset)
 	}
+	if in.Offset > 1073741823 { // 2^30 - 1, safe margin below math.MaxInt32
+		return nil, status.Errorf(codes.InvalidArgument, "invalid Offset: exceeds maximum safe value, got %d", in.Offset)
+	}
 
-	//nolint:gosec // G115: Validated non-negative above, safe conversion
+	//nolint:gosec // G115: Validated range above, safe conversion
 	pageSize = uint32(in.PageSize)
-	//nolint:gosec // G115: Validated non-negative above, safe conversion
+	//nolint:gosec // G115: Validated range above, safe conversion
 	offset = uint32(in.Offset)
 	paginationQuery := newPaginationQuery(pageSize, offset)
 

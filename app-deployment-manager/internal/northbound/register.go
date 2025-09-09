@@ -5,6 +5,7 @@
 package northbound
 
 import (
+	"fmt"
 	"sync"
 
 	"buf.build/go/protovalidate"
@@ -23,17 +24,18 @@ import (
 // NewDeployment creates and initializes a new deployment service.
 func NewDeployment(crClient clientv1beta1.AppDeploymentClientInterface,
 	opaClient openpolicyagent.ClientWithResponsesInterface,
-	k8sClient *kubernetes.Clientset, fleetBundleClient *fleet.BundleClient, catalogClient catalogclient.CatalogClient, vaultAuthClient auth.VaultAuth, protoValidator ...protovalidate.Validator) *DeploymentSvc {
+	k8sClient *kubernetes.Clientset, fleetBundleClient *fleet.BundleClient, catalogClient catalogclient.CatalogClient, vaultAuthClient auth.VaultAuth, protoValidator *protovalidate.Validator) *DeploymentSvc {
 
 	var validator protovalidate.Validator
-	if len(protoValidator) > 0 {
-		validator = protoValidator[0]
+	if protoValidator != nil {
+		validator = *protoValidator
 	} else {
 		// Create a default validator for backward compatibility
 		var err error
 		validator, err = protovalidate.New()
 		if err != nil {
-			log.Fatalf("Failed to create default protobuf validator: %v", err)
+			// Handle error appropriately - return error rather than fatal
+			panic(fmt.Sprintf("Failed to create default protobuf validator: %v", err))
 		}
 	}
 
