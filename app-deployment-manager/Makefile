@@ -114,7 +114,7 @@ proto-generate: common-buf-update common-buf-generate merge-connectrpc-openapi c
 merge-connectrpc-openapi: ## Merge ConnectRPC individual OpenAPI files into consolidated specification
 	@echo "Merging ConnectRPC OpenAPI files..."
 	@python3 scripts/merge_openapi.py \
-		"api/nbi/v2/spec" \
+		"api/nbi/v2/spec/deployment/v1" \
 		"api/nbi/v2/spec/openapi.yaml" \
 		"Application Deployment Manager API" \
 		"Application Deployment Manager service providing operations for deploying and managing applications" \

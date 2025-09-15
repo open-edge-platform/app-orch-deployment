@@ -35,19 +35,14 @@ var allowedHeaders = map[string]struct{}{
 
 const ActiveProjectID = "ActiveProjectID"
 
-// mapGrpcToHTTPStatus maps gRPC status codes to appropriate HTTP status codes
 // errorHandler provides enhanced error handling for gRPC-Gateway responses
-// Uses orch-library error handling utilities for consistency across the platform
 func errorHandler(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.Marshaler, w http.ResponseWriter, r *http.Request, err error) {
-	// Check if this is a gRPC error and handle it with orch-library utilities
 	if grpcStatus, ok := status.FromError(err); ok {
-		// Convert gRPC status to orch-library typed error
 		typedErr := orcherror.FromStatus(grpcStatus)
 
 		// Convert back to gRPC status to get the proper HTTP status code
 		newStatus := orcherror.Status(typedErr)
 
-		// Use the existing gRPC-Gateway error handler with the processed error
 		runtime.DefaultHTTPErrorHandler(ctx, mux, marshaler, w, r, newStatus.Err())
 		return
 	}
@@ -85,7 +80,6 @@ func Run(grpcAddr string, gwAddr int, allowedCorsOrigins string, basePath string
 		}),
 		// handle 405 method not allowed
 		runtime.WithRoutingErrorHandler(ginutils.HandleRoutingError),
-		// Enhanced error handling for better REST API responses
 		runtime.WithErrorHandler(errorHandler),
 	)
 

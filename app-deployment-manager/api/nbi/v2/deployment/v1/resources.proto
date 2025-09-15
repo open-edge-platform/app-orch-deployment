@@ -66,7 +66,7 @@ message Deployment {
   // The Override values can be used to override any of the base profile values based on Deployment scenario.
   repeated OverrideValues override_values = 8 [
     (google.api.field_behavior) = OPTIONAL,
-    (buf.validate.field).repeated = {max_items: 20}
+    (buf.validate.field).repeated = {max_items: 100}
   ];
 
   // Cluster labels on which we want to deploy the application.

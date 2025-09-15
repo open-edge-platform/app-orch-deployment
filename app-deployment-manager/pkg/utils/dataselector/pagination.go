@@ -9,13 +9,9 @@ import (
 )
 
 const (
-	DefaultPageSize = 20 // Aligned with app-orch-catalog
-	// MaxPageSize defines the maximum allowed page size to prevent excessive resource usage
-	// Aligned with app-orch-catalog limit of 500 for consistency across platform
+	DefaultPageSize = 20
 	MaxPageSize = 500
-	// MinPageSize defines the minimum allowed page size
 	MinPageSize = 0
-	// MinOffset defines the minimum allowed offset value
 	MinOffset = 0
 )
 

@@ -46,11 +46,8 @@ func isHeaderAllowed(s string) (string, bool) {
 }
 
 // errorHandler provides enhanced error handling for gRPC-Gateway responses
-// Uses orch-library error handling utilities for consistency across the platform
 func errorHandler(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.Marshaler, w http.ResponseWriter, r *http.Request, err error) {
-	// Check if this is a gRPC error and handle it with orch-library utilities
 	if grpcStatus, ok := status.FromError(err); ok {
-		// Convert gRPC status to orch-library typed error
 		typedErr := orcherror.FromStatus(grpcStatus)
 
 		// Convert back to gRPC status to get the proper HTTP status code
@@ -86,7 +83,6 @@ func Run(restPort int, grpcEndpoint string, basePath string, allowedCorsOrigins 
 			return md
 		}),
 		runtime.WithRoutingErrorHandler(ginutils.HandleRoutingError),
-		// Enhanced error handling using shared utilities
 		runtime.WithErrorHandler(errorHandler),
 	)
 

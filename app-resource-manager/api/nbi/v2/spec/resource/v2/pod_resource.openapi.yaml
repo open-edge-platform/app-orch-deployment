@@ -1,0 +1,145 @@
+openapi: 3.1.0
+info:
+  title: resource.v2
+paths: {}
+components:
+  schemas:
+    resource.v2.Container:
+      type: object
+      properties:
+        name:
+          type: string
+          title: name
+          maxLength: 63
+          minLength: 1
+          pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
+          description: Container name
+        imageName:
+          type: string
+          title: image_name
+          description: image_name container image name
+          readOnly: true
+        restartCount:
+          type: integer
+          title: restart_count
+          format: int32
+          description: Number of times that a container is restarted.
+          readOnly: true
+        status:
+          title: status
+          description: status status of a container
+          readOnly: true
+          $ref: '#/components/schemas/resource.v2.ContainerStatus'
+      title: Container
+      required:
+        - name
+      additionalProperties: false
+      description: Represents a container resource.
+    resource.v2.ContainerStateRunning:
+      type: object
+      title: ContainerStateRunning
+      additionalProperties: false
+      description: Running status of a container.
+    resource.v2.ContainerStateTerminated:
+      type: object
+      properties:
+        reason:
+          type: string
+          title: reason
+          description: Reason of the termination.
+          readOnly: true
+        message:
+          type: string
+          title: message
+          description: Message of the termination status.
+          readOnly: true
+        exitCode:
+          type: integer
+          title: exit_code
+          format: int32
+          description: Exit code of the termination status.
+          readOnly: true
+      title: ContainerStateTerminated
+      additionalProperties: false
+      description: Termination status of a container.
+    resource.v2.ContainerStateWaiting:
+      type: object
+      properties:
+        reason:
+          type: string
+          title: reason
+          description: Reason of the waiting status.
+          readOnly: true
+        message:
+          type: string
+          title: message
+          description: Message of the waiting status.
+          readOnly: true
+      title: ContainerStateWaiting
+      additionalProperties: false
+      description: Waiting status of a container including the reason and message.
+    resource.v2.ContainerStatus:
+      type: object
+      oneOf:
+        - properties:
+            containerStateRunning:
+              title: container_state_running
+              $ref: '#/components/schemas/resource.v2.ContainerStateRunning'
+          title: container_state_running
+          required:
+            - containerStateRunning
+        - properties:
+            containerStateTerminated:
+              title: container_state_terminated
+              $ref: '#/components/schemas/resource.v2.ContainerStateTerminated'
+          title: container_state_terminated
+          required:
+            - containerStateTerminated
+        - properties:
+            containerStateWaiting:
+              title: container_state_waiting
+              $ref: '#/components/schemas/resource.v2.ContainerStateWaiting'
+          title: container_state_waiting
+          required:
+            - containerStateWaiting
+      title: ContainerStatus
+      additionalProperties: false
+      description: ContainerStatus status of a container
+    resource.v2.Pod:
+      type: object
+      properties:
+        containers:
+          type: array
+          items:
+            $ref: '#/components/schemas/resource.v2.Container'
+          title: containers
+          maxItems: 50
+          description: containers list of containers per pod
+        status:
+          title: status
+          description: status pod status
+          readOnly: true
+          $ref: '#/components/schemas/resource.v2.PodStatus'
+      title: Pod
+      additionalProperties: false
+      description: Represents a pod resource.
+    resource.v2.PodStatus:
+      type: object
+      properties:
+        state:
+          title: state
+          description: State information
+          $ref: '#/components/schemas/resource.v2.PodStatus.State'
+      title: PodStatus
+      additionalProperties: false
+      description: The status of the pod during its lifecycle.
+    resource.v2.PodStatus.State:
+      type: string
+      title: State
+      enum:
+        - STATE_UNSPECIFIED
+        - STATE_PENDING
+        - STATE_RUNNING
+        - STATE_SUCCEEDED
+        - STATE_FAILED
+security: []

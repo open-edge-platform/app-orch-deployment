@@ -115,18 +115,22 @@ def main():
     description = sys.argv[4] if len(sys.argv) > 4 else "API service"
     version = sys.argv[5] if len(sys.argv) > 5 else "1.0.0"
     
-    # Find all OpenAPI files
-    files = list(input_dir.rglob('*.openapi.yaml'))
+    # Find all OpenAPI files with better pattern matching
+    openapi_patterns = ['*.openapi.yaml', '*.openapi.yml', '*.swagger.yaml', '*.swagger.yml']
+    files = []
+    for pattern in openapi_patterns:
+        files.extend(input_dir.rglob(pattern))
     
     if not files:
-        print(f"No *.openapi.yaml files found in {input_dir}")
+        print(f"No OpenAPI files found in {input_dir}")
+        print(f"Looked for patterns: {', '.join(openapi_patterns)}")
         sys.exit(1)
     
     print(f"Found {len(files)} OpenAPI files to merge:")
-    for f in files:
+    for f in sorted(files):  # Sort for consistent output
         print(f"  - {f}")
     
-    # Initialize merged spec
+    # Initialize merged spec with more complete structure
     merged = {
         'openapi': '3.0.3',
         'info': {
@@ -135,42 +139,108 @@ def main():
             'version': version
         },
         'paths': {},
-        'components': {'schemas': {}}
+        'components': {
+            'schemas': {},
+            'responses': {},
+            'parameters': {},
+            'examples': {},
+            'requestBodies': {},
+            'headers': {},
+            'securitySchemes': {},
+            'links': {},
+            'callbacks': {}
+        },
+        'servers': [],
+        'security': [],
+        'tags': []
+    }
+    
+    # Track merged statistics
+    stats = {
+        'paths': 0,
+        'schemas': 0,
+        'errors': 0,
+        'warnings': 0
     }
     
     # Merge all files
     for f in files:
         try:
-            with open(f, 'r') as file:
+            with open(f, 'r', encoding='utf-8') as file:
                 content = yaml.safe_load(file)
                 
             if not content:
                 print(f"Warning: Empty file {f}")
+                stats['warnings'] += 1
                 continue
                 
             # Merge paths
             if 'paths' in content:
+                paths_count = len(content['paths'])
                 merged['paths'].update(content['paths'])
+                stats['paths'] += paths_count
+                print(f"  Merged {paths_count} paths from {f.name}")
                 
-            # Merge schemas with 3.1 to 3.0 conversion
-            if content.get('components', {}).get('schemas'):
-                schemas = convert_3_1_to_3_0(content['components']['schemas'])
-                merged['components']['schemas'].update(schemas)
+            # Merge components with 3.1 to 3.0 conversion
+            if 'components' in content:
+                components = convert_3_1_to_3_0(content['components'])
+                for component_type in merged['components']:
+                    if component_type in components:
+                        merged['components'][component_type].update(components[component_type])
+                        if component_type == 'schemas':
+                            stats['schemas'] += len(components[component_type])
+                            
+            # Merge servers if present
+            if 'servers' in content and isinstance(content['servers'], list):
+                for server in content['servers']:
+                    if server not in merged['servers']:
+                        merged['servers'].append(server)
+                        
+            # Merge security schemes
+            if 'security' in content and isinstance(content['security'], list):
+                for security in content['security']:
+                    if security not in merged['security']:
+                        merged['security'].append(security)
+                        
+            # Merge tags
+            if 'tags' in content and isinstance(content['tags'], list):
+                for tag in content['tags']:
+                    if tag not in merged['tags']:
+                        merged['tags'].append(tag)
                 
         except Exception as e:
             print(f"Error processing {f}: {e}")
-            sys.exit(1)
+            stats['errors'] += 1
+            if stats['errors'] > len(files) // 2:  # Fail if more than half the files fail
+                sys.exit(1)
+    
+    # Clean up empty components
+    merged['components'] = {k: v for k, v in merged['components'].items() if v}
+    
+    # Clean up empty top-level arrays
+    if not merged['servers']:
+        del merged['servers']
+    if not merged['security']:
+        del merged['security']
+    if not merged['tags']:
+        del merged['tags']
     
     # Ensure output directory exists
     output_file.parent.mkdir(parents=True, exist_ok=True)
     
-    # Write merged spec
+    # Write merged spec with better formatting
     try:
-        with open(output_file, 'w') as file:
-            yaml.dump(merged, file, default_flow_style=False, sort_keys=False)
-        print(f"Successfully merged OpenAPI spec to {output_file}")
-        print(f"  - Paths: {len(merged['paths'])}")
-        print(f"  - Schemas: {len(merged['components']['schemas'])}")
+        with open(output_file, 'w', encoding='utf-8') as file:
+            yaml.dump(merged, file, default_flow_style=False, sort_keys=False, 
+                     allow_unicode=True, width=120, indent=2)
+        print(f"\nSuccessfully merged OpenAPI spec to {output_file}")
+        print(f"  - Total paths: {stats['paths']}")
+        print(f"  - Total schemas: {stats['schemas']}")
+        print(f"  - Components: {list(merged['components'].keys())}")
+        if stats['warnings']:
+            print(f"  - Warnings: {stats['warnings']}")
+        if stats['errors']:
+            print(f"  - Errors: {stats['errors']}")
     except Exception as e:
         print(f"Error writing output file {output_file}: {e}")
         sys.exit(1)

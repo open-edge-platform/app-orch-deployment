@@ -28,7 +28,7 @@ plugins:
     out: api/nbi/v2
     opt: paths=source_relative
   - local: protoc-gen-connect-openapi
-    out: api/nbi/v2/spec/v2
+    out: api/nbi/v2/spec
     strategy: all
   - local: protoc-gen-grpc-gateway
     out: api/nbi/v2

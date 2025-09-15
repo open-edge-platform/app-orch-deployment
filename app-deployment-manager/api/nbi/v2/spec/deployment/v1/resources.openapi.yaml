@@ -4,30 +4,6 @@ info:
 paths: {}
 components:
   schemas:
-    deployment.v1.State:
-      type: string
-      title: State
-      enum:
-        - UNKNOWN
-        - RUNNING
-        - DOWN
-        - INTERNAL_ERROR
-        - DEPLOYING
-        - UPDATING
-        - TERMINATING
-        - ERROR
-        - NO_TARGET_CLUSTERS
-      description: State are the different states a deployment/cluster/app can be in.
-    google.protobuf.NullValue:
-      type: string
-      title: NullValue
-      enum:
-        - NULL_VALUE
-      description: |-
-        `NullValue` is a singleton enumeration to represent the null value for the
-         `Value` type union.
-
-         The JSON representation for `NullValue` is JSON `null`.
     deployment.v1.App:
       type: object
       properties:
@@ -93,43 +69,27 @@ components:
           title: display_name
           maxLength: 40
           pattern: ^([a-zA-Z0-9][\w\- \.\/_]{0,38}[a-zA-Z0-9]{0,1}|)$
-          description: |
-            (OPTIONAL) Deployment display name.
-            string.max_len = 40
-            string.min_len = 0
-            string.pattern = "^([a-zA-Z0-9][\\w\\- \\.\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$"
+          description: (OPTIONAL) Deployment display name.
         appName:
           type: string
           title: app_name
           maxLength: 40
           minLength: 1
           pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: |
-            The deployment package name to deploy from the catalog.
-            string.max_len = 40
-            string.min_len = 1
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+          description: The deployment package name to deploy from the catalog.
         appVersion:
           type: string
           title: app_version
           maxLength: 20
           minLength: 1
           pattern: ^[a-z0-9][a-z0-9-.]{0,18}[a-z0-9]{0,1}$
-          description: |
-            The version of the deployment package.
-            string.max_len = 20
-            string.min_len = 1
-            string.pattern = "^[a-z0-9][a-z0-9-.]{0,18}[a-z0-9]{0,1}$"
+          description: The version of the deployment package.
         profileName:
           type: string
           title: profile_name
           maxLength: 40
           pattern: ^[a-z0-9]*[a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: |
-            (OPTIONAL) The selected profile name to be used for the base Helm values of the different applications in the deployment package
-            string.max_len = 40
-            string.min_len = 0
-            string.pattern = "^[a-z0-9]*[a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+          description: (OPTIONAL) The selected profile name to be used for the base Helm values of the different applications in the deployment package
         createTime:
           title: create_time
           description: The creation time of the deployment.
@@ -145,7 +105,7 @@ components:
           items:
             $ref: '#/components/schemas/deployment.v1.OverrideValues'
           title: override_values
-          maxItems: 20
+          maxItems: 100
           description: (OPTIONAL) The Override values can be used to override any of the base profile values based on Deployment scenario.
         targetClusters:
           type: array
@@ -172,24 +132,17 @@ components:
           title: deployment_type
           maxLength: 20
           pattern: ^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$
-          description: |
+          description: |-
             (OPTIONAL) The deployment type for the target cluster deployment can be either auto-scaling or targeted.
              In Auto-scaling type, the application will be automatically deployed on all the
              clusters which match the Target cluster label. In Targeted type, the user has to select among pre created
              clusters to deploy the application.
-            string.max_len = 20
-            string.min_len = 0
-            string.pattern = "^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$"
         networkName:
           type: string
           title: network_name
           maxLength: 40
           pattern: ^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$
-          description: |
-            (OPTIONAL) network_name is the name of the interconnect network that deployment be part of
-            string.max_len = 40
-            string.min_len = 0
-            string.pattern = "^[a-z0-9]*[a-z0-9-]{0,18}[a-z0-9]{0,1}$"
+          description: (OPTIONAL) network_name is the name of the interconnect network that deployment be part of
         serviceExports:
           type: array
           items:
@@ -245,11 +198,7 @@ components:
           title: deployment_display_name
           maxLength: 40
           pattern: ^([a-zA-Z0-9][\w\- \.\/_]{0,38}[a-zA-Z0-9]{0,1}|)$
-          description: |
-            (OPTIONAL) Deployment display name.
-            string.max_len = 40
-            string.min_len = 0
-            string.pattern = "^([a-zA-Z0-9][\\w\\- \\.\\/_]{0,38}[a-zA-Z0-9]{0,1}|)$"
+          description: (OPTIONAL) Deployment display name.
         status:
           title: status
           description: Status has details of the cluster.
@@ -274,21 +223,13 @@ components:
           maxLength: 40
           minLength: 1
           pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: |
-            deployment package name to use when overriding values.
-            string.max_len = 40
-            string.min_len = 1
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+          description: deployment package name to use when overriding values.
         targetNamespace:
           type: string
           title: target_namespace
           maxLength: 63
           pattern: (^$)|^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$
-          description: |
-            (OPTIONAL) The namespace to deploy the app onto, default namespace is default.
-            string.max_len = 63
-            string.min_len = 0
-            string.pattern = "(^$)|^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$"
+          description: (OPTIONAL) The namespace to deploy the app onto, default namespace is default.
         values:
           title: values
           description: (OPTIONAL) The YAML representing Helm overrides
@@ -309,10 +250,6 @@ components:
           maxLength: 40
           minLength: 1
           pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: |
-            string.max_len = 40
-            string.min_len = 1
-            string.pattern = "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
         enabled:
           type: boolean
           title: enabled
@@ -320,6 +257,20 @@ components:
       required:
         - appName
       additionalProperties: false
+    deployment.v1.State:
+      type: string
+      title: State
+      enum:
+        - UNKNOWN
+        - RUNNING
+        - DOWN
+        - INTERNAL_ERROR
+        - DEPLOYING
+        - UPDATING
+        - TERMINATING
+        - ERROR
+        - NO_TARGET_CLUSTERS
+      description: State are the different states a deployment/cluster/app can be in.
     deployment.v1.Summary:
       type: object
       properties:
@@ -363,11 +314,7 @@ components:
           title: app_name
           maxLength: 40
           pattern: (^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: |
-            (OPTIONAL) The targeted deployment package name.
-            string.max_len = 40
-            string.min_len = 0
-            string.pattern = "(^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
+          description: (OPTIONAL) The targeted deployment package name.
         labels:
           type: object
           title: labels
@@ -378,21 +325,13 @@ components:
             maxLength: 40
             minLength: 1
             pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9/]{0,38}[a-z0-9])?$
-            description: |
-              string.max_len = 40
-              string.min_len = 1
-              string.pattern = "(^$)|^[a-z0-9]([-_.=,a-z0-9/]{0,38}[a-z0-9])?$"
           description: (OPTIONAL) Cluster labels to match the target cluster when auto-scaling deployment.
         clusterId:
           type: string
           title: cluster_id
           maxLength: 100
           pattern: (^$)|^[a-zA-Z0-9][a-zA-Z0-9-_\.]{0,98}[a-zA-Z0-9]?$
-          description: |
-            (OPTIONAL) Cluster id to match the target cluster when targeted deployment.
-            string.max_len = 100
-            string.min_len = 0
-            string.pattern = "(^$)|^[a-zA-Z0-9][a-zA-Z0-9-_\\.]{0,98}[a-zA-Z0-9]?$"
+          description: (OPTIONAL) Cluster id to match the target cluster when targeted deployment.
       title: TargetClusters
       additionalProperties: false
       description: Set target clusters based on labels.
@@ -422,6 +361,16 @@ components:
         `ListValue` is a wrapper around a repeated field of values.
 
          The JSON representation for `ListValue` is JSON array.
+    google.protobuf.NullValue:
+      type: string
+      title: NullValue
+      enum:
+        - NULL_VALUE
+      description: |-
+        `NullValue` is a singleton enumeration to represent the null value for the
+         `Value` type union.
+
+         The JSON representation for `NullValue` is JSON `null`.
     google.protobuf.Struct:
       type: object
       additionalProperties:

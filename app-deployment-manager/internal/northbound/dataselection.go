@@ -11,7 +11,7 @@ import (
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils/parser"
 )
 
-// convertPaginationParams safely converts pagination parameters from int32 to uint32
+// converting pagination parameters from int32 to uint32
 func convertPaginationParams(pageSize, offset int32) (uint32, uint32) {
 	// Protobuf validation guarantees pageSize >= 0 and offset >= 0
 	//nolint:gosec // G115: Values guaranteed non-negative by prior protobuf validation
@@ -21,7 +21,6 @@ func convertPaginationParams(pageSize, offset int32) (uint32, uint32) {
 func selectDeployments(in *deploymentpb.ListDeploymentsRequest, deployments []*deploymentpb.Deployment) ([]*deploymentpb.Deployment, error) {
 	var orderByList []dataselector.OrderBy
 
-	// Convert pagination parameters (validation handled by protobuf)
 	pageSize, offset := convertPaginationParams(in.PageSize, in.Offset)
 	paginationQuery := newPaginationQuery(pageSize, offset)
 
@@ -69,7 +68,6 @@ func selectDeployments(in *deploymentpb.ListDeploymentsRequest, deployments []*d
 func selectClusters(in *deploymentpb.ListClustersRequest, clusterInfoList []*deploymentpb.ClusterInfo) ([]*deploymentpb.ClusterInfo, error) {
 	var orderByList []dataselector.OrderBy
 
-	// Convert pagination parameters (validation handled by protobuf)
 	pageSize, offset := convertPaginationParams(in.PageSize, in.Offset)
 	paginationQuery := newPaginationQuery(pageSize, offset)
 
@@ -115,7 +113,6 @@ func selectClusters(in *deploymentpb.ListClustersRequest, clusterInfoList []*dep
 func selectClustersPerDeployment(in *deploymentpb.ListDeploymentClustersRequest, clusterList []*deploymentpb.Cluster) ([]*deploymentpb.Cluster, error) {
 	var orderByList []dataselector.OrderBy
 
-	// Convert pagination parameters (validation handled by protobuf)
 	pageSize, offset := convertPaginationParams(in.PageSize, in.Offset)
 	paginationQuery := newPaginationQuery(pageSize, offset)
 
