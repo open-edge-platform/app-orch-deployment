@@ -82,7 +82,7 @@ FUZZ_SECONDS ?= 60
 
 EXCLUDE_PKGS_TEST := grep -v ./pkg/api | grep -v ./api | grep -v ./pkg/utils/ratelimiter | grep -v ./test \
 	| grep -v ./internal/grafana/mockery | grep -v ./internal/catalogclient/mockery | grep -v ./internal/catalogclient/mocks \
-	| grep -v ./pkg/fleet/mocks
+	| grep -v ./pkg/fleet/mocks | grep -v ./internal/northbound/fuzztests
 
 PKG_LIST := ./cmd/... ./controllers/... ./webhooks/... ./pkg/... ./internal/...
 
@@ -109,7 +109,16 @@ verify-protoc-plugins: common-verify-protoc-plugins  ## Verify protoc plugins
 
 OPENAPI_SPEC_FILE ?= ./api/nbi/v2/spec/openapi.yaml
 REST_CLIENT_DIR ?= ./api/nbi/v2/pkg/restClient
-proto-generate: common-buf-update common-buf-generate common-openapi-spec-validate common-rest-client-gen common-buf-lint ## Generate protobuf code
+proto-generate: common-buf-update common-buf-generate merge-connectrpc-openapi common-openapi-spec-validate common-rest-client-gen common-buf-lint ## Generate protobuf code
+
+merge-connectrpc-openapi: ## Merge ConnectRPC individual OpenAPI files into consolidated specification
+	@echo "Merging ConnectRPC OpenAPI files..."
+	@python3 scripts/merge_openapi.py \
+		"api/nbi/v2/spec/deployment/v1" \
+		"api/nbi/v2/spec/openapi.yaml" \
+		"Application Deployment Manager API" \
+		"Application Deployment Manager service providing operations for deploying and managing applications" \
+		"2.0.0"
 
 buf-lint-fix: common-buf-lint-fix ## Lint and format protobuf files
 
@@ -125,10 +134,10 @@ controller-gen: ## Download controller-gen locally if necessary.
 	test -s $(CONTROLLER_GEN) || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
 
 generate-crds: controller-gen
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./api/v1beta1/..." output:crd:artifacts:config=config/crd/bases
 
 generate-apis: controller-gen
-	$(CONTROLLER_GEN) object:headerFile="controllers/license.go.txt" paths="./api/..."
+	$(CONTROLLER_GEN) object:headerFile="controllers/license.go.txt" paths="./api/v1beta1/..."
 
 manifests: generate-apis generate-crds ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 
@@ -310,3 +319,4 @@ coder-rebuild-gateway: use-orch-context kind-load-app-deployment-manager-gateway
 
 dependency-check-ci: ## Unsupported target
 	echo "no dependency check"
+

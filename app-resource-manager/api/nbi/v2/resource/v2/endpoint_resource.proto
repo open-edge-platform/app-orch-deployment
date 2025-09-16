@@ -5,21 +5,21 @@ syntax = "proto3";
 
 package resource.v2;
 
+import "buf/validate/validate.proto";
 import "google/api/field_behavior.proto";
-import "validate/validate.proto";
 
 // Represents an endpoint for accessing the application outside of a cluster.
 message AppEndpoint {
   // Endpoint object UID (e.g. service or ingress UID)
   string id = 1 [
     (google.api.field_behavior) = OUTPUT_ONLY,
-    (validate.rules).string.uuid = true
+    (buf.validate.field).string.uuid = true
   ];
 
   // Endpoint name
   string name = 2 [
     (google.api.field_behavior) = OUTPUT_ONLY,
-    (validate.rules).string = {
+    (buf.validate.field).string = {
       min_len: 1
       max_len: 40
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
@@ -27,10 +27,16 @@ message AppEndpoint {
   ];
 
   // Fully qualified domain name (FQDN) for external access.
-  repeated Fqdn fqdns = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated Fqdn fqdns = 5 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (buf.validate.field).repeated = {max_items: 10}
+  ];
 
   // List of ports exposed by a service for external access
-  repeated Port ports = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated Port ports = 6 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (buf.validate.field).repeated = {max_items: 20}
+  ];
 
   // EndpointStatus status of an endpoint
   EndpointStatus endpoint_status = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -38,7 +44,7 @@ message AppEndpoint {
 
 // Fully qualified domain name.
 message Fqdn {
-  string fqdn = 5 [(validate.rules).string.hostname = true];
+  string fqdn = 5 [(buf.validate.field).string.hostname = true];
 }
 
 // Port information
@@ -46,7 +52,7 @@ message Port {
   // Port name
   string name = 1 [
     (google.api.field_behavior) = OUTPUT_ONLY,
-    (validate.rules).string = {
+    (buf.validate.field).string = {
       min_len: 1
       max_len: 40
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"

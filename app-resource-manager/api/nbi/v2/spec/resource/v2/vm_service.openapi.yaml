@@ -1,0 +1,336 @@
+openapi: 3.1.0
+info:
+  title: resource.v2
+paths:
+  /resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/restart:
+    put:
+      tags:
+        - resource.v2.VirtualMachineService
+      summary: RestartVirtualMachine
+      description: Restarts a virtual machine for an application of a deployment in a cluster.
+      operationId: resource.v2.VirtualMachineService.RestartVirtualMachine
+      parameters:
+        - name: app_id
+          in: path
+          description: Application ID
+          required: true
+          schema:
+            type: string
+            title: app_id
+            maxLength: 80
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+            description: Application ID
+        - name: cluster_id
+          in: path
+          description: Cluster ID
+          required: true
+          schema:
+            type: string
+            title: cluster_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+            description: Cluster ID
+        - name: virtual_machine_id
+          in: path
+          description: Virtual machine ID
+          required: true
+          schema:
+            type: string
+            title: virtual_machine_id
+            format: uuid
+            description: Virtual machine ID
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resource.v2.RestartVirtualMachineResponse'
+  /resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/start:
+    put:
+      tags:
+        - resource.v2.VirtualMachineService
+      summary: StartVirtualMachine
+      description: Starts a virtual machine for an application of a deployment in a cluster.
+      operationId: resource.v2.VirtualMachineService.StartVirtualMachine
+      parameters:
+        - name: app_id
+          in: path
+          description: Application ID
+          required: true
+          schema:
+            type: string
+            title: app_id
+            maxLength: 80
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+            description: Application ID
+        - name: cluster_id
+          in: path
+          description: Cluster ID
+          required: true
+          schema:
+            type: string
+            title: cluster_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+            description: Cluster ID
+        - name: virtual_machine_id
+          in: path
+          description: Virtual machine ID
+          required: true
+          schema:
+            type: string
+            title: virtual_machine_id
+            format: uuid
+            description: Virtual machine ID
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resource.v2.StartVirtualMachineResponse'
+  /resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/stop:
+    put:
+      tags:
+        - resource.v2.VirtualMachineService
+      summary: StopVirtualMachine
+      description: Stops a virtual machine for an application of a deployment in a cluster.
+      operationId: resource.v2.VirtualMachineService.StopVirtualMachine
+      parameters:
+        - name: app_id
+          in: path
+          description: Application ID
+          required: true
+          schema:
+            type: string
+            title: app_id
+            maxLength: 80
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+            description: Application ID
+        - name: cluster_id
+          in: path
+          description: Cluster ID
+          required: true
+          schema:
+            type: string
+            title: cluster_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+            description: Cluster ID
+        - name: virtual_machine_id
+          in: path
+          description: Virtual machine ID
+          required: true
+          schema:
+            type: string
+            title: virtual_machine_id
+            format: uuid
+            description: Virtual machine ID
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resource.v2.StopVirtualMachineResponse'
+  /resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/vnc:
+    get:
+      tags:
+        - resource.v2.VirtualMachineService
+      summary: GetVNC
+      description: Accesses the VNC console to access a virtual machine.
+      operationId: resource.v2.VirtualMachineService.GetVNC
+      parameters:
+        - name: app_id
+          in: path
+          description: Application ID
+          required: true
+          schema:
+            type: string
+            title: app_id
+            maxLength: 80
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+            description: Application ID
+        - name: cluster_id
+          in: path
+          description: Cluster ID
+          required: true
+          schema:
+            type: string
+            title: cluster_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+            description: Cluster ID
+        - name: virtual_machine_id
+          in: path
+          description: Virtual machine ID
+          required: true
+          schema:
+            type: string
+            title: virtual_machine_id
+            format: uuid
+            description: Virtual machine ID
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resource.v2.GetVNCResponse'
+components:
+  schemas:
+    resource.v2.GetVNCRequest:
+      type: object
+      properties:
+        appId:
+          type: string
+          title: app_id
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: Application ID
+        clusterId:
+          type: string
+          title: cluster_id
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: Cluster ID
+        virtualMachineId:
+          type: string
+          title: virtual_machine_id
+          format: uuid
+          description: Virtual machine ID
+      title: GetVNCRequest
+      required:
+        - appId
+        - clusterId
+        - virtualMachineId
+      additionalProperties: false
+      description: Request message for GetVNC method
+    resource.v2.GetVNCResponse:
+      type: object
+      properties:
+        address:
+          type: string
+          title: address
+      title: GetVNCResponse
+      required:
+        - address
+      additionalProperties: false
+      description: Response message for the GetVNC method.
+    resource.v2.RestartVirtualMachineRequest:
+      type: object
+      properties:
+        appId:
+          type: string
+          title: app_id
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: Application ID
+        clusterId:
+          type: string
+          title: cluster_id
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: Cluster ID
+        virtualMachineId:
+          type: string
+          title: virtual_machine_id
+          format: uuid
+          description: Virtual machine ID
+      title: RestartVirtualMachineRequest
+      required:
+        - appId
+        - clusterId
+        - virtualMachineId
+      additionalProperties: false
+      description: Request message for RestartVirtualMachine method
+    resource.v2.RestartVirtualMachineResponse:
+      type: object
+      title: RestartVirtualMachineResponse
+      additionalProperties: false
+      description: Response message for the RestartVirtualMachine method.
+    resource.v2.StartVirtualMachineRequest:
+      type: object
+      properties:
+        appId:
+          type: string
+          title: app_id
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: Application ID
+        clusterId:
+          type: string
+          title: cluster_id
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: Cluster ID
+        virtualMachineId:
+          type: string
+          title: virtual_machine_id
+          format: uuid
+          description: Virtual machine ID
+      title: StartVirtualMachineRequest
+      required:
+        - appId
+        - clusterId
+        - virtualMachineId
+      additionalProperties: false
+      description: Request message for StartVirtualMachine method
+    resource.v2.StartVirtualMachineResponse:
+      type: object
+      title: StartVirtualMachineResponse
+      additionalProperties: false
+      description: Response message for the StartVirtualMachine method.
+    resource.v2.StopVirtualMachineRequest:
+      type: object
+      properties:
+        appId:
+          type: string
+          title: app_id
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: Application ID
+        clusterId:
+          type: string
+          title: cluster_id
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: Cluster ID
+        virtualMachineId:
+          type: string
+          title: virtual_machine_id
+          format: uuid
+          description: Virtual machine ID
+      title: StopVirtualMachineRequest
+      required:
+        - appId
+        - clusterId
+        - virtualMachineId
+      additionalProperties: false
+      description: Request message for StopVirtualMachine method
+    resource.v2.StopVirtualMachineResponse:
+      type: object
+      title: StopVirtualMachineResponse
+      additionalProperties: false
+      description: Response message for the StopVirtualMachine method.
+security: []
+tags:
+  - name: resource.v2.VirtualMachineService
+    description: Provides API to manage a virtual machine workload such as starting, stopping, or restarting a virtual machine; and virtual machine console access.

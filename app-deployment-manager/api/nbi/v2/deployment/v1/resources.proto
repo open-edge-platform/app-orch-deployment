@@ -10,6 +10,8 @@ import "google/api/field_behavior.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 
+option go_package = "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1";
+
 // Deployment defines the specification to deploy a Deployment Package onto a set of clusters.
 message Deployment {
   // Deployment name (unique string assigned by Orchestrator).
@@ -62,10 +64,16 @@ message Deployment {
   string deploy_id = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // The Override values can be used to override any of the base profile values based on Deployment scenario.
-  repeated OverrideValues override_values = 8 [(google.api.field_behavior) = OPTIONAL];
+  repeated OverrideValues override_values = 8 [
+    (google.api.field_behavior) = OPTIONAL,
+    (buf.validate.field).repeated = {max_items: 100}
+  ];
 
   // Cluster labels on which we want to deploy the application.
-  repeated TargetClusters target_clusters = 9 [(google.api.field_behavior) = OPTIONAL];
+  repeated TargetClusters target_clusters = 9 [
+    (google.api.field_behavior) = OPTIONAL,
+    (buf.validate.field).repeated = {max_items: 50}
+  ];
 
   // Status has details of the deployment.
   message Status {
@@ -78,7 +86,10 @@ message Deployment {
   Status status = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // Application details.
-  repeated App apps = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated App apps = 11 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (buf.validate.field).repeated = {max_items: 100}
+  ];
 
   // The deployment type for the target cluster deployment can be either auto-scaling or targeted.
   // In Auto-scaling type, the application will be automatically deployed on all the
@@ -103,7 +114,10 @@ message Deployment {
     }
   ];
 
-  repeated ServiceExport service_exports = 14 [(google.api.field_behavior) = OPTIONAL];
+  repeated ServiceExport service_exports = 14 [
+    (google.api.field_behavior) = OPTIONAL,
+    (buf.validate.field).repeated = {max_items: 10}
+  ];
 
   // Cluster labels/clusterID on which we want to deploy all the applications of the
   // deployment package
@@ -180,11 +194,19 @@ message TargetClusters {
           pattern: "(^$)|^[a-z0-9]([-_.=,a-z0-9/]{0,38}[a-z0-9])?$"
         }
       }
+      max_pairs: 10
     }
   ];
 
   // Cluster id to match the target cluster when targeted deployment.
-  string cluster_id = 3 [(google.api.field_behavior) = OPTIONAL];
+  string cluster_id = 3 [
+    (google.api.field_behavior) = OPTIONAL,
+    (buf.validate.field).string = {
+      min_len: 0
+      max_len: 100
+      pattern: "(^$)|^[a-zA-Z0-9][a-zA-Z0-9-_\\.]{0,98}[a-zA-Z0-9]?$"
+    }
+  ];
 }
 
 // State are the different states a deployment/cluster/app can be in.
@@ -252,7 +274,10 @@ message DeploymentInstancesCluster {
   Deployment.Status status = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // Apps has per-app details.
-  repeated App apps = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated App apps = 5 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (buf.validate.field).repeated = {max_items: 100}
+  ];
 }
 
 // Details of cluster.
@@ -267,5 +292,8 @@ message Cluster {
   Deployment.Status status = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // Apps has per-app details.
-  repeated App apps = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  repeated App apps = 4 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (buf.validate.field).repeated = {max_items: 100}
+  ];
 }

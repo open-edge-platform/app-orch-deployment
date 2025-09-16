@@ -68,7 +68,8 @@ This code requires the following tools to be installed on your development machi
 - [Python\* programming language version 3.10 or later](https://www.python.org/downloads)
 - [buf](https://github.com/bufbuild/buf)
 - [protoc-gen-doc](https://github.com/pseudomuto/protoc-gen-doc)
-- [protoc-gen-go-grpc](https://pkg.go.dev/google.golang.org/grpc)
+- [protoc-gen-connect-go](https://connectrpc.com/) for Connect-RPC client/server generation
+- [protoc-gen-connect-openapi](https://github.com/sudorandom/protoc-gen-connect-openapi) for OpenAPI spec generation
 - [protoc-gen-go](https://pkg.go.dev/google.golang.org/protobuf)
 - [KinD](https://kind.sigs.k8s.io/docs/user/quick-start/) based cluster for end-to-end tests
 - [Helm](https://helm.sh/docs/intro/install/) for install helm charts for end-to-end tests

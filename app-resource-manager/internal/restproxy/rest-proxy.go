@@ -13,6 +13,7 @@ import (
 	resourceapiv2 "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/resource/v2"
 	envutils "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/internal/utils/env"
 	"github.com/open-edge-platform/orch-library/go/dazl"
+	orcherror "github.com/open-edge-platform/orch-library/go/pkg/errors"
 
 	ginlogger "github.com/open-edge-platform/orch-library/go/pkg/logging/gin"
 	ginmiddleware "github.com/open-edge-platform/orch-library/go/pkg/middleware/gin"
@@ -21,6 +22,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"net/http"
 	"strings"
 )
@@ -41,6 +43,23 @@ func isHeaderAllowed(s string) (string, bool) {
 	}
 	// if not in the allowed header, don't send the header
 	return s, false
+}
+
+// errorHandler provides enhanced error handling for gRPC-Gateway responses
+func errorHandler(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.Marshaler, w http.ResponseWriter, r *http.Request, err error) {
+	if grpcStatus, ok := status.FromError(err); ok {
+		typedErr := orcherror.FromStatus(grpcStatus)
+
+		// Convert back to gRPC status to get the proper HTTP status code
+		newStatus := orcherror.Status(typedErr)
+
+		// Use the existing gRPC-Gateway error handler with the processed error
+		runtime.DefaultHTTPErrorHandler(ctx, mux, marshaler, w, r, newStatus.Err())
+		return
+	}
+
+	// Fall back to default handler for non-gRPC errors
+	runtime.DefaultHTTPErrorHandler(ctx, mux, marshaler, w, r, err)
 }
 
 func Run(restPort int, grpcEndpoint string, basePath string, allowedCorsOrigins string, openapiSpecFilePath string) error {
@@ -64,6 +83,7 @@ func Run(restPort int, grpcEndpoint string, basePath string, allowedCorsOrigins 
 			return md
 		}),
 		runtime.WithRoutingErrorHandler(ginutils.HandleRoutingError),
+		runtime.WithErrorHandler(errorHandler),
 	)
 
 	// Register V2 API Services

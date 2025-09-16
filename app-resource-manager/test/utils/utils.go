@@ -8,10 +8,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/auth"
-	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
+	testTypes "github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/pkg/restClient/v2"
 )
 
@@ -32,7 +33,11 @@ func CallMethod(url, verb, token, projectID string) (*http.Response, error) {
 }
 
 func StartVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) (int, error) {
-	resp, err := armClient.VirtualMachineServiceStartVirtualMachineWithResponse(context.TODO(), appID, types.TestClusterID, virtMachineID)
+	uuidVal, err := uuid.Parse(virtMachineID)
+	if err != nil {
+		return 0, fmt.Errorf("invalid UUID format: %v", err)
+	}
+	resp, err := armClient.ResourceV2VirtualMachineServiceStartVirtualMachineWithResponse(context.TODO(), appID, testTypes.TestClusterID, uuidVal)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return resp.StatusCode(), fmt.Errorf("%v", err)
@@ -44,7 +49,11 @@ func StartVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtM
 }
 
 func StopVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) (int, error) {
-	resp, err := armClient.VirtualMachineServiceStopVirtualMachineWithResponse(context.TODO(), appID, types.TestClusterID, virtMachineID)
+	uuidVal, err := uuid.Parse(virtMachineID)
+	if err != nil {
+		return 0, fmt.Errorf("invalid UUID format: %v", err)
+	}
+	resp, err := armClient.ResourceV2VirtualMachineServiceStopVirtualMachineWithResponse(context.TODO(), appID, testTypes.TestClusterID, uuidVal)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return resp.StatusCode(), fmt.Errorf("%v", err)
@@ -56,7 +65,11 @@ func StopVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMa
 }
 
 func RestartVirtualMachine(armClient *restClient.ClientWithResponses, appID, virtMachineID string) (int, error) {
-	resp, err := armClient.VirtualMachineServiceRestartVirtualMachineWithResponse(context.TODO(), appID, types.TestClusterID, virtMachineID)
+	uuidVal, err := uuid.Parse(virtMachineID)
+	if err != nil {
+		return 0, fmt.Errorf("invalid UUID format: %v", err)
+	}
+	resp, err := armClient.ResourceV2VirtualMachineServiceRestartVirtualMachineWithResponse(context.TODO(), appID, testTypes.TestClusterID, uuidVal)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return resp.StatusCode(), fmt.Errorf("%v", err)
@@ -68,7 +81,11 @@ func RestartVirtualMachine(armClient *restClient.ClientWithResponses, appID, vir
 }
 
 func GetVNC(armClient *restClient.ClientWithResponses, appID, virtMachineID string) (int, error) {
-	resp, err := armClient.VirtualMachineServiceGetVNCWithResponse(context.TODO(), appID, types.TestClusterID, virtMachineID)
+	uuidVal, err := uuid.Parse(virtMachineID)
+	if err != nil {
+		return 0, fmt.Errorf("invalid UUID format: %v", err)
+	}
+	resp, err := armClient.ResourceV2VirtualMachineServiceGetVNCWithResponse(context.TODO(), appID, testTypes.TestClusterID, uuidVal)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return resp.StatusCode(), fmt.Errorf("%v", err)
@@ -80,7 +97,7 @@ func GetVNC(armClient *restClient.ClientWithResponses, appID, virtMachineID stri
 }
 
 func MethodGetVNC(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/vnc", restServerURL, appID, types.TestClusterID, virtMachineID)
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/vnc", restServerURL, appID, testTypes.TestClusterID, virtMachineID)
 	res, err := CallMethod(url, verb, token, projectID)
 	if err != nil {
 		return nil, err
@@ -90,7 +107,7 @@ func MethodGetVNC(verb, restServerURL, appID, token, projectID, virtMachineID st
 }
 
 func MethodVMStart(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/start", restServerURL, appID, types.TestClusterID, virtMachineID)
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/start", restServerURL, appID, testTypes.TestClusterID, virtMachineID)
 	res, err := CallMethod(url, verb, token, projectID)
 	if err != nil {
 		return nil, err
@@ -100,7 +117,7 @@ func MethodVMStart(verb, restServerURL, appID, token, projectID, virtMachineID s
 }
 
 func MethodVMStop(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/stop", restServerURL, appID, types.TestClusterID, virtMachineID)
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/stop", restServerURL, appID, testTypes.TestClusterID, virtMachineID)
 	res, err := CallMethod(url, verb, token, projectID)
 	if err != nil {
 		return nil, err
@@ -110,7 +127,7 @@ func MethodVMStop(verb, restServerURL, appID, token, projectID, virtMachineID st
 }
 
 func MethodVMRestart(verb, restServerURL, appID, token, projectID, virtMachineID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/restart", restServerURL, appID, types.TestClusterID, virtMachineID)
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/virtual-machines/%s/%s/%s/restart", restServerURL, appID, testTypes.TestClusterID, virtMachineID)
 	res, err := CallMethod(url, verb, token, projectID)
 	if err != nil {
 		return nil, err
@@ -134,12 +151,18 @@ func GetVMStatus(armClient *restClient.ClientWithResponses, appID, virtMachineID
 		}
 
 		for _, appWorkload := range *appWorkloads {
-			appName = appWorkload.Name
-			currState = string(*appWorkload.VirtualMachine.Status.State)
-			if appWorkload.Id == virtMachineID {
-				if currState == desiredState {
-					fmt.Printf("Waiting for VM %s state %s ---> %s\n", appName, currState, desiredState)
-					return nil
+			if appWorkload.Name != nil {
+				appName = *appWorkload.Name
+			}
+			if appWorkload.Type != nil && *appWorkload.Type == restClient.TYPEVIRTUALMACHINE {
+				if vmWorkload, err := appWorkload.AsResourceV2AppWorkload1(); err == nil {
+					currState = string(*vmWorkload.VirtualMachine.Status.State)
+					if appWorkload.Id != nil && appWorkload.Id.String() == virtMachineID {
+						if currState == desiredState {
+							fmt.Printf("Waiting for VM %s state %s ---> %s\n", appName, currState, desiredState)
+							return nil
+						}
+					}
 				}
 			}
 		}
@@ -151,32 +174,32 @@ func GetVMStatus(armClient *restClient.ClientWithResponses, appID, virtMachineID
 	return fmt.Errorf("VM %s failed to reach desired state %s. Last known state: %s", appName, desiredState, currState)
 }
 
-func AppWorkloadsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppWorkload, int, error) {
-	resp, err := armClient.AppWorkloadServiceListAppWorkloadsWithResponse(context.TODO(), appID, types.TestClusterID)
+func AppWorkloadsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.ResourceV2AppWorkload, int, error) {
+	resp, err := armClient.ResourceV2AppWorkloadServiceListAppWorkloadsWithResponse(context.TODO(), appID, testTypes.TestClusterID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
-			return &[]restClient.AppWorkload{}, resp.StatusCode(), fmt.Errorf("%v", err)
+			return &[]restClient.ResourceV2AppWorkload{}, resp.StatusCode(), fmt.Errorf("%v", err)
 		}
-		return &[]restClient.AppWorkload{}, resp.StatusCode(), fmt.Errorf("failed to list app workloads: %v", string(resp.Body))
+		return &[]restClient.ResourceV2AppWorkload{}, resp.StatusCode(), fmt.Errorf("failed to list app workloads: %v", string(resp.Body))
 	}
 
 	return resp.JSON200.AppWorkloads, resp.StatusCode(), nil
 }
 
-func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.AppEndpoint, int, error) {
-	resp, err := armClient.EndpointsServiceListAppEndpointsWithResponse(context.TODO(), appID, types.TestClusterID)
+func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.ResourceV2AppEndpoint, int, error) {
+	resp, err := armClient.ResourceV2EndpointsServiceListAppEndpointsWithResponse(context.TODO(), appID, testTypes.TestClusterID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
-			return &[]restClient.AppEndpoint{}, resp.StatusCode(), fmt.Errorf("%v", err)
+			return &[]restClient.ResourceV2AppEndpoint{}, resp.StatusCode(), fmt.Errorf("%v", err)
 		}
-		return &[]restClient.AppEndpoint{}, resp.StatusCode(), fmt.Errorf("failed to list app endpoints: %v", string(resp.Body))
+		return &[]restClient.ResourceV2AppEndpoint{}, resp.StatusCode(), fmt.Errorf("failed to list app endpoints: %v", string(resp.Body))
 	}
 
 	return resp.JSON200.AppEndpoints, resp.StatusCode(), nil
 }
 
 func PodDelete(armClient *restClient.ClientWithResponses, namespace, podName, appID string) (int, error) {
-	resp, err := armClient.PodServiceDeletePodWithResponse(context.TODO(), types.TestClusterID, namespace, podName)
+	resp, err := armClient.ResourceV2PodServiceDeletePodWithResponse(context.TODO(), testTypes.TestClusterID, namespace, podName)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return resp.StatusCode(), fmt.Errorf("%v", err)
@@ -193,7 +216,7 @@ func PodDelete(armClient *restClient.ClientWithResponses, namespace, podName, ap
 }
 
 func MethodAppWorkloadsList(verb, restServerURL, appID, token, projectID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/%s/%s", restServerURL, appID, types.TestClusterID)
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/%s/%s", restServerURL, appID, testTypes.TestClusterID)
 	res, err := CallMethod(url, verb, token, projectID)
 	if err != nil {
 		return nil, err
@@ -203,7 +226,7 @@ func MethodAppWorkloadsList(verb, restServerURL, appID, token, projectID string)
 }
 
 func MethodAppEndpointsList(verb, restServerURL, appID, token, projectID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/endpoints/%s/%s", restServerURL, appID, types.TestClusterID)
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/endpoints/%s/%s", restServerURL, appID, testTypes.TestClusterID)
 	res, err := CallMethod(url, verb, token, projectID)
 	if err != nil {
 		return nil, err
@@ -213,7 +236,7 @@ func MethodAppEndpointsList(verb, restServerURL, appID, token, projectID string)
 }
 
 func MethodPodDelete(verb, restServerURL, namespace, podName, token, projectID string) (*http.Response, error) {
-	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/pods/%s/%s/%s/delete", restServerURL, types.TestClusterID, namespace, podName)
+	url := fmt.Sprintf("%s/resource.orchestrator.apis/v2/workloads/pods/%s/%s/%s/delete", restServerURL, testTypes.TestClusterID, namespace, podName)
 	res, err := CallMethod(url, verb, token, projectID)
 	if err != nil {
 		return nil, err
@@ -228,33 +251,39 @@ func GetPodStatus(armClient *restClient.ClientWithResponses, appID, workloadID, 
 		currState string
 	)
 
-	for range types.RetryCount {
+	for range testTypes.RetryCount {
 		appWorkloads, returnCode, err := AppWorkloadsList(armClient, appID)
 		if err != nil || returnCode != 200 {
 			return fmt.Errorf("failed to list app workloads: %v", err)
 		}
 
 		for _, appWorkload := range *appWorkloads {
-			appName = appWorkload.Name
-			currState = string(*appWorkload.Pod.Status.State)
+			if appWorkload.Name != nil {
+				appName = *appWorkload.Name
+			}
+			if appWorkload.Type != nil && *appWorkload.Type == restClient.TYPEPOD {
+				if podWorkload, err := appWorkload.AsResourceV2AppWorkload0(); err == nil {
+					currState = string(*podWorkload.Pod.Status.State)
 
-			if appWorkload.Id == workloadID {
-				if currState == desiredState {
-					fmt.Printf("Waiting for POD %s state %s ---> %s\n", appName, currState, desiredState)
-					return nil
+					if appWorkload.Id != nil && appWorkload.Id.String() == workloadID {
+						if currState == desiredState {
+							fmt.Printf("Waiting for POD %s state %s ---> %s\n", appName, currState, desiredState)
+							return nil
+						}
+					}
 				}
 			}
 		}
 
 		fmt.Printf("Waiting for POD %s state %s ---> %s\n", appName, currState, desiredState)
-		time.Sleep(types.RetryDelay)
+		time.Sleep(testTypes.RetryDelay)
 	}
 
 	return nil
 }
 
 func WaitPodDelete(armClient *restClient.ClientWithResponses, appID string) error {
-	for range types.RetryCount {
+	for range testTypes.RetryCount {
 		appWorkloads, returnCode, err := AppWorkloadsList(armClient, appID)
 		if err != nil || returnCode != 200 {
 			return fmt.Errorf("failed to list app workloads: %v", err)
@@ -268,7 +297,7 @@ func WaitPodDelete(armClient *restClient.ClientWithResponses, appID string) erro
 		}
 
 		fmt.Printf("Waiting for previous POD to delete (total %d)\n", totalPods)
-		time.Sleep(types.RetryDelay)
+		time.Sleep(testTypes.RetryDelay)
 	}
 
 	return nil

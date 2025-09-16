@@ -17,7 +17,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	deploymentv1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
+	v1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -48,14 +48,14 @@ func (m *MockDeploymentServiceClient) EXPECT() *MockDeploymentServiceClientMockR
 }
 
 // CreateDeployment mocks base method.
-func (m *MockDeploymentServiceClient) CreateDeployment(ctx context.Context, in *deploymentv1.CreateDeploymentRequest, opts ...grpc.CallOption) (*deploymentv1.CreateDeploymentResponse, error) {
+func (m *MockDeploymentServiceClient) CreateDeployment(ctx context.Context, in *v1.CreateDeploymentRequest, opts ...grpc.CallOption) (*v1.CreateDeploymentResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "CreateDeployment", varargs...)
-	ret0, _ := ret[0].(*deploymentv1.CreateDeploymentResponse)
+	ret0, _ := ret[0].(*v1.CreateDeploymentResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -68,7 +68,7 @@ func (mr *MockDeploymentServiceClientMockRecorder) CreateDeployment(ctx, in any,
 }
 
 // DeleteDeployment mocks base method.
-func (m *MockDeploymentServiceClient) DeleteDeployment(ctx context.Context, in *deploymentv1.DeleteDeploymentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (m *MockDeploymentServiceClient) DeleteDeployment(ctx context.Context, in *v1.DeleteDeploymentRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
@@ -88,14 +88,14 @@ func (mr *MockDeploymentServiceClientMockRecorder) DeleteDeployment(ctx, in any,
 }
 
 // GetAppNamespace mocks base method.
-func (m *MockDeploymentServiceClient) GetAppNamespace(ctx context.Context, in *deploymentv1.GetAppNamespaceRequest, opts ...grpc.CallOption) (*deploymentv1.GetAppNamespaceResponse, error) {
+func (m *MockDeploymentServiceClient) GetAppNamespace(ctx context.Context, in *v1.GetAppNamespaceRequest, opts ...grpc.CallOption) (*v1.GetAppNamespaceResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "GetAppNamespace", varargs...)
-	ret0, _ := ret[0].(*deploymentv1.GetAppNamespaceResponse)
+	ret0, _ := ret[0].(*v1.GetAppNamespaceResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -108,14 +108,14 @@ func (mr *MockDeploymentServiceClientMockRecorder) GetAppNamespace(ctx, in any, 
 }
 
 // GetDeployment mocks base method.
-func (m *MockDeploymentServiceClient) GetDeployment(ctx context.Context, in *deploymentv1.GetDeploymentRequest, opts ...grpc.CallOption) (*deploymentv1.GetDeploymentResponse, error) {
+func (m *MockDeploymentServiceClient) GetDeployment(ctx context.Context, in *v1.GetDeploymentRequest, opts ...grpc.CallOption) (*v1.GetDeploymentResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "GetDeployment", varargs...)
-	ret0, _ := ret[0].(*deploymentv1.GetDeploymentResponse)
+	ret0, _ := ret[0].(*v1.GetDeploymentResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -128,14 +128,14 @@ func (mr *MockDeploymentServiceClientMockRecorder) GetDeployment(ctx, in any, op
 }
 
 // GetDeploymentsStatus mocks base method.
-func (m *MockDeploymentServiceClient) GetDeploymentsStatus(ctx context.Context, in *deploymentv1.GetDeploymentsStatusRequest, opts ...grpc.CallOption) (*deploymentv1.GetDeploymentsStatusResponse, error) {
+func (m *MockDeploymentServiceClient) GetDeploymentsStatus(ctx context.Context, in *v1.GetDeploymentsStatusRequest, opts ...grpc.CallOption) (*v1.GetDeploymentsStatusResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "GetDeploymentsStatus", varargs...)
-	ret0, _ := ret[0].(*deploymentv1.GetDeploymentsStatusResponse)
+	ret0, _ := ret[0].(*v1.GetDeploymentsStatusResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -148,14 +148,14 @@ func (mr *MockDeploymentServiceClientMockRecorder) GetDeploymentsStatus(ctx, in 
 }
 
 // ListDeploymentClusters mocks base method.
-func (m *MockDeploymentServiceClient) ListDeploymentClusters(ctx context.Context, in *deploymentv1.ListDeploymentClustersRequest, opts ...grpc.CallOption) (*deploymentv1.ListDeploymentClustersResponse, error) {
+func (m *MockDeploymentServiceClient) ListDeploymentClusters(ctx context.Context, in *v1.ListDeploymentClustersRequest, opts ...grpc.CallOption) (*v1.ListDeploymentClustersResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ListDeploymentClusters", varargs...)
-	ret0, _ := ret[0].(*deploymentv1.ListDeploymentClustersResponse)
+	ret0, _ := ret[0].(*v1.ListDeploymentClustersResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -168,14 +168,14 @@ func (mr *MockDeploymentServiceClientMockRecorder) ListDeploymentClusters(ctx, i
 }
 
 // ListDeployments mocks base method.
-func (m *MockDeploymentServiceClient) ListDeployments(ctx context.Context, in *deploymentv1.ListDeploymentsRequest, opts ...grpc.CallOption) (*deploymentv1.ListDeploymentsResponse, error) {
+func (m *MockDeploymentServiceClient) ListDeployments(ctx context.Context, in *v1.ListDeploymentsRequest, opts ...grpc.CallOption) (*v1.ListDeploymentsResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ListDeployments", varargs...)
-	ret0, _ := ret[0].(*deploymentv1.ListDeploymentsResponse)
+	ret0, _ := ret[0].(*v1.ListDeploymentsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -188,14 +188,14 @@ func (mr *MockDeploymentServiceClientMockRecorder) ListDeployments(ctx, in any, 
 }
 
 // ListDeploymentsPerCluster mocks base method.
-func (m *MockDeploymentServiceClient) ListDeploymentsPerCluster(ctx context.Context, in *deploymentv1.ListDeploymentsPerClusterRequest, opts ...grpc.CallOption) (*deploymentv1.ListDeploymentsPerClusterResponse, error) {
+func (m *MockDeploymentServiceClient) ListDeploymentsPerCluster(ctx context.Context, in *v1.ListDeploymentsPerClusterRequest, opts ...grpc.CallOption) (*v1.ListDeploymentsPerClusterResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ListDeploymentsPerCluster", varargs...)
-	ret0, _ := ret[0].(*deploymentv1.ListDeploymentsPerClusterResponse)
+	ret0, _ := ret[0].(*v1.ListDeploymentsPerClusterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -208,14 +208,14 @@ func (mr *MockDeploymentServiceClientMockRecorder) ListDeploymentsPerCluster(ctx
 }
 
 // UpdateDeployment mocks base method.
-func (m *MockDeploymentServiceClient) UpdateDeployment(ctx context.Context, in *deploymentv1.UpdateDeploymentRequest, opts ...grpc.CallOption) (*deploymentv1.UpdateDeploymentResponse, error) {
+func (m *MockDeploymentServiceClient) UpdateDeployment(ctx context.Context, in *v1.UpdateDeploymentRequest, opts ...grpc.CallOption) (*v1.UpdateDeploymentResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "UpdateDeployment", varargs...)
-	ret0, _ := ret[0].(*deploymentv1.UpdateDeploymentResponse)
+	ret0, _ := ret[0].(*v1.UpdateDeploymentResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -232,10 +232,6 @@ type MockDeploymentServiceServer struct {
 	ctrl     *gomock.Controller
 	recorder *MockDeploymentServiceServerMockRecorder
 	isgomock struct{}
-}
-
-func (m *MockDeploymentServiceServer) Register(s *grpc.Server) {
-	deploymentv1.RegisterDeploymentServiceServer(s, m)
 }
 
 // MockDeploymentServiceServerMockRecorder is the mock recorder for MockDeploymentServiceServer.
@@ -256,10 +252,10 @@ func (m *MockDeploymentServiceServer) EXPECT() *MockDeploymentServiceServerMockR
 }
 
 // CreateDeployment mocks base method.
-func (m *MockDeploymentServiceServer) CreateDeployment(arg0 context.Context, arg1 *deploymentv1.CreateDeploymentRequest) (*deploymentv1.CreateDeploymentResponse, error) {
+func (m *MockDeploymentServiceServer) CreateDeployment(arg0 context.Context, arg1 *v1.CreateDeploymentRequest) (*v1.CreateDeploymentResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateDeployment", arg0, arg1)
-	ret0, _ := ret[0].(*deploymentv1.CreateDeploymentResponse)
+	ret0, _ := ret[0].(*v1.CreateDeploymentResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -271,7 +267,7 @@ func (mr *MockDeploymentServiceServerMockRecorder) CreateDeployment(arg0, arg1 a
 }
 
 // DeleteDeployment mocks base method.
-func (m *MockDeploymentServiceServer) DeleteDeployment(arg0 context.Context, arg1 *deploymentv1.DeleteDeploymentRequest) (*emptypb.Empty, error) {
+func (m *MockDeploymentServiceServer) DeleteDeployment(arg0 context.Context, arg1 *v1.DeleteDeploymentRequest) (*emptypb.Empty, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteDeployment", arg0, arg1)
 	ret0, _ := ret[0].(*emptypb.Empty)
@@ -286,10 +282,10 @@ func (mr *MockDeploymentServiceServerMockRecorder) DeleteDeployment(arg0, arg1 a
 }
 
 // GetAppNamespace mocks base method.
-func (m *MockDeploymentServiceServer) GetAppNamespace(arg0 context.Context, arg1 *deploymentv1.GetAppNamespaceRequest) (*deploymentv1.GetAppNamespaceResponse, error) {
+func (m *MockDeploymentServiceServer) GetAppNamespace(arg0 context.Context, arg1 *v1.GetAppNamespaceRequest) (*v1.GetAppNamespaceResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAppNamespace", arg0, arg1)
-	ret0, _ := ret[0].(*deploymentv1.GetAppNamespaceResponse)
+	ret0, _ := ret[0].(*v1.GetAppNamespaceResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -301,10 +297,10 @@ func (mr *MockDeploymentServiceServerMockRecorder) GetAppNamespace(arg0, arg1 an
 }
 
 // GetDeployment mocks base method.
-func (m *MockDeploymentServiceServer) GetDeployment(arg0 context.Context, arg1 *deploymentv1.GetDeploymentRequest) (*deploymentv1.GetDeploymentResponse, error) {
+func (m *MockDeploymentServiceServer) GetDeployment(arg0 context.Context, arg1 *v1.GetDeploymentRequest) (*v1.GetDeploymentResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeployment", arg0, arg1)
-	ret0, _ := ret[0].(*deploymentv1.GetDeploymentResponse)
+	ret0, _ := ret[0].(*v1.GetDeploymentResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -316,10 +312,10 @@ func (mr *MockDeploymentServiceServerMockRecorder) GetDeployment(arg0, arg1 any)
 }
 
 // GetDeploymentsStatus mocks base method.
-func (m *MockDeploymentServiceServer) GetDeploymentsStatus(arg0 context.Context, arg1 *deploymentv1.GetDeploymentsStatusRequest) (*deploymentv1.GetDeploymentsStatusResponse, error) {
+func (m *MockDeploymentServiceServer) GetDeploymentsStatus(arg0 context.Context, arg1 *v1.GetDeploymentsStatusRequest) (*v1.GetDeploymentsStatusResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDeploymentsStatus", arg0, arg1)
-	ret0, _ := ret[0].(*deploymentv1.GetDeploymentsStatusResponse)
+	ret0, _ := ret[0].(*v1.GetDeploymentsStatusResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -331,10 +327,10 @@ func (mr *MockDeploymentServiceServerMockRecorder) GetDeploymentsStatus(arg0, ar
 }
 
 // ListDeploymentClusters mocks base method.
-func (m *MockDeploymentServiceServer) ListDeploymentClusters(arg0 context.Context, arg1 *deploymentv1.ListDeploymentClustersRequest) (*deploymentv1.ListDeploymentClustersResponse, error) {
+func (m *MockDeploymentServiceServer) ListDeploymentClusters(arg0 context.Context, arg1 *v1.ListDeploymentClustersRequest) (*v1.ListDeploymentClustersResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListDeploymentClusters", arg0, arg1)
-	ret0, _ := ret[0].(*deploymentv1.ListDeploymentClustersResponse)
+	ret0, _ := ret[0].(*v1.ListDeploymentClustersResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -346,10 +342,10 @@ func (mr *MockDeploymentServiceServerMockRecorder) ListDeploymentClusters(arg0, 
 }
 
 // ListDeployments mocks base method.
-func (m *MockDeploymentServiceServer) ListDeployments(arg0 context.Context, arg1 *deploymentv1.ListDeploymentsRequest) (*deploymentv1.ListDeploymentsResponse, error) {
+func (m *MockDeploymentServiceServer) ListDeployments(arg0 context.Context, arg1 *v1.ListDeploymentsRequest) (*v1.ListDeploymentsResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListDeployments", arg0, arg1)
-	ret0, _ := ret[0].(*deploymentv1.ListDeploymentsResponse)
+	ret0, _ := ret[0].(*v1.ListDeploymentsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -361,10 +357,10 @@ func (mr *MockDeploymentServiceServerMockRecorder) ListDeployments(arg0, arg1 an
 }
 
 // ListDeploymentsPerCluster mocks base method.
-func (m *MockDeploymentServiceServer) ListDeploymentsPerCluster(arg0 context.Context, arg1 *deploymentv1.ListDeploymentsPerClusterRequest) (*deploymentv1.ListDeploymentsPerClusterResponse, error) {
+func (m *MockDeploymentServiceServer) ListDeploymentsPerCluster(arg0 context.Context, arg1 *v1.ListDeploymentsPerClusterRequest) (*v1.ListDeploymentsPerClusterResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListDeploymentsPerCluster", arg0, arg1)
-	ret0, _ := ret[0].(*deploymentv1.ListDeploymentsPerClusterResponse)
+	ret0, _ := ret[0].(*v1.ListDeploymentsPerClusterResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -376,10 +372,10 @@ func (mr *MockDeploymentServiceServerMockRecorder) ListDeploymentsPerCluster(arg
 }
 
 // UpdateDeployment mocks base method.
-func (m *MockDeploymentServiceServer) UpdateDeployment(arg0 context.Context, arg1 *deploymentv1.UpdateDeploymentRequest) (*deploymentv1.UpdateDeploymentResponse, error) {
+func (m *MockDeploymentServiceServer) UpdateDeployment(arg0 context.Context, arg1 *v1.UpdateDeploymentRequest) (*v1.UpdateDeploymentResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateDeployment", arg0, arg1)
-	ret0, _ := ret[0].(*deploymentv1.UpdateDeploymentResponse)
+	ret0, _ := ret[0].(*v1.UpdateDeploymentResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -388,6 +384,18 @@ func (m *MockDeploymentServiceServer) UpdateDeployment(arg0 context.Context, arg
 func (mr *MockDeploymentServiceServerMockRecorder) UpdateDeployment(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDeployment", reflect.TypeOf((*MockDeploymentServiceServer)(nil).UpdateDeployment), arg0, arg1)
+}
+
+// mustEmbedUnimplementedDeploymentServiceServer mocks base method.
+func (m *MockDeploymentServiceServer) mustEmbedUnimplementedDeploymentServiceServer() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "mustEmbedUnimplementedDeploymentServiceServer")
+}
+
+// mustEmbedUnimplementedDeploymentServiceServer indicates an expected call of mustEmbedUnimplementedDeploymentServiceServer.
+func (mr *MockDeploymentServiceServerMockRecorder) mustEmbedUnimplementedDeploymentServiceServer() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "mustEmbedUnimplementedDeploymentServiceServer", reflect.TypeOf((*MockDeploymentServiceServer)(nil).mustEmbedUnimplementedDeploymentServiceServer))
 }
 
 // MockUnsafeDeploymentServiceServer is a mock of UnsafeDeploymentServiceServer interface.

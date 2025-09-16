@@ -4,118 +4,307 @@
 package restClient
 
 import (
+	"encoding/json"
+	"fmt"
 	"time"
+
+	"github.com/oapi-codegen/runtime"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// Defines values for AdminStatusState.
+// Defines values for ResourceV2AdminStatusState.
 const (
-	AdminStatusStateSTATEDOWN        AdminStatusState = "STATE_DOWN"
-	AdminStatusStateSTATEUNSPECIFIED AdminStatusState = "STATE_UNSPECIFIED"
-	AdminStatusStateSTATEUP          AdminStatusState = "STATE_UP"
+	ResourceV2AdminStatusStateSTATEDOWN        ResourceV2AdminStatusState = "STATE_DOWN"
+	ResourceV2AdminStatusStateSTATEUNSPECIFIED ResourceV2AdminStatusState = "STATE_UNSPECIFIED"
+	ResourceV2AdminStatusStateSTATEUP          ResourceV2AdminStatusState = "STATE_UP"
 )
 
-// Defines values for AppWorkloadType.
+// Defines values for ResourceV2AppWorkloadType.
 const (
-	TYPEPOD            AppWorkloadType = "TYPE_POD"
-	TYPEUNSPECIFIED    AppWorkloadType = "TYPE_UNSPECIFIED"
-	TYPEVIRTUALMACHINE AppWorkloadType = "TYPE_VIRTUAL_MACHINE"
+	TYPEPOD            ResourceV2AppWorkloadType = "TYPE_POD"
+	TYPEUNSPECIFIED    ResourceV2AppWorkloadType = "TYPE_UNSPECIFIED"
+	TYPEVIRTUALMACHINE ResourceV2AppWorkloadType = "TYPE_VIRTUAL_MACHINE"
 )
 
-// Defines values for EndpointStatusState.
+// Defines values for ResourceV2EndpointStatusState.
 const (
-	EndpointStatusStateSTATENOTREADY    EndpointStatusState = "STATE_NOT_READY"
-	EndpointStatusStateSTATEREADY       EndpointStatusState = "STATE_READY"
-	EndpointStatusStateSTATEUNSPECIFIED EndpointStatusState = "STATE_UNSPECIFIED"
+	ResourceV2EndpointStatusStateSTATENOTREADY    ResourceV2EndpointStatusState = "STATE_NOT_READY"
+	ResourceV2EndpointStatusStateSTATEREADY       ResourceV2EndpointStatusState = "STATE_READY"
+	ResourceV2EndpointStatusStateSTATEUNSPECIFIED ResourceV2EndpointStatusState = "STATE_UNSPECIFIED"
 )
 
-// Defines values for PodStatusState.
+// Defines values for ResourceV2PodStatusState.
 const (
-	PodStatusStateSTATEFAILED      PodStatusState = "STATE_FAILED"
-	PodStatusStateSTATEPENDING     PodStatusState = "STATE_PENDING"
-	PodStatusStateSTATERUNNING     PodStatusState = "STATE_RUNNING"
-	PodStatusStateSTATESUCCEEDED   PodStatusState = "STATE_SUCCEEDED"
-	PodStatusStateSTATEUNSPECIFIED PodStatusState = "STATE_UNSPECIFIED"
+	ResourceV2PodStatusStateSTATEFAILED      ResourceV2PodStatusState = "STATE_FAILED"
+	ResourceV2PodStatusStateSTATEPENDING     ResourceV2PodStatusState = "STATE_PENDING"
+	ResourceV2PodStatusStateSTATERUNNING     ResourceV2PodStatusState = "STATE_RUNNING"
+	ResourceV2PodStatusStateSTATESUCCEEDED   ResourceV2PodStatusState = "STATE_SUCCEEDED"
+	ResourceV2PodStatusStateSTATEUNSPECIFIED ResourceV2PodStatusState = "STATE_UNSPECIFIED"
 )
 
-// Defines values for VirtualMachineStatusState.
+// Defines values for ResourceV2VirtualMachineStatusState.
 const (
-	VirtualMachineStatusStateSTATECRASHLOOPBACKOFF        VirtualMachineStatusState = "STATE_CRASH_LOOP_BACKOFF"
-	VirtualMachineStatusStateSTATEERRORDATAVOLUME         VirtualMachineStatusState = "STATE_ERROR_DATA_VOLUME"
-	VirtualMachineStatusStateSTATEERRORIMAGEPULL          VirtualMachineStatusState = "STATE_ERROR_IMAGE_PULL"
-	VirtualMachineStatusStateSTATEERRORIMAGEPULLBACKOFF   VirtualMachineStatusState = "STATE_ERROR_IMAGE_PULL_BACKOFF"
-	VirtualMachineStatusStateSTATEERRORPVCNOTFOUND        VirtualMachineStatusState = "STATE_ERROR_PVC_NOT_FOUND"
-	VirtualMachineStatusStateSTATEERRORUNSCHEDULABLE      VirtualMachineStatusState = "STATE_ERROR_UNSCHEDULABLE"
-	VirtualMachineStatusStateSTATEMIGRATING               VirtualMachineStatusState = "STATE_MIGRATING"
-	VirtualMachineStatusStateSTATEPAUSED                  VirtualMachineStatusState = "STATE_PAUSED"
-	VirtualMachineStatusStateSTATEPROVISIONING            VirtualMachineStatusState = "STATE_PROVISIONING"
-	VirtualMachineStatusStateSTATERUNNING                 VirtualMachineStatusState = "STATE_RUNNING"
-	VirtualMachineStatusStateSTATESTARTING                VirtualMachineStatusState = "STATE_STARTING"
-	VirtualMachineStatusStateSTATESTOPPED                 VirtualMachineStatusState = "STATE_STOPPED"
-	VirtualMachineStatusStateSTATESTOPPING                VirtualMachineStatusState = "STATE_STOPPING"
-	VirtualMachineStatusStateSTATETERMINATING             VirtualMachineStatusState = "STATE_TERMINATING"
-	VirtualMachineStatusStateSTATEUNSPECIFIED             VirtualMachineStatusState = "STATE_UNSPECIFIED"
-	VirtualMachineStatusStateSTATEWAITINGFORVOLUMEBINDING VirtualMachineStatusState = "STATE_WAITING_FOR_VOLUME_BINDING"
+	ResourceV2VirtualMachineStatusStateSTATECRASHLOOPBACKOFF        ResourceV2VirtualMachineStatusState = "STATE_CRASH_LOOP_BACKOFF"
+	ResourceV2VirtualMachineStatusStateSTATEERRORDATAVOLUME         ResourceV2VirtualMachineStatusState = "STATE_ERROR_DATA_VOLUME"
+	ResourceV2VirtualMachineStatusStateSTATEERRORIMAGEPULL          ResourceV2VirtualMachineStatusState = "STATE_ERROR_IMAGE_PULL"
+	ResourceV2VirtualMachineStatusStateSTATEERRORIMAGEPULLBACKOFF   ResourceV2VirtualMachineStatusState = "STATE_ERROR_IMAGE_PULL_BACKOFF"
+	ResourceV2VirtualMachineStatusStateSTATEERRORPVCNOTFOUND        ResourceV2VirtualMachineStatusState = "STATE_ERROR_PVC_NOT_FOUND"
+	ResourceV2VirtualMachineStatusStateSTATEERRORUNSCHEDULABLE      ResourceV2VirtualMachineStatusState = "STATE_ERROR_UNSCHEDULABLE"
+	ResourceV2VirtualMachineStatusStateSTATEMIGRATING               ResourceV2VirtualMachineStatusState = "STATE_MIGRATING"
+	ResourceV2VirtualMachineStatusStateSTATEPAUSED                  ResourceV2VirtualMachineStatusState = "STATE_PAUSED"
+	ResourceV2VirtualMachineStatusStateSTATEPROVISIONING            ResourceV2VirtualMachineStatusState = "STATE_PROVISIONING"
+	ResourceV2VirtualMachineStatusStateSTATERUNNING                 ResourceV2VirtualMachineStatusState = "STATE_RUNNING"
+	ResourceV2VirtualMachineStatusStateSTATESTARTING                ResourceV2VirtualMachineStatusState = "STATE_STARTING"
+	ResourceV2VirtualMachineStatusStateSTATESTOPPED                 ResourceV2VirtualMachineStatusState = "STATE_STOPPED"
+	ResourceV2VirtualMachineStatusStateSTATESTOPPING                ResourceV2VirtualMachineStatusState = "STATE_STOPPING"
+	ResourceV2VirtualMachineStatusStateSTATETERMINATING             ResourceV2VirtualMachineStatusState = "STATE_TERMINATING"
+	ResourceV2VirtualMachineStatusStateSTATEUNSPECIFIED             ResourceV2VirtualMachineStatusState = "STATE_UNSPECIFIED"
+	ResourceV2VirtualMachineStatusStateSTATEWAITINGFORVOLUMEBINDING ResourceV2VirtualMachineStatusState = "STATE_WAITING_FOR_VOLUME_BINDING"
 )
 
-// AdminStatus Represents the associated VirtualMachineInstance's state, either created (up state) or not (down state).
-type AdminStatus struct {
-	// State State information
-	State *AdminStatusState `json:"state,omitempty"`
+// GoogleProtobufTimestamp A Timestamp represents a point in time independent of any time zone or local
+//
+//	calendar, encoded as a count of seconds and fractions of seconds at
+//	nanosecond resolution. The count is relative to an epoch at UTC midnight on
+//	January 1, 1970, in the proleptic Gregorian calendar which extends the
+//	Gregorian calendar backwards to year one.
+//
+//	All minutes are 60 seconds long. Leap seconds are "smeared" so that no leap
+//	second table is needed for interpretation, using a [24-hour linear
+//	smear](https://developers.google.com/time/smear).
+//
+//	The range is from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z. By
+//	restricting to that range, we ensure that we can convert to and from [RFC
+//	3339](https://www.ietf.org/rfc/rfc3339.txt) date strings.
+//
+//	# Examples
+//
+//	Example 1: Compute Timestamp from POSIX `time()`.
+//
+//	    Timestamp timestamp;
+//	    timestamp.set_seconds(time(NULL));
+//	    timestamp.set_nanos(0);
+//
+//	Example 2: Compute Timestamp from POSIX `gettimeofday()`.
+//
+//	    struct timeval tv;
+//	    gettimeofday(&tv, NULL);
+//
+//	    Timestamp timestamp;
+//	    timestamp.set_seconds(tv.tv_sec);
+//	    timestamp.set_nanos(tv.tv_usec * 1000);
+//
+//	Example 3: Compute Timestamp from Win32 `GetSystemTimeAsFileTime()`.
+//
+//	    FILETIME ft;
+//	    GetSystemTimeAsFileTime(&ft);
+//	    UINT64 ticks = (((UINT64)ft.dwHighDateTime) << 32) | ft.dwLowDateTime;
+//
+//	    // A Windows tick is 100 nanoseconds. Windows epoch 1601-01-01T00:00:00Z
+//	    // is 11644473600 seconds before Unix epoch 1970-01-01T00:00:00Z.
+//	    Timestamp timestamp;
+//	    timestamp.set_seconds((INT64) ((ticks / 10000000) - 11644473600LL));
+//	    timestamp.set_nanos((INT32) ((ticks % 10000000) * 100));
+//
+//	Example 4: Compute Timestamp from Java `System.currentTimeMillis()`.
+//
+//	    long millis = System.currentTimeMillis();
+//
+//	    Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)
+//	        .setNanos((int) ((millis % 1000) * 1000000)).build();
+//
+//	Example 5: Compute Timestamp from Java `Instant.now()`.
+//
+//	    Instant now = Instant.now();
+//
+//	    Timestamp timestamp =
+//	        Timestamp.newBuilder().setSeconds(now.getEpochSecond())
+//	            .setNanos(now.getNano()).build();
+//
+//	Example 6: Compute Timestamp from current time in Python.
+//
+//	    timestamp = Timestamp()
+//	    timestamp.GetCurrentTime()
+//
+//	# JSON Mapping
+//
+//	In JSON format, the Timestamp type is encoded as a string in the
+//	[RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format. That is, the
+//	format is "{year}-{month}-{day}T{hour}:{min}:{sec}[.{frac_sec}]Z"
+//	where {year} is always expressed using four digits while {month}, {day},
+//	{hour}, {min}, and {sec} are zero-padded to two digits each. The fractional
+//	seconds, which can go up to 9 digits (i.e. up to 1 nanosecond resolution),
+//	are optional. The "Z" suffix indicates the timezone ("UTC"); the timezone
+//	is required. A proto3 JSON serializer should always use UTC (as indicated by
+//	"Z") when printing the Timestamp type and a proto3 JSON parser should be
+//	able to accept both UTC and other timezones (as indicated by an offset).
+//
+//	For example, "2017-01-15T01:30:15.01Z" encodes 15.01 seconds past
+//	01:30 UTC on January 15, 2017.
+//
+//	In JavaScript, one can convert a Date object to this format using the
+//	standard
+//	[toISOString()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString)
+//	method. In Python, a standard `datetime.datetime` object can be converted
+//	to this format using
+//	[`strftime`](https://docs.python.org/2/library/time.html#time.strftime) with
+//	the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in Java, one can use
+//	the Joda Time's [`ISODateTimeFormat.dateTime()`](
+//	http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime()
+//	) to obtain a formatter capable of generating timestamps in this format.
+type GoogleProtobufTimestamp = time.Time
+
+// ResourceV2AdminStatus Represents the associated VirtualMachineInstance's state, either created (up state) or not (down state).
+type ResourceV2AdminStatus struct {
+	State *ResourceV2AdminStatusState `json:"state,omitempty"`
 }
 
-// AdminStatusState State information
-type AdminStatusState string
+// ResourceV2AdminStatusState defines model for resource.v2.AdminStatus.State.
+type ResourceV2AdminStatusState string
 
-// AppEndpoint Represents an endpoint for accessing the application outside of a cluster.
-type AppEndpoint struct {
+// ResourceV2AppEndpoint Represents an endpoint for accessing the application outside of a cluster.
+type ResourceV2AppEndpoint struct {
 	// EndpointStatus Status of the endpoint.
-	EndpointStatus *EndpointStatus `json:"endpointStatus,omitempty"`
+	EndpointStatus *ResourceV2EndpointStatus `json:"endpointStatus,omitempty"`
 
 	// Fqdns Fully qualified domain name (FQDN) for external access.
-	Fqdns *[]Fqdn `json:"fqdns,omitempty"`
+	Fqdns *[]ResourceV2Fqdn `json:"fqdns,omitempty"`
 
 	// Id Endpoint object UID (e.g. service or ingress UID)
-	Id *string `json:"id,omitempty"`
+	Id *openapi_types.UUID `json:"id,omitempty"`
 
 	// Name Endpoint name
 	Name *string `json:"name,omitempty"`
 
 	// Ports List of ports exposed by a service for external access
-	Ports *[]Port `json:"ports,omitempty"`
+	Ports *[]ResourceV2Port `json:"ports,omitempty"`
 }
 
-// AppWorkload AppWorkload a high-level abstraction for representing different types of application workloads. The application workloads can be virtual machine-based or container-based.
-type AppWorkload struct {
-	// CreateTime The time when the workload is created.
-	CreateTime *time.Time `json:"createTime,omitempty"`
+// ResourceV2AppWorkload defines model for resource.v2.AppWorkload.
+type ResourceV2AppWorkload struct {
+	// CreateTime A Timestamp represents a point in time independent of any time zone or local
+	//  calendar, encoded as a count of seconds and fractions of seconds at
+	//  nanosecond resolution. The count is relative to an epoch at UTC midnight on
+	//  January 1, 1970, in the proleptic Gregorian calendar which extends the
+	//  Gregorian calendar backwards to year one.
+	//
+	//  All minutes are 60 seconds long. Leap seconds are "smeared" so that no leap
+	//  second table is needed for interpretation, using a [24-hour linear
+	//  smear](https://developers.google.com/time/smear).
+	//
+	//  The range is from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z. By
+	//  restricting to that range, we ensure that we can convert to and from [RFC
+	//  3339](https://www.ietf.org/rfc/rfc3339.txt) date strings.
+	//
+	//  # Examples
+	//
+	//  Example 1: Compute Timestamp from POSIX `time()`.
+	//
+	//      Timestamp timestamp;
+	//      timestamp.set_seconds(time(NULL));
+	//      timestamp.set_nanos(0);
+	//
+	//  Example 2: Compute Timestamp from POSIX `gettimeofday()`.
+	//
+	//      struct timeval tv;
+	//      gettimeofday(&tv, NULL);
+	//
+	//      Timestamp timestamp;
+	//      timestamp.set_seconds(tv.tv_sec);
+	//      timestamp.set_nanos(tv.tv_usec * 1000);
+	//
+	//  Example 3: Compute Timestamp from Win32 `GetSystemTimeAsFileTime()`.
+	//
+	//      FILETIME ft;
+	//      GetSystemTimeAsFileTime(&ft);
+	//      UINT64 ticks = (((UINT64)ft.dwHighDateTime) << 32) | ft.dwLowDateTime;
+	//
+	//      // A Windows tick is 100 nanoseconds. Windows epoch 1601-01-01T00:00:00Z
+	//      // is 11644473600 seconds before Unix epoch 1970-01-01T00:00:00Z.
+	//      Timestamp timestamp;
+	//      timestamp.set_seconds((INT64) ((ticks / 10000000) - 11644473600LL));
+	//      timestamp.set_nanos((INT32) ((ticks % 10000000) * 100));
+	//
+	//  Example 4: Compute Timestamp from Java `System.currentTimeMillis()`.
+	//
+	//      long millis = System.currentTimeMillis();
+	//
+	//      Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)
+	//          .setNanos((int) ((millis % 1000) * 1000000)).build();
+	//
+	//  Example 5: Compute Timestamp from Java `Instant.now()`.
+	//
+	//      Instant now = Instant.now();
+	//
+	//      Timestamp timestamp =
+	//          Timestamp.newBuilder().setSeconds(now.getEpochSecond())
+	//              .setNanos(now.getNano()).build();
+	//
+	//  Example 6: Compute Timestamp from current time in Python.
+	//
+	//      timestamp = Timestamp()
+	//      timestamp.GetCurrentTime()
+	//
+	//  # JSON Mapping
+	//
+	//  In JSON format, the Timestamp type is encoded as a string in the
+	//  [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format. That is, the
+	//  format is "{year}-{month}-{day}T{hour}:{min}:{sec}[.{frac_sec}]Z"
+	//  where {year} is always expressed using four digits while {month}, {day},
+	//  {hour}, {min}, and {sec} are zero-padded to two digits each. The fractional
+	//  seconds, which can go up to 9 digits (i.e. up to 1 nanosecond resolution),
+	//  are optional. The "Z" suffix indicates the timezone ("UTC"); the timezone
+	//  is required. A proto3 JSON serializer should always use UTC (as indicated by
+	//  "Z") when printing the Timestamp type and a proto3 JSON parser should be
+	//  able to accept both UTC and other timezones (as indicated by an offset).
+	//
+	//  For example, "2017-01-15T01:30:15.01Z" encodes 15.01 seconds past
+	//  01:30 UTC on January 15, 2017.
+	//
+	//  In JavaScript, one can convert a Date object to this format using the
+	//  standard
+	//  [toISOString()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString)
+	//  method. In Python, a standard `datetime.datetime` object can be converted
+	//  to this format using
+	//  [`strftime`](https://docs.python.org/2/library/time.html#time.strftime) with
+	//  the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in Java, one can use
+	//  the Joda Time's [`ISODateTimeFormat.dateTime()`](
+	//  http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime()
+	//  ) to obtain a formatter capable of generating timestamps in this format.
+	CreateTime *GoogleProtobufTimestamp `json:"createTime,omitempty"`
 
 	// Id Workload UUID
-	Id string `json:"id"`
+	Id *openapi_types.UUID `json:"id,omitempty"`
 
 	// Name Workload name
-	Name string `json:"name"`
+	Name *string `json:"name,omitempty"`
 
 	// Namespace Namespace where the workload is created.
-	Namespace *string `json:"namespace,omitempty"`
-
-	// Pod Represents a pod resource.
-	Pod *Pod `json:"pod,omitempty"`
-
-	// Type Application workload type, e.g. virtual machine and pod.
-	Type *AppWorkloadType `json:"type,omitempty"`
-
-	// VirtualMachine Represents a virtual machine.
-	VirtualMachine *VirtualMachine `json:"virtualMachine,omitempty"`
+	Namespace *string                    `json:"namespace,omitempty"`
+	Type      *ResourceV2AppWorkloadType `json:"type,omitempty"`
 
 	// WorkloadReady Ready status to determines if a workload is fully functional or not.
 	WorkloadReady *bool `json:"workloadReady,omitempty"`
+	union         json.RawMessage
 }
 
-// AppWorkloadType Application workload type, e.g. virtual machine and pod.
-type AppWorkloadType string
+// ResourceV2AppWorkload0 defines model for .
+type ResourceV2AppWorkload0 struct {
+	// Pod Represents a pod resource.
+	Pod ResourceV2Pod `json:"pod"`
+}
 
-// Container Represents a container resource.
-type Container struct {
+// ResourceV2AppWorkload1 defines model for .
+type ResourceV2AppWorkload1 struct {
+	// VirtualMachine Represents a virtual machine.
+	VirtualMachine ResourceV2VirtualMachine `json:"virtualMachine"`
+}
+
+// ResourceV2AppWorkloadType defines model for resource.v2.AppWorkload.Type.
+type ResourceV2AppWorkloadType string
+
+// ResourceV2Container Represents a container resource.
+type ResourceV2Container struct {
 	// ImageName image_name container image name
 	ImageName *string `json:"imageName,omitempty"`
 
@@ -126,14 +315,14 @@ type Container struct {
 	RestartCount *int32 `json:"restartCount,omitempty"`
 
 	// Status ContainerStatus status of a container
-	Status *ContainerStatus `json:"status,omitempty"`
+	Status *ResourceV2ContainerStatus `json:"status,omitempty"`
 }
 
-// ContainerStateRunning Running status of a container.
-type ContainerStateRunning = map[string]interface{}
+// ResourceV2ContainerStateRunning Running status of a container.
+type ResourceV2ContainerStateRunning = map[string]interface{}
 
-// ContainerStateTerminated Termination status of a container.
-type ContainerStateTerminated struct {
+// ResourceV2ContainerStateTerminated Termination status of a container.
+type ResourceV2ContainerStateTerminated struct {
 	// ExitCode Exit code of the termination status.
 	ExitCode *int32 `json:"exitCode,omitempty"`
 
@@ -144,8 +333,8 @@ type ContainerStateTerminated struct {
 	Reason *string `json:"reason,omitempty"`
 }
 
-// ContainerStateWaiting Waiting status of a container including the reason and message.
-type ContainerStateWaiting struct {
+// ResourceV2ContainerStateWaiting Waiting status of a container including the reason and message.
+type ResourceV2ContainerStateWaiting struct {
 	// Message Message of the waiting status.
 	Message *string `json:"message,omitempty"`
 
@@ -153,72 +342,81 @@ type ContainerStateWaiting struct {
 	Reason *string `json:"reason,omitempty"`
 }
 
-// ContainerStatus ContainerStatus status of a container
-type ContainerStatus struct {
+// ResourceV2ContainerStatus ContainerStatus status of a container
+type ResourceV2ContainerStatus struct {
+	union json.RawMessage
+}
+
+// ResourceV2ContainerStatus0 defines model for .
+type ResourceV2ContainerStatus0 struct {
 	// ContainerStateRunning Running status of a container.
-	ContainerStateRunning *ContainerStateRunning `json:"containerStateRunning,omitempty"`
+	ContainerStateRunning ResourceV2ContainerStateRunning `json:"containerStateRunning"`
+}
 
+// ResourceV2ContainerStatus1 defines model for .
+type ResourceV2ContainerStatus1 struct {
 	// ContainerStateTerminated Termination status of a container.
-	ContainerStateTerminated *ContainerStateTerminated `json:"containerStateTerminated,omitempty"`
+	ContainerStateTerminated ResourceV2ContainerStateTerminated `json:"containerStateTerminated"`
+}
 
+// ResourceV2ContainerStatus2 defines model for .
+type ResourceV2ContainerStatus2 struct {
 	// ContainerStateWaiting Waiting status of a container including the reason and message.
-	ContainerStateWaiting *ContainerStateWaiting `json:"containerStateWaiting,omitempty"`
+	ContainerStateWaiting ResourceV2ContainerStateWaiting `json:"containerStateWaiting"`
 }
 
-// DeletePodResponse Response message for the DeletePod method.
-type DeletePodResponse = map[string]interface{}
+// ResourceV2DeletePodResponse Response message for the DeletePod method.
+type ResourceV2DeletePodResponse = map[string]interface{}
 
-// EndpointStatus Status of the endpoint.
-type EndpointStatus struct {
-	// State Endpoint state, either Ready or NotReady.
-	State *EndpointStatusState `json:"state,omitempty"`
+// ResourceV2EndpointStatus Status of the endpoint.
+type ResourceV2EndpointStatus struct {
+	State *ResourceV2EndpointStatusState `json:"state,omitempty"`
 }
 
-// EndpointStatusState Endpoint state, either Ready or NotReady.
-type EndpointStatusState string
+// ResourceV2EndpointStatusState defines model for resource.v2.EndpointStatus.State.
+type ResourceV2EndpointStatusState string
 
-// Fqdn Fully qualified domain name.
-type Fqdn struct {
+// ResourceV2Fqdn Fully qualified domain name.
+type ResourceV2Fqdn struct {
 	Fqdn *string `json:"fqdn,omitempty"`
 }
 
-// GetVNCResponse Response message for the GetVNC method.
-type GetVNCResponse struct {
+// ResourceV2GetVNCResponse Response message for the GetVNC method.
+type ResourceV2GetVNCResponse struct {
 	Address string `json:"address"`
 }
 
-// ListAppEndpointsResponse Response message for the ListAppEndpoints method.
-type ListAppEndpointsResponse struct {
+// ResourceV2ListAppEndpointsResponse Response message for the ListAppEndpoints method.
+type ResourceV2ListAppEndpointsResponse struct {
 	// AppEndpoints List of services.
-	AppEndpoints *[]AppEndpoint `json:"appEndpoints,omitempty"`
+	AppEndpoints *[]ResourceV2AppEndpoint `json:"appEndpoints,omitempty"`
 }
 
-// ListAppWorkloadsResponse Response message for the ListAppWorkloadsResponse method.
-type ListAppWorkloadsResponse struct {
+// ResourceV2ListAppWorkloadsResponse Response message for the ListAppWorkloadsResponse method.
+type ResourceV2ListAppWorkloadsResponse struct {
 	// AppWorkloads A list of virtual machines.
-	AppWorkloads *[]AppWorkload `json:"appWorkloads,omitempty"`
+	AppWorkloads *[]ResourceV2AppWorkload `json:"appWorkloads,omitempty"`
 }
 
-// Pod Represents a pod resource.
-type Pod struct {
+// ResourceV2Pod Represents a pod resource.
+type ResourceV2Pod struct {
 	// Containers containers list of containers per pod
-	Containers *[]Container `json:"containers,omitempty"`
+	Containers *[]ResourceV2Container `json:"containers,omitempty"`
 
 	// Status The status of the pod during its lifecycle.
-	Status *PodStatus `json:"status,omitempty"`
+	Status *ResourceV2PodStatus `json:"status,omitempty"`
 }
 
-// PodStatus The status of the pod during its lifecycle.
-type PodStatus struct {
-	// State State information
-	State *PodStatusState `json:"state,omitempty"`
+// ResourceV2PodStatus The status of the pod during its lifecycle.
+type ResourceV2PodStatus struct {
+	State *ResourceV2PodStatusState `json:"state,omitempty"`
 }
 
-// PodStatusState State information
-type PodStatusState string
+// ResourceV2PodStatusState defines model for resource.v2.PodStatus.State.
+type ResourceV2PodStatusState string
 
-// Port Port information
-type Port struct {
+// ResourceV2Port Port information
+type ResourceV2Port struct {
 	// Name Port name
 	Name *string `json:"name,omitempty"`
 
@@ -232,29 +430,282 @@ type Port struct {
 	Value *int32 `json:"value,omitempty"`
 }
 
-// RestartVirtualMachineResponse Response message for the RestartVirtualMachine method.
-type RestartVirtualMachineResponse = map[string]interface{}
+// ResourceV2RestartVirtualMachineResponse Response message for the RestartVirtualMachine method.
+type ResourceV2RestartVirtualMachineResponse = map[string]interface{}
 
-// StartVirtualMachineResponse Response message for the StartVirtualMachine method.
-type StartVirtualMachineResponse = map[string]interface{}
+// ResourceV2StartVirtualMachineResponse Response message for the StartVirtualMachine method.
+type ResourceV2StartVirtualMachineResponse = map[string]interface{}
 
-// StopVirtualMachineResponse Response message for the StopVirtualMachine method.
-type StopVirtualMachineResponse = map[string]interface{}
+// ResourceV2StopVirtualMachineResponse Response message for the StopVirtualMachine method.
+type ResourceV2StopVirtualMachineResponse = map[string]interface{}
 
-// VirtualMachine Represents a virtual machine.
-type VirtualMachine struct {
+// ResourceV2VirtualMachine Represents a virtual machine.
+type ResourceV2VirtualMachine struct {
 	// AdminStatus Represents the associated VirtualMachineInstance's state, either created (up state) or not (down state).
-	AdminStatus *AdminStatus `json:"adminStatus,omitempty"`
+	AdminStatus *ResourceV2AdminStatus `json:"adminStatus,omitempty"`
 
 	// Status Status of a virtual machine.
-	Status *VirtualMachineStatus `json:"status,omitempty"`
+	Status *ResourceV2VirtualMachineStatus `json:"status,omitempty"`
 }
 
-// VirtualMachineStatus Status of a virtual machine.
-type VirtualMachineStatus struct {
-	// State Virtual machine state
-	State *VirtualMachineStatusState `json:"state,omitempty"`
+// ResourceV2VirtualMachineStatus Status of a virtual machine.
+type ResourceV2VirtualMachineStatus struct {
+	State *ResourceV2VirtualMachineStatusState `json:"state,omitempty"`
 }
 
-// VirtualMachineStatusState Virtual machine state
-type VirtualMachineStatusState string
+// ResourceV2VirtualMachineStatusState defines model for resource.v2.VirtualMachineStatus.State.
+type ResourceV2VirtualMachineStatusState string
+
+// AsResourceV2AppWorkload0 returns the union data inside the ResourceV2AppWorkload as a ResourceV2AppWorkload0
+func (t ResourceV2AppWorkload) AsResourceV2AppWorkload0() (ResourceV2AppWorkload0, error) {
+	var body ResourceV2AppWorkload0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromResourceV2AppWorkload0 overwrites any union data inside the ResourceV2AppWorkload as the provided ResourceV2AppWorkload0
+func (t *ResourceV2AppWorkload) FromResourceV2AppWorkload0(v ResourceV2AppWorkload0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeResourceV2AppWorkload0 performs a merge with any union data inside the ResourceV2AppWorkload, using the provided ResourceV2AppWorkload0
+func (t *ResourceV2AppWorkload) MergeResourceV2AppWorkload0(v ResourceV2AppWorkload0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsResourceV2AppWorkload1 returns the union data inside the ResourceV2AppWorkload as a ResourceV2AppWorkload1
+func (t ResourceV2AppWorkload) AsResourceV2AppWorkload1() (ResourceV2AppWorkload1, error) {
+	var body ResourceV2AppWorkload1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromResourceV2AppWorkload1 overwrites any union data inside the ResourceV2AppWorkload as the provided ResourceV2AppWorkload1
+func (t *ResourceV2AppWorkload) FromResourceV2AppWorkload1(v ResourceV2AppWorkload1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeResourceV2AppWorkload1 performs a merge with any union data inside the ResourceV2AppWorkload, using the provided ResourceV2AppWorkload1
+func (t *ResourceV2AppWorkload) MergeResourceV2AppWorkload1(v ResourceV2AppWorkload1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ResourceV2AppWorkload) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	object := make(map[string]json.RawMessage)
+	if t.union != nil {
+		err = json.Unmarshal(b, &object)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if t.CreateTime != nil {
+		object["createTime"], err = json.Marshal(t.CreateTime)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'createTime': %w", err)
+		}
+	}
+
+	if t.Id != nil {
+		object["id"], err = json.Marshal(t.Id)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'id': %w", err)
+		}
+	}
+
+	if t.Name != nil {
+		object["name"], err = json.Marshal(t.Name)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'name': %w", err)
+		}
+	}
+
+	if t.Namespace != nil {
+		object["namespace"], err = json.Marshal(t.Namespace)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'namespace': %w", err)
+		}
+	}
+
+	if t.Type != nil {
+		object["type"], err = json.Marshal(t.Type)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'type': %w", err)
+		}
+	}
+
+	if t.WorkloadReady != nil {
+		object["workloadReady"], err = json.Marshal(t.WorkloadReady)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'workloadReady': %w", err)
+		}
+	}
+	b, err = json.Marshal(object)
+	return b, err
+}
+
+func (t *ResourceV2AppWorkload) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	if err != nil {
+		return err
+	}
+	object := make(map[string]json.RawMessage)
+	err = json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["createTime"]; found {
+		err = json.Unmarshal(raw, &t.CreateTime)
+		if err != nil {
+			return fmt.Errorf("error reading 'createTime': %w", err)
+		}
+	}
+
+	if raw, found := object["id"]; found {
+		err = json.Unmarshal(raw, &t.Id)
+		if err != nil {
+			return fmt.Errorf("error reading 'id': %w", err)
+		}
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &t.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+	}
+
+	if raw, found := object["namespace"]; found {
+		err = json.Unmarshal(raw, &t.Namespace)
+		if err != nil {
+			return fmt.Errorf("error reading 'namespace': %w", err)
+		}
+	}
+
+	if raw, found := object["type"]; found {
+		err = json.Unmarshal(raw, &t.Type)
+		if err != nil {
+			return fmt.Errorf("error reading 'type': %w", err)
+		}
+	}
+
+	if raw, found := object["workloadReady"]; found {
+		err = json.Unmarshal(raw, &t.WorkloadReady)
+		if err != nil {
+			return fmt.Errorf("error reading 'workloadReady': %w", err)
+		}
+	}
+
+	return err
+}
+
+// AsResourceV2ContainerStatus0 returns the union data inside the ResourceV2ContainerStatus as a ResourceV2ContainerStatus0
+func (t ResourceV2ContainerStatus) AsResourceV2ContainerStatus0() (ResourceV2ContainerStatus0, error) {
+	var body ResourceV2ContainerStatus0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromResourceV2ContainerStatus0 overwrites any union data inside the ResourceV2ContainerStatus as the provided ResourceV2ContainerStatus0
+func (t *ResourceV2ContainerStatus) FromResourceV2ContainerStatus0(v ResourceV2ContainerStatus0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeResourceV2ContainerStatus0 performs a merge with any union data inside the ResourceV2ContainerStatus, using the provided ResourceV2ContainerStatus0
+func (t *ResourceV2ContainerStatus) MergeResourceV2ContainerStatus0(v ResourceV2ContainerStatus0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsResourceV2ContainerStatus1 returns the union data inside the ResourceV2ContainerStatus as a ResourceV2ContainerStatus1
+func (t ResourceV2ContainerStatus) AsResourceV2ContainerStatus1() (ResourceV2ContainerStatus1, error) {
+	var body ResourceV2ContainerStatus1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromResourceV2ContainerStatus1 overwrites any union data inside the ResourceV2ContainerStatus as the provided ResourceV2ContainerStatus1
+func (t *ResourceV2ContainerStatus) FromResourceV2ContainerStatus1(v ResourceV2ContainerStatus1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeResourceV2ContainerStatus1 performs a merge with any union data inside the ResourceV2ContainerStatus, using the provided ResourceV2ContainerStatus1
+func (t *ResourceV2ContainerStatus) MergeResourceV2ContainerStatus1(v ResourceV2ContainerStatus1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsResourceV2ContainerStatus2 returns the union data inside the ResourceV2ContainerStatus as a ResourceV2ContainerStatus2
+func (t ResourceV2ContainerStatus) AsResourceV2ContainerStatus2() (ResourceV2ContainerStatus2, error) {
+	var body ResourceV2ContainerStatus2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromResourceV2ContainerStatus2 overwrites any union data inside the ResourceV2ContainerStatus as the provided ResourceV2ContainerStatus2
+func (t *ResourceV2ContainerStatus) FromResourceV2ContainerStatus2(v ResourceV2ContainerStatus2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeResourceV2ContainerStatus2 performs a merge with any union data inside the ResourceV2ContainerStatus, using the provided ResourceV2ContainerStatus2
+func (t *ResourceV2ContainerStatus) MergeResourceV2ContainerStatus2(v ResourceV2ContainerStatus2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ResourceV2ContainerStatus) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ResourceV2ContainerStatus) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}

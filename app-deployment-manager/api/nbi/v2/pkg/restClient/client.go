@@ -89,43 +89,53 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// ClusterServiceListClusters request
-	ClusterServiceListClusters(ctx context.Context, params *ClusterServiceListClustersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeploymentV1ClusterServiceListClusters request
+	DeploymentV1ClusterServiceListClusters(ctx context.Context, params *DeploymentV1ClusterServiceListClustersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ClusterServiceGetCluster request
-	ClusterServiceGetCluster(ctx context.Context, clusterId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeploymentV1ClusterServiceGetCluster request
+	DeploymentV1ClusterServiceGetCluster(ctx context.Context, clusterId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeploymentServiceListDeployments request
-	DeploymentServiceListDeployments(ctx context.Context, params *DeploymentServiceListDeploymentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeploymentV1DeploymentServiceListDeployments request
+	DeploymentV1DeploymentServiceListDeployments(ctx context.Context, params *DeploymentV1DeploymentServiceListDeploymentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeploymentServiceCreateDeploymentWithBody request with any body
-	DeploymentServiceCreateDeploymentWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeploymentV1DeploymentServiceCreateDeploymentWithBody request with any body
+	DeploymentV1DeploymentServiceCreateDeploymentWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	DeploymentServiceCreateDeployment(ctx context.Context, body DeploymentServiceCreateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeploymentV1DeploymentServiceCreateDeployment(ctx context.Context, body DeploymentV1DeploymentServiceCreateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeploymentServiceListDeploymentsPerCluster request
-	DeploymentServiceListDeploymentsPerCluster(ctx context.Context, clusterId string, params *DeploymentServiceListDeploymentsPerClusterParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeploymentV1DeploymentServiceListDeploymentsPerCluster request
+	DeploymentV1DeploymentServiceListDeploymentsPerCluster(ctx context.Context, clusterId string, params *DeploymentV1DeploymentServiceListDeploymentsPerClusterParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeploymentServiceDeleteDeployment request
-	DeploymentServiceDeleteDeployment(ctx context.Context, deplId string, params *DeploymentServiceDeleteDeploymentParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeploymentV1DeploymentServiceDeleteDeployment request
+	DeploymentV1DeploymentServiceDeleteDeployment(ctx context.Context, deplId string, params *DeploymentV1DeploymentServiceDeleteDeploymentParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeploymentServiceGetDeployment request
-	DeploymentServiceGetDeployment(ctx context.Context, deplId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeploymentV1DeploymentServiceGetDeployment request
+	DeploymentV1DeploymentServiceGetDeployment(ctx context.Context, deplId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeploymentServiceUpdateDeploymentWithBody request with any body
-	DeploymentServiceUpdateDeploymentWithBody(ctx context.Context, deplId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeploymentV1DeploymentServiceUpdateDeploymentWithBody request with any body
+	DeploymentV1DeploymentServiceUpdateDeploymentWithBody(ctx context.Context, deplId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	DeploymentServiceUpdateDeployment(ctx context.Context, deplId string, body DeploymentServiceUpdateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeploymentV1DeploymentServiceUpdateDeployment(ctx context.Context, deplId string, body DeploymentV1DeploymentServiceUpdateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeploymentServiceListDeploymentClusters request
-	DeploymentServiceListDeploymentClusters(ctx context.Context, deplId string, params *DeploymentServiceListDeploymentClustersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeploymentV1DeploymentServiceListDeploymentClusters request
+	DeploymentV1DeploymentServiceListDeploymentClusters(ctx context.Context, deplId string, params *DeploymentV1DeploymentServiceListDeploymentClustersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeploymentServiceGetDeploymentsStatus request
-	DeploymentServiceGetDeploymentsStatus(ctx context.Context, params *DeploymentServiceGetDeploymentsStatusParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeploymentV1DeploymentServiceGetDeploymentsStatus request
+	DeploymentV1DeploymentServiceGetDeploymentsStatus(ctx context.Context, params *DeploymentV1DeploymentServiceGetDeploymentsStatusParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeploymentV1ClusterServiceGetKubeConfigWithBody request with any body
+	DeploymentV1ClusterServiceGetKubeConfigWithBody(ctx context.Context, params *DeploymentV1ClusterServiceGetKubeConfigParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	DeploymentV1ClusterServiceGetKubeConfig(ctx context.Context, params *DeploymentV1ClusterServiceGetKubeConfigParams, body DeploymentV1ClusterServiceGetKubeConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeploymentV1DeploymentServiceGetAppNamespaceWithBody request with any body
+	DeploymentV1DeploymentServiceGetAppNamespaceWithBody(ctx context.Context, params *DeploymentV1DeploymentServiceGetAppNamespaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	DeploymentV1DeploymentServiceGetAppNamespace(ctx context.Context, params *DeploymentV1DeploymentServiceGetAppNamespaceParams, body DeploymentV1DeploymentServiceGetAppNamespaceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-func (c *Client) ClusterServiceListClusters(ctx context.Context, params *ClusterServiceListClustersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewClusterServiceListClustersRequest(c.Server, params)
+func (c *Client) DeploymentV1ClusterServiceListClusters(ctx context.Context, params *DeploymentV1ClusterServiceListClustersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeploymentV1ClusterServiceListClustersRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -136,8 +146,8 @@ func (c *Client) ClusterServiceListClusters(ctx context.Context, params *Cluster
 	return c.Client.Do(req)
 }
 
-func (c *Client) ClusterServiceGetCluster(ctx context.Context, clusterId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewClusterServiceGetClusterRequest(c.Server, clusterId)
+func (c *Client) DeploymentV1ClusterServiceGetCluster(ctx context.Context, clusterId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeploymentV1ClusterServiceGetClusterRequest(c.Server, clusterId)
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +158,8 @@ func (c *Client) ClusterServiceGetCluster(ctx context.Context, clusterId string,
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeploymentServiceListDeployments(ctx context.Context, params *DeploymentServiceListDeploymentsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeploymentServiceListDeploymentsRequest(c.Server, params)
+func (c *Client) DeploymentV1DeploymentServiceListDeployments(ctx context.Context, params *DeploymentV1DeploymentServiceListDeploymentsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeploymentV1DeploymentServiceListDeploymentsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -160,8 +170,8 @@ func (c *Client) DeploymentServiceListDeployments(ctx context.Context, params *D
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeploymentServiceCreateDeploymentWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeploymentServiceCreateDeploymentRequestWithBody(c.Server, contentType, body)
+func (c *Client) DeploymentV1DeploymentServiceCreateDeploymentWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeploymentV1DeploymentServiceCreateDeploymentRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -172,8 +182,8 @@ func (c *Client) DeploymentServiceCreateDeploymentWithBody(ctx context.Context, 
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeploymentServiceCreateDeployment(ctx context.Context, body DeploymentServiceCreateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeploymentServiceCreateDeploymentRequest(c.Server, body)
+func (c *Client) DeploymentV1DeploymentServiceCreateDeployment(ctx context.Context, body DeploymentV1DeploymentServiceCreateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeploymentV1DeploymentServiceCreateDeploymentRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -184,8 +194,8 @@ func (c *Client) DeploymentServiceCreateDeployment(ctx context.Context, body Dep
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeploymentServiceListDeploymentsPerCluster(ctx context.Context, clusterId string, params *DeploymentServiceListDeploymentsPerClusterParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeploymentServiceListDeploymentsPerClusterRequest(c.Server, clusterId, params)
+func (c *Client) DeploymentV1DeploymentServiceListDeploymentsPerCluster(ctx context.Context, clusterId string, params *DeploymentV1DeploymentServiceListDeploymentsPerClusterParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeploymentV1DeploymentServiceListDeploymentsPerClusterRequest(c.Server, clusterId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -196,8 +206,8 @@ func (c *Client) DeploymentServiceListDeploymentsPerCluster(ctx context.Context,
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeploymentServiceDeleteDeployment(ctx context.Context, deplId string, params *DeploymentServiceDeleteDeploymentParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeploymentServiceDeleteDeploymentRequest(c.Server, deplId, params)
+func (c *Client) DeploymentV1DeploymentServiceDeleteDeployment(ctx context.Context, deplId string, params *DeploymentV1DeploymentServiceDeleteDeploymentParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeploymentV1DeploymentServiceDeleteDeploymentRequest(c.Server, deplId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -208,8 +218,8 @@ func (c *Client) DeploymentServiceDeleteDeployment(ctx context.Context, deplId s
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeploymentServiceGetDeployment(ctx context.Context, deplId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeploymentServiceGetDeploymentRequest(c.Server, deplId)
+func (c *Client) DeploymentV1DeploymentServiceGetDeployment(ctx context.Context, deplId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeploymentV1DeploymentServiceGetDeploymentRequest(c.Server, deplId)
 	if err != nil {
 		return nil, err
 	}
@@ -220,8 +230,8 @@ func (c *Client) DeploymentServiceGetDeployment(ctx context.Context, deplId stri
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeploymentServiceUpdateDeploymentWithBody(ctx context.Context, deplId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeploymentServiceUpdateDeploymentRequestWithBody(c.Server, deplId, contentType, body)
+func (c *Client) DeploymentV1DeploymentServiceUpdateDeploymentWithBody(ctx context.Context, deplId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeploymentV1DeploymentServiceUpdateDeploymentRequestWithBody(c.Server, deplId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -232,8 +242,8 @@ func (c *Client) DeploymentServiceUpdateDeploymentWithBody(ctx context.Context, 
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeploymentServiceUpdateDeployment(ctx context.Context, deplId string, body DeploymentServiceUpdateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeploymentServiceUpdateDeploymentRequest(c.Server, deplId, body)
+func (c *Client) DeploymentV1DeploymentServiceUpdateDeployment(ctx context.Context, deplId string, body DeploymentV1DeploymentServiceUpdateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeploymentV1DeploymentServiceUpdateDeploymentRequest(c.Server, deplId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -244,8 +254,8 @@ func (c *Client) DeploymentServiceUpdateDeployment(ctx context.Context, deplId s
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeploymentServiceListDeploymentClusters(ctx context.Context, deplId string, params *DeploymentServiceListDeploymentClustersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeploymentServiceListDeploymentClustersRequest(c.Server, deplId, params)
+func (c *Client) DeploymentV1DeploymentServiceListDeploymentClusters(ctx context.Context, deplId string, params *DeploymentV1DeploymentServiceListDeploymentClustersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeploymentV1DeploymentServiceListDeploymentClustersRequest(c.Server, deplId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -256,8 +266,8 @@ func (c *Client) DeploymentServiceListDeploymentClusters(ctx context.Context, de
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeploymentServiceGetDeploymentsStatus(ctx context.Context, params *DeploymentServiceGetDeploymentsStatusParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeploymentServiceGetDeploymentsStatusRequest(c.Server, params)
+func (c *Client) DeploymentV1DeploymentServiceGetDeploymentsStatus(ctx context.Context, params *DeploymentV1DeploymentServiceGetDeploymentsStatusParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeploymentV1DeploymentServiceGetDeploymentsStatusRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -268,8 +278,56 @@ func (c *Client) DeploymentServiceGetDeploymentsStatus(ctx context.Context, para
 	return c.Client.Do(req)
 }
 
-// NewClusterServiceListClustersRequest generates requests for ClusterServiceListClusters
-func NewClusterServiceListClustersRequest(server string, params *ClusterServiceListClustersParams) (*http.Request, error) {
+func (c *Client) DeploymentV1ClusterServiceGetKubeConfigWithBody(ctx context.Context, params *DeploymentV1ClusterServiceGetKubeConfigParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeploymentV1ClusterServiceGetKubeConfigRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeploymentV1ClusterServiceGetKubeConfig(ctx context.Context, params *DeploymentV1ClusterServiceGetKubeConfigParams, body DeploymentV1ClusterServiceGetKubeConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeploymentV1ClusterServiceGetKubeConfigRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeploymentV1DeploymentServiceGetAppNamespaceWithBody(ctx context.Context, params *DeploymentV1DeploymentServiceGetAppNamespaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeploymentV1DeploymentServiceGetAppNamespaceRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeploymentV1DeploymentServiceGetAppNamespace(ctx context.Context, params *DeploymentV1DeploymentServiceGetAppNamespaceParams, body DeploymentV1DeploymentServiceGetAppNamespaceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeploymentV1DeploymentServiceGetAppNamespaceRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NewDeploymentV1ClusterServiceListClustersRequest generates requests for DeploymentV1ClusterServiceListClusters
+func NewDeploymentV1ClusterServiceListClustersRequest(server string, params *DeploymentV1ClusterServiceListClustersParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -381,13 +439,13 @@ func NewClusterServiceListClustersRequest(server string, params *ClusterServiceL
 	return req, nil
 }
 
-// NewClusterServiceGetClusterRequest generates requests for ClusterServiceGetCluster
-func NewClusterServiceGetClusterRequest(server string, clusterId string) (*http.Request, error) {
+// NewDeploymentV1ClusterServiceGetClusterRequest generates requests for DeploymentV1ClusterServiceGetCluster
+func NewDeploymentV1ClusterServiceGetClusterRequest(server string, clusterId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterId", runtime.ParamLocationPath, clusterId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "cluster_id", runtime.ParamLocationPath, clusterId)
 	if err != nil {
 		return nil, err
 	}
@@ -415,8 +473,8 @@ func NewClusterServiceGetClusterRequest(server string, clusterId string) (*http.
 	return req, nil
 }
 
-// NewDeploymentServiceListDeploymentsRequest generates requests for DeploymentServiceListDeployments
-func NewDeploymentServiceListDeploymentsRequest(server string, params *DeploymentServiceListDeploymentsParams) (*http.Request, error) {
+// NewDeploymentV1DeploymentServiceListDeploymentsRequest generates requests for DeploymentV1DeploymentServiceListDeployments
+func NewDeploymentV1DeploymentServiceListDeploymentsRequest(server string, params *DeploymentV1DeploymentServiceListDeploymentsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -528,19 +586,19 @@ func NewDeploymentServiceListDeploymentsRequest(server string, params *Deploymen
 	return req, nil
 }
 
-// NewDeploymentServiceCreateDeploymentRequest calls the generic DeploymentServiceCreateDeployment builder with application/json body
-func NewDeploymentServiceCreateDeploymentRequest(server string, body DeploymentServiceCreateDeploymentJSONRequestBody) (*http.Request, error) {
+// NewDeploymentV1DeploymentServiceCreateDeploymentRequest calls the generic DeploymentV1DeploymentServiceCreateDeployment builder with application/json body
+func NewDeploymentV1DeploymentServiceCreateDeploymentRequest(server string, body DeploymentV1DeploymentServiceCreateDeploymentJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewDeploymentServiceCreateDeploymentRequestWithBody(server, "application/json", bodyReader)
+	return NewDeploymentV1DeploymentServiceCreateDeploymentRequestWithBody(server, "application/json", bodyReader)
 }
 
-// NewDeploymentServiceCreateDeploymentRequestWithBody generates requests for DeploymentServiceCreateDeployment with any type of body
-func NewDeploymentServiceCreateDeploymentRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+// NewDeploymentV1DeploymentServiceCreateDeploymentRequestWithBody generates requests for DeploymentV1DeploymentServiceCreateDeployment with any type of body
+func NewDeploymentV1DeploymentServiceCreateDeploymentRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -568,13 +626,13 @@ func NewDeploymentServiceCreateDeploymentRequestWithBody(server string, contentT
 	return req, nil
 }
 
-// NewDeploymentServiceListDeploymentsPerClusterRequest generates requests for DeploymentServiceListDeploymentsPerCluster
-func NewDeploymentServiceListDeploymentsPerClusterRequest(server string, clusterId string, params *DeploymentServiceListDeploymentsPerClusterParams) (*http.Request, error) {
+// NewDeploymentV1DeploymentServiceListDeploymentsPerClusterRequest generates requests for DeploymentV1DeploymentServiceListDeploymentsPerCluster
+func NewDeploymentV1DeploymentServiceListDeploymentsPerClusterRequest(server string, clusterId string, params *DeploymentV1DeploymentServiceListDeploymentsPerClusterParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterId", runtime.ParamLocationPath, clusterId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "cluster_id", runtime.ParamLocationPath, clusterId)
 	if err != nil {
 		return nil, err
 	}
@@ -688,13 +746,13 @@ func NewDeploymentServiceListDeploymentsPerClusterRequest(server string, cluster
 	return req, nil
 }
 
-// NewDeploymentServiceDeleteDeploymentRequest generates requests for DeploymentServiceDeleteDeployment
-func NewDeploymentServiceDeleteDeploymentRequest(server string, deplId string, params *DeploymentServiceDeleteDeploymentParams) (*http.Request, error) {
+// NewDeploymentV1DeploymentServiceDeleteDeploymentRequest generates requests for DeploymentV1DeploymentServiceDeleteDeployment
+func NewDeploymentV1DeploymentServiceDeleteDeploymentRequest(server string, deplId string, params *DeploymentV1DeploymentServiceDeleteDeploymentParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "deplId", runtime.ParamLocationPath, deplId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "depl_id", runtime.ParamLocationPath, deplId)
 	if err != nil {
 		return nil, err
 	}
@@ -717,20 +775,16 @@ func NewDeploymentServiceDeleteDeploymentRequest(server string, deplId string, p
 	if params != nil {
 		queryValues := queryURL.Query()
 
-		if params.DeleteType != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "deleteType", runtime.ParamLocationQuery, *params.DeleteType); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "deleteType", runtime.ParamLocationQuery, params.DeleteType); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
 				}
 			}
-
 		}
 
 		queryURL.RawQuery = queryValues.Encode()
@@ -744,13 +798,13 @@ func NewDeploymentServiceDeleteDeploymentRequest(server string, deplId string, p
 	return req, nil
 }
 
-// NewDeploymentServiceGetDeploymentRequest generates requests for DeploymentServiceGetDeployment
-func NewDeploymentServiceGetDeploymentRequest(server string, deplId string) (*http.Request, error) {
+// NewDeploymentV1DeploymentServiceGetDeploymentRequest generates requests for DeploymentV1DeploymentServiceGetDeployment
+func NewDeploymentV1DeploymentServiceGetDeploymentRequest(server string, deplId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "deplId", runtime.ParamLocationPath, deplId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "depl_id", runtime.ParamLocationPath, deplId)
 	if err != nil {
 		return nil, err
 	}
@@ -778,24 +832,24 @@ func NewDeploymentServiceGetDeploymentRequest(server string, deplId string) (*ht
 	return req, nil
 }
 
-// NewDeploymentServiceUpdateDeploymentRequest calls the generic DeploymentServiceUpdateDeployment builder with application/json body
-func NewDeploymentServiceUpdateDeploymentRequest(server string, deplId string, body DeploymentServiceUpdateDeploymentJSONRequestBody) (*http.Request, error) {
+// NewDeploymentV1DeploymentServiceUpdateDeploymentRequest calls the generic DeploymentV1DeploymentServiceUpdateDeployment builder with application/json body
+func NewDeploymentV1DeploymentServiceUpdateDeploymentRequest(server string, deplId string, body DeploymentV1DeploymentServiceUpdateDeploymentJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewDeploymentServiceUpdateDeploymentRequestWithBody(server, deplId, "application/json", bodyReader)
+	return NewDeploymentV1DeploymentServiceUpdateDeploymentRequestWithBody(server, deplId, "application/json", bodyReader)
 }
 
-// NewDeploymentServiceUpdateDeploymentRequestWithBody generates requests for DeploymentServiceUpdateDeployment with any type of body
-func NewDeploymentServiceUpdateDeploymentRequestWithBody(server string, deplId string, contentType string, body io.Reader) (*http.Request, error) {
+// NewDeploymentV1DeploymentServiceUpdateDeploymentRequestWithBody generates requests for DeploymentV1DeploymentServiceUpdateDeployment with any type of body
+func NewDeploymentV1DeploymentServiceUpdateDeploymentRequestWithBody(server string, deplId string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "deplId", runtime.ParamLocationPath, deplId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "depl_id", runtime.ParamLocationPath, deplId)
 	if err != nil {
 		return nil, err
 	}
@@ -825,13 +879,13 @@ func NewDeploymentServiceUpdateDeploymentRequestWithBody(server string, deplId s
 	return req, nil
 }
 
-// NewDeploymentServiceListDeploymentClustersRequest generates requests for DeploymentServiceListDeploymentClusters
-func NewDeploymentServiceListDeploymentClustersRequest(server string, deplId string, params *DeploymentServiceListDeploymentClustersParams) (*http.Request, error) {
+// NewDeploymentV1DeploymentServiceListDeploymentClustersRequest generates requests for DeploymentV1DeploymentServiceListDeploymentClusters
+func NewDeploymentV1DeploymentServiceListDeploymentClustersRequest(server string, deplId string, params *DeploymentV1DeploymentServiceListDeploymentClustersParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "deplId", runtime.ParamLocationPath, deplId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "depl_id", runtime.ParamLocationPath, deplId)
 	if err != nil {
 		return nil, err
 	}
@@ -929,8 +983,8 @@ func NewDeploymentServiceListDeploymentClustersRequest(server string, deplId str
 	return req, nil
 }
 
-// NewDeploymentServiceGetDeploymentsStatusRequest generates requests for DeploymentServiceGetDeploymentsStatus
-func NewDeploymentServiceGetDeploymentsStatusRequest(server string, params *DeploymentServiceGetDeploymentsStatusParams) (*http.Request, error) {
+// NewDeploymentV1DeploymentServiceGetDeploymentsStatusRequest generates requests for DeploymentV1DeploymentServiceGetDeploymentsStatus
+func NewDeploymentV1DeploymentServiceGetDeploymentsStatusRequest(server string, params *DeploymentV1DeploymentServiceGetDeploymentsStatusParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -973,6 +1027,134 @@ func NewDeploymentServiceGetDeploymentsStatusRequest(server string, params *Depl
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeploymentV1ClusterServiceGetKubeConfigRequest calls the generic DeploymentV1ClusterServiceGetKubeConfig builder with application/json body
+func NewDeploymentV1ClusterServiceGetKubeConfigRequest(server string, params *DeploymentV1ClusterServiceGetKubeConfigParams, body DeploymentV1ClusterServiceGetKubeConfigJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDeploymentV1ClusterServiceGetKubeConfigRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewDeploymentV1ClusterServiceGetKubeConfigRequestWithBody generates requests for DeploymentV1ClusterServiceGetKubeConfig with any type of body
+func NewDeploymentV1ClusterServiceGetKubeConfigRequestWithBody(server string, params *DeploymentV1ClusterServiceGetKubeConfigParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/deployment.v1.ClusterService/GetKubeConfig")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Connect-Protocol-Version", runtime.ParamLocationHeader, params.ConnectProtocolVersion)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Connect-Protocol-Version", headerParam0)
+
+		if params.ConnectTimeoutMs != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithLocation("simple", false, "Connect-Timeout-Ms", runtime.ParamLocationHeader, *params.ConnectTimeoutMs)
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Connect-Timeout-Ms", headerParam1)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewDeploymentV1DeploymentServiceGetAppNamespaceRequest calls the generic DeploymentV1DeploymentServiceGetAppNamespace builder with application/json body
+func NewDeploymentV1DeploymentServiceGetAppNamespaceRequest(server string, params *DeploymentV1DeploymentServiceGetAppNamespaceParams, body DeploymentV1DeploymentServiceGetAppNamespaceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDeploymentV1DeploymentServiceGetAppNamespaceRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewDeploymentV1DeploymentServiceGetAppNamespaceRequestWithBody generates requests for DeploymentV1DeploymentServiceGetAppNamespace with any type of body
+func NewDeploymentV1DeploymentServiceGetAppNamespaceRequestWithBody(server string, params *DeploymentV1DeploymentServiceGetAppNamespaceParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/deployment.v1.DeploymentService/GetAppNamespace")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Connect-Protocol-Version", runtime.ParamLocationHeader, params.ConnectProtocolVersion)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Connect-Protocol-Version", headerParam0)
+
+		if params.ConnectTimeoutMs != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithLocation("simple", false, "Connect-Timeout-Ms", runtime.ParamLocationHeader, *params.ConnectTimeoutMs)
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Connect-Timeout-Ms", headerParam1)
+		}
+
 	}
 
 	return req, nil
@@ -1021,49 +1203,59 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// ClusterServiceListClustersWithResponse request
-	ClusterServiceListClustersWithResponse(ctx context.Context, params *ClusterServiceListClustersParams, reqEditors ...RequestEditorFn) (*ClusterServiceListClustersResponse, error)
+	// DeploymentV1ClusterServiceListClustersWithResponse request
+	DeploymentV1ClusterServiceListClustersWithResponse(ctx context.Context, params *DeploymentV1ClusterServiceListClustersParams, reqEditors ...RequestEditorFn) (*DeploymentV1ClusterServiceListClustersResponse, error)
 
-	// ClusterServiceGetClusterWithResponse request
-	ClusterServiceGetClusterWithResponse(ctx context.Context, clusterId string, reqEditors ...RequestEditorFn) (*ClusterServiceGetClusterResponse, error)
+	// DeploymentV1ClusterServiceGetClusterWithResponse request
+	DeploymentV1ClusterServiceGetClusterWithResponse(ctx context.Context, clusterId string, reqEditors ...RequestEditorFn) (*DeploymentV1ClusterServiceGetClusterResponse, error)
 
-	// DeploymentServiceListDeploymentsWithResponse request
-	DeploymentServiceListDeploymentsWithResponse(ctx context.Context, params *DeploymentServiceListDeploymentsParams, reqEditors ...RequestEditorFn) (*DeploymentServiceListDeploymentsResponse, error)
+	// DeploymentV1DeploymentServiceListDeploymentsWithResponse request
+	DeploymentV1DeploymentServiceListDeploymentsWithResponse(ctx context.Context, params *DeploymentV1DeploymentServiceListDeploymentsParams, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceListDeploymentsResponse, error)
 
-	// DeploymentServiceCreateDeploymentWithBodyWithResponse request with any body
-	DeploymentServiceCreateDeploymentWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeploymentServiceCreateDeploymentResponse, error)
+	// DeploymentV1DeploymentServiceCreateDeploymentWithBodyWithResponse request with any body
+	DeploymentV1DeploymentServiceCreateDeploymentWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceCreateDeploymentResponse, error)
 
-	DeploymentServiceCreateDeploymentWithResponse(ctx context.Context, body DeploymentServiceCreateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*DeploymentServiceCreateDeploymentResponse, error)
+	DeploymentV1DeploymentServiceCreateDeploymentWithResponse(ctx context.Context, body DeploymentV1DeploymentServiceCreateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceCreateDeploymentResponse, error)
 
-	// DeploymentServiceListDeploymentsPerClusterWithResponse request
-	DeploymentServiceListDeploymentsPerClusterWithResponse(ctx context.Context, clusterId string, params *DeploymentServiceListDeploymentsPerClusterParams, reqEditors ...RequestEditorFn) (*DeploymentServiceListDeploymentsPerClusterResponse, error)
+	// DeploymentV1DeploymentServiceListDeploymentsPerClusterWithResponse request
+	DeploymentV1DeploymentServiceListDeploymentsPerClusterWithResponse(ctx context.Context, clusterId string, params *DeploymentV1DeploymentServiceListDeploymentsPerClusterParams, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceListDeploymentsPerClusterResponse, error)
 
-	// DeploymentServiceDeleteDeploymentWithResponse request
-	DeploymentServiceDeleteDeploymentWithResponse(ctx context.Context, deplId string, params *DeploymentServiceDeleteDeploymentParams, reqEditors ...RequestEditorFn) (*DeploymentServiceDeleteDeploymentResponse, error)
+	// DeploymentV1DeploymentServiceDeleteDeploymentWithResponse request
+	DeploymentV1DeploymentServiceDeleteDeploymentWithResponse(ctx context.Context, deplId string, params *DeploymentV1DeploymentServiceDeleteDeploymentParams, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceDeleteDeploymentResponse, error)
 
-	// DeploymentServiceGetDeploymentWithResponse request
-	DeploymentServiceGetDeploymentWithResponse(ctx context.Context, deplId string, reqEditors ...RequestEditorFn) (*DeploymentServiceGetDeploymentResponse, error)
+	// DeploymentV1DeploymentServiceGetDeploymentWithResponse request
+	DeploymentV1DeploymentServiceGetDeploymentWithResponse(ctx context.Context, deplId string, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceGetDeploymentResponse, error)
 
-	// DeploymentServiceUpdateDeploymentWithBodyWithResponse request with any body
-	DeploymentServiceUpdateDeploymentWithBodyWithResponse(ctx context.Context, deplId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeploymentServiceUpdateDeploymentResponse, error)
+	// DeploymentV1DeploymentServiceUpdateDeploymentWithBodyWithResponse request with any body
+	DeploymentV1DeploymentServiceUpdateDeploymentWithBodyWithResponse(ctx context.Context, deplId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceUpdateDeploymentResponse, error)
 
-	DeploymentServiceUpdateDeploymentWithResponse(ctx context.Context, deplId string, body DeploymentServiceUpdateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*DeploymentServiceUpdateDeploymentResponse, error)
+	DeploymentV1DeploymentServiceUpdateDeploymentWithResponse(ctx context.Context, deplId string, body DeploymentV1DeploymentServiceUpdateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceUpdateDeploymentResponse, error)
 
-	// DeploymentServiceListDeploymentClustersWithResponse request
-	DeploymentServiceListDeploymentClustersWithResponse(ctx context.Context, deplId string, params *DeploymentServiceListDeploymentClustersParams, reqEditors ...RequestEditorFn) (*DeploymentServiceListDeploymentClustersResponse, error)
+	// DeploymentV1DeploymentServiceListDeploymentClustersWithResponse request
+	DeploymentV1DeploymentServiceListDeploymentClustersWithResponse(ctx context.Context, deplId string, params *DeploymentV1DeploymentServiceListDeploymentClustersParams, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceListDeploymentClustersResponse, error)
 
-	// DeploymentServiceGetDeploymentsStatusWithResponse request
-	DeploymentServiceGetDeploymentsStatusWithResponse(ctx context.Context, params *DeploymentServiceGetDeploymentsStatusParams, reqEditors ...RequestEditorFn) (*DeploymentServiceGetDeploymentsStatusResponse, error)
+	// DeploymentV1DeploymentServiceGetDeploymentsStatusWithResponse request
+	DeploymentV1DeploymentServiceGetDeploymentsStatusWithResponse(ctx context.Context, params *DeploymentV1DeploymentServiceGetDeploymentsStatusParams, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceGetDeploymentsStatusResponse, error)
+
+	// DeploymentV1ClusterServiceGetKubeConfigWithBodyWithResponse request with any body
+	DeploymentV1ClusterServiceGetKubeConfigWithBodyWithResponse(ctx context.Context, params *DeploymentV1ClusterServiceGetKubeConfigParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeploymentV1ClusterServiceGetKubeConfigResponse, error)
+
+	DeploymentV1ClusterServiceGetKubeConfigWithResponse(ctx context.Context, params *DeploymentV1ClusterServiceGetKubeConfigParams, body DeploymentV1ClusterServiceGetKubeConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*DeploymentV1ClusterServiceGetKubeConfigResponse, error)
+
+	// DeploymentV1DeploymentServiceGetAppNamespaceWithBodyWithResponse request with any body
+	DeploymentV1DeploymentServiceGetAppNamespaceWithBodyWithResponse(ctx context.Context, params *DeploymentV1DeploymentServiceGetAppNamespaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceGetAppNamespaceResponse, error)
+
+	DeploymentV1DeploymentServiceGetAppNamespaceWithResponse(ctx context.Context, params *DeploymentV1DeploymentServiceGetAppNamespaceParams, body DeploymentV1DeploymentServiceGetAppNamespaceJSONRequestBody, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceGetAppNamespaceResponse, error)
 }
 
-type ClusterServiceListClustersResponse struct {
+type DeploymentV1ClusterServiceListClustersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ListClustersResponse
+	JSON200      *DeploymentV1ListClustersResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r ClusterServiceListClustersResponse) Status() string {
+func (r DeploymentV1ClusterServiceListClustersResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1071,21 +1263,21 @@ func (r ClusterServiceListClustersResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r ClusterServiceListClustersResponse) StatusCode() int {
+func (r DeploymentV1ClusterServiceListClustersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type ClusterServiceGetClusterResponse struct {
+type DeploymentV1ClusterServiceGetClusterResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *GetClusterResponse
+	JSON200      *DeploymentV1GetClusterResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r ClusterServiceGetClusterResponse) Status() string {
+func (r DeploymentV1ClusterServiceGetClusterResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1093,21 +1285,21 @@ func (r ClusterServiceGetClusterResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r ClusterServiceGetClusterResponse) StatusCode() int {
+func (r DeploymentV1ClusterServiceGetClusterResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DeploymentServiceListDeploymentsResponse struct {
+type DeploymentV1DeploymentServiceListDeploymentsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ListDeploymentsResponse
+	JSON200      *DeploymentV1ListDeploymentsResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r DeploymentServiceListDeploymentsResponse) Status() string {
+func (r DeploymentV1DeploymentServiceListDeploymentsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1115,21 +1307,21 @@ func (r DeploymentServiceListDeploymentsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DeploymentServiceListDeploymentsResponse) StatusCode() int {
+func (r DeploymentV1DeploymentServiceListDeploymentsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DeploymentServiceCreateDeploymentResponse struct {
+type DeploymentV1DeploymentServiceCreateDeploymentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *CreateDeploymentResponse
+	JSON200      *DeploymentV1CreateDeploymentResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r DeploymentServiceCreateDeploymentResponse) Status() string {
+func (r DeploymentV1DeploymentServiceCreateDeploymentResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1137,21 +1329,21 @@ func (r DeploymentServiceCreateDeploymentResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DeploymentServiceCreateDeploymentResponse) StatusCode() int {
+func (r DeploymentV1DeploymentServiceCreateDeploymentResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DeploymentServiceListDeploymentsPerClusterResponse struct {
+type DeploymentV1DeploymentServiceListDeploymentsPerClusterResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ListDeploymentsPerClusterResponse
+	JSON200      *DeploymentV1ListDeploymentsPerClusterResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r DeploymentServiceListDeploymentsPerClusterResponse) Status() string {
+func (r DeploymentV1DeploymentServiceListDeploymentsPerClusterResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1159,20 +1351,21 @@ func (r DeploymentServiceListDeploymentsPerClusterResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DeploymentServiceListDeploymentsPerClusterResponse) StatusCode() int {
+func (r DeploymentV1DeploymentServiceListDeploymentsPerClusterResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DeploymentServiceDeleteDeploymentResponse struct {
+type DeploymentV1DeploymentServiceDeleteDeploymentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *GoogleProtobufEmpty
 }
 
 // Status returns HTTPResponse.Status
-func (r DeploymentServiceDeleteDeploymentResponse) Status() string {
+func (r DeploymentV1DeploymentServiceDeleteDeploymentResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1180,21 +1373,21 @@ func (r DeploymentServiceDeleteDeploymentResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DeploymentServiceDeleteDeploymentResponse) StatusCode() int {
+func (r DeploymentV1DeploymentServiceDeleteDeploymentResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DeploymentServiceGetDeploymentResponse struct {
+type DeploymentV1DeploymentServiceGetDeploymentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *GetDeploymentResponse
+	JSON200      *DeploymentV1GetDeploymentResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r DeploymentServiceGetDeploymentResponse) Status() string {
+func (r DeploymentV1DeploymentServiceGetDeploymentResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1202,21 +1395,21 @@ func (r DeploymentServiceGetDeploymentResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DeploymentServiceGetDeploymentResponse) StatusCode() int {
+func (r DeploymentV1DeploymentServiceGetDeploymentResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DeploymentServiceUpdateDeploymentResponse struct {
+type DeploymentV1DeploymentServiceUpdateDeploymentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *UpdateDeploymentResponse
+	JSON200      *DeploymentV1UpdateDeploymentResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r DeploymentServiceUpdateDeploymentResponse) Status() string {
+func (r DeploymentV1DeploymentServiceUpdateDeploymentResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1224,21 +1417,21 @@ func (r DeploymentServiceUpdateDeploymentResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DeploymentServiceUpdateDeploymentResponse) StatusCode() int {
+func (r DeploymentV1DeploymentServiceUpdateDeploymentResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DeploymentServiceListDeploymentClustersResponse struct {
+type DeploymentV1DeploymentServiceListDeploymentClustersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ListDeploymentClustersResponse
+	JSON200      *DeploymentV1ListDeploymentClustersResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r DeploymentServiceListDeploymentClustersResponse) Status() string {
+func (r DeploymentV1DeploymentServiceListDeploymentClustersResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1246,21 +1439,21 @@ func (r DeploymentServiceListDeploymentClustersResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DeploymentServiceListDeploymentClustersResponse) StatusCode() int {
+func (r DeploymentV1DeploymentServiceListDeploymentClustersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DeploymentServiceGetDeploymentsStatusResponse struct {
+type DeploymentV1DeploymentServiceGetDeploymentsStatusResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *GetDeploymentsStatusResponse
+	JSON200      *DeploymentV1GetDeploymentsStatusResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r DeploymentServiceGetDeploymentsStatusResponse) Status() string {
+func (r DeploymentV1DeploymentServiceGetDeploymentsStatusResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1268,135 +1461,215 @@ func (r DeploymentServiceGetDeploymentsStatusResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DeploymentServiceGetDeploymentsStatusResponse) StatusCode() int {
+func (r DeploymentV1DeploymentServiceGetDeploymentsStatusResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-// ClusterServiceListClustersWithResponse request returning *ClusterServiceListClustersResponse
-func (c *ClientWithResponses) ClusterServiceListClustersWithResponse(ctx context.Context, params *ClusterServiceListClustersParams, reqEditors ...RequestEditorFn) (*ClusterServiceListClustersResponse, error) {
-	rsp, err := c.ClusterServiceListClusters(ctx, params, reqEditors...)
+type DeploymentV1ClusterServiceGetKubeConfigResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DeploymentV1GetKubeConfigResponse
+	JSONDefault  *ConnectError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeploymentV1ClusterServiceGetKubeConfigResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeploymentV1ClusterServiceGetKubeConfigResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeploymentV1DeploymentServiceGetAppNamespaceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DeploymentV1GetAppNamespaceResponse
+	JSONDefault  *ConnectError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeploymentV1DeploymentServiceGetAppNamespaceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeploymentV1DeploymentServiceGetAppNamespaceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// DeploymentV1ClusterServiceListClustersWithResponse request returning *DeploymentV1ClusterServiceListClustersResponse
+func (c *ClientWithResponses) DeploymentV1ClusterServiceListClustersWithResponse(ctx context.Context, params *DeploymentV1ClusterServiceListClustersParams, reqEditors ...RequestEditorFn) (*DeploymentV1ClusterServiceListClustersResponse, error) {
+	rsp, err := c.DeploymentV1ClusterServiceListClusters(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseClusterServiceListClustersResponse(rsp)
+	return ParseDeploymentV1ClusterServiceListClustersResponse(rsp)
 }
 
-// ClusterServiceGetClusterWithResponse request returning *ClusterServiceGetClusterResponse
-func (c *ClientWithResponses) ClusterServiceGetClusterWithResponse(ctx context.Context, clusterId string, reqEditors ...RequestEditorFn) (*ClusterServiceGetClusterResponse, error) {
-	rsp, err := c.ClusterServiceGetCluster(ctx, clusterId, reqEditors...)
+// DeploymentV1ClusterServiceGetClusterWithResponse request returning *DeploymentV1ClusterServiceGetClusterResponse
+func (c *ClientWithResponses) DeploymentV1ClusterServiceGetClusterWithResponse(ctx context.Context, clusterId string, reqEditors ...RequestEditorFn) (*DeploymentV1ClusterServiceGetClusterResponse, error) {
+	rsp, err := c.DeploymentV1ClusterServiceGetCluster(ctx, clusterId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseClusterServiceGetClusterResponse(rsp)
+	return ParseDeploymentV1ClusterServiceGetClusterResponse(rsp)
 }
 
-// DeploymentServiceListDeploymentsWithResponse request returning *DeploymentServiceListDeploymentsResponse
-func (c *ClientWithResponses) DeploymentServiceListDeploymentsWithResponse(ctx context.Context, params *DeploymentServiceListDeploymentsParams, reqEditors ...RequestEditorFn) (*DeploymentServiceListDeploymentsResponse, error) {
-	rsp, err := c.DeploymentServiceListDeployments(ctx, params, reqEditors...)
+// DeploymentV1DeploymentServiceListDeploymentsWithResponse request returning *DeploymentV1DeploymentServiceListDeploymentsResponse
+func (c *ClientWithResponses) DeploymentV1DeploymentServiceListDeploymentsWithResponse(ctx context.Context, params *DeploymentV1DeploymentServiceListDeploymentsParams, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceListDeploymentsResponse, error) {
+	rsp, err := c.DeploymentV1DeploymentServiceListDeployments(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeploymentServiceListDeploymentsResponse(rsp)
+	return ParseDeploymentV1DeploymentServiceListDeploymentsResponse(rsp)
 }
 
-// DeploymentServiceCreateDeploymentWithBodyWithResponse request with arbitrary body returning *DeploymentServiceCreateDeploymentResponse
-func (c *ClientWithResponses) DeploymentServiceCreateDeploymentWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeploymentServiceCreateDeploymentResponse, error) {
-	rsp, err := c.DeploymentServiceCreateDeploymentWithBody(ctx, contentType, body, reqEditors...)
+// DeploymentV1DeploymentServiceCreateDeploymentWithBodyWithResponse request with arbitrary body returning *DeploymentV1DeploymentServiceCreateDeploymentResponse
+func (c *ClientWithResponses) DeploymentV1DeploymentServiceCreateDeploymentWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceCreateDeploymentResponse, error) {
+	rsp, err := c.DeploymentV1DeploymentServiceCreateDeploymentWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeploymentServiceCreateDeploymentResponse(rsp)
+	return ParseDeploymentV1DeploymentServiceCreateDeploymentResponse(rsp)
 }
 
-func (c *ClientWithResponses) DeploymentServiceCreateDeploymentWithResponse(ctx context.Context, body DeploymentServiceCreateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*DeploymentServiceCreateDeploymentResponse, error) {
-	rsp, err := c.DeploymentServiceCreateDeployment(ctx, body, reqEditors...)
+func (c *ClientWithResponses) DeploymentV1DeploymentServiceCreateDeploymentWithResponse(ctx context.Context, body DeploymentV1DeploymentServiceCreateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceCreateDeploymentResponse, error) {
+	rsp, err := c.DeploymentV1DeploymentServiceCreateDeployment(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeploymentServiceCreateDeploymentResponse(rsp)
+	return ParseDeploymentV1DeploymentServiceCreateDeploymentResponse(rsp)
 }
 
-// DeploymentServiceListDeploymentsPerClusterWithResponse request returning *DeploymentServiceListDeploymentsPerClusterResponse
-func (c *ClientWithResponses) DeploymentServiceListDeploymentsPerClusterWithResponse(ctx context.Context, clusterId string, params *DeploymentServiceListDeploymentsPerClusterParams, reqEditors ...RequestEditorFn) (*DeploymentServiceListDeploymentsPerClusterResponse, error) {
-	rsp, err := c.DeploymentServiceListDeploymentsPerCluster(ctx, clusterId, params, reqEditors...)
+// DeploymentV1DeploymentServiceListDeploymentsPerClusterWithResponse request returning *DeploymentV1DeploymentServiceListDeploymentsPerClusterResponse
+func (c *ClientWithResponses) DeploymentV1DeploymentServiceListDeploymentsPerClusterWithResponse(ctx context.Context, clusterId string, params *DeploymentV1DeploymentServiceListDeploymentsPerClusterParams, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceListDeploymentsPerClusterResponse, error) {
+	rsp, err := c.DeploymentV1DeploymentServiceListDeploymentsPerCluster(ctx, clusterId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeploymentServiceListDeploymentsPerClusterResponse(rsp)
+	return ParseDeploymentV1DeploymentServiceListDeploymentsPerClusterResponse(rsp)
 }
 
-// DeploymentServiceDeleteDeploymentWithResponse request returning *DeploymentServiceDeleteDeploymentResponse
-func (c *ClientWithResponses) DeploymentServiceDeleteDeploymentWithResponse(ctx context.Context, deplId string, params *DeploymentServiceDeleteDeploymentParams, reqEditors ...RequestEditorFn) (*DeploymentServiceDeleteDeploymentResponse, error) {
-	rsp, err := c.DeploymentServiceDeleteDeployment(ctx, deplId, params, reqEditors...)
+// DeploymentV1DeploymentServiceDeleteDeploymentWithResponse request returning *DeploymentV1DeploymentServiceDeleteDeploymentResponse
+func (c *ClientWithResponses) DeploymentV1DeploymentServiceDeleteDeploymentWithResponse(ctx context.Context, deplId string, params *DeploymentV1DeploymentServiceDeleteDeploymentParams, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceDeleteDeploymentResponse, error) {
+	rsp, err := c.DeploymentV1DeploymentServiceDeleteDeployment(ctx, deplId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeploymentServiceDeleteDeploymentResponse(rsp)
+	return ParseDeploymentV1DeploymentServiceDeleteDeploymentResponse(rsp)
 }
 
-// DeploymentServiceGetDeploymentWithResponse request returning *DeploymentServiceGetDeploymentResponse
-func (c *ClientWithResponses) DeploymentServiceGetDeploymentWithResponse(ctx context.Context, deplId string, reqEditors ...RequestEditorFn) (*DeploymentServiceGetDeploymentResponse, error) {
-	rsp, err := c.DeploymentServiceGetDeployment(ctx, deplId, reqEditors...)
+// DeploymentV1DeploymentServiceGetDeploymentWithResponse request returning *DeploymentV1DeploymentServiceGetDeploymentResponse
+func (c *ClientWithResponses) DeploymentV1DeploymentServiceGetDeploymentWithResponse(ctx context.Context, deplId string, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceGetDeploymentResponse, error) {
+	rsp, err := c.DeploymentV1DeploymentServiceGetDeployment(ctx, deplId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeploymentServiceGetDeploymentResponse(rsp)
+	return ParseDeploymentV1DeploymentServiceGetDeploymentResponse(rsp)
 }
 
-// DeploymentServiceUpdateDeploymentWithBodyWithResponse request with arbitrary body returning *DeploymentServiceUpdateDeploymentResponse
-func (c *ClientWithResponses) DeploymentServiceUpdateDeploymentWithBodyWithResponse(ctx context.Context, deplId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeploymentServiceUpdateDeploymentResponse, error) {
-	rsp, err := c.DeploymentServiceUpdateDeploymentWithBody(ctx, deplId, contentType, body, reqEditors...)
+// DeploymentV1DeploymentServiceUpdateDeploymentWithBodyWithResponse request with arbitrary body returning *DeploymentV1DeploymentServiceUpdateDeploymentResponse
+func (c *ClientWithResponses) DeploymentV1DeploymentServiceUpdateDeploymentWithBodyWithResponse(ctx context.Context, deplId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceUpdateDeploymentResponse, error) {
+	rsp, err := c.DeploymentV1DeploymentServiceUpdateDeploymentWithBody(ctx, deplId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeploymentServiceUpdateDeploymentResponse(rsp)
+	return ParseDeploymentV1DeploymentServiceUpdateDeploymentResponse(rsp)
 }
 
-func (c *ClientWithResponses) DeploymentServiceUpdateDeploymentWithResponse(ctx context.Context, deplId string, body DeploymentServiceUpdateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*DeploymentServiceUpdateDeploymentResponse, error) {
-	rsp, err := c.DeploymentServiceUpdateDeployment(ctx, deplId, body, reqEditors...)
+func (c *ClientWithResponses) DeploymentV1DeploymentServiceUpdateDeploymentWithResponse(ctx context.Context, deplId string, body DeploymentV1DeploymentServiceUpdateDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceUpdateDeploymentResponse, error) {
+	rsp, err := c.DeploymentV1DeploymentServiceUpdateDeployment(ctx, deplId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeploymentServiceUpdateDeploymentResponse(rsp)
+	return ParseDeploymentV1DeploymentServiceUpdateDeploymentResponse(rsp)
 }
 
-// DeploymentServiceListDeploymentClustersWithResponse request returning *DeploymentServiceListDeploymentClustersResponse
-func (c *ClientWithResponses) DeploymentServiceListDeploymentClustersWithResponse(ctx context.Context, deplId string, params *DeploymentServiceListDeploymentClustersParams, reqEditors ...RequestEditorFn) (*DeploymentServiceListDeploymentClustersResponse, error) {
-	rsp, err := c.DeploymentServiceListDeploymentClusters(ctx, deplId, params, reqEditors...)
+// DeploymentV1DeploymentServiceListDeploymentClustersWithResponse request returning *DeploymentV1DeploymentServiceListDeploymentClustersResponse
+func (c *ClientWithResponses) DeploymentV1DeploymentServiceListDeploymentClustersWithResponse(ctx context.Context, deplId string, params *DeploymentV1DeploymentServiceListDeploymentClustersParams, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceListDeploymentClustersResponse, error) {
+	rsp, err := c.DeploymentV1DeploymentServiceListDeploymentClusters(ctx, deplId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeploymentServiceListDeploymentClustersResponse(rsp)
+	return ParseDeploymentV1DeploymentServiceListDeploymentClustersResponse(rsp)
 }
 
-// DeploymentServiceGetDeploymentsStatusWithResponse request returning *DeploymentServiceGetDeploymentsStatusResponse
-func (c *ClientWithResponses) DeploymentServiceGetDeploymentsStatusWithResponse(ctx context.Context, params *DeploymentServiceGetDeploymentsStatusParams, reqEditors ...RequestEditorFn) (*DeploymentServiceGetDeploymentsStatusResponse, error) {
-	rsp, err := c.DeploymentServiceGetDeploymentsStatus(ctx, params, reqEditors...)
+// DeploymentV1DeploymentServiceGetDeploymentsStatusWithResponse request returning *DeploymentV1DeploymentServiceGetDeploymentsStatusResponse
+func (c *ClientWithResponses) DeploymentV1DeploymentServiceGetDeploymentsStatusWithResponse(ctx context.Context, params *DeploymentV1DeploymentServiceGetDeploymentsStatusParams, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceGetDeploymentsStatusResponse, error) {
+	rsp, err := c.DeploymentV1DeploymentServiceGetDeploymentsStatus(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeploymentServiceGetDeploymentsStatusResponse(rsp)
+	return ParseDeploymentV1DeploymentServiceGetDeploymentsStatusResponse(rsp)
 }
 
-// ParseClusterServiceListClustersResponse parses an HTTP response from a ClusterServiceListClustersWithResponse call
-func ParseClusterServiceListClustersResponse(rsp *http.Response) (*ClusterServiceListClustersResponse, error) {
+// DeploymentV1ClusterServiceGetKubeConfigWithBodyWithResponse request with arbitrary body returning *DeploymentV1ClusterServiceGetKubeConfigResponse
+func (c *ClientWithResponses) DeploymentV1ClusterServiceGetKubeConfigWithBodyWithResponse(ctx context.Context, params *DeploymentV1ClusterServiceGetKubeConfigParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeploymentV1ClusterServiceGetKubeConfigResponse, error) {
+	rsp, err := c.DeploymentV1ClusterServiceGetKubeConfigWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeploymentV1ClusterServiceGetKubeConfigResponse(rsp)
+}
+
+func (c *ClientWithResponses) DeploymentV1ClusterServiceGetKubeConfigWithResponse(ctx context.Context, params *DeploymentV1ClusterServiceGetKubeConfigParams, body DeploymentV1ClusterServiceGetKubeConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*DeploymentV1ClusterServiceGetKubeConfigResponse, error) {
+	rsp, err := c.DeploymentV1ClusterServiceGetKubeConfig(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeploymentV1ClusterServiceGetKubeConfigResponse(rsp)
+}
+
+// DeploymentV1DeploymentServiceGetAppNamespaceWithBodyWithResponse request with arbitrary body returning *DeploymentV1DeploymentServiceGetAppNamespaceResponse
+func (c *ClientWithResponses) DeploymentV1DeploymentServiceGetAppNamespaceWithBodyWithResponse(ctx context.Context, params *DeploymentV1DeploymentServiceGetAppNamespaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceGetAppNamespaceResponse, error) {
+	rsp, err := c.DeploymentV1DeploymentServiceGetAppNamespaceWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeploymentV1DeploymentServiceGetAppNamespaceResponse(rsp)
+}
+
+func (c *ClientWithResponses) DeploymentV1DeploymentServiceGetAppNamespaceWithResponse(ctx context.Context, params *DeploymentV1DeploymentServiceGetAppNamespaceParams, body DeploymentV1DeploymentServiceGetAppNamespaceJSONRequestBody, reqEditors ...RequestEditorFn) (*DeploymentV1DeploymentServiceGetAppNamespaceResponse, error) {
+	rsp, err := c.DeploymentV1DeploymentServiceGetAppNamespace(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeploymentV1DeploymentServiceGetAppNamespaceResponse(rsp)
+}
+
+// ParseDeploymentV1ClusterServiceListClustersResponse parses an HTTP response from a DeploymentV1ClusterServiceListClustersWithResponse call
+func ParseDeploymentV1ClusterServiceListClustersResponse(rsp *http.Response) (*DeploymentV1ClusterServiceListClustersResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &ClusterServiceListClustersResponse{
+	response := &DeploymentV1ClusterServiceListClustersResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ListClustersResponse
+		var dest DeploymentV1ListClustersResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1407,22 +1680,22 @@ func ParseClusterServiceListClustersResponse(rsp *http.Response) (*ClusterServic
 	return response, nil
 }
 
-// ParseClusterServiceGetClusterResponse parses an HTTP response from a ClusterServiceGetClusterWithResponse call
-func ParseClusterServiceGetClusterResponse(rsp *http.Response) (*ClusterServiceGetClusterResponse, error) {
+// ParseDeploymentV1ClusterServiceGetClusterResponse parses an HTTP response from a DeploymentV1ClusterServiceGetClusterWithResponse call
+func ParseDeploymentV1ClusterServiceGetClusterResponse(rsp *http.Response) (*DeploymentV1ClusterServiceGetClusterResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &ClusterServiceGetClusterResponse{
+	response := &DeploymentV1ClusterServiceGetClusterResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest GetClusterResponse
+		var dest DeploymentV1GetClusterResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1433,22 +1706,22 @@ func ParseClusterServiceGetClusterResponse(rsp *http.Response) (*ClusterServiceG
 	return response, nil
 }
 
-// ParseDeploymentServiceListDeploymentsResponse parses an HTTP response from a DeploymentServiceListDeploymentsWithResponse call
-func ParseDeploymentServiceListDeploymentsResponse(rsp *http.Response) (*DeploymentServiceListDeploymentsResponse, error) {
+// ParseDeploymentV1DeploymentServiceListDeploymentsResponse parses an HTTP response from a DeploymentV1DeploymentServiceListDeploymentsWithResponse call
+func ParseDeploymentV1DeploymentServiceListDeploymentsResponse(rsp *http.Response) (*DeploymentV1DeploymentServiceListDeploymentsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DeploymentServiceListDeploymentsResponse{
+	response := &DeploymentV1DeploymentServiceListDeploymentsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ListDeploymentsResponse
+		var dest DeploymentV1ListDeploymentsResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1459,22 +1732,22 @@ func ParseDeploymentServiceListDeploymentsResponse(rsp *http.Response) (*Deploym
 	return response, nil
 }
 
-// ParseDeploymentServiceCreateDeploymentResponse parses an HTTP response from a DeploymentServiceCreateDeploymentWithResponse call
-func ParseDeploymentServiceCreateDeploymentResponse(rsp *http.Response) (*DeploymentServiceCreateDeploymentResponse, error) {
+// ParseDeploymentV1DeploymentServiceCreateDeploymentResponse parses an HTTP response from a DeploymentV1DeploymentServiceCreateDeploymentWithResponse call
+func ParseDeploymentV1DeploymentServiceCreateDeploymentResponse(rsp *http.Response) (*DeploymentV1DeploymentServiceCreateDeploymentResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DeploymentServiceCreateDeploymentResponse{
+	response := &DeploymentV1DeploymentServiceCreateDeploymentResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest CreateDeploymentResponse
+		var dest DeploymentV1CreateDeploymentResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1485,22 +1758,22 @@ func ParseDeploymentServiceCreateDeploymentResponse(rsp *http.Response) (*Deploy
 	return response, nil
 }
 
-// ParseDeploymentServiceListDeploymentsPerClusterResponse parses an HTTP response from a DeploymentServiceListDeploymentsPerClusterWithResponse call
-func ParseDeploymentServiceListDeploymentsPerClusterResponse(rsp *http.Response) (*DeploymentServiceListDeploymentsPerClusterResponse, error) {
+// ParseDeploymentV1DeploymentServiceListDeploymentsPerClusterResponse parses an HTTP response from a DeploymentV1DeploymentServiceListDeploymentsPerClusterWithResponse call
+func ParseDeploymentV1DeploymentServiceListDeploymentsPerClusterResponse(rsp *http.Response) (*DeploymentV1DeploymentServiceListDeploymentsPerClusterResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DeploymentServiceListDeploymentsPerClusterResponse{
+	response := &DeploymentV1DeploymentServiceListDeploymentsPerClusterResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ListDeploymentsPerClusterResponse
+		var dest DeploymentV1ListDeploymentsPerClusterResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1511,38 +1784,22 @@ func ParseDeploymentServiceListDeploymentsPerClusterResponse(rsp *http.Response)
 	return response, nil
 }
 
-// ParseDeploymentServiceDeleteDeploymentResponse parses an HTTP response from a DeploymentServiceDeleteDeploymentWithResponse call
-func ParseDeploymentServiceDeleteDeploymentResponse(rsp *http.Response) (*DeploymentServiceDeleteDeploymentResponse, error) {
+// ParseDeploymentV1DeploymentServiceDeleteDeploymentResponse parses an HTTP response from a DeploymentV1DeploymentServiceDeleteDeploymentWithResponse call
+func ParseDeploymentV1DeploymentServiceDeleteDeploymentResponse(rsp *http.Response) (*DeploymentV1DeploymentServiceDeleteDeploymentResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DeploymentServiceDeleteDeploymentResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseDeploymentServiceGetDeploymentResponse parses an HTTP response from a DeploymentServiceGetDeploymentWithResponse call
-func ParseDeploymentServiceGetDeploymentResponse(rsp *http.Response) (*DeploymentServiceGetDeploymentResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &DeploymentServiceGetDeploymentResponse{
+	response := &DeploymentV1DeploymentServiceDeleteDeploymentResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest GetDeploymentResponse
+		var dest GoogleProtobufEmpty
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1553,22 +1810,22 @@ func ParseDeploymentServiceGetDeploymentResponse(rsp *http.Response) (*Deploymen
 	return response, nil
 }
 
-// ParseDeploymentServiceUpdateDeploymentResponse parses an HTTP response from a DeploymentServiceUpdateDeploymentWithResponse call
-func ParseDeploymentServiceUpdateDeploymentResponse(rsp *http.Response) (*DeploymentServiceUpdateDeploymentResponse, error) {
+// ParseDeploymentV1DeploymentServiceGetDeploymentResponse parses an HTTP response from a DeploymentV1DeploymentServiceGetDeploymentWithResponse call
+func ParseDeploymentV1DeploymentServiceGetDeploymentResponse(rsp *http.Response) (*DeploymentV1DeploymentServiceGetDeploymentResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DeploymentServiceUpdateDeploymentResponse{
+	response := &DeploymentV1DeploymentServiceGetDeploymentResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest UpdateDeploymentResponse
+		var dest DeploymentV1GetDeploymentResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1579,22 +1836,22 @@ func ParseDeploymentServiceUpdateDeploymentResponse(rsp *http.Response) (*Deploy
 	return response, nil
 }
 
-// ParseDeploymentServiceListDeploymentClustersResponse parses an HTTP response from a DeploymentServiceListDeploymentClustersWithResponse call
-func ParseDeploymentServiceListDeploymentClustersResponse(rsp *http.Response) (*DeploymentServiceListDeploymentClustersResponse, error) {
+// ParseDeploymentV1DeploymentServiceUpdateDeploymentResponse parses an HTTP response from a DeploymentV1DeploymentServiceUpdateDeploymentWithResponse call
+func ParseDeploymentV1DeploymentServiceUpdateDeploymentResponse(rsp *http.Response) (*DeploymentV1DeploymentServiceUpdateDeploymentResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DeploymentServiceListDeploymentClustersResponse{
+	response := &DeploymentV1DeploymentServiceUpdateDeploymentResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ListDeploymentClustersResponse
+		var dest DeploymentV1UpdateDeploymentResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1605,26 +1862,118 @@ func ParseDeploymentServiceListDeploymentClustersResponse(rsp *http.Response) (*
 	return response, nil
 }
 
-// ParseDeploymentServiceGetDeploymentsStatusResponse parses an HTTP response from a DeploymentServiceGetDeploymentsStatusWithResponse call
-func ParseDeploymentServiceGetDeploymentsStatusResponse(rsp *http.Response) (*DeploymentServiceGetDeploymentsStatusResponse, error) {
+// ParseDeploymentV1DeploymentServiceListDeploymentClustersResponse parses an HTTP response from a DeploymentV1DeploymentServiceListDeploymentClustersWithResponse call
+func ParseDeploymentV1DeploymentServiceListDeploymentClustersResponse(rsp *http.Response) (*DeploymentV1DeploymentServiceListDeploymentClustersResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DeploymentServiceGetDeploymentsStatusResponse{
+	response := &DeploymentV1DeploymentServiceListDeploymentClustersResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest GetDeploymentsStatusResponse
+		var dest DeploymentV1ListDeploymentClustersResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeploymentV1DeploymentServiceGetDeploymentsStatusResponse parses an HTTP response from a DeploymentV1DeploymentServiceGetDeploymentsStatusWithResponse call
+func ParseDeploymentV1DeploymentServiceGetDeploymentsStatusResponse(rsp *http.Response) (*DeploymentV1DeploymentServiceGetDeploymentsStatusResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeploymentV1DeploymentServiceGetDeploymentsStatusResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DeploymentV1GetDeploymentsStatusResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeploymentV1ClusterServiceGetKubeConfigResponse parses an HTTP response from a DeploymentV1ClusterServiceGetKubeConfigWithResponse call
+func ParseDeploymentV1ClusterServiceGetKubeConfigResponse(rsp *http.Response) (*DeploymentV1ClusterServiceGetKubeConfigResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeploymentV1ClusterServiceGetKubeConfigResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DeploymentV1GetKubeConfigResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest ConnectError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeploymentV1DeploymentServiceGetAppNamespaceResponse parses an HTTP response from a DeploymentV1DeploymentServiceGetAppNamespaceWithResponse call
+func ParseDeploymentV1DeploymentServiceGetAppNamespaceResponse(rsp *http.Response) (*DeploymentV1DeploymentServiceGetAppNamespaceResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeploymentV1DeploymentServiceGetAppNamespaceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DeploymentV1GetAppNamespaceResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest ConnectError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
 
 	}
 

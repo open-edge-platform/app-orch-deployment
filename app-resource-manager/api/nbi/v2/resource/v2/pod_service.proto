@@ -5,9 +5,9 @@ syntax = "proto3";
 
 package resource.v2;
 
+import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
-import "validate/validate.proto";
 
 // Provides API to manage a pod workload such as deleting a pod.
 service PodService {
@@ -22,7 +22,7 @@ message DeletePodRequest {
   // Cluster ID
   string cluster_id = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (validate.rules).string = {
+    (buf.validate.field).string = {
       min_len: 1
       max_len: 40
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
@@ -31,7 +31,7 @@ message DeletePodRequest {
   // Namespace that the pod is running on.
   string namespace = 2 [
     (google.api.field_behavior) = REQUIRED,
-    (validate.rules).string = {
+    (buf.validate.field).string = {
       min_len: 1
       max_len: 253
       pattern: "^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$"
@@ -40,7 +40,7 @@ message DeletePodRequest {
   // Name of the pod.
   string pod_name = 3 [
     (google.api.field_behavior) = REQUIRED,
-    (validate.rules).string = {
+    (buf.validate.field).string = {
       min_len: 1
       max_len: 253
       pattern: "^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$"

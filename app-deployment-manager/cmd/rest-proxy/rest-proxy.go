@@ -14,7 +14,7 @@ import (
 var log = dazl.GetPackageLogger()
 
 type flags struct {
-	grpcAddr           string
+	backendAddr        string
 	gwAddr             int
 	allowedCorsOrigins string
 	basePath           string
@@ -22,7 +22,7 @@ type flags struct {
 
 func parseFlags() flags {
 	f := flags{}
-	flag.StringVar(&f.grpcAddr, "grpcAddr", "localhost:8080", "The endpoint of the gRPC server")
+	flag.StringVar(&f.backendAddr, "backendAddr", "localhost:8080", "The endpoint of the backend server")
 	flag.IntVar(&f.gwAddr, "gwAddr", 8081, "port that REST service runs on")
 	flag.StringVar(&f.allowedCorsOrigins, "allowedCorsOrigins", "", "Comma separated list of allowed CORS origins")
 	flag.StringVar(&f.basePath, "basePath", "", "The rest server base Path")
@@ -35,10 +35,9 @@ func parseFlags() flags {
 func main() {
 	f := parseFlags()
 
-	log.Infof("Serving gRPC-Gateway on port %d", f.gwAddr)
-
-	err := restproxy.Run(f.grpcAddr, f.gwAddr, f.allowedCorsOrigins, f.basePath, "/usr/local/etc/openapi.yaml")
+	log.Infof("Serving Connect-RPC REST proxy on port %d", f.gwAddr)
+	err := restproxy.Run(f.backendAddr, f.gwAddr, f.allowedCorsOrigins, f.basePath, "/usr/local/etc/openapi.yaml")
 	if err != nil {
-		log.Fatalf("Failed to run gateway server %v", err)
+		log.Fatalf("Failed to run Connect-RPC server %v", err)
 	}
 }

@@ -1,0 +1,70 @@
+openapi: 3.1.0
+info:
+  title: resource.v2
+paths: {}
+components:
+  schemas:
+    resource.v2.AdminStatus:
+      type: object
+      properties:
+        state:
+          title: state
+          description: State information
+          $ref: '#/components/schemas/resource.v2.AdminStatus.State'
+      title: AdminStatus
+      additionalProperties: false
+      description: Represents the associated VirtualMachineInstance's state, either created (up state) or not (down state).
+    resource.v2.AdminStatus.State:
+      type: string
+      title: State
+      enum:
+        - STATE_UNSPECIFIED
+        - STATE_UP
+        - STATE_DOWN
+    resource.v2.VirtualMachine:
+      type: object
+      properties:
+        status:
+          title: status
+          description: The virtual machine current status
+          readOnly: true
+          $ref: '#/components/schemas/resource.v2.VirtualMachineStatus'
+        adminStatus:
+          title: admin_status
+          description: The admin status whether the associated VirtualMachineInstance is created or not
+          readOnly: true
+          $ref: '#/components/schemas/resource.v2.AdminStatus'
+      title: VirtualMachine
+      additionalProperties: false
+      description: Represents a virtual machine.
+    resource.v2.VirtualMachineStatus:
+      type: object
+      properties:
+        state:
+          title: state
+          description: Virtual machine state
+          $ref: '#/components/schemas/resource.v2.VirtualMachineStatus.State'
+      title: VirtualMachineStatus
+      additionalProperties: false
+      description: Status of a virtual machine.
+    resource.v2.VirtualMachineStatus.State:
+      type: string
+      title: State
+      enum:
+        - STATE_UNSPECIFIED
+        - STATE_STOPPED
+        - STATE_PROVISIONING
+        - STATE_STARTING
+        - STATE_RUNNING
+        - STATE_PAUSED
+        - STATE_STOPPING
+        - STATE_TERMINATING
+        - STATE_CRASH_LOOP_BACKOFF
+        - STATE_MIGRATING
+        - STATE_ERROR_UNSCHEDULABLE
+        - STATE_ERROR_IMAGE_PULL
+        - STATE_ERROR_IMAGE_PULL_BACKOFF
+        - STATE_ERROR_PVC_NOT_FOUND
+        - STATE_ERROR_DATA_VOLUME
+        - STATE_WAITING_FOR_VOLUME_BINDING
+security: []
