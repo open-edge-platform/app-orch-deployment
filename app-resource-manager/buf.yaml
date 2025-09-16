@@ -5,8 +5,9 @@
 version: v2
 modules:
   - path: api/nbi/v2
+    name: buf.build/open-edge-platform/app-resource-manager
 deps:
-  - buf.build/envoyproxy/protoc-gen-validate
+  - buf.build/bufbuild/protovalidate
   - buf.build/googleapis/googleapis
 lint:
   use:
@@ -18,7 +19,6 @@ lint:
     - ENUM_VALUE_PREFIX
     - ENUM_ZERO_VALUE_SUFFIX
   rpc_allow_google_protobuf_empty_responses: true
-  disallow_comment_ignores: true
 breaking:
   use:
     - FILE

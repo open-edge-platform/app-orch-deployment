@@ -5,8 +5,8 @@
 package manager
 
 import (
+	"buf.build/go/protovalidate"
 	"fmt"
-	"github.com/bufbuild/protovalidate-go"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/tenant"
 	fleet2 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/fleet"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/k8sclient"
@@ -165,7 +165,13 @@ func (m *Manager) Start() error {
 	}
 
 	s := northbound.NewServer(serverConfig)
-	s.AddService(internalgrpc.NewDeployment(crClient, opaClient, k8sClient, fleetBundleClient, catalogClient, protoValidator, vaultAuthClient))
+
+	deploymentService, err := internalgrpc.NewDeployment(crClient, opaClient, k8sClient, fleetBundleClient, catalogClient, vaultAuthClient, &protoValidator)
+	if err != nil {
+		log.Fatalf("Failed to create deployment service: %v", err)
+		return err
+	}
+	s.AddService(deploymentService)
 
 	msgSizeLimitBytes, err := utils.GetMessageSizeLimit()
 	if err != nil {

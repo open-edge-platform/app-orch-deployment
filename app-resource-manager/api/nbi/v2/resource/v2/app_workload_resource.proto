@@ -5,11 +5,11 @@ syntax = "proto3";
 
 package resource.v2;
 
+import "buf/validate/validate.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/timestamp.proto";
 import "resource/v2/pod_resource.proto";
 import "resource/v2/vm_resource.proto";
-import "validate/validate.proto";
 
 // AppWorkload a high-level abstraction for representing different types of application workloads.
 // The application workloads can be virtual machine-based or container-based.
@@ -25,13 +25,13 @@ message AppWorkload {
   // Workload UUID
   string id = 2 [
     (google.api.field_behavior) = REQUIRED,
-    (validate.rules).string.uuid = true
+    (buf.validate.field).string.uuid = true
   ];
 
   // Workload name
   string name = 3 [
     (google.api.field_behavior) = REQUIRED,
-    (validate.rules).string = {
+    (buf.validate.field).string = {
       min_len: 1
       max_len: 253
       pattern: "^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$"

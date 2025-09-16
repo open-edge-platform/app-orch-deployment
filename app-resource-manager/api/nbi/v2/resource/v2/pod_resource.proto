@@ -5,13 +5,13 @@ syntax = "proto3";
 
 package resource.v2;
 
+import "buf/validate/validate.proto";
 import "google/api/field_behavior.proto";
-import "validate/validate.proto";
 
 // Represents a pod resource.
 message Pod {
   // containers list of containers per pod
-  repeated Container containers = 1;
+  repeated Container containers = 1 [(buf.validate.field).repeated = {max_items: 50}];
 
   // status pod status
   PodStatus status = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
@@ -36,7 +36,7 @@ message Container {
   // Container name
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (validate.rules).string = {
+    (buf.validate.field).string = {
       min_len: 1
       max_len: 63
       pattern: "^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$"

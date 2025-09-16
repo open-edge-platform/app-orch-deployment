@@ -1,0 +1,183 @@
+openapi: 3.1.0
+info:
+  title: resource.v2
+paths:
+  /resource.orchestrator.apis/v2/endpoints/{app_id}/{cluster_id}:
+    get:
+      tags:
+        - resource.v2.EndpointsService
+      summary: ListAppEndpoints
+      description: Gets a list of all endpoints for an application of a deployment in a cluster.
+      operationId: resource.v2.EndpointsService.ListAppEndpoints
+      parameters:
+        - name: app_id
+          in: path
+          description: Application ID
+          required: true
+          schema:
+            type: string
+            title: app_id
+            maxLength: 80
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+            description: Application ID
+        - name: cluster_id
+          in: path
+          description: Cluster ID
+          required: true
+          schema:
+            type: string
+            title: cluster_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+            description: Cluster ID
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resource.v2.ListAppEndpointsResponse'
+components:
+  schemas:
+    resource.v2.AppEndpoint:
+      type: object
+      properties:
+        id:
+          type: string
+          title: id
+          format: uuid
+          description: Endpoint object UID (e.g. service or ingress UID)
+          readOnly: true
+        name:
+          type: string
+          title: name
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: Endpoint name
+          readOnly: true
+        fqdns:
+          type: array
+          items:
+            $ref: '#/components/schemas/resource.v2.Fqdn'
+          title: fqdns
+          maxItems: 10
+          description: Fully qualified domain name (FQDN) for external access.
+          readOnly: true
+        ports:
+          type: array
+          items:
+            $ref: '#/components/schemas/resource.v2.Port'
+          title: ports
+          maxItems: 20
+          description: List of ports exposed by a service for external access
+          readOnly: true
+        endpointStatus:
+          title: endpoint_status
+          description: EndpointStatus status of an endpoint
+          readOnly: true
+          $ref: '#/components/schemas/resource.v2.EndpointStatus'
+      title: AppEndpoint
+      additionalProperties: false
+      description: Represents an endpoint for accessing the application outside of a cluster.
+    resource.v2.EndpointStatus:
+      type: object
+      properties:
+        state:
+          title: state
+          description: Endpoint state, either Ready or NotReady.
+          readOnly: true
+          $ref: '#/components/schemas/resource.v2.EndpointStatus.State'
+      title: EndpointStatus
+      additionalProperties: false
+      description: Status of the endpoint.
+    resource.v2.EndpointStatus.State:
+      type: string
+      title: State
+      enum:
+        - STATE_UNSPECIFIED
+        - STATE_READY
+        - STATE_NOT_READY
+    resource.v2.Fqdn:
+      type: object
+      properties:
+        fqdn:
+          type: string
+          title: fqdn
+          format: hostname
+      title: Fqdn
+      additionalProperties: false
+      description: Fully qualified domain name.
+    resource.v2.ListAppEndpointsRequest:
+      type: object
+      properties:
+        appId:
+          type: string
+          title: app_id
+          maxLength: 80
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+          description: Application ID
+        clusterId:
+          type: string
+          title: cluster_id
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: Cluster ID
+      title: ListAppEndpointsRequest
+      required:
+        - appId
+        - clusterId
+      additionalProperties: false
+      description: Request message for ListAppEndpoints method
+    resource.v2.ListAppEndpointsResponse:
+      type: object
+      properties:
+        appEndpoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/resource.v2.AppEndpoint'
+          title: app_endpoints
+          maxItems: 100
+          description: List of services.
+          readOnly: true
+      title: ListAppEndpointsResponse
+      additionalProperties: false
+      description: Response message for the ListAppEndpoints method.
+    resource.v2.Port:
+      type: object
+      properties:
+        name:
+          type: string
+          title: name
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: Port name
+          readOnly: true
+        value:
+          type: integer
+          title: value
+          format: int32
+          description: Port value
+          readOnly: true
+        protocol:
+          type: string
+          title: protocol
+          description: Protocol for a port.
+          readOnly: true
+        serviceProxyUrl:
+          type: string
+          title: service_proxy_url
+          description: Service proxy URL for a port.
+          readOnly: true
+      title: Port
+      additionalProperties: false
+      description: Port information
+security: []
+tags:
+  - name: resource.v2.EndpointsService
+    description: Provides API to list endpoints.

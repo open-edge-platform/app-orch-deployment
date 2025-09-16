@@ -6,8 +6,6 @@ module github.com/open-edge-platform/app-orch-deployment/app-service-proxy
 
 go 1.24.6
 
-replace github.com/open-edge-platform/app-orch-deployment/test-common-utils => ../test-common-utils
-
 require (
 	github.com/chromedp/cdproto v0.0.0-20250521201632-aadd49e0822c
 	github.com/chromedp/chromedp v0.13.6
@@ -29,7 +27,7 @@ require (
 )
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.35.2-20240920164238-5a7b106cbb87.1 // indirect
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.8-20250717185734-6c6e0d3c608e.1 // indirect
 	cloud.google.com/go/compute/metadata v0.6.0 // indirect
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
@@ -101,7 +99,7 @@ require (
 	golang.org/x/tools v0.27.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250106144421-5f5ef82da422 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
-	google.golang.org/protobuf v1.36.5 // indirect
+	google.golang.org/protobuf v1.36.8 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
@@ -115,3 +113,10 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.6.0 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
+
+// Replace with local modules for development
+replace github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 => ../app-deployment-manager/api/nbi/v2
+
+replace github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 => ../app-resource-manager/api/nbi/v2
+
+replace github.com/open-edge-platform/app-orch-deployment/test-common-utils => ../test-common-utils

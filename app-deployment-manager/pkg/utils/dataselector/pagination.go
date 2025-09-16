@@ -4,11 +4,15 @@
 package dataselector
 
 import (
+	"fmt"
 	"github.com/open-edge-platform/orch-library/go/pkg/errors"
 )
 
 const (
-	DefaultPageSize = 10
+	DefaultPageSize = 20
+	MaxPageSize = 500
+	MinPageSize = 0
+	MinOffset = 0
 )
 
 // EmptyPagination No items will be returned
@@ -31,12 +35,24 @@ func NewPaginationQuery(pageSize, offSet int) *PaginationQuery {
 	return &PaginationQuery{pageSize, offSet}
 }
 
-// IsValidPagination returns true if pagination has non negative parameters
+// IsValidPagination returns true if pagination has non negative parameters and pageSize is within limits
 func (p *PaginationQuery) IsValidPagination() error {
-	if p.PageSize >= 0 && p.OffSet >= 0 {
-		return nil
+	// Check if PageSize is less than the minimum
+	if p.PageSize < MinPageSize {
+		return errors.NewInvalid(fmt.Sprintf("validation error:\n - page_size: value must be greater than or equal to %d [uint32.gte]", MinPageSize))
 	}
-	return errors.NewInvalid("pagesize and offset parameters must be gte zero")
+
+	// Check if PageSize exceeds the maximum
+	if p.PageSize > MaxPageSize {
+		return errors.NewInvalid(fmt.Sprintf("validation error:\n - page_size: value must be less than or equal to %d [uint32.lte]", MaxPageSize))
+	}
+
+	// Check if Offset is less than the minimum
+	if p.OffSet < MinOffset {
+		return errors.NewInvalid("validation error:\n - offset: value must be greater than or equal to 0 [uint32.gte]")
+	}
+
+	return nil
 }
 
 // IsPageAvailable returns true if at least one element can be placed on page. False otherwise

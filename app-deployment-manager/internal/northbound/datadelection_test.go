@@ -57,11 +57,11 @@ var _ = Describe("Data Selection", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("fails due to pagesize and offset are negative", func() {
+		It("fails due to pagesize exceeds maximum", func() {
 			deployList = append(deployList, deploy)
 			var listDeployReq = deploymentpb.ListDeploymentsRequest{
-				PageSize: -2,
-				Offset:   -3,
+				PageSize: 501, // exceeds maximum of 500
+				Offset:   0,
 			}
 
 			_, err := selectDeployments(&listDeployReq, deployList)
@@ -69,7 +69,7 @@ var _ = Describe("Data Selection", func() {
 			Expect(err).To(HaveOccurred())
 			s, ok := status.FromError(err)
 			Expect(ok).To(BeFalse())
-			Expect(s.Message()).Should(Equal("pagesize and offset parameters must be gte zero"))
+			Expect(s.Message()).Should(Equal("validation error:\n - page_size: value must be less than or equal to 500 [uint32.lte]"))
 		})
 
 		It("fails due to parse order by", func() {
@@ -139,10 +139,10 @@ var _ = Describe("Data Selection", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("fails due to pagesize and offset are negative", func() {
+		It("fails due to pagesize exceeds maximum", func() {
 			var clusterListReq = deploymentpb.ListClustersRequest{
-				PageSize: -2,
-				Offset:   -3,
+				PageSize: 501, // exceeds maximum of 500
+				Offset:   0,
 			}
 
 			clusterLists := make([]*deploymentpb.ClusterInfo, 1)
@@ -158,7 +158,7 @@ var _ = Describe("Data Selection", func() {
 			Expect(err).To(HaveOccurred())
 			s, ok := status.FromError(err)
 			Expect(ok).To(BeFalse())
-			Expect(s.Message()).Should(Equal("pagesize and offset parameters must be gte zero"))
+			Expect(s.Message()).Should(Equal("validation error:\n - page_size: value must be less than or equal to 500 [uint32.lte]"))
 		})
 
 		It("fails due to parse order by", func() {
@@ -246,10 +246,10 @@ var _ = Describe("Data Selection", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("fails due to pagesize and offset are negative", func() {
+		It("fails due to pagesize exceeds maximum", func() {
 			var clusterListReq = deploymentpb.ListDeploymentClustersRequest{
-				PageSize: -2,
-				Offset:   -3,
+				PageSize: 501, // exceeds maximum of 500
+				Offset:   0,
 			}
 
 			_, err := selectClustersPerDeployment(&clusterListReq, clusterLists)
@@ -257,7 +257,7 @@ var _ = Describe("Data Selection", func() {
 			Expect(err).To(HaveOccurred())
 			s, ok := status.FromError(err)
 			Expect(ok).To(BeFalse())
-			Expect(s.Message()).Should(Equal("pagesize and offset parameters must be gte zero"))
+			Expect(s.Message()).Should(Equal("validation error:\n - page_size: value must be less than or equal to 500 [uint32.lte]"))
 		})
 
 		It("fails due to parse order by", func() {
@@ -311,8 +311,8 @@ var _ = Describe("Data Selection", func() {
 			offset := 1
 			pageSize := 0
 
-			v := newPaginationQuery(int32(pageSize), int32(offset))
-			Expect(v.PageSize).To(Equal(10))
+			v := newPaginationQuery(uint32(pageSize), uint32(offset))
+			Expect(v.PageSize).To(Equal(20))
 			Expect(v.OffSet).To(Equal(1))
 		})
 

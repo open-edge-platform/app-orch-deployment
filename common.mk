@@ -28,7 +28,7 @@ GOCMD   := go
 GOTESTSUM_PKG := gotest.tools/gotestsum@v1.12.2
 OAPI_CODEGEN_VERSION ?= v2.2.0
 LOCALBIN ?= $(shell pwd)/bin
-BUF_VERSION ?= v1.52.1
+BUF_VERSION ?= v1.57.0
 
 ## Path variables ##
 OUT_DIR	:= out
@@ -104,12 +104,10 @@ vet: ## Run go vet against code.
 common-install-protoc-plugins:
 	@echo "Installing protoc-gen-doc..."
 	@go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@latest
-	@echo "Installing protoc-gen-validate..."
-	@go install github.com/envoyproxy/protoc-gen-validate@latest
-	@echo "Installing protoc-gen-go-grpc..."
-	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-	@echo "Installing protoc-gen-openapi"
-	@go install github.com/kollalabs/protoc-gen-openapi@latest
+	@echo "Installing protoc-gen-connect-go..."
+	@go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest
+	@echo "Installing protoc-gen-connect-openapi..."
+	@go install github.com/sudorandom/protoc-gen-connect-openapi@latest
 	@echo "Installing oapi-codegen"
 	@go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@${OAPI_CODEGEN_VERSION}
 	@echo "Installing buf"
@@ -122,12 +120,10 @@ common-install-protoc-plugins:
 common-verify-protoc-plugins:
 	@echo "Verifying protoc-gen-doc installation..."
 	@command -v protoc-gen-doc >/dev/null 2>&1 && echo "protoc-gen-doc is installed." || echo "---> protoc-gen-doc is not installed."
-	@echo "Verifying protoc-gen-validate installation..."
-	@command -v protoc-gen-validate >/dev/null 2>&1 && echo "protoc-gen-validate is installed." || echo "---> protoc-gen-validate is not installed."
-	@echo "Verifying protoc-gen-go-grpc installation..."
-	@command -v protoc-gen-go-grpc >/dev/null 2>&1 && echo "protoc-gen-go-grpc is installed." || echo "---> protoc-gen-go-grpc is not installed."
-	@echo "Verifying protoc-gen-openapi installation..."
-	@command -v protoc-gen-openapi >/dev/null 2>&1 && echo "protoc-gen-openapi is installed." || echo "---> protoc-gen-openapi is not installed."
+	@echo "Verifying protoc-gen-connect-go installation..."
+	@command -v protoc-gen-connect-go >/dev/null 2>&1 && echo "protoc-gen-connect-go is installed." || echo "---> protoc-gen-connect-go is not installed."
+	@echo "Verifying protoc-gen-connect-openapi installation..."
+	@command -v protoc-gen-connect-openapi >/dev/null 2>&1 && echo "protoc-gen-connect-openapi is installed." || echo "---> protoc-gen-connect-openapi is not installed."
 	@echo "Verifying oapi-codegen installation..."
 	@command -v oapi-codegen >/dev/null 2>&1 && echo "oapi-codegen is installed." || echo "---> oapi-codegen is not installed."
 	@echo "Verifying buf installation..."
@@ -286,14 +282,14 @@ common-go-fuzz-test: ## GO fuzz tests
 #### Protobuf Targets ####
 
 common-buf-lint-fix: $(VENV_NAME) ## Lint and when possible fix protobuf files
-	buf --version
-	buf format -d -w
-	buf lint
+	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf --version
+	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf format -d -w
+	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf lint
 
 common-buf-generate: $(VENV_NAME) ## Compile protobuf files in api into code
 	set +u; . ./$</bin/activate; set -u ;\
-        buf --version ;\
-        buf generate
+        PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf --version ;\
+        PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf generate
 
 common-openapi-spec-validate: $(VENV_NAME)
 		set +u; . ./$</bin/activate; set -u ;\
@@ -301,14 +297,14 @@ common-openapi-spec-validate: $(VENV_NAME)
 
 common-buf-update: $(VENV_NAME) ## Update buf modules
 	set +u; . ./$</bin/activate; set -u ;\
-  buf --version ;\
-  pushd api; buf dep update; popd ;\
-  buf build
+  PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf --version ;\
+  pushd api; PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf mod update; popd ;\
+  PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf build
 
 common-buf-lint: $(VENV_NAME) ## Lint and format protobuf files
-	buf --version
-	buf format -d --exit-code
-	buf lint
+	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf --version
+	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf format -d --exit-code
+	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf lint
 
 #### Rest Client Targets ####
 common-rest-client-gen: ## Generate rest-client.

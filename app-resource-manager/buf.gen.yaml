@@ -11,7 +11,7 @@ managed:
     - file_option: go_package
       module: buf.build/grpc-ecosystem/grpc-gateway
     - file_option: go_package
-      module: buf.build/envoyproxy/protoc-gen-validate
+      module: buf.build/bufbuild/protovalidate
   override:
     - file_option: go_package_prefix
       value: github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2
@@ -24,20 +24,12 @@ plugins:
     opt:
       - paths=source_relative
       - require_unimplemented_servers=false
-  - local: protoc-gen-openapi
-    out: api/nbi/v2/spec/v2
-    opt:
-      - title=App Resource Manager API
-      - version=1.0.0
-      - default_response=false
-      - enum_type=string
-      - description=App Resource Manager service providing operations for resource management
+  - local: protoc-gen-connect-go
+    out: api/nbi/v2
+    opt: paths=source_relative
+  - local: protoc-gen-connect-openapi
+    out: api/nbi/v2/spec
     strategy: all
   - local: protoc-gen-grpc-gateway
     out: api/nbi/v2
     opt: paths=source_relative
-  - local: protoc-gen-validate
-    out: api/nbi/v2
-    opt:
-      - paths=source_relative
-      - lang=go

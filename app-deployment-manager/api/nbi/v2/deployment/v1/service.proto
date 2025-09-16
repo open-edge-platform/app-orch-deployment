@@ -11,6 +11,8 @@ import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "google/protobuf/empty.proto";
 
+option go_package = "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1";
+
 // DeploymentService provides API operations for catalogs and applications.
 service DeploymentService {
   // === Deployment ===
@@ -115,7 +117,7 @@ message ListDeploymentsRequest {
     (google.api.field_behavior) = OPTIONAL,
     (buf.validate.field).int32 = {
       gte: 0
-      lte: 100
+      lte: 500
     }
   ];
 
@@ -130,7 +132,10 @@ message ListDeploymentsRequest {
 // Response message for the ListDeployments method.
 message ListDeploymentsResponse {
   // A list of Deployment Objects.
-  repeated deployment.v1.Deployment deployments = 1 [(google.api.field_behavior) = REQUIRED];
+  repeated deployment.v1.Deployment deployments = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (buf.validate.field).repeated = {max_items: 500}
+  ];
 
   int32 total_elements = 2 [(google.api.field_behavior) = REQUIRED];
 }
@@ -173,7 +178,7 @@ message ListDeploymentsPerClusterRequest {
     (google.api.field_behavior) = OPTIONAL,
     (buf.validate.field).int32 = {
       gte: 0
-      lte: 100
+      lte: 500
     }
   ];
 
@@ -188,7 +193,10 @@ message ListDeploymentsPerClusterRequest {
 // Response message for the ListDeploymentsPerCluster method.
 message ListDeploymentsPerClusterResponse {
   // A list of Deployment Instance Cluster Objects.
-  repeated deployment.v1.DeploymentInstancesCluster deployment_instances_cluster = 1 [(google.api.field_behavior) = REQUIRED];
+  repeated deployment.v1.DeploymentInstancesCluster deployment_instances_cluster = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (buf.validate.field).repeated = {max_items: 500}
+  ];
 
   int32 total_elements = 2 [(google.api.field_behavior) = REQUIRED];
 }
@@ -356,7 +364,7 @@ message ListDeploymentClustersRequest {
     (google.api.field_behavior) = OPTIONAL,
     (buf.validate.field).int32 = {
       gte: 0
-      lte: 100
+      lte: 500
     }
   ];
 
@@ -367,7 +375,10 @@ message ListDeploymentClustersRequest {
 
 // Response message for ListDeploymentClusters method.
 message ListDeploymentClustersResponse {
-  repeated deployment.v1.Cluster clusters = 1 [(google.api.field_behavior) = REQUIRED];
+  repeated deployment.v1.Cluster clusters = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (buf.validate.field).repeated = {max_items: 500}
+  ];
 
   int32 total_elements = 2 [(google.api.field_behavior) = REQUIRED];
 }

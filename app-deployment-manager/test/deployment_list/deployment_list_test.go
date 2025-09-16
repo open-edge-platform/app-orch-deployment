@@ -32,8 +32,8 @@ func (s *TestSuite) TestListDeploymentsWithPagination() {
 	}
 
 	testCases := []struct {
-		pageSize int32
-		offset   int32
+		pageSize int
+		offset   int
 	}{
 		{pageSize: 1, offset: 0},  // First page with one deployment
 		{pageSize: 2, offset: 0},  // First page with two deployments
@@ -43,9 +43,11 @@ func (s *TestSuite) TestListDeploymentsWithPagination() {
 		{pageSize: 2, offset: 50}, // Tenth page with two deployments (should be empty)
 	}
 	for _, tt := range testCases {
-		deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
-			PageSize: &tt.pageSize,
-			Offset:   &tt.offset,
+		pageSize := int32(tt.pageSize)
+		offset := int32(tt.offset)
+		deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentV1DeploymentServiceListDeploymentsParams{
+			PageSize: &pageSize,
+			Offset:   &offset,
 		})
 		s.NoError(err, "Failed to list deployments with pagination")
 		s.Equal(http.StatusOK, code, "Expected HTTP status 200 for listing deployments with pagination")
@@ -86,9 +88,16 @@ func (s *TestSuite) TestListDeploymentsInvalidPaginationParameters() {
 		// TODO: test orderBy?
 	}
 	for _, tt := range testCases {
-		deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
-			PageSize: &tt.pageSize,
-			Offset:   &tt.offset,
+		var pageSize, offset *int32
+		if tt.pageSize >= 0 {
+			pageSize = &tt.pageSize
+		}
+		if tt.offset >= 0 {
+			offset = &tt.offset
+		}
+		deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentV1DeploymentServiceListDeploymentsParams{
+			PageSize: pageSize,
+			Offset:   offset,
 			Labels:   tt.labels,
 		})
 		s.NoErrorf(err, "Pagination parameters %v", tt)
@@ -115,7 +124,7 @@ func (s *TestSuite) TestListDeploymentsWithFilter() {
 		s.NoError(err, "Failed to create '"+app+"-"+deploymentutils.DeploymentTypeTargeted+"' deployment")
 	}
 	displayName := deploymentutils.FormDisplayName(deploymentutils.AppWordpress, testName)
-	deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentServiceListDeploymentsParams{
+	deps, code, err := deploymentutils.DeploymentsListWithParams(s.AdmClient, &restClient.DeploymentV1DeploymentServiceListDeploymentsParams{
 		Filter: ptr("displayName=" + displayName),
 	})
 	s.NoError(err, "Failed to list deployments with filter")
