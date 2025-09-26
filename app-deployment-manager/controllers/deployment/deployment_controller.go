@@ -36,7 +36,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	cutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/v1beta1"
@@ -105,7 +104,6 @@ type Reconciler struct {
 // +kubebuilder:rbac:groups=app.edge-orchestrator.intel.com,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=app.edge-orchestrator.intel.com,resources=deployments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=app.edge-orchestrator.intel.com,resources=deployments/finalizers,verbs=update
-// +kubebuilder:rbac:groups=app.edge-orchestrator.intel.com,resources=clusters,verbs=get;list;watch
 // +kubebuilder:rbac:groups=app.edge-orchestrator.intel.com,resources=deploymentclusters,verbs=get;list;watch;delete
 // +kubebuilder:rbac:groups=fleet.cattle.io,resources=gitrepos,verbs=get;list;watch;create;update;patch;delete;deletecollection
 // +kubebuilder:rbac:groups=fleet.cattle.io,resources=bundles,verbs=get;list;watch
@@ -181,8 +179,6 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) (err error) {
 		}).
 		For(&v1beta1.Deployment{}).
 		Owns(&fleetv1alpha1.GitRepo{}).
-		Watches(&v1beta1.Cluster{},
-			handler.EnqueueRequestsFromMapFunc(r.findDeploymentsForCluster)).
 		Build(r)
 	if err != nil {
 		return fmt.Errorf("failed to setup deployment controller (%v)", err)
@@ -201,194 +197,9 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) (err error) {
 	return nil
 }
 
-// findDeploymentsForCluster returns a list of Deployment reconcile requests when a cluster is deleted
-func (r *Reconciler) findDeploymentsForCluster(ctx context.Context, cluster client.Object) []reconcile.Request {
-	log := log.FromContext(ctx)
-	
-	c := cluster.(*v1beta1.Cluster)
-	
-	// Only handle cluster deletion events
-	if c.DeletionTimestamp == nil {
-		return []reconcile.Request{}
-	}
-	
-	log.Info("Cluster deleted, checking for deployments to clean up", "cluster", c.Name)
-	
-	// Find all deployments that might be affected by this cluster deletion
-	deploymentList := &v1beta1.DeploymentList{}
-	if err := r.List(ctx, deploymentList); err != nil {
-		log.Error(err, "Failed to list deployments when cluster was deleted", "cluster", c.Name)
-		return []reconcile.Request{}
-	}
-	
-	var requests []reconcile.Request
-	
-	for _, deployment := range deploymentList.Items {
-		// Check if this deployment targets the deleted cluster by looking for DeploymentClusters
-		dcList := &v1beta1.DeploymentClusterList{}
-		labels := map[string]string{
-			string(v1beta1.DeploymentID): deployment.GetId(),
-		}
-		if err := r.List(ctx, dcList, client.MatchingLabels(labels)); err != nil {
-			log.Error(err, "Failed to list deployment clusters", "deployment", deployment.Name)
-			continue
-		}
-		
-		// Check if this deployment targets the deleted cluster
-		targetsDeletedCluster := false
-		for _, dc := range dcList.Items {
-			if dc.Spec.ClusterID == c.Name {
-				targetsDeletedCluster = true
-				break
-			}
-		}
-		
-		if targetsDeletedCluster {
-			log.Info("Queueing deployment for reconciliation after cluster deletion", 
-				"deployment", deployment.Name, "cluster", c.Name, "type", deployment.Spec.DeploymentType)
-			requests = append(requests, reconcile.Request{
-				NamespacedName: types.NamespacedName{
-					Name:      deployment.Name,
-					Namespace: deployment.Namespace,
-				},
-			})
-		}
-	}
-	
-	return requests
-}
 
-// shouldDeleteManualDeployment checks if a manual deployment should be deleted
-// because all its target clusters have been removed
-func (r *Reconciler) shouldDeleteManualDeployment(ctx context.Context, d *v1beta1.Deployment) (bool, error) {
-	log := log.FromContext(ctx)
-	
-	// Only check for targeted (manual) deployments
-	if d.Spec.DeploymentType != v1beta1.Targeted {
-		return false, nil
-	}
-	
-	// Only consider deployments that are in a steady state (not being created/updated)
-	if d.Status.State != v1beta1.Running && d.Status.State != v1beta1.NoTargetClusters {
-		return false, nil
-	}
-	
-	// Get all DeploymentClusters for this deployment
-	dcList := &v1beta1.DeploymentClusterList{}
-	labels := map[string]string{
-		string(v1beta1.DeploymentID): d.GetId(),
-	}
-	if err := r.List(ctx, dcList, client.MatchingLabels(labels)); err != nil {
-		return false, fmt.Errorf("failed to list deployment clusters: %v", err)
-	}
-	
-	// If there are no DeploymentClusters and the deployment is not in NoTargetClusters state,
-	// this might be a transient condition during creation - don't delete
-	if len(dcList.Items) == 0 {
-		if d.Status.State != v1beta1.NoTargetClusters {
-			log.V(1).Info("Manual deployment has no DeploymentClusters but is not in NoTargetClusters state, skipping deletion check", 
-				"deployment", d.Name, "state", d.Status.State)
-			return false, nil
-		}
-		// If deployment is in NoTargetClusters state and has no DeploymentClusters, it's safe to delete
-		log.Info("Manual deployment in NoTargetClusters state with no DeploymentClusters, marking for deletion", "deployment", d.Name)
-		return true, nil
-	}
-	
-	// Check if any of the target clusters still exist
-	hasValidCluster := false
-	for _, dc := range dcList.Items {
-		cluster := &v1beta1.Cluster{}
-		// Clusters are cluster-scoped resources, so no namespace needed
-		key := types.NamespacedName{
-			Name: dc.Spec.ClusterID,
-		}
-		
-		if err := r.Get(ctx, key, cluster); err == nil {
-			// Cluster still exists, don't delete the deployment
-			hasValidCluster = true
-			break
-		} else if !apierrors.IsNotFound(err) {
-			// Error other than "not found"
-			log.Error(err, "Error checking cluster existence", "cluster", dc.Spec.ClusterID)
-			return false, err
-		}
-		// Cluster not found, continue checking other clusters
-	}
-	
-	// If no valid clusters found and deployment is in NoTargetClusters state, delete it
-	if !hasValidCluster && d.Status.State == v1beta1.NoTargetClusters {
-		log.Info("All target clusters for manual deployment have been deleted and deployment is in NoTargetClusters state, marking for deletion", 
-			"deployment", d.Name, "targetClusters", len(dcList.Items))
-		return true, nil
-	}
-	
-	return false, nil
-}
 
-// cleanupStaleGitRepos cleans up GitRepo objects that reference deleted clusters
-func (r *Reconciler) cleanupStaleGitRepos(ctx context.Context, d *v1beta1.Deployment) error {
-	log := log.FromContext(ctx)
-	
-	// Get all GitRepos owned by this deployment
-	gitRepos := &fleetv1alpha1.GitRepoList{}
-	if err := r.List(ctx, gitRepos, client.InNamespace(d.Namespace), client.MatchingFields{ownerKey: d.Name}); err != nil {
-		return fmt.Errorf("failed to list GitRepos: %v", err)
-	}
-	
-	for i := range gitRepos.Items {
-		gr := &gitRepos.Items[i]
-		
-		// Check if this GitRepo targets any cluster that still exists
-		if gr.Spec.Targets != nil && len(gr.Spec.Targets) > 0 {
-			hasValidTarget := false
-			
-			for _, target := range gr.Spec.Targets {
-				if target.ClusterSelector != nil && target.ClusterSelector.MatchLabels != nil {
-					// Check if any cluster matches this selector
-					clusters := &v1beta1.ClusterList{}
-					if err := r.List(ctx, clusters, client.MatchingLabels(target.ClusterSelector.MatchLabels)); err != nil {
-						log.Error(err, "Failed to list clusters for GitRepo target validation")
-						continue
-					}
-					
-					if len(clusters.Items) > 0 {
-						hasValidTarget = true
-						break
-					}
-				}
-			}
-			
-			// If this GitRepo has no valid targets, clean up related BundleDeployments
-			if !hasValidTarget {
-				log.Info("GitRepo has no valid cluster targets, cleaning up related BundleDeployments", 
-					"gitrepo", gr.Name)
-				
-				// Find and clean up BundleDeployments created by this GitRepo
-				bdList := &fleetv1alpha1.BundleDeploymentList{}
-				bdLabels := map[string]string{
-					"fleet.cattle.io/repo-name": gr.Name,
-				}
-				if err := r.List(ctx, bdList, client.MatchingLabels(bdLabels)); err != nil {
-					log.Error(err, "Failed to list BundleDeployments for cleanup", "gitrepo", gr.Name)
-					continue
-				}
-				
-				for j := range bdList.Items {
-					bd := &bdList.Items[j]
-					log.Info("Cleaning up stale BundleDeployment", 
-						"bundleDeployment", bd.Name, "gitRepo", gr.Name)
-					
-					if err := r.Client.Delete(ctx, bd); err != nil && !apierrors.IsNotFound(err) {
-						log.Error(err, "Failed to delete stale BundleDeployment", "bundleDeployment", bd.Name)
-					}
-				}
-			}
-		}
-	}
-	
-	return nil
-}
+
 
 // cleanupAllDeploymentClusterMetrics aggressively cleans DeploymentCluster metrics
 // This prevents timing race conditions where DC controllers might recreate metrics during deletion
@@ -764,28 +575,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrlRes c
 		// Don't fail the reconciliation, just log the error and continue
 	}
 
-	// Only check for cleanup if deployment is in NoTargetClusters state or error state
-	// This prevents premature deletion during normal reconciliation
-	if d.Status.State == v1beta1.NoTargetClusters || d.Status.State == v1beta1.Error {
-		// Check if this manual deployment should be deleted because all target clusters are gone
-		if shouldDelete, err := r.shouldDeleteManualDeployment(ctx, d); err != nil {
-			log.Error(err, "Failed to check if manual deployment should be deleted", "deployment", d.Name)
-			return ctrl.Result{}, err
-		} else if shouldDelete {
-			log.Info("Deleting manual deployment because all target clusters have been removed", "deployment", d.Name)
-			if err := r.Delete(ctx, d); err != nil && !apierrors.IsNotFound(err) {
-				log.Error(err, "Failed to delete manual deployment", "deployment", d.Name)
-				return ctrl.Result{}, err
-			}
-			return ctrl.Result{}, nil
-		}
 
-		// Clean up any stale GitRepo objects that reference deleted clusters
-		if err := r.cleanupStaleGitRepos(ctx, d); err != nil {
-			log.Error(err, "Failed to cleanup stale GitRepos", "deployment", d.Name)
-			// Don't fail the reconciliation, just log the error and continue
-		}
-	}
 
 	// If no changes to Deployment Spec since the last successful reconcile,
 	// force redeploy stucked apps and skip normal reconciliation loops
