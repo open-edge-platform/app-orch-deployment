@@ -10,9 +10,9 @@ import (
 
 const (
 	DefaultPageSize = 20
-	MaxPageSize = 500
-	MinPageSize = 0
-	MinOffset = 0
+	MaxPageSize     = 500
+	MinPageSize     = 0
+	MinOffset       = 0
 )
 
 // EmptyPagination No items will be returned

@@ -150,10 +150,11 @@ var _ = Describe("Deployment controller", func() {
 		activeProjectId = "a563356a-b4df-47bb-b620-aae2d74c5129"
 	)
 	var (
-		c client.WithWatch
-		r *Reconciler
-		d v1beta1.Deployment
-		m mockRepository
+		ctx context.Context
+		c   client.WithWatch
+		r   *Reconciler
+		d   v1beta1.Deployment
+		m   mockRepository
 
 		wordpressProfile   v1.Secret
 		wordpressOverrides v1.Secret
@@ -162,6 +163,7 @@ var _ = Describe("Deployment controller", func() {
 	)
 
 	BeforeEach(func() {
+		ctx = context.Background()
 		d = v1beta1.Deployment{
 			TypeMeta: metav1.TypeMeta{
 				APIVersion: "app.edge-orchestrator.intel.com/v1beta1",
@@ -391,10 +393,10 @@ var _ = Describe("Deployment controller", func() {
 				})
 				Expect(res).To(Equal(reconcile.Result{}))
 
-				// patch() deletes the object so patchStatus() returns Not Found error
-				Expect(err.Error()).To(Equal("deployments.app.edge-orchestrator.intel.com \"mydeployment\" not found"))
+				// Since automatic deletion was removed, we expect successful reconciliation
+				Expect(err).To(BeNil())
 
-				// Finalizer was removed and resource was successfully deleted
+				// Finalizer was removed so Kubernetes completes the deletion - resource no longer exists
 				Expect(r.Get(ctx, key, &dep)).ToNot(Succeed())
 			})
 		})
@@ -1231,250 +1233,145 @@ var _ = Describe("Deployment controller", func() {
 				// GitRepo was force resync'ed
 				Expect(gitrepo.Spec.ForceSyncGeneration).To(Equal(generation + 1))
 
-			// LastForceResync was updated
-			Expect(d.Status.LastForceResync).ToNot(Equal(lastResync))
+				// LastForceResync was updated
+				Expect(d.Status.LastForceResync).ToNot(Equal(lastResync))
+			})
 		})
-	})
 
-	Describe("Cluster deletion cleanup", func() {
-		var (
-			reconciler        *Reconciler
-			ctx               context.Context
-			dep               *v1beta1.Deployment
-			cluster           *v1beta1.Cluster
-			deploymentCluster *v1beta1.DeploymentCluster
-			gitRepo           *fleetv1alpha1.GitRepo
-		)
+		When("a Deployment is in progress and an app is stalled", func() {
 
-		BeforeEach(func() {
-			reconciler = &Reconciler{
-				Client:   k8sClient,
-				recorder: record.NewFakeRecorder(32),
-			}
-			ctx = context.Background()
+			const (
+				gitRepoName = "app1-12345"
+				depName     = "mydeployment"
+				depUID      = "12345"
+				generation  = int64(3)
+			)
+			var (
+				c client.WithWatch
+				r *Reconciler
+			)
 
-			// Create a cluster
-			cluster = &v1beta1.Cluster{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "test-cluster",
-				},
-				Spec: v1beta1.ClusterSpec{
-					Name:                 "test-cluster",
-					DisplayName:          "Test Cluster",
-					KubeConfigSecretName: "test-kubeconfig",
-				},
-			}
-
-			// Create a manual deployment
-			dep = &v1beta1.Deployment{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-deployment",
-					Namespace: "default",
-					UID:       "test-deployment-uid",
-				},
-				Spec: v1beta1.DeploymentSpec{
-					DisplayName:    "Test Deployment",
-					Project:        "default",
-					DeploymentType: v1beta1.Targeted,
-					DeploymentPackageRef: v1beta1.DeploymentPackageRef{
-						AppName:    "test-app",
-						AppVersion: "1.0.0",
+			// Create a fake client and add a GitRepo object that is "owned" by depName
+			BeforeEach(func() {
+				gitrepo := &fleetv1alpha1.GitRepo{
+					TypeMeta: metav1.TypeMeta{},
+					ObjectMeta: metav1.ObjectMeta{
+						Name: gitRepoName,
 					},
-					Applications: []v1beta1.Application{
-						{
-							Name: "test-app",
-							HelmApp: &v1beta1.HelmApp{
-								Chart:   "test-chart",
-								Version: "1.0.0",
-								Repo:    "https://test.repo.com",
-							},
-						},
+					Spec: fleetv1alpha1.GitRepoSpec{
+						ForceSyncGeneration: generation,
 					},
-				},
-				Status: v1beta1.DeploymentStatus{
-					State: v1beta1.NoTargetClusters,
-				},
-			}
-
-			// Create a deployment cluster linking the deployment to the cluster
-			deploymentCluster = &v1beta1.DeploymentCluster{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-deployment-cluster",
-					Namespace: "default",
-					Labels: map[string]string{
-						string(v1beta1.DeploymentID): "test-deployment-uid",
-						string(v1beta1.ClusterName):  "test-cluster",
-					},
-				},
-				Spec: v1beta1.DeploymentClusterSpec{
-					DeploymentID: "test-deployment-uid",
-					ClusterID:    "test-cluster",
-					Namespace:    "default",
-				},
-			}
-
-			// Create a GitRepo owned by the deployment
-			gitRepo = &fleetv1alpha1.GitRepo{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-gitrepo",
-					Namespace: "default",
-					OwnerReferences: []metav1.OwnerReference{
-						{
-							APIVersion: "deployment.edge-orchestrator.intel.com/v1beta1",
-							Kind:       "Deployment",
-							Name:       "test-deployment",
-							UID:        "test-deployment-uid",
-						},
-					},
-				},
-				Spec: fleetv1alpha1.GitRepoSpec{
-					Targets: []fleetv1alpha1.GitTarget{
-						{
-							ClusterSelector: &metav1.LabelSelector{
-								MatchLabels: map[string]string{
-									"test-cluster-label": "test-cluster-value",
+					Status: fleetv1alpha1.GitRepoStatus{
+						StatusBase: fleetv1alpha1.StatusBase{
+							Conditions: []genericcondition.GenericCondition{
+								{
+									Type:   "Ready",
+									Status: v1.ConditionFalse,
+								},
+								{
+									Type:    "Stalled",
+									Status:  v1.ConditionTrue,
+									Message: "App is stalled",
 								},
 							},
 						},
 					},
-				},
-			}
-		})
-	})
+				}
 
-	When("a Deployment is in progress and an app is stalled", func() {
+				idxfunc := func(rawObj client.Object) []string {
+					return []string{depName}
+				}
+				c = fake.NewClientBuilder().
+					WithScheme(scheme.Scheme).
+					WithObjects(gitrepo).
+					WithIndex(&fleetv1alpha1.GitRepo{}, ".metadata.controller", idxfunc).
+					Build()
+				r = &Reconciler{
+					Client:   c,
+					recorder: record.NewFakeRecorder(10),
+				}
+			})
 
-		const (
-			gitRepoName = "app1-12345"
-			depName     = "mydeployment"
-			depUID      = "12345"
-			generation  = int64(3)
-		)
-		var (
-			c client.WithWatch
-			r *Reconciler
-		)
-
-		// Create a fake client and add a GitRepo object that is "owned" by depName
-		BeforeEach(func() {
-			gitrepo := &fleetv1alpha1.GitRepo{
-				TypeMeta: metav1.TypeMeta{},
-				ObjectMeta: metav1.ObjectMeta{
-					Name: gitRepoName,
-				},
-				Spec: fleetv1alpha1.GitRepoSpec{
-					ForceSyncGeneration: generation,
-				},
-				Status: fleetv1alpha1.GitRepoStatus{
-					StatusBase: fleetv1alpha1.StatusBase{
-						Conditions: []genericcondition.GenericCondition{
-							{
-								Type:   "Ready",
-								Status: v1.ConditionFalse,
-							},
-							{
-								Type:    "Stalled",
-								Status:  v1.ConditionTrue,
-								Message: "App is stalled",
-							},
+			Context("Deployment's LastForceResync timestamp is blank", func() {
+				It("sets LastForceResync timestamp", func() {
+					d := &v1beta1.Deployment{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: depName,
+							UID:  depUID,
 						},
-					},
-				},
-			}
+					}
+					Expect(r.forceRedeployStuckApps(ctx, d)).To(Succeed())
 
-			idxfunc := func(rawObj client.Object) []string {
-				return []string{depName}
-			}
-			c = fake.NewClientBuilder().
-				WithScheme(scheme.Scheme).
-				WithObjects(gitrepo).
-				WithIndex(&fleetv1alpha1.GitRepo{}, ".metadata.controller", idxfunc).
-				Build()
-			r = &Reconciler{
-				Client:   c,
-				recorder: record.NewFakeRecorder(10),
-			}
-		})
+					gitrepo := fleetv1alpha1.GitRepo{}
+					key := client.ObjectKey{
+						Name: gitRepoName,
+					}
+					Expect(r.Get(ctx, key, &gitrepo)).To(Succeed())
 
-		Context("Deployment's LastForceResync timestamp is blank", func() {
-			It("sets LastForceResync timestamp", func() {
-				d := &v1beta1.Deployment{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: depName,
-						UID:  depUID,
-					},
-				}
-				Expect(r.forceRedeployStuckApps(ctx, d)).To(Succeed())
+					// GitRepo was not force resync'ed
+					Expect(gitrepo.Spec.ForceSyncGeneration).To(Equal(generation))
 
-				gitrepo := fleetv1alpha1.GitRepo{}
-				key := client.ObjectKey{
-					Name: gitRepoName,
-				}
-				Expect(r.Get(ctx, key, &gitrepo)).To(Succeed())
-
-				// GitRepo was not force resync'ed
-				Expect(gitrepo.Spec.ForceSyncGeneration).To(Equal(generation))
-
-				// LastForceResync was updated
-				Expect(d.Status.LastForceResync).ToNot(Equal(""))
+					// LastForceResync was updated
+					Expect(d.Status.LastForceResync).ToNot(Equal(""))
+				})
 			})
-		})
 
-		Context("it is not yet time to resync", func() {
-			It("returns without taking action", func() {
-				lastResync := time.Now().Add(time.Second * -5).Format(time.RFC3339)
-				d := &v1beta1.Deployment{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: depName,
-						UID:  depUID,
-					},
-					Status: v1beta1.DeploymentStatus{
-						LastForceResync: lastResync,
-					},
-				}
+			Context("it is not yet time to resync", func() {
+				It("returns without taking action", func() {
+					lastResync := time.Now().Add(time.Second * -5).Format(time.RFC3339)
+					d := &v1beta1.Deployment{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: depName,
+							UID:  depUID,
+						},
+						Status: v1beta1.DeploymentStatus{
+							LastForceResync: lastResync,
+						},
+					}
 
-				Expect(r.forceRedeployStuckApps(ctx, d)).To(Succeed())
+					Expect(r.forceRedeployStuckApps(ctx, d)).To(Succeed())
 
-				gitrepo := fleetv1alpha1.GitRepo{}
-				key := client.ObjectKey{
-					Name: gitRepoName,
-				}
-				Expect(r.Get(ctx, key, &gitrepo)).To(Succeed())
+					gitrepo := fleetv1alpha1.GitRepo{}
+					key := client.ObjectKey{
+						Name: gitRepoName,
+					}
+					Expect(r.Get(ctx, key, &gitrepo)).To(Succeed())
 
-				// GitRepo was not force resync'ed
-				Expect(gitrepo.Spec.ForceSyncGeneration).To(Equal(generation))
+					// GitRepo was not force resync'ed
+					Expect(gitrepo.Spec.ForceSyncGeneration).To(Equal(generation))
 
-				// LastForceResync was not updated
-				Expect(d.Status.LastForceResync).To(Equal(lastResync))
+					// LastForceResync was not updated
+					Expect(d.Status.LastForceResync).To(Equal(lastResync))
+				})
 			})
-		})
 
-		Context("it is time to resync", func() {
-			It("increments the GitRepo's ForceResyncGeneration", func() {
-				lastResync := time.Now().Add(time.Second * -75).Format(time.RFC3339)
-				d := &v1beta1.Deployment{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: depName,
-						UID:  depUID,
-					},
-					Status: v1beta1.DeploymentStatus{
-						LastForceResync: lastResync,
-					},
-				}
+			Context("it is time to resync", func() {
+				It("increments the GitRepo's ForceResyncGeneration", func() {
+					lastResync := time.Now().Add(time.Second * -75).Format(time.RFC3339)
+					d := &v1beta1.Deployment{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: depName,
+							UID:  depUID,
+						},
+						Status: v1beta1.DeploymentStatus{
+							LastForceResync: lastResync,
+						},
+					}
 
-				Expect(r.forceRedeployStuckApps(ctx, d)).To(Succeed())
+					Expect(r.forceRedeployStuckApps(ctx, d)).To(Succeed())
 
-				gitrepo := fleetv1alpha1.GitRepo{}
-				key := client.ObjectKey{
-					Name: gitRepoName,
-				}
-				Expect(r.Get(ctx, key, &gitrepo)).To(Succeed())
+					gitrepo := fleetv1alpha1.GitRepo{}
+					key := client.ObjectKey{
+						Name: gitRepoName,
+					}
+					Expect(r.Get(ctx, key, &gitrepo)).To(Succeed())
 
-				// GitRepo was force resync'ed
-				Expect(gitrepo.Spec.ForceSyncGeneration).To(Equal(generation + 1))
+					// GitRepo was force resync'ed
+					Expect(gitrepo.Spec.ForceSyncGeneration).To(Equal(generation + 1))
 
-				// LastForceResync was updated
-				Expect(d.Status.LastForceResync).ToNot(Equal(lastResync))
+					// LastForceResync was updated
+					Expect(d.Status.LastForceResync).ToNot(Equal(lastResync))
+				})
 			})
 		})
 	})
