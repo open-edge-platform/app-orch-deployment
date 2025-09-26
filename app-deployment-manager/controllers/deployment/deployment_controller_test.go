@@ -5,6 +5,7 @@
 package deployment
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -1230,13 +1231,220 @@ var _ = Describe("Deployment controller", func() {
 				// GitRepo was force resync'ed
 				Expect(gitrepo.Spec.ForceSyncGeneration).To(Equal(generation + 1))
 
-				// LastForceResync was updated
-				Expect(d.Status.LastForceResync).ToNot(Equal(lastResync))
-			})
+			// LastForceResync was updated
+			Expect(d.Status.LastForceResync).ToNot(Equal(lastResync))
 		})
 	})
 
-	When("a Deployment is in progress and an app is stalled", func() {
+	Describe("Cluster deletion cleanup", func() {
+		var (
+			reconciler        *Reconciler
+			ctx               context.Context
+			dep               *v1beta1.Deployment
+			cluster           *v1beta1.Cluster
+			deploymentCluster *v1beta1.DeploymentCluster
+			gitRepo           *fleetv1alpha1.GitRepo
+		)
+
+		BeforeEach(func() {
+			reconciler = &Reconciler{
+				Client:   k8sClient,
+				recorder: record.NewFakeRecorder(32),
+			}
+			ctx = context.Background()
+
+			// Create a cluster
+			cluster = &v1beta1.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-cluster",
+				},
+				Spec: v1beta1.ClusterSpec{
+					Name:                 "test-cluster",
+					DisplayName:          "Test Cluster",
+					KubeConfigSecretName: "test-kubeconfig",
+				},
+			}
+
+			// Create a manual deployment
+			dep = &v1beta1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-deployment",
+					Namespace: "default",
+					UID:       "test-deployment-uid",
+				},
+				Spec: v1beta1.DeploymentSpec{
+					DisplayName:    "Test Deployment",
+					Project:        "default",
+					DeploymentType: v1beta1.Targeted,
+					DeploymentPackageRef: v1beta1.DeploymentPackageRef{
+						AppName:    "test-app",
+						AppVersion: "1.0.0",
+					},
+					Applications: []v1beta1.Application{
+						{
+							Name: "test-app",
+							HelmApp: &v1beta1.HelmApp{
+								Chart:   "test-chart",
+								Version: "1.0.0",
+								Repo:    "https://test.repo.com",
+							},
+						},
+					},
+				},
+				Status: v1beta1.DeploymentStatus{
+					State: v1beta1.NoTargetClusters,
+				},
+			}
+
+			// Create a deployment cluster linking the deployment to the cluster
+			deploymentCluster = &v1beta1.DeploymentCluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-deployment-cluster",
+					Namespace: "default",
+					Labels: map[string]string{
+						string(v1beta1.DeploymentID): "test-deployment-uid",
+						string(v1beta1.ClusterName):  "test-cluster",
+					},
+				},
+				Spec: v1beta1.DeploymentClusterSpec{
+					DeploymentID: "test-deployment-uid",
+					ClusterID:    "test-cluster",
+					Namespace:    "default",
+				},
+			}
+
+			// Create a GitRepo owned by the deployment
+			gitRepo = &fleetv1alpha1.GitRepo{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-gitrepo",
+					Namespace: "default",
+					OwnerReferences: []metav1.OwnerReference{
+						{
+							APIVersion: "deployment.edge-orchestrator.intel.com/v1beta1",
+							Kind:       "Deployment",
+							Name:       "test-deployment",
+							UID:        "test-deployment-uid",
+						},
+					},
+				},
+				Spec: fleetv1alpha1.GitRepoSpec{
+					Targets: []fleetv1alpha1.GitTarget{
+						{
+							ClusterSelector: &metav1.LabelSelector{
+								MatchLabels: map[string]string{
+									"test-cluster-label": "test-cluster-value",
+								},
+							},
+						},
+					},
+				},
+			}
+		})
+
+		Context("shouldDeleteManualDeployment", func() {
+			It("should not delete automatic deployments", func() {
+				dep.Spec.DeploymentType = v1beta1.AutoScaling
+				
+				shouldDelete, err := reconciler.shouldDeleteManualDeployment(ctx, dep)
+				
+				Expect(err).ToNot(HaveOccurred())
+				Expect(shouldDelete).To(BeFalse())
+			})
+
+			It("should not delete manual deployments that are not in steady state", func() {
+				dep.Status.State = v1beta1.Deploying
+				
+				shouldDelete, err := reconciler.shouldDeleteManualDeployment(ctx, dep)
+				
+				Expect(err).ToNot(HaveOccurred())
+				Expect(shouldDelete).To(BeFalse())
+			})
+
+			It("should not delete manual deployments when target cluster still exists", func() {
+				// Create the cluster and deployment cluster
+				Expect(k8sClient.Create(ctx, cluster)).To(Succeed())
+				Expect(k8sClient.Create(ctx, deploymentCluster)).To(Succeed())
+				
+				shouldDelete, err := reconciler.shouldDeleteManualDeployment(ctx, dep)
+				
+				Expect(err).ToNot(HaveOccurred())
+				Expect(shouldDelete).To(BeFalse())
+				
+				// Cleanup
+				Expect(k8sClient.Delete(ctx, deploymentCluster)).To(Succeed())
+				Expect(k8sClient.Delete(ctx, cluster)).To(Succeed())
+			})
+
+			It("should delete manual deployment when no target clusters exist and state is NoTargetClusters", func() {
+				// Create deployment cluster but no cluster
+				Expect(k8sClient.Create(ctx, deploymentCluster)).To(Succeed())
+				
+				shouldDelete, err := reconciler.shouldDeleteManualDeployment(ctx, dep)
+				
+				Expect(err).ToNot(HaveOccurred())
+				Expect(shouldDelete).To(BeTrue())
+				
+				// Cleanup
+				Expect(k8sClient.Delete(ctx, deploymentCluster)).To(Succeed())
+			})
+
+			It("should delete manual deployment with no deployment clusters and NoTargetClusters state", func() {
+				// No deployment clusters created
+				
+				shouldDelete, err := reconciler.shouldDeleteManualDeployment(ctx, dep)
+				
+				Expect(err).ToNot(HaveOccurred())
+				Expect(shouldDelete).To(BeTrue())
+			})
+
+			It("should not delete manual deployment with no deployment clusters but not in NoTargetClusters state", func() {
+				dep.Status.State = v1beta1.Running
+				
+				shouldDelete, err := reconciler.shouldDeleteManualDeployment(ctx, dep)
+				
+				Expect(err).ToNot(HaveOccurred())
+				Expect(shouldDelete).To(BeFalse())
+			})
+		})
+
+		Context("findDeploymentsForCluster", func() {
+			It("should find deployments targeting a deleted cluster", func() {
+				// Create deployment and deployment cluster
+				Expect(k8sClient.Create(ctx, dep)).To(Succeed())
+				Expect(k8sClient.Create(ctx, deploymentCluster)).To(Succeed())
+				
+				// Simulate cluster deletion by setting deletion timestamp
+				cluster.DeletionTimestamp = &metav1.Time{Time: time.Now()}
+				
+				requests := reconciler.findDeploymentsForCluster(ctx, cluster)
+				
+				Expect(requests).To(HaveLen(1))
+				Expect(requests[0].Name).To(Equal("test-deployment"))
+				Expect(requests[0].Namespace).To(Equal("default"))
+				
+				// Cleanup
+				Expect(k8sClient.Delete(ctx, deploymentCluster)).To(Succeed())
+				Expect(k8sClient.Delete(ctx, dep)).To(Succeed())
+			})
+
+			It("should not find deployments when cluster is not being deleted", func() {
+				// Create deployment and deployment cluster
+				Expect(k8sClient.Create(ctx, dep)).To(Succeed())
+				Expect(k8sClient.Create(ctx, deploymentCluster)).To(Succeed())
+				
+				// Cluster not being deleted (no deletion timestamp)
+				
+				requests := reconciler.findDeploymentsForCluster(ctx, cluster)
+				
+				Expect(requests).To(HaveLen(0))
+				
+				// Cleanup
+				Expect(k8sClient.Delete(ctx, deploymentCluster)).To(Succeed())
+				Expect(k8sClient.Delete(ctx, dep)).To(Succeed())
+			})
+		})
+	})
+})	When("a Deployment is in progress and an app is stalled", func() {
 
 		const (
 			gitRepoName = "app1-12345"

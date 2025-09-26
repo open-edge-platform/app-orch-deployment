@@ -558,6 +558,23 @@ func (s *DeploymentSvc) GetDeploymentsStatus(ctx context.Context, in *deployment
 		return nil, errors.Status(k8serrors.K8sToTypedError(err)).Err()
 	}
 
+	// Filter out orphaned DeploymentClusters to prevent status query errors
+	var validDeploymentClusters []deploymentv1beta1.DeploymentCluster
+	deploymentUIDs := make(map[string]bool)
+	for _, depl := range deployments.Items {
+		deploymentUIDs[string(depl.ObjectMeta.UID)] = true
+	}
+	for _, dc := range deploymentClusters.Items {
+		deploymentID := dc.Labels[string(deploymentv1beta1.DeploymentID)]
+		if deploymentUIDs[deploymentID] {
+			validDeploymentClusters = append(validDeploymentClusters, dc)
+		} else {
+			log.Warnf("GetDeploymentsStatus: skipping orphaned DeploymentCluster %s with deployment ID %s", dc.Name, deploymentID)
+		}
+	}
+	// Replace orphaned list with valid list
+	deploymentClusters.Items = validDeploymentClusters
+
 	var c DeploymentInstance
 	c.deployments = deployments
 	c.deploymentClusters = deploymentClusters
@@ -902,6 +919,19 @@ func (s *DeploymentSvc) GetDeployment(ctx context.Context, in *deploymentpb.GetD
 		return nil, errors.Status(k8serrors.K8sToTypedError(err)).Err()
 	}
 
+	// Filter out orphaned DeploymentClusters to prevent get deployment errors
+	var validDeploymentClusters []deploymentv1beta1.DeploymentCluster
+	for _, dc := range deploymentClusters.Items {
+		deploymentID := dc.Labels[string(deploymentv1beta1.DeploymentID)]
+		if deploymentID == UID {
+			validDeploymentClusters = append(validDeploymentClusters, dc)
+		} else {
+			log.Warnf("GetDeployment: skipping DeploymentCluster %s with mismatched deployment ID %s (expected %s)", dc.Name, deploymentID, UID)
+		}
+	}
+	// Replace list with filtered list
+	deploymentClusters.Items = validDeploymentClusters
+
 	c.deploymentClusters = deploymentClusters
 	c.deployment = deployment
 	deployResponse, _ := c.createDeploymentObject(ctx, s)
@@ -983,8 +1013,10 @@ func (s *DeploymentSvc) ListDeploymentsPerCluster(ctx context.Context, in *deplo
 			deplUID := dc.Spec.DeploymentID
 
 			if _, ok := deploymentMap[deplUID]; !ok {
-				msg := fmt.Sprintf("failed to retrieve deployment with deployment UID in deploymentcluster CR UID - %s", deplUID)
-				return nil, errors.Status(errors.NewNotFound(msg)).Err()
+				// Skip orphaned DeploymentCluster - parent Deployment not found
+				// The DeploymentCluster controller will clean this up in the background
+				log.Infof("Skipping orphaned DeploymentCluster %s - parent deployment %s not found", dc.Name, deplUID)
+				continue
 			}
 
 			deplName := deploymentMap[deplUID].Name

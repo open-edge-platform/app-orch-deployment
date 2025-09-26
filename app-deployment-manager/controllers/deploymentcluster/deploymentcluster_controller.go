@@ -121,8 +121,23 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	}
 	patch := client.MergeFrom(dc.DeepCopy())
 
+	// CRITICAL FIX: If DeploymentCluster is being deleted, clean metrics and allow deletion to proceed
+	if !dc.ObjectMeta.DeletionTimestamp.IsZero() {
+		log.Info("DeploymentCluster being deleted - cleaning up metrics and allowing deletion",
+			"deploymentCluster", dc.Name,
+			"deploymentID", dc.Spec.DeploymentID)
+		
+		// Clean up metrics for this DeploymentCluster being deleted
+		updateStatusMetrics(ctx, r, dc, true)
+		
+		// Allow normal deletion processing to continue (no early return)
+		// The resource may have finalizers that need to be handled
+	}
+
 	// Initialize the status of this DeploymentCluster because it will be rebuilt
 	initializeStatus(dc)
+
+	// Skip the orphaned check here - we'll handle parent validation in the metrics update section
 
 	// Get Cluster info for this DeploymentCluster
 	cluster := v1beta1.Cluster{}
@@ -196,7 +211,43 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		return ctrl.Result{}, err
 	}
 
-	updateStatusMetrics(ctx, r, dc, false)
+	// CRITICAL FIX: Smart metrics update based on parent deployment status
+	// This prevents DeploymentCluster metrics recreation during parent Deployment deletion
+	// while allowing legitimate alerts for active failing deployments
+	
+	projectID := dc.Labels[string(v1beta1.AppOrchActiveProjectID)]
+	if projectID != "" {
+		// Find parent deployment using the proper lookup logic  
+		deploymentList := &v1beta1.DeploymentList{}
+		if listErr := r.Client.List(ctx, deploymentList, client.MatchingLabels{string(v1beta1.AppOrchActiveProjectID): projectID}); listErr == nil {
+			for _, d := range deploymentList.Items {
+				if d.ObjectMeta.UID == types.UID(dc.Spec.DeploymentID) {
+					if d.ObjectMeta.DeletionTimestamp.IsZero() {
+						// Parent deployment is active - allow normal metrics for alerts
+						log.V(1).Info("Parent deployment active, updating DeploymentCluster metrics normally",
+							"deploymentCluster", dc.Name,
+							"deploymentID", dc.Spec.DeploymentID,
+							"parentState", d.Status.State)
+						updateStatusMetrics(ctx, r, dc, false)
+					} else {
+						// Parent deployment is being deleted - clean metrics
+						log.Info("Parent Deployment being deleted, cleaning DeploymentCluster metrics",
+							"deploymentCluster", dc.Name,
+							"deploymentID", dc.Spec.DeploymentID)
+						updateStatusMetrics(ctx, r, dc, true)
+					}
+					return ctrl.Result{}, nil
+				}
+			}
+		}
+	}
+	
+	// Parent deployment not found - treat as orphaned and clean metrics
+	log.Info("Parent Deployment not found, cleaning orphaned DeploymentCluster metrics",
+		"deploymentCluster", dc.Name,
+		"deploymentID", dc.Spec.DeploymentID,
+		"projectID", projectID)
+	updateStatusMetricsOrphaned(ctx, r, dc, true)
 
 	return ctrl.Result{}, nil
 }
@@ -219,7 +270,15 @@ func updateStatusMetrics(ctx context.Context, r *Reconciler, dc *v1beta1.Deploym
 	deploymentID := dc.Spec.DeploymentID
 	displayName, err := getDisplayName(ctx, projectID, deploymentID, r)
 	if err != nil {
-		log.Error(err, "Couldnt get displayName for deployment")
+		log.Info("Parent Deployment not found, cleaning up DeploymentCluster metrics to prevent alerts",
+			"deploymentCluster", dc.Name,
+			"deploymentID", deploymentID,
+			"error", err)
+		
+		// CRITICAL FIX: Use updateStatusMetricsOrphaned for proper cleanup
+		// This tries multiple displayName combinations to ensure metrics are deleted
+		updateStatusMetricsOrphaned(ctx, r, dc, true)
+		return
 	}
 
 	if deleteMetrics {
@@ -242,6 +301,67 @@ func updateStatusMetrics(ctx context.Context, r *Reconciler, dc *v1beta1.Deploym
 			orchLibMetrics.CalculateTimeDifference(projectID, dc.Spec.DeploymentID, displayName, "start", "CreateDeployment", string(v1beta1.Running), dcStatusChange)
 		}
 
+	}
+}
+
+// updateStatusMetricsOrphaned cleans up metrics for orphaned DeploymentClusters
+// where the parent Deployment no longer exists
+func updateStatusMetricsOrphaned(ctx context.Context, r *Reconciler, dc *v1beta1.DeploymentCluster, deleteMetrics bool) {
+	metricValue := make(map[string]float64)
+	log := log.FromContext(ctx)
+
+	// Init all values to 0
+	metricValue[string(v1beta1.Running)] = 0
+	metricValue[string(v1beta1.Down)] = 0
+	metricValue[string(v1beta1.Unknown)] = 0
+
+	projectID := ""
+	if _, ok := dc.Labels[string(v1beta1.AppOrchActiveProjectID)]; ok {
+		projectID = dc.Labels[string(v1beta1.AppOrchActiveProjectID)]
+	}
+
+	// Use fallback displayName since parent Deployment is missing
+	fallbackDisplayName := "deleted-deployment-" + dc.Spec.DeploymentID[:8]
+
+	if deleteMetrics {
+		log.Info("Comprehensive cleanup of orphaned DeploymentCluster metrics", 
+			"deploymentCluster", dc.Name,
+			"deploymentID", dc.Spec.DeploymentID,
+			"clusterID", dc.Spec.ClusterID)
+		
+		// CRITICAL FIX: Try multiple displayName combinations to ensure proper cleanup
+		// The original metrics might have been created with various displayName values
+		
+		// ENHANCED STRATEGY: Try ALL possible displayName combinations that might have been used
+		// This ensures we catch metrics created with any displayName variant
+		
+		possibleDisplayNames := []string{
+			"", // Empty displayName
+			fallbackDisplayName, // Generated fallback
+			dc.Spec.DeploymentID, // Deployment ID as name
+			dc.Status.Name, // Cluster display name
+			"unknown", // Common fallback
+			"deleted", // Another common fallback
+		}
+		
+		// Add the cluster name variations
+		if dc.Status.Name != "" {
+			possibleDisplayNames = append(possibleDisplayNames, dc.Status.Name)
+		}
+		if dc.Spec.ClusterID != "" {
+			possibleDisplayNames = append(possibleDisplayNames, dc.Spec.ClusterID)
+		}
+		
+		// Try to delete metrics with each possible displayName combination
+		for _, displayNameVariant := range possibleDisplayNames {
+			log.Info("Attempting metrics cleanup", "displayNameVariant", displayNameVariant)
+			for i := range metricValue {
+				ctrlmetrics.DeploymentClusterStatus.DeleteLabelValues(projectID, dc.Spec.DeploymentID, displayNameVariant, dc.Spec.ClusterID, dc.Status.Name, i)
+			}
+		}
+		
+		// Clean up timestamp metrics
+		orchLibMetrics.DeleteTimestampMetrics(projectID, dc.Spec.DeploymentID)
 	}
 }
 
