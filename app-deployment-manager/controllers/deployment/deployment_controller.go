@@ -250,14 +250,99 @@ func (r *Reconciler) cleanupAllDeploymentClusterMetrics(ctx context.Context, d *
 		"cleaned", len(dcList.Items),
 		"deploymentID", d.GetId())
 
+	r.cleanupOrphanedDeploymentClusterMetrics(ctx, d)
+
 	return nil
 }
 
-// cleanupOrphanedBundleDeployments cleans up BundleDeployments that reference this deployment
+// cleanupOrphanedDeploymentClusterMetrics performs comprehensive cleanup of all DeploymentCluster metrics
+// for a deployment, including metrics that may exist without corresponding DeploymentCluster objects
+func (r *Reconciler) cleanupOrphanedDeploymentClusterMetrics(ctx context.Context, d *v1beta1.Deployment) {
+	log := log.FromContext(ctx)
+
+	log.Info("Starting comprehensive orphaned DeploymentCluster metrics cleanup",
+		"deploymentID", d.GetId(),
+		"deploymentName", d.Name)
+
+	projectID := ""
+	if pid, ok := d.Labels[string(v1beta1.AppOrchActiveProjectID)]; ok {
+		projectID = pid
+	}
+
+	displayName := d.Spec.DisplayName
+
+	// Try to delete metrics with all possible cluster and status combinations
+	// This handles cases where DeploymentCluster objects were deleted but metrics persist
+
+	// All possible deployment cluster states
+	states := []v1beta1.StateType{
+		v1beta1.Running,
+		v1beta1.Down,
+		v1beta1.Unknown,
+	}
+
+	// First, check if there are any BundleDeployments that might give us cluster info
+	bundleList := &fleetv1alpha1.BundleDeploymentList{}
+	if err := r.List(ctx, bundleList); err == nil {
+		for _, bundle := range bundleList.Items {
+			// Check if this bundle belongs to our deployment
+			if bundleLabels := bundle.Labels; bundleLabels != nil {
+				if deploymentID, exists := bundleLabels[string(v1beta1.DeploymentID)]; exists && deploymentID == d.GetId() {
+					clusterID := bundle.Spec.DeploymentID // This is actually the cluster name
+					clusterName := bundle.Name
+
+					log.Info("Cleaning metrics for cluster found in BundleDeployments",
+						"deploymentID", d.GetId(),
+						"clusterID", clusterID,
+						"clusterName", clusterName)
+
+					// Delete all state metrics for this cluster
+					for _, state := range states {
+						ctrlmetrics.DeploymentClusterStatus.DeleteLabelValues(
+							projectID,
+							d.GetId(),
+							displayName,
+							clusterID,
+							clusterName,
+							string(state))
+
+						// Also try with empty cluster name variation
+						ctrlmetrics.DeploymentClusterStatus.DeleteLabelValues(
+							projectID,
+							d.GetId(),
+							displayName,
+							clusterID,
+							"",
+							string(state))
+					}
+				}
+			}
+		}
+	}
+
+	log.Info("Performing cleanup for orphaned metrics",
+		"deploymentID", d.GetId())
+
+	commonClusterPatterns := []string{"", "cluster-1", "default", "local", "management", "worker"}
+
+	for _, pattern := range commonClusterPatterns {
+		for _, state := range states {
+			ctrlmetrics.DeploymentClusterStatus.DeleteLabelValues(
+				projectID,
+				d.GetId(),
+				displayName,
+				pattern,
+				pattern,
+				string(state))
+		}
+	}
+
+	log.Info("Completed DeploymentCluster metrics cleanup",
+		"deploymentID", d.GetId())
+} // cleanupOrphanedBundleDeployments cleans up BundleDeployments that reference this deployment
 func (r *Reconciler) cleanupOrphanedBundleDeployments(ctx context.Context, d *v1beta1.Deployment) error {
 	log := log.FromContext(ctx)
 
-	// Get all GitRepos owned by this deployment first
 	gitRepos := &fleetv1alpha1.GitRepoList{}
 	if err := r.List(ctx, gitRepos, client.InNamespace(d.Namespace), client.MatchingFields{ownerKey: d.Name}); err != nil {
 		log.Error(err, "Failed to list GitRepos for BundleDeployment cleanup")
