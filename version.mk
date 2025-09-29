@@ -14,15 +14,15 @@ GOVERSION_HAVE              := $(shell go version | sed 's/.*version go//' | sed
 MOCKGENVERSION_HAVE         := $(shell mockgen -version | sed s/.*"v"// | sed 's/ .*//')
 MOCKGENVERSION_REQ          := 1.6.0
 OAPI_CODEGEN_VERSION_HAVE   := $(shell oapi-codegen -version | sed -n 2p | sed s/v//)
-OAPI_CODEGEN_VERSION_REQ    := 2.3.0
+OAPI_CODEGEN_VERSION_REQ    := 2.2.0
 ATLAS_REQ                   := $(shell command -v atlas)
 GCC_REQ                     := $(shell command -v gcc)
 PROTOCGENDOCVERSION_HAVE    := $(shell protoc-gen-doc --version | sed s/.*"version "// | sed 's/ .*//')
 PROTOCGENDOCVERSION_REQ     := 1.5.1
 BUFVERSION_HAVE             := $(shell buf --version)
-BUFVERSION_REQ              := 1.45.0
+BUFVERSION_REQ              := 1.57.0
 PROTOCGENGOGRPCVERSION_HAVE := $(shell protoc-gen-go-grpc -version | sed s/.*"protoc-gen-go-grpc "// | sed 's/ .*//')
-PROTOCGENGOGRPCVERSION_REQ  := 1.2.0
+PROTOCGENGOGRPCVERSION_REQ  := 1.5.1
 PROTOCGENGOVERSION_HAVE     := $(shell protoc-gen-go --version | sed s/.*"protoc-gen-go v"// | sed 's/ .*//')
 PROTOCGENGOVERSION_REQ      := 1.30.0
 
@@ -102,8 +102,8 @@ ifeq ($(GOCOBERTURA), true)
 	${GOCMD} install github.com/boumenot/gocover-cobertura@v$(GOCOBERTURAVERSION_REQ)
 endif
 ifeq ($(PROTOCGENGO), true)
-	$(GOCMD) install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v${PROTOCGENGOGRPCVERSION_REQ}
+	$(GOCMD) install google.golang.org/protobuf/cmd/protoc-gen-go@v${PROTOCGENGOVERSION_REQ}
 endif
 ifeq ($(PROTOCGENGOGRPC), true)
-	$(GOCMD) install google.golang.org/protobuf/cmd/protoc-gen-go@v${PROTOCGENGOVERSION_REQ}
+	$(GOCMD) install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v${PROTOCGENGOGRPCVERSION_REQ}
 endif

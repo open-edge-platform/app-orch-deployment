@@ -8,6 +8,6 @@ name: app-deployment-manager
 # Correct version will be added by "make helm-package" from VERSION
 version: 2.5.2
 annotations:
-  revision: "13a4fd9"
-  created: "2025-09-29T11:40:54Z"
+  revision: "c0dad0d"
+  created: "2025-09-29T12:39:14Z"
 appVersion: 2.5.2
