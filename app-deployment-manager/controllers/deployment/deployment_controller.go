@@ -24,6 +24,7 @@ import (
 	fleetv1alpha1 "github.com/rancher/fleet/pkg/apis/fleet.cattle.io/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -103,9 +104,10 @@ type Reconciler struct {
 // +kubebuilder:rbac:groups=app.edge-orchestrator.intel.com,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=app.edge-orchestrator.intel.com,resources=deployments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=app.edge-orchestrator.intel.com,resources=deployments/finalizers,verbs=update
+// +kubebuilder:rbac:groups=app.edge-orchestrator.intel.com,resources=deploymentclusters,verbs=get;list;watch;delete
 // +kubebuilder:rbac:groups=fleet.cattle.io,resources=gitrepos,verbs=get;list;watch;create;update;patch;delete;deletecollection
 // +kubebuilder:rbac:groups=fleet.cattle.io,resources=bundles,verbs=get;list;watch
-// +kubebuilder:rbac:groups=fleet.cattle.io,resources=bundledeployments,verbs=get;list;watch
+// +kubebuilder:rbac:groups=fleet.cattle.io,resources=bundledeployments,verbs=get;list;watch;delete
 
 func gitRepoIdxFunc(rawObj client.Object) []string {
 	gitrepo := rawObj.(*fleetv1alpha1.GitRepo)
@@ -195,6 +197,372 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) (err error) {
 	return nil
 }
 
+// cleanupAllDeploymentClusterMetrics cleans DeploymentCluster metrics
+func (r *Reconciler) cleanupAllDeploymentClusterMetrics(ctx context.Context, d *v1beta1.Deployment) error {
+	log := log.FromContext(ctx)
+
+	log.Info("Starting aggressive DeploymentCluster metrics cleanup",
+		"deploymentID", d.GetId(),
+		"deploymentName", d.Name)
+
+	// Find all DeploymentClusters that belong to this deployment
+	dcList := &v1beta1.DeploymentClusterList{}
+	labels := map[string]string{
+		string(v1beta1.DeploymentID): d.GetId(),
+	}
+
+	if err := r.List(ctx, dcList, client.MatchingLabels(labels)); err != nil {
+		log.Error(err, "Failed to list DeploymentClusters for metrics cleanup", "deploymentID", d.GetId())
+		return err
+	}
+
+	projectID := ""
+	if pid, ok := d.Labels[string(v1beta1.AppOrchActiveProjectID)]; ok {
+		projectID = pid
+	}
+
+	displayName := d.Spec.DisplayName
+
+	for i := range dcList.Items {
+		dc := &dcList.Items[i]
+
+		log.Info("Cleaning DeploymentCluster metrics directly",
+			"deploymentCluster", dc.Name,
+			"clusterID", dc.Spec.ClusterID,
+			"deploymentID", d.GetId())
+
+		states := []v1beta1.StateType{
+			v1beta1.Running, v1beta1.Down, v1beta1.Unknown,
+		}
+
+		for _, state := range states {
+			ctrlmetrics.DeploymentClusterStatus.DeleteLabelValues(
+				projectID,
+				d.GetId(),
+				displayName,
+				dc.Spec.ClusterID,
+				dc.Status.Name,
+				string(state))
+		}
+	}
+
+	log.Info("Completed DeploymentCluster metrics cleanup",
+		"cleaned", len(dcList.Items),
+		"deploymentID", d.GetId())
+
+	r.cleanupOrphanedDeploymentClusterMetrics(ctx, d)
+
+	return nil
+}
+
+// cleanupOrphanedDeploymentClusterMetrics performs comprehensive cleanup of all DeploymentCluster metrics
+// for a deployment, including metrics that may exist without corresponding DeploymentCluster objects
+func (r *Reconciler) cleanupOrphanedDeploymentClusterMetrics(ctx context.Context, d *v1beta1.Deployment) {
+	log := log.FromContext(ctx)
+
+	log.Info("Starting comprehensive orphaned DeploymentCluster metrics cleanup",
+		"deploymentID", d.GetId(),
+		"deploymentName", d.Name)
+
+	projectID := ""
+	if pid, ok := d.Labels[string(v1beta1.AppOrchActiveProjectID)]; ok {
+		projectID = pid
+	}
+
+	displayName := d.Spec.DisplayName
+
+	// Try to delete metrics with all possible cluster and status combinations
+	// This handles cases where DeploymentCluster objects were deleted but metrics persist
+
+	// All possible deployment cluster states
+	states := []v1beta1.StateType{
+		v1beta1.Running,
+		v1beta1.Down,
+		v1beta1.Unknown,
+	}
+
+	// First, check if there are any BundleDeployments that might give us cluster info
+	bundleList := &fleetv1alpha1.BundleDeploymentList{}
+	if err := r.List(ctx, bundleList); err == nil {
+		for _, bundle := range bundleList.Items {
+			// Check if this bundle belongs to our deployment
+			if bundleLabels := bundle.Labels; bundleLabels != nil {
+				if deploymentID, exists := bundleLabels[string(v1beta1.DeploymentID)]; exists && deploymentID == d.GetId() {
+					clusterID := bundle.Spec.DeploymentID // This is actually the cluster name
+					clusterName := bundle.Name
+
+					log.Info("Cleaning metrics for cluster found in BundleDeployments",
+						"deploymentID", d.GetId(),
+						"clusterID", clusterID,
+						"clusterName", clusterName)
+
+					// Delete all state metrics for this cluster
+					for _, state := range states {
+						ctrlmetrics.DeploymentClusterStatus.DeleteLabelValues(
+							projectID,
+							d.GetId(),
+							displayName,
+							clusterID,
+							clusterName,
+							string(state))
+
+						// Also try with empty cluster name variation
+						ctrlmetrics.DeploymentClusterStatus.DeleteLabelValues(
+							projectID,
+							d.GetId(),
+							displayName,
+							clusterID,
+							"",
+							string(state))
+					}
+				}
+			}
+		}
+	}
+
+	log.Info("Performing cleanup for orphaned metrics",
+		"deploymentID", d.GetId())
+
+	commonClusterPatterns := []string{"", "cluster-1", "default", "local", "management", "worker"}
+
+	for _, pattern := range commonClusterPatterns {
+		for _, state := range states {
+			ctrlmetrics.DeploymentClusterStatus.DeleteLabelValues(
+				projectID,
+				d.GetId(),
+				displayName,
+				pattern,
+				pattern,
+				string(state))
+		}
+	}
+
+	log.Info("Completed DeploymentCluster metrics cleanup",
+		"deploymentID", d.GetId())
+} // cleanupOrphanedBundleDeployments cleans up BundleDeployments that reference this deployment
+func (r *Reconciler) cleanupOrphanedBundleDeployments(ctx context.Context, d *v1beta1.Deployment) error {
+	log := log.FromContext(ctx)
+
+	gitRepos := &fleetv1alpha1.GitRepoList{}
+	if err := r.List(ctx, gitRepos, client.InNamespace(d.Namespace), client.MatchingFields{ownerKey: d.Name}); err != nil {
+		log.Error(err, "Failed to list GitRepos for BundleDeployment cleanup")
+		gitRepos = &fleetv1alpha1.GitRepoList{}
+	}
+
+	log.Info("Starting BundleDeployment cleanup",
+		"deploymentID", d.GetId(),
+		"deploymentName", d.Name,
+		"namespace", d.Namespace,
+		"ownedGitRepos", len(gitRepos.Items))
+
+	// Find BundleDeployments with deployment ID label (across all namespaces)
+	bdList := &fleetv1alpha1.BundleDeploymentList{}
+	bdLabels := map[string]string{
+		string(v1beta1.DeploymentID): d.GetId(),
+	}
+
+	if err := r.List(ctx, bdList, client.MatchingLabels(bdLabels)); err != nil {
+		log.Error(err, "Failed to list BundleDeployments for orphaned cleanup (by deploymentID)")
+	} else if len(bdList.Items) > 0 {
+		log.Info("Found BundleDeployments to clean up (by deploymentID)", "count", len(bdList.Items), "deploymentID", d.GetId())
+
+		for i := range bdList.Items {
+			bd := &bdList.Items[i]
+			log.Info("Cleaning up orphaned BundleDeployment",
+				"bundleDeployment", bd.Name, "namespace", bd.Namespace, "deploymentID", d.GetId())
+
+			if err := r.Client.Delete(ctx, bd); err != nil && !apierrors.IsNotFound(err) {
+				log.Error(err, "Failed to delete orphaned BundleDeployment", "bundleDeployment", bd.Name)
+			}
+		}
+	}
+
+	// Find BundleDeployments via GitRepos owned by this deployment (across all namespaces)
+	if len(gitRepos.Items) > 0 {
+		log.Info("Processing GitRepos for BundleDeployment cleanup (by repo-name)", "gitRepoCount", len(gitRepos.Items))
+
+		for i := range gitRepos.Items {
+			gr := &gitRepos.Items[i]
+
+			// Find BundleDeployments created by this GitRepo (search across all namespaces)
+			bdList2 := &fleetv1alpha1.BundleDeploymentList{}
+			bdLabels2 := map[string]string{
+				"fleet.cattle.io/repo-name": gr.Name,
+			}
+			if err := r.List(ctx, bdList2, client.MatchingLabels(bdLabels2)); err != nil {
+				log.Error(err, "Failed to list BundleDeployments by repo-name", "gitrepo", gr.Name)
+				continue
+			}
+
+			if len(bdList2.Items) > 0 {
+				log.Info("Found BundleDeployments to clean up (by repo-name)", "count", len(bdList2.Items), "gitrepo", gr.Name)
+
+				for j := range bdList2.Items {
+					bd := &bdList2.Items[j]
+					log.Info("Cleaning up orphaned BundleDeployment",
+						"bundleDeployment", bd.Name, "namespace", bd.Namespace, "gitRepo", gr.Name)
+
+					if err := r.Client.Delete(ctx, bd); err != nil && !apierrors.IsNotFound(err) {
+						log.Error(err, "Failed to delete orphaned BundleDeployment", "bundleDeployment", bd.Name)
+					}
+				}
+			}
+		}
+	} else {
+		log.Info("No GitRepos found owned by this deployment", "deploymentName", d.Name)
+	}
+
+	// Comprehensive global search for any BundleDeployments that might reference this deployment
+	// in their labels, annotations, or through bundle relationships (most comprehensive)
+	allBdList := &fleetv1alpha1.BundleDeploymentList{}
+	if err := r.List(ctx, allBdList); err != nil {
+		log.Error(err, "Failed to list all BundleDeployments for comprehensive cleanup")
+	} else {
+		log.Info("Running comprehensive global search", "totalBundleDeployments", len(allBdList.Items))
+		foundCount := 0
+
+		for i := range allBdList.Items {
+			bd := &allBdList.Items[i]
+
+			// Check if BundleDeployment references our deployment
+			shouldDelete := false
+			deleteReason := ""
+
+			// Check labels
+			if bd.Labels != nil {
+				if bd.Labels[string(v1beta1.DeploymentID)] == d.GetId() {
+					shouldDelete = true
+					deleteReason = "deploymentID-label"
+				}
+
+				// Check if it references any of GitRepos
+				if !shouldDelete {
+					if repoName, exists := bd.Labels["fleet.cattle.io/repo-name"]; exists {
+						for j := range gitRepos.Items {
+							if gitRepos.Items[j].Name == repoName {
+								shouldDelete = true
+								deleteReason = "gitrepo-reference:" + repoName
+								break
+							}
+						}
+					}
+				}
+
+				// Check for Bundle reference that might link to deployment
+				if !shouldDelete {
+					if bundleName, exists := bd.Labels["fleet.cattle.io/bundle-name"]; exists {
+						// Check if this bundle belongs to any of GitRepos by matching naming patterns
+						for j := range gitRepos.Items {
+							gitRepoName := gitRepos.Items[j].Name
+							if bundleName == gitRepoName || strings.HasPrefix(bundleName, gitRepoName+"-") {
+								shouldDelete = true
+								deleteReason = "bundle-pattern-match:" + bundleName
+								break
+							}
+						}
+					}
+				}
+			}
+
+			// Check annotations for deployment references
+			if !shouldDelete && bd.Annotations != nil {
+				if bd.Annotations[string(v1beta1.DeploymentID)] == d.GetId() {
+					shouldDelete = true
+					deleteReason = "deploymentID-annotation"
+				}
+			}
+
+			// Check if BundleDeployment name contains deployment info
+			if !shouldDelete {
+				deploymentShortID := d.GetId()
+				if len(deploymentShortID) > 8 {
+					deploymentShortID = deploymentShortID[:8] // Use first 8 chars for pattern matching
+				}
+				if strings.Contains(bd.Name, deploymentShortID) || strings.Contains(bd.Name, d.Name) {
+					shouldDelete = true
+					deleteReason = "name-pattern-match"
+				}
+			}
+
+			if shouldDelete {
+				foundCount++
+				log.Info("Cleaning up orphaned BundleDeployment",
+					"bundleDeployment", bd.Name,
+					"namespace", bd.Namespace,
+					"deploymentID", d.GetId(),
+					"strategy", "comprehensive-search",
+					"reason", deleteReason)
+
+				if err := r.Client.Delete(ctx, bd); err != nil && !apierrors.IsNotFound(err) {
+					log.Error(err, "Failed to delete orphaned BundleDeployment", "bundleDeployment", bd.Name)
+				}
+			}
+		}
+		if foundCount > 0 {
+			log.Info("Found additional BundleDeployments via comprehensive search", "count", foundCount, "deploymentID", d.GetId())
+		} else {
+			log.Info("No additional BundleDeployments found in comprehensive search", "deploymentID", d.GetId())
+		}
+	}
+
+	log.Info("Completed comprehensive BundleDeployment cleanup", "deploymentID", d.GetId())
+	return nil
+}
+
+// cleanupOrphanedDeploymentClusters cleans up DeploymentCluster resources that belong to this deployment
+func (r *Reconciler) cleanupOrphanedDeploymentClusters(ctx context.Context, d *v1beta1.Deployment) error {
+	log := log.FromContext(ctx)
+
+	log.Info("Starting DeploymentCluster cleanup to prevent metric alerts",
+		"deploymentID", d.GetId(),
+		"deploymentName", d.Name)
+
+	// Find all DeploymentClusters that belong to this deployment
+	dcList := &v1beta1.DeploymentClusterList{}
+	labels := map[string]string{
+		string(v1beta1.DeploymentID): d.GetId(),
+	}
+
+	if err := r.List(ctx, dcList, client.MatchingLabels(labels)); err != nil {
+		log.Error(err, "Failed to list DeploymentClusters", "deploymentID", d.GetId())
+		return err
+	}
+
+	if len(dcList.Items) == 0 {
+		log.Info("No DeploymentClusters found", "deploymentID", d.GetId())
+		return nil
+	}
+
+	log.Info("Found DeploymentClusters", "count", len(dcList.Items), "deploymentID", d.GetId())
+
+	// Delete each DeploymentCluster to ensure their metrics are cleaned up
+	for i := range dcList.Items {
+		dc := &dcList.Items[i]
+
+		log.Info("Deleting DeploymentCluster to prevent persistent metrics",
+			"deploymentCluster", dc.Name,
+			"namespace", dc.Namespace,
+			"deploymentID", d.GetId(),
+			"clusterID", dc.Spec.ClusterID)
+
+		if err := r.Client.Delete(ctx, dc); err != nil && !apierrors.IsNotFound(err) {
+			log.Error(err, "Failed to delete DeploymentCluster",
+				"deploymentCluster", dc.Name,
+				"deploymentID", d.GetId())
+		} else {
+			log.Info("Successfully deleted DeploymentCluster",
+				"deploymentCluster", dc.Name,
+				"deploymentID", d.GetId())
+		}
+	}
+
+	log.Info("Completed DeploymentCluster cleanup",
+		"deleted", len(dcList.Items),
+		"deploymentID", d.GetId())
+
+	return nil
+}
+
 func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrlRes ctrl.Result, reterr error) {
 	log := log.FromContext(ctx)
 
@@ -204,7 +572,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrlRes c
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	// Create patchHelper and record the current state of the deployment object
+	// Create patchHelper to record the current state of the deployment object
 	patchHelper, err := patch.NewPatchHelper(d, r.Client)
 	if err != nil {
 		log.Error(err, "error creating patch helper")
@@ -212,47 +580,54 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrlRes c
 	}
 
 	defer func() {
-		// Always update the status after each reconciliation
+		if !d.ObjectMeta.DeletionTimestamp.IsZero() {
+			log.Info("Deployment being deleted - cleaning metrics and doing essential operations only",
+				"deploymentID", d.GetId(),
+				"deploymentName", d.Name,
+				"finalizers", len(d.ObjectMeta.Finalizers))
+
+			updateStatusMetrics(d, true)
+
+			if err := patchHelper.Patch(ctx, d); err != nil {
+				reterr = kerrors.NewAggregate([]error{reterr, err})
+			}
+
+			return
+		}
+
 		if err := r.updateStatus(ctx, d); err != nil {
 			reterr = kerrors.NewAggregate([]error{reterr, err})
 		}
 
-		// Patch the updates after each reconciliation
 		if err := patchHelper.Patch(ctx, d); err != nil {
 			reterr = kerrors.NewAggregate([]error{reterr, err})
 		}
 
-		// Delete metrics if deployment terminated successfully
-		deleteMetrics := len(d.ObjectMeta.Finalizers) == 0 && !d.ObjectMeta.DeletionTimestamp.IsZero()
-		updateStatusMetrics(d, deleteMetrics)
+		updateStatusMetrics(d, false)
 
-		// Requeue a reconcile loop to get deployment status since DC wasn't quite
-		// ready after readyWait retrigger right after readyWait secs
 		if r.requeueStatus {
 			log.Info("requeue a reconcile loop to get deployment status since DC wasn't quite ready")
 			ctrlRes.RequeueAfter = readyWait * time.Second
 		}
 	}()
 
-	// Add finalizer first to avoid the race condition between init and delete.
-	// If webhook is enabled, webhook sets the finalizers to avoid extra
-	// reconciliation loop.
 	if r.deleteGitRepo && !cutil.ContainsFinalizer(d, v1beta1.FinalizerGitRemote) && d.ObjectMeta.DeletionTimestamp.IsZero() {
 		cutil.AddFinalizer(d, v1beta1.FinalizerGitRemote)
 		return ctrl.Result{}, nil
 	}
 
-	// Add finalizer to avoid race condition
-	// If webhook is enabled, webhook sets the finalizers to avoid extra
-	// reconciliation loop.
 	if !cutil.ContainsFinalizer(d, v1beta1.FinalizerDependency) && d.ObjectMeta.DeletionTimestamp.IsZero() {
 		cutil.AddFinalizer(d, v1beta1.FinalizerDependency)
 		return ctrl.Result{}, nil
 	}
 
-	// Handle finalizers if the deletion timestamp is non-zero
 	if !d.ObjectMeta.DeletionTimestamp.IsZero() {
 		return r.delete(ctx, d)
+	}
+
+	// Ensureing the stale BundleDeployments are removed regardless of deployment state
+	if err := r.cleanupOrphanedBundleDeployments(ctx, d); err != nil {
+		log.Error(err, "Failed to cleanup orphaned BundleDeployments", "deployment", d.Name)
 	}
 
 	// If no changes to Deployment Spec since the last successful reconcile,
@@ -282,6 +657,27 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrlRes c
 }
 
 func (r *Reconciler) delete(ctx context.Context, d *v1beta1.Deployment) (ctrl.Result, error) {
+	log := log.FromContext(ctx)
+
+	log.Info("Cleaning up all Deployment and DeploymentCluster metrics immediately during deletion",
+		"deploymentID", d.GetId(),
+		"deploymentName", d.Name)
+
+	updateStatusMetrics(d, true)
+
+	if err := r.cleanupAllDeploymentClusterMetrics(ctx, d); err != nil {
+		log.Error(err, "Failed to cleanup DeploymentCluster metrics during deletion", "deployment", d.Name)
+	}
+
+	if err := r.cleanupOrphanedDeploymentClusters(ctx, d); err != nil {
+		log.Error(err, "Failed to cleanup DeploymentClusters during deletion", "deployment", d.Name)
+	}
+
+	// Ensuring Fleet references are cleaned up immediately
+	if err := r.cleanupOrphanedBundleDeployments(ctx, d); err != nil {
+		log.Error(err, "Failed to cleanup orphaned BundleDeployments during deletion", "deployment", d.Name)
+	}
+
 	phases := []func(context.Context, *v1beta1.Deployment) (ctrl.Result, error){
 		r.handleFinalizerDependency,
 		r.handleFinalizerGitRemote,
@@ -293,6 +689,16 @@ func (r *Reconciler) delete(ctx context.Context, d *v1beta1.Deployment) (ctrl.Re
 		if _, err := phase(ctx, d); err != nil {
 			errs = append(errs, err)
 		}
+	}
+
+	log.Info("Final aggressive metrics cleanup after finalizer phases",
+		"deploymentID", d.GetId(),
+		"deploymentName", d.Name,
+		"finalizers", len(d.ObjectMeta.Finalizers))
+
+	updateStatusMetrics(d, true)
+	if err := r.cleanupAllDeploymentClusterMetrics(ctx, d); err != nil {
+		log.Error(err, "Failed final DeploymentCluster metrics cleanup", "deployment", d.Name)
 	}
 
 	return ctrl.Result{}, kerrors.NewAggregate(errs)
@@ -352,7 +758,7 @@ func (r *Reconciler) handleFinalizerDependency(ctx context.Context, d *v1beta1.D
 			continue
 		}
 
-		// define patchHelper to update child deployment CR
+		// patchHelper to update child deployment CR
 		childPatchHelper, err := patch.NewPatchHelper(cd, r.Client)
 		if err != nil {
 			log.Error(err, "error creating patch helper")
@@ -956,7 +1362,7 @@ func updateStatusMetrics(d *v1beta1.Deployment, deleteMetrics bool) {
 	}
 
 	if deleteMetrics {
-		// Delete current deployment metrics only
+		// Delete current deployment metrics only - prevents DeploymentInstanceStatusDown alerts
 		for i := range metricValue {
 			ctrlmetrics.DeploymentStatus.DeleteLabelValues(projectID, d.GetId(), displayName, i)
 		}
