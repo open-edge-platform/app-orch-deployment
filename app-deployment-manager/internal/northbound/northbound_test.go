@@ -802,7 +802,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(s.Code()).To(Equal(codes.InvalidArgument))
 			Expect(ok).To(BeTrue())
 			Expect(s.Message()).Should(Equal("validation error:\n - labels[0]: value does not match regex " +
-				"pattern `(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$` [string.pattern]"))
+				"pattern `(^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$` [string.pattern]"))
 		})
 
 		It("Filter: fails due to invalid pattern non alphanumeric in target label", func() {
@@ -818,7 +818,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(s.Code()).To(Equal(codes.InvalidArgument))
 			Expect(ok).To(BeTrue())
 			Expect(s.Message()).Should(Equal("validation error:\n - labels[0]: value does not match regex " +
-				"pattern `(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$` [string.pattern]"))
+				"pattern `(^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$` [string.pattern]"))
 		})
 
 		It("Filter: fails due to invalid pattern whitespace in target label", func() {
@@ -834,7 +834,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(s.Code()).To(Equal(codes.InvalidArgument))
 			Expect(ok).To(BeTrue())
 			Expect(s.Message()).Should(Equal("validation error:\n - labels[0]: value does not match regex " +
-				"pattern `(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$` [string.pattern]"))
+				"pattern `(^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$` [string.pattern]"))
 		})
 	})
 
@@ -1336,7 +1336,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(s.Code()).To(Equal(codes.InvalidArgument))
 			Expect(ok).To(BeTrue())
 			Expect(s.Message()).Should(Equal("validation error:\n - labels[0]: value does not match regex " +
-				"pattern `(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$` [string.pattern]"))
+				"pattern `(^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$` [string.pattern]"))
 		})
 
 		It("Filter: fails due to invalid pattern non alphanumeric in target label", func() {
@@ -1352,7 +1352,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(s.Code()).To(Equal(codes.InvalidArgument))
 			Expect(ok).To(BeTrue())
 			Expect(s.Message()).Should(Equal("validation error:\n - labels[0]: value does not match regex " +
-				"pattern `(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$` [string.pattern]"))
+				"pattern `(^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$` [string.pattern]"))
 		})
 
 		It("Filter: fails due to invalid pattern uppercase char in target label", func() {
@@ -1368,7 +1368,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(s.Code()).To(Equal(codes.InvalidArgument))
 			Expect(ok).To(BeTrue())
 			Expect(s.Message()).Should(Equal("validation error:\n - labels[0]: value does not match regex " +
-				"pattern `(^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$` [string.pattern]"))
+				"pattern `(^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$` [string.pattern]"))
 		})
 	})
 
