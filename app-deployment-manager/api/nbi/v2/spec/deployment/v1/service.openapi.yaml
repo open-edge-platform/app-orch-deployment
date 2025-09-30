@@ -21,7 +21,7 @@ paths:
               type: string
               maxLength: 200
               minLength: 1
-              pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+              pattern: (^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$
               maxItems: 20
               description: '(OPTIONAL) '
             title: labels
@@ -121,7 +121,7 @@ paths:
               type: string
               maxLength: 200
               minLength: 1
-              pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+              pattern: (^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$
               maxItems: 20
               description: '(OPTIONAL) '
             title: labels
@@ -350,7 +350,7 @@ paths:
               type: string
               maxLength: 200
               minLength: 1
-              pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+              pattern: (^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$
               maxItems: 20
               description: '(OPTIONAL) '
             title: labels
@@ -799,7 +799,7 @@ components:
             type: string
             maxLength: 200
             minLength: 1
-            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+            pattern: (^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$
             maxItems: 20
             description: '(OPTIONAL) '
           title: labels
@@ -935,7 +935,7 @@ components:
             type: string
             maxLength: 200
             minLength: 1
-            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+            pattern: (^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$
             maxItems: 20
             description: '(OPTIONAL) '
           title: labels
@@ -1000,7 +1000,7 @@ components:
             type: string
             maxLength: 200
             minLength: 1
-            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+            pattern: (^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$
             maxItems: 20
             description: '(OPTIONAL) '
           title: labels

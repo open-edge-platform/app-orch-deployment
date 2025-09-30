@@ -5,6 +5,138 @@ info:
     and managing applications
   version: 2.0.0
 paths:
+  /deployment.orchestrator.apis/v1/clusters:
+    get:
+      tags:
+      - deployment.v1.ClusterService
+      summary: ListClusters
+      description: Gets a list of all cluster objects.
+      operationId: deployment.v1.ClusterService.ListClusters
+      parameters:
+      - name: labels
+        in: query
+        description: "Optional. A string array that filters cluster labels to be\n\
+          \ displayed ie color=blue,customer=intel. Labels separated by a comma."
+        schema:
+          type: array
+          items:
+            type: string
+            description: '(OPTIONAL) '
+          title: labels
+          description: "(OPTIONAL) Optional. A string array that filters cluster labels\
+            \ to be\n displayed ie color=blue,customer=intel. Labels separated by\
+            \ a comma."
+      - name: orderBy
+        in: query
+        description: Optional. Select field and order based on which cluster list
+          will be sorted.
+        schema:
+          type: string
+          title: order_by
+          description: (OPTIONAL) Optional. Select field and order based on which
+            cluster list will be sorted.
+      - name: filter
+        in: query
+        description: Optional. Selection criteria to list clusters.
+        schema:
+          type: string
+          title: filter
+          description: (OPTIONAL) Optional. Selection criteria to list clusters.
+      - name: pageSize
+        in: query
+        description: Optional. Select count of clusters to be listed per page.
+        schema:
+          type: integer
+          title: page_size
+          maximum: 500
+          minimum: 0
+          format: int32
+          description: (OPTIONAL) Optional. Select count of clusters to be listed
+            per page.
+      - name: offset
+        in: query
+        description: "Optional. Offset is used to select the correct page from which\
+          \ clusters list will be displayed.\n (E.g If there are 10 clusters, page\
+          \ size is 2 and offset is set as 4, then the response will display clusters\
+          \ 5 and 6)."
+        schema:
+          type: integer
+          title: offset
+          minimum: 0
+          format: int32
+          description: "(OPTIONAL) Optional. Offset is used to select the correct\
+            \ page from which clusters list will be displayed.\n (E.g If there are\
+            \ 10 clusters, page size is 2 and offset is set as 4, then the response\
+            \ will display clusters 5 and 6)."
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.ListClustersResponse'
+  /deployment.orchestrator.apis/v1/clusters/{cluster_id}:
+    get:
+      tags:
+      - deployment.v1.ClusterService
+      summary: GetCluster
+      description: Gets a cluster object.
+      operationId: deployment.v1.ClusterService.GetCluster
+      parameters:
+      - name: cluster_id
+        in: path
+        description: Required. The id of the cluster.
+        required: true
+        schema:
+          type: string
+          title: cluster_id
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: Required. The id of the cluster.
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.GetClusterResponse'
+  /deployment.v1.ClusterService/GetKubeConfig:
+    post:
+      tags:
+      - deployment.v1.ClusterService
+      summary: GetKubeConfig gets kubeConfig based on a given cluster id
+      description: GetKubeConfig gets kubeConfig based on a given cluster id
+      operationId: deployment.v1.ClusterService.GetKubeConfig
+      parameters:
+      - name: Connect-Protocol-Version
+        in: header
+        required: true
+        schema:
+          $ref: '#/components/schemas/connect-protocol-version'
+      - name: Connect-Timeout-Ms
+        in: header
+        schema:
+          $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/deployment.v1.GetKubeConfigRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.GetKubeConfigResponse'
   /deployment.orchestrator.apis/v1/deployments:
     get:
       tags:
@@ -23,7 +155,7 @@ paths:
             type: string
             maxLength: 200
             minLength: 1
-            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+            pattern: (^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$
             maxItems: 20
             description: '(OPTIONAL) '
           title: labels
@@ -127,7 +259,7 @@ paths:
             type: string
             maxLength: 200
             minLength: 1
-            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+            pattern: (^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$
             maxItems: 20
             description: '(OPTIONAL) '
           title: labels
@@ -365,7 +497,7 @@ paths:
             type: string
             maxLength: 200
             minLength: 1
-            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+            pattern: (^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$
             maxItems: 20
             description: '(OPTIONAL) '
           title: labels
@@ -415,138 +547,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/deployment.v1.GetAppNamespaceResponse'
-  /deployment.orchestrator.apis/v1/clusters:
-    get:
-      tags:
-      - deployment.v1.ClusterService
-      summary: ListClusters
-      description: Gets a list of all cluster objects.
-      operationId: deployment.v1.ClusterService.ListClusters
-      parameters:
-      - name: labels
-        in: query
-        description: "Optional. A string array that filters cluster labels to be\n\
-          \ displayed ie color=blue,customer=intel. Labels separated by a comma."
-        schema:
-          type: array
-          items:
-            type: string
-            description: '(OPTIONAL) '
-          title: labels
-          description: "(OPTIONAL) Optional. A string array that filters cluster labels\
-            \ to be\n displayed ie color=blue,customer=intel. Labels separated by\
-            \ a comma."
-      - name: orderBy
-        in: query
-        description: Optional. Select field and order based on which cluster list
-          will be sorted.
-        schema:
-          type: string
-          title: order_by
-          description: (OPTIONAL) Optional. Select field and order based on which
-            cluster list will be sorted.
-      - name: filter
-        in: query
-        description: Optional. Selection criteria to list clusters.
-        schema:
-          type: string
-          title: filter
-          description: (OPTIONAL) Optional. Selection criteria to list clusters.
-      - name: pageSize
-        in: query
-        description: Optional. Select count of clusters to be listed per page.
-        schema:
-          type: integer
-          title: page_size
-          maximum: 500
-          minimum: 0
-          format: int32
-          description: (OPTIONAL) Optional. Select count of clusters to be listed
-            per page.
-      - name: offset
-        in: query
-        description: "Optional. Offset is used to select the correct page from which\
-          \ clusters list will be displayed.\n (E.g If there are 10 clusters, page\
-          \ size is 2 and offset is set as 4, then the response will display clusters\
-          \ 5 and 6)."
-        schema:
-          type: integer
-          title: offset
-          minimum: 0
-          format: int32
-          description: "(OPTIONAL) Optional. Offset is used to select the correct\
-            \ page from which clusters list will be displayed.\n (E.g If there are\
-            \ 10 clusters, page size is 2 and offset is set as 4, then the response\
-            \ will display clusters 5 and 6)."
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/deployment.v1.ListClustersResponse'
-  /deployment.orchestrator.apis/v1/clusters/{cluster_id}:
-    get:
-      tags:
-      - deployment.v1.ClusterService
-      summary: GetCluster
-      description: Gets a cluster object.
-      operationId: deployment.v1.ClusterService.GetCluster
-      parameters:
-      - name: cluster_id
-        in: path
-        description: Required. The id of the cluster.
-        required: true
-        schema:
-          type: string
-          title: cluster_id
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: Required. The id of the cluster.
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/deployment.v1.GetClusterResponse'
-  /deployment.v1.ClusterService/GetKubeConfig:
-    post:
-      tags:
-      - deployment.v1.ClusterService
-      summary: GetKubeConfig gets kubeConfig based on a given cluster id
-      description: GetKubeConfig gets kubeConfig based on a given cluster id
-      operationId: deployment.v1.ClusterService.GetKubeConfig
-      parameters:
-      - name: Connect-Protocol-Version
-        in: header
-        required: true
-        schema:
-          $ref: '#/components/schemas/connect-protocol-version'
-      - name: Connect-Timeout-Ms
-        in: header
-        schema:
-          $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/deployment.v1.GetKubeConfigRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/deployment.v1.GetKubeConfigResponse'
 components:
   schemas:
     connect-protocol-version:
@@ -673,61 +673,290 @@ components:
       title: Cluster
       additionalProperties: false
       description: Details of cluster.
-    deployment.v1.CreateDeploymentRequest:
+    deployment.v1.ClusterInfo:
       type: object
       properties:
-        deployment:
-          title: deployment
-          description: Required. Initial values for the deployment.
-          $ref: '#/components/schemas/deployment.v1.Deployment'
-      title: CreateDeploymentRequest
-      required:
-      - deployment
-      additionalProperties: false
-      description: Request message for the CreateDeployment method.
-    deployment.v1.CreateDeploymentResponse:
-      type: object
-      properties:
-        deploymentId:
+        id:
           type: string
-          title: deployment_id
-          maxLength: 40
-          minLength: 1
-          description: Returns the new Deployment Id.
-      title: CreateDeploymentResponse
-      required:
-      - deploymentId
+          title: id
+          description: ID is the cluster id which ECM generates and assigns to the
+            Rancher cluster name.
+          readOnly: true
+        labels:
+          type: object
+          title: labels
+          additionalProperties:
+            type: string
+            title: value
+          description: List of cluster labels retrieved from Fleet cluster object.
+          readOnly: true
+        createTime:
+          title: create_time
+          description: The creation time of the cluster retrieved from Fleet cluster
+            object.
+          readOnly: true
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+        name:
+          type: string
+          title: name
+          description: Name is the display name which user provides and ECM creates
+            and assigns clustername label to Fleet cluster object.
+          readOnly: true
+      title: ClusterInfo
       additionalProperties: false
-      description: Response message for the CreateDeployment method.
-    deployment.v1.DeleteDeploymentRequest:
+      description: Cluster defines the message for the Cluster object.
+    deployment.v1.ClusterInfo.LabelsEntry:
       type: object
       properties:
-        deplId:
+        key:
           type: string
-          title: depl_id
+          title: key
+        value:
+          type: string
+          title: value
+      title: LabelsEntry
+      additionalProperties: false
+    deployment.v1.Deployment.Status:
+      type: object
+      properties:
+        state:
+          title: state
+          readOnly: true
+          $ref: '#/components/schemas/deployment.v1.State'
+        message:
+          type: string
+          title: message
+          readOnly: true
+        summary:
+          title: summary
+          readOnly: true
+          $ref: '#/components/schemas/deployment.v1.Summary'
+      title: Status
+      additionalProperties: false
+      description: Status has details of the deployment.
+    deployment.v1.GetClusterRequest:
+      type: object
+      properties:
+        clusterId:
+          type: string
+          title: cluster_id
           maxLength: 40
           minLength: 1
           pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: Required. The id of the deployment to delete.
-        deleteType:
-          title: delete_type
-          description: "Required. Different delete types to handle parent and child\n\
-            \ lists, for dependency support. Available options: PARENT_ONLY, ALL."
-          $ref: '#/components/schemas/deployment.v1.DeleteType'
-      title: DeleteDeploymentRequest
+          description: Required. The id of the cluster.
+      title: GetClusterRequest
       required:
-      - deplId
-      - deleteType
+      - clusterId
       additionalProperties: false
-      description: Request message for the DeleteDeployment method.
-    deployment.v1.DeleteType:
+      description: Request message for GetCluster method.
+    deployment.v1.GetClusterResponse:
+      type: object
+      properties:
+        cluster:
+          title: cluster
+          readOnly: true
+          $ref: '#/components/schemas/deployment.v1.Cluster'
+      title: GetClusterResponse
+      additionalProperties: false
+      description: Response message for GetCluster method.
+    deployment.v1.GetKubeConfigRequest:
+      type: object
+      properties:
+        clusterId:
+          type: string
+          title: cluster_id
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: Required. The cluster id for the kubeconfig.
+      title: GetKubeConfigRequest
+      required:
+      - clusterId
+      additionalProperties: false
+      description: Request message for Get KubeConfig method
+    deployment.v1.GetKubeConfigResponse:
+      type: object
+      properties:
+        kubeConfigInfo:
+          title: kube_config_info
+          $ref: '#/components/schemas/deployment.v1.KubeConfigInfo'
+      title: GetKubeConfigResponse
+      additionalProperties: false
+      description: Response message for Get KubeConfig method
+    deployment.v1.KubeConfigInfo:
+      type: object
+      properties:
+        kubeConfig:
+          type: string
+          title: kube_config
+          format: byte
+          readOnly: true
+      title: KubeConfigInfo
+      additionalProperties: false
+    deployment.v1.ListClustersRequest:
+      type: object
+      properties:
+        labels:
+          type: array
+          items:
+            type: string
+            description: '(OPTIONAL) '
+          title: labels
+          description: "(OPTIONAL) Optional. A string array that filters cluster labels\
+            \ to be\n displayed ie color=blue,customer=intel. Labels separated by\
+            \ a comma."
+        orderBy:
+          type: string
+          title: order_by
+          description: (OPTIONAL) Optional. Select field and order based on which
+            cluster list will be sorted.
+        filter:
+          type: string
+          title: filter
+          description: (OPTIONAL) Optional. Selection criteria to list clusters.
+        pageSize:
+          type: integer
+          title: page_size
+          maximum: 500
+          minimum: 0
+          format: int32
+          description: (OPTIONAL) Optional. Select count of clusters to be listed
+            per page.
+        offset:
+          type: integer
+          title: offset
+          minimum: 0
+          format: int32
+          description: "(OPTIONAL) Optional. Offset is used to select the correct\
+            \ page from which clusters list will be displayed.\n (E.g If there are\
+            \ 10 clusters, page size is 2 and offset is set as 4, then the response\
+            \ will display clusters 5 and 6)."
+      title: ListClustersRequest
+      additionalProperties: false
+      description: Request message for the ListClusters method.
+    deployment.v1.ListClustersResponse:
+      type: object
+      properties:
+        clusters:
+          type: array
+          items:
+            $ref: '#/components/schemas/deployment.v1.ClusterInfo'
+          title: clusters
+          maxItems: 500
+          description: A list of Cluster Objects.
+        totalElements:
+          type: integer
+          title: total_elements
+          format: int32
+      title: ListClustersResponse
+      required:
+      - clusters
+      - totalElements
+      additionalProperties: false
+      description: Response message for the ListClusters method.
+    deployment.v1.State:
       type: string
-      title: DeleteType
+      title: State
       enum:
-      - PARENT_ONLY
-      - ALL
-      description: "Different delete types to handle parent and child\n lists, for\
-        \ dependency support. Available options: PARENT_ONLY, ALL."
+      - UNKNOWN
+      - RUNNING
+      - DOWN
+      - INTERNAL_ERROR
+      - DEPLOYING
+      - UPDATING
+      - TERMINATING
+      - ERROR
+      - NO_TARGET_CLUSTERS
+      description: State are the different states a deployment/cluster/app can be
+        in.
+    deployment.v1.Summary:
+      type: object
+      properties:
+        total:
+          type: integer
+          title: total
+          format: int32
+          description: Total count of apps/clusters in the deployment, value from
+            owned GitRepo objects.
+          readOnly: true
+        running:
+          type: integer
+          title: running
+          format: int32
+          description: Number of running apps/clusters in the deployment, value from
+            owned GitRepo objects.
+          readOnly: true
+        down:
+          type: integer
+          title: down
+          format: int32
+          description: Number of down apps/clusters in the deployment.
+          readOnly: true
+        type:
+          type: string
+          title: type
+          description: Type of thing that we're counting, ie clusters, apps.
+          readOnly: true
+        unknown:
+          type: integer
+          title: unknown
+          format: int32
+          description: Unknown status to indicate cluster not reachable.
+          readOnly: true
+      title: Summary
+      additionalProperties: false
+      description: Count of status.
+    google.protobuf.Timestamp:
+      type: string
+      example: '2023-01-15T01:30:15.01Z'
+      format: date-time
+      description: "A Timestamp represents a point in time independent of any time\
+        \ zone or local\n calendar, encoded as a count of seconds and fractions of\
+        \ seconds at\n nanosecond resolution. The count is relative to an epoch at\
+        \ UTC midnight on\n January 1, 1970, in the proleptic Gregorian calendar which\
+        \ extends the\n Gregorian calendar backwards to year one.\n\n All minutes\
+        \ are 60 seconds long. Leap seconds are \"smeared\" so that no leap\n second\
+        \ table is needed for interpretation, using a [24-hour linear\n smear](https://developers.google.com/time/smear).\n\
+        \n The range is from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z.\
+        \ By\n restricting to that range, we ensure that we can convert to and from\
+        \ [RFC\n 3339](https://www.ietf.org/rfc/rfc3339.txt) date strings.\n\n # Examples\n\
+        \n Example 1: Compute Timestamp from POSIX `time()`.\n\n     Timestamp timestamp;\n\
+        \     timestamp.set_seconds(time(NULL));\n     timestamp.set_nanos(0);\n\n\
+        \ Example 2: Compute Timestamp from POSIX `gettimeofday()`.\n\n     struct\
+        \ timeval tv;\n     gettimeofday(&tv, NULL);\n\n     Timestamp timestamp;\n\
+        \     timestamp.set_seconds(tv.tv_sec);\n     timestamp.set_nanos(tv.tv_usec\
+        \ * 1000);\n\n Example 3: Compute Timestamp from Win32 `GetSystemTimeAsFileTime()`.\n\
+        \n     FILETIME ft;\n     GetSystemTimeAsFileTime(&ft);\n     UINT64 ticks\
+        \ = (((UINT64)ft.dwHighDateTime) << 32) | ft.dwLowDateTime;\n\n     // A Windows\
+        \ tick is 100 nanoseconds. Windows epoch 1601-01-01T00:00:00Z\n     // is\
+        \ 11644473600 seconds before Unix epoch 1970-01-01T00:00:00Z.\n     Timestamp\
+        \ timestamp;\n     timestamp.set_seconds((INT64) ((ticks / 10000000) - 11644473600LL));\n\
+        \     timestamp.set_nanos((INT32) ((ticks % 10000000) * 100));\n\n Example\
+        \ 4: Compute Timestamp from Java `System.currentTimeMillis()`.\n\n     long\
+        \ millis = System.currentTimeMillis();\n\n     Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis\
+        \ / 1000)\n         .setNanos((int) ((millis % 1000) * 1000000)).build();\n\
+        \n Example 5: Compute Timestamp from Java `Instant.now()`.\n\n     Instant\
+        \ now = Instant.now();\n\n     Timestamp timestamp =\n         Timestamp.newBuilder().setSeconds(now.getEpochSecond())\n\
+        \             .setNanos(now.getNano()).build();\n\n Example 6: Compute Timestamp\
+        \ from current time in Python.\n\n     timestamp = Timestamp()\n     timestamp.GetCurrentTime()\n\
+        \n # JSON Mapping\n\n In JSON format, the Timestamp type is encoded as a string\
+        \ in the\n [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format. That is,\
+        \ the\n format is \"{year}-{month}-{day}T{hour}:{min}:{sec}[.{frac_sec}]Z\"\
+        \n where {year} is always expressed using four digits while {month}, {day},\n\
+        \ {hour}, {min}, and {sec} are zero-padded to two digits each. The fractional\n\
+        \ seconds, which can go up to 9 digits (i.e. up to 1 nanosecond resolution),\n\
+        \ are optional. The \"Z\" suffix indicates the timezone (\"UTC\"); the timezone\n\
+        \ is required. A proto3 JSON serializer should always use UTC (as indicated\
+        \ by\n \"Z\") when printing the Timestamp type and a proto3 JSON parser should\
+        \ be\n able to accept both UTC and other timezones (as indicated by an offset).\n\
+        \n For example, \"2017-01-15T01:30:15.01Z\" encodes 15.01 seconds past\n 01:30\
+        \ UTC on January 15, 2017.\n\n In JavaScript, one can convert a Date object\
+        \ to this format using the\n standard\n [toISOString()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString)\n\
+        \ method. In Python, a standard `datetime.datetime` object can be converted\n\
+        \ to this format using\n [`strftime`](https://docs.python.org/2/library/time.html#time.strftime)\
+        \ with\n the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in Java,\
+        \ one can use\n the Joda Time's [`ISODateTimeFormat.dateTime()`](\n http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime()\n\
+        \ ) to obtain a formatter capable of generating timestamps in this format."
     deployment.v1.Deployment:
       type: object
       properties:
@@ -837,24 +1066,6 @@ components:
       additionalProperties: false
       description: Deployment defines the specification to deploy a Deployment Package
         onto a set of clusters.
-    deployment.v1.Deployment.Status:
-      type: object
-      properties:
-        state:
-          title: state
-          readOnly: true
-          $ref: '#/components/schemas/deployment.v1.State'
-        message:
-          type: string
-          title: message
-          readOnly: true
-        summary:
-          title: summary
-          readOnly: true
-          $ref: '#/components/schemas/deployment.v1.Summary'
-      title: Status
-      additionalProperties: false
-      description: Status has details of the deployment.
     deployment.v1.DeploymentInstancesCluster:
       type: object
       properties:
@@ -889,6 +1100,197 @@ components:
           readOnly: true
       title: DeploymentInstancesCluster
       additionalProperties: false
+    deployment.v1.OverrideValues:
+      type: object
+      properties:
+        appName:
+          type: string
+          title: app_name
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: deployment package name to use when overriding values.
+        targetNamespace:
+          type: string
+          title: target_namespace
+          maxLength: 63
+          pattern: (^$)|^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$
+          description: (OPTIONAL) The namespace to deploy the app onto, default namespace
+            is default.
+        values:
+          title: values
+          description: (OPTIONAL) The YAML representing Helm overrides
+          $ref: '#/components/schemas/google.protobuf.Struct'
+      title: OverrideValues
+      required:
+      - appName
+      additionalProperties: false
+      description: "The Override values can be used to override any of the base helm\
+        \ values of\n applications based on Deployment scenario."
+    deployment.v1.ServiceExport:
+      type: object
+      properties:
+        appName:
+          type: string
+          title: app_name
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+        enabled:
+          type: boolean
+          title: enabled
+      title: ServiceExport
+      required:
+      - appName
+      additionalProperties: false
+    deployment.v1.TargetClusters:
+      type: object
+      properties:
+        appName:
+          type: string
+          title: app_name
+          maxLength: 40
+          pattern: (^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: (OPTIONAL) The targeted deployment package name.
+        labels:
+          type: object
+          title: labels
+          maxProperties: 10
+          additionalProperties:
+            type: string
+            title: value
+            maxLength: 40
+            minLength: 1
+            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9/]{0,38}[a-z0-9])?$
+          description: (OPTIONAL) Cluster labels to match the target cluster when
+            auto-scaling deployment.
+        clusterId:
+          type: string
+          title: cluster_id
+          maxLength: 100
+          pattern: (^$)|^[a-zA-Z0-9][a-zA-Z0-9-_\.]{0,98}[a-zA-Z0-9]?$
+          description: (OPTIONAL) Cluster id to match the target cluster when targeted
+            deployment.
+      title: TargetClusters
+      additionalProperties: false
+      description: Set target clusters based on labels.
+    deployment.v1.TargetClusters.LabelsEntry:
+      type: object
+      properties:
+        key:
+          type: string
+          title: key
+        value:
+          type: string
+          title: value
+      title: LabelsEntry
+      additionalProperties: false
+    google.protobuf.ListValue:
+      type: object
+      properties:
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/google.protobuf.Value'
+          title: values
+          description: Repeated field of dynamically typed values.
+      title: ListValue
+      additionalProperties: false
+      description: "`ListValue` is a wrapper around a repeated field of values.\n\n\
+        \ The JSON representation for `ListValue` is JSON array."
+    google.protobuf.NullValue:
+      type: string
+      title: NullValue
+      enum:
+      - NULL_VALUE
+      description: "`NullValue` is a singleton enumeration to represent the null value\
+        \ for the\n `Value` type union.\n\n The JSON representation for `NullValue`\
+        \ is JSON `null`."
+    google.protobuf.Struct:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/google.protobuf.Value'
+      description: "`Struct` represents a structured data value, consisting of fields\n\
+        \ which map to dynamically typed values. In some languages, `Struct`\n might\
+        \ be supported by a native representation. For example, in\n scripting languages\
+        \ like JS a struct is represented as an\n object. The details of that representation\
+        \ are described together\n with the proto support for the language.\n\n The\
+        \ JSON representation for `Struct` is JSON object."
+    google.protobuf.Struct.FieldsEntry:
+      type: object
+      properties:
+        key:
+          type: string
+          title: key
+        value:
+          title: value
+          $ref: '#/components/schemas/google.protobuf.Value'
+      title: FieldsEntry
+      additionalProperties: false
+    google.protobuf.Value:
+      type: object
+      nullable: true
+      additionalProperties: true
+      description: "`Value` represents a dynamically typed value which can be either\n\
+        \ null, a number, a string, a boolean, a recursive struct value, or a\n list\
+        \ of values. A producer of value is expected to set one of these\n variants.\
+        \ Absence of any variant indicates an error.\n\n The JSON representation for\
+        \ `Value` is JSON value."
+    deployment.v1.CreateDeploymentRequest:
+      type: object
+      properties:
+        deployment:
+          title: deployment
+          description: Required. Initial values for the deployment.
+          $ref: '#/components/schemas/deployment.v1.Deployment'
+      title: CreateDeploymentRequest
+      required:
+      - deployment
+      additionalProperties: false
+      description: Request message for the CreateDeployment method.
+    deployment.v1.CreateDeploymentResponse:
+      type: object
+      properties:
+        deploymentId:
+          type: string
+          title: deployment_id
+          maxLength: 40
+          minLength: 1
+          description: Returns the new Deployment Id.
+      title: CreateDeploymentResponse
+      required:
+      - deploymentId
+      additionalProperties: false
+      description: Response message for the CreateDeployment method.
+    deployment.v1.DeleteDeploymentRequest:
+      type: object
+      properties:
+        deplId:
+          type: string
+          title: depl_id
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: Required. The id of the deployment to delete.
+        deleteType:
+          title: delete_type
+          description: "Required. Different delete types to handle parent and child\n\
+            \ lists, for dependency support. Available options: PARENT_ONLY, ALL."
+          $ref: '#/components/schemas/deployment.v1.DeleteType'
+      title: DeleteDeploymentRequest
+      required:
+      - deplId
+      - deleteType
+      additionalProperties: false
+      description: Request message for the DeleteDeployment method.
+    deployment.v1.DeleteType:
+      type: string
+      title: DeleteType
+      enum:
+      - PARENT_ONLY
+      - ALL
+      description: "Different delete types to handle parent and child\n lists, for\
+        \ dependency support. Available options: PARENT_ONLY, ALL."
     deployment.v1.GetAppNamespaceRequest:
       type: object
       properties:
@@ -950,7 +1352,7 @@ components:
             type: string
             maxLength: 200
             minLength: 1
-            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+            pattern: (^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$
             maxItems: 20
             description: '(OPTIONAL) '
           title: labels
@@ -1090,7 +1492,7 @@ components:
             type: string
             maxLength: 200
             minLength: 1
-            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+            pattern: (^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$
             maxItems: 20
             description: '(OPTIONAL) '
           title: labels
@@ -1158,7 +1560,7 @@ components:
             type: string
             maxLength: 200
             minLength: 1
-            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9]{0,198}[a-z0-9])?$
+            pattern: (^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$
             maxItems: 20
             description: '(OPTIONAL) '
           title: labels
@@ -1215,143 +1617,6 @@ components:
       - totalElements
       additionalProperties: false
       description: Response message for the ListDeployments method.
-    deployment.v1.OverrideValues:
-      type: object
-      properties:
-        appName:
-          type: string
-          title: app_name
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: deployment package name to use when overriding values.
-        targetNamespace:
-          type: string
-          title: target_namespace
-          maxLength: 63
-          pattern: (^$)|^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$
-          description: (OPTIONAL) The namespace to deploy the app onto, default namespace
-            is default.
-        values:
-          title: values
-          description: (OPTIONAL) The YAML representing Helm overrides
-          $ref: '#/components/schemas/google.protobuf.Struct'
-      title: OverrideValues
-      required:
-      - appName
-      additionalProperties: false
-      description: "The Override values can be used to override any of the base helm\
-        \ values of\n applications based on Deployment scenario."
-    deployment.v1.ServiceExport:
-      type: object
-      properties:
-        appName:
-          type: string
-          title: app_name
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-        enabled:
-          type: boolean
-          title: enabled
-      title: ServiceExport
-      required:
-      - appName
-      additionalProperties: false
-    deployment.v1.State:
-      type: string
-      title: State
-      enum:
-      - UNKNOWN
-      - RUNNING
-      - DOWN
-      - INTERNAL_ERROR
-      - DEPLOYING
-      - UPDATING
-      - TERMINATING
-      - ERROR
-      - NO_TARGET_CLUSTERS
-      description: State are the different states a deployment/cluster/app can be
-        in.
-    deployment.v1.Summary:
-      type: object
-      properties:
-        total:
-          type: integer
-          title: total
-          format: int32
-          description: Total count of apps/clusters in the deployment, value from
-            owned GitRepo objects.
-          readOnly: true
-        running:
-          type: integer
-          title: running
-          format: int32
-          description: Number of running apps/clusters in the deployment, value from
-            owned GitRepo objects.
-          readOnly: true
-        down:
-          type: integer
-          title: down
-          format: int32
-          description: Number of down apps/clusters in the deployment.
-          readOnly: true
-        type:
-          type: string
-          title: type
-          description: Type of thing that we're counting, ie clusters, apps.
-          readOnly: true
-        unknown:
-          type: integer
-          title: unknown
-          format: int32
-          description: Unknown status to indicate cluster not reachable.
-          readOnly: true
-      title: Summary
-      additionalProperties: false
-      description: Count of status.
-    deployment.v1.TargetClusters:
-      type: object
-      properties:
-        appName:
-          type: string
-          title: app_name
-          maxLength: 40
-          pattern: (^$)|^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: (OPTIONAL) The targeted deployment package name.
-        labels:
-          type: object
-          title: labels
-          maxProperties: 10
-          additionalProperties:
-            type: string
-            title: value
-            maxLength: 40
-            minLength: 1
-            pattern: (^$)|^[a-z0-9]([-_.=,a-z0-9/]{0,38}[a-z0-9])?$
-          description: (OPTIONAL) Cluster labels to match the target cluster when
-            auto-scaling deployment.
-        clusterId:
-          type: string
-          title: cluster_id
-          maxLength: 100
-          pattern: (^$)|^[a-zA-Z0-9][a-zA-Z0-9-_\.]{0,98}[a-zA-Z0-9]?$
-          description: (OPTIONAL) Cluster id to match the target cluster when targeted
-            deployment.
-      title: TargetClusters
-      additionalProperties: false
-      description: Set target clusters based on labels.
-    deployment.v1.TargetClusters.LabelsEntry:
-      type: object
-      properties:
-        key:
-          type: string
-          title: key
-        value:
-          type: string
-          title: value
-      title: LabelsEntry
-      additionalProperties: false
     deployment.v1.UpdateDeploymentRequest:
       type: object
       properties:
@@ -1391,268 +1656,3 @@ components:
         \ as the request\n or the response type of an API method. For instance:\n\n\
         \     service Foo {\n       rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);\n\
         \     }"
-    google.protobuf.ListValue:
-      type: object
-      properties:
-        values:
-          type: array
-          items:
-            $ref: '#/components/schemas/google.protobuf.Value'
-          title: values
-          description: Repeated field of dynamically typed values.
-      title: ListValue
-      additionalProperties: false
-      description: "`ListValue` is a wrapper around a repeated field of values.\n\n\
-        \ The JSON representation for `ListValue` is JSON array."
-    google.protobuf.NullValue:
-      type: string
-      title: NullValue
-      enum:
-      - NULL_VALUE
-      description: "`NullValue` is a singleton enumeration to represent the null value\
-        \ for the\n `Value` type union.\n\n The JSON representation for `NullValue`\
-        \ is JSON `null`."
-    google.protobuf.Struct:
-      type: object
-      additionalProperties:
-        $ref: '#/components/schemas/google.protobuf.Value'
-      description: "`Struct` represents a structured data value, consisting of fields\n\
-        \ which map to dynamically typed values. In some languages, `Struct`\n might\
-        \ be supported by a native representation. For example, in\n scripting languages\
-        \ like JS a struct is represented as an\n object. The details of that representation\
-        \ are described together\n with the proto support for the language.\n\n The\
-        \ JSON representation for `Struct` is JSON object."
-    google.protobuf.Struct.FieldsEntry:
-      type: object
-      properties:
-        key:
-          type: string
-          title: key
-        value:
-          title: value
-          $ref: '#/components/schemas/google.protobuf.Value'
-      title: FieldsEntry
-      additionalProperties: false
-    google.protobuf.Timestamp:
-      type: string
-      example: '2023-01-15T01:30:15.01Z'
-      format: date-time
-      description: "A Timestamp represents a point in time independent of any time\
-        \ zone or local\n calendar, encoded as a count of seconds and fractions of\
-        \ seconds at\n nanosecond resolution. The count is relative to an epoch at\
-        \ UTC midnight on\n January 1, 1970, in the proleptic Gregorian calendar which\
-        \ extends the\n Gregorian calendar backwards to year one.\n\n All minutes\
-        \ are 60 seconds long. Leap seconds are \"smeared\" so that no leap\n second\
-        \ table is needed for interpretation, using a [24-hour linear\n smear](https://developers.google.com/time/smear).\n\
-        \n The range is from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z.\
-        \ By\n restricting to that range, we ensure that we can convert to and from\
-        \ [RFC\n 3339](https://www.ietf.org/rfc/rfc3339.txt) date strings.\n\n # Examples\n\
-        \n Example 1: Compute Timestamp from POSIX `time()`.\n\n     Timestamp timestamp;\n\
-        \     timestamp.set_seconds(time(NULL));\n     timestamp.set_nanos(0);\n\n\
-        \ Example 2: Compute Timestamp from POSIX `gettimeofday()`.\n\n     struct\
-        \ timeval tv;\n     gettimeofday(&tv, NULL);\n\n     Timestamp timestamp;\n\
-        \     timestamp.set_seconds(tv.tv_sec);\n     timestamp.set_nanos(tv.tv_usec\
-        \ * 1000);\n\n Example 3: Compute Timestamp from Win32 `GetSystemTimeAsFileTime()`.\n\
-        \n     FILETIME ft;\n     GetSystemTimeAsFileTime(&ft);\n     UINT64 ticks\
-        \ = (((UINT64)ft.dwHighDateTime) << 32) | ft.dwLowDateTime;\n\n     // A Windows\
-        \ tick is 100 nanoseconds. Windows epoch 1601-01-01T00:00:00Z\n     // is\
-        \ 11644473600 seconds before Unix epoch 1970-01-01T00:00:00Z.\n     Timestamp\
-        \ timestamp;\n     timestamp.set_seconds((INT64) ((ticks / 10000000) - 11644473600LL));\n\
-        \     timestamp.set_nanos((INT32) ((ticks % 10000000) * 100));\n\n Example\
-        \ 4: Compute Timestamp from Java `System.currentTimeMillis()`.\n\n     long\
-        \ millis = System.currentTimeMillis();\n\n     Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis\
-        \ / 1000)\n         .setNanos((int) ((millis % 1000) * 1000000)).build();\n\
-        \n Example 5: Compute Timestamp from Java `Instant.now()`.\n\n     Instant\
-        \ now = Instant.now();\n\n     Timestamp timestamp =\n         Timestamp.newBuilder().setSeconds(now.getEpochSecond())\n\
-        \             .setNanos(now.getNano()).build();\n\n Example 6: Compute Timestamp\
-        \ from current time in Python.\n\n     timestamp = Timestamp()\n     timestamp.GetCurrentTime()\n\
-        \n # JSON Mapping\n\n In JSON format, the Timestamp type is encoded as a string\
-        \ in the\n [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format. That is,\
-        \ the\n format is \"{year}-{month}-{day}T{hour}:{min}:{sec}[.{frac_sec}]Z\"\
-        \n where {year} is always expressed using four digits while {month}, {day},\n\
-        \ {hour}, {min}, and {sec} are zero-padded to two digits each. The fractional\n\
-        \ seconds, which can go up to 9 digits (i.e. up to 1 nanosecond resolution),\n\
-        \ are optional. The \"Z\" suffix indicates the timezone (\"UTC\"); the timezone\n\
-        \ is required. A proto3 JSON serializer should always use UTC (as indicated\
-        \ by\n \"Z\") when printing the Timestamp type and a proto3 JSON parser should\
-        \ be\n able to accept both UTC and other timezones (as indicated by an offset).\n\
-        \n For example, \"2017-01-15T01:30:15.01Z\" encodes 15.01 seconds past\n 01:30\
-        \ UTC on January 15, 2017.\n\n In JavaScript, one can convert a Date object\
-        \ to this format using the\n standard\n [toISOString()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString)\n\
-        \ method. In Python, a standard `datetime.datetime` object can be converted\n\
-        \ to this format using\n [`strftime`](https://docs.python.org/2/library/time.html#time.strftime)\
-        \ with\n the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in Java,\
-        \ one can use\n the Joda Time's [`ISODateTimeFormat.dateTime()`](\n http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime()\n\
-        \ ) to obtain a formatter capable of generating timestamps in this format."
-    google.protobuf.Value:
-      type: object
-      nullable: true
-      additionalProperties: true
-      description: "`Value` represents a dynamically typed value which can be either\n\
-        \ null, a number, a string, a boolean, a recursive struct value, or a\n list\
-        \ of values. A producer of value is expected to set one of these\n variants.\
-        \ Absence of any variant indicates an error.\n\n The JSON representation for\
-        \ `Value` is JSON value."
-    deployment.v1.ClusterInfo:
-      type: object
-      properties:
-        id:
-          type: string
-          title: id
-          description: ID is the cluster id which ECM generates and assigns to the
-            Rancher cluster name.
-          readOnly: true
-        labels:
-          type: object
-          title: labels
-          additionalProperties:
-            type: string
-            title: value
-          description: List of cluster labels retrieved from Fleet cluster object.
-          readOnly: true
-        createTime:
-          title: create_time
-          description: The creation time of the cluster retrieved from Fleet cluster
-            object.
-          readOnly: true
-          $ref: '#/components/schemas/google.protobuf.Timestamp'
-        name:
-          type: string
-          title: name
-          description: Name is the display name which user provides and ECM creates
-            and assigns clustername label to Fleet cluster object.
-          readOnly: true
-      title: ClusterInfo
-      additionalProperties: false
-      description: Cluster defines the message for the Cluster object.
-    deployment.v1.ClusterInfo.LabelsEntry:
-      type: object
-      properties:
-        key:
-          type: string
-          title: key
-        value:
-          type: string
-          title: value
-      title: LabelsEntry
-      additionalProperties: false
-    deployment.v1.GetClusterRequest:
-      type: object
-      properties:
-        clusterId:
-          type: string
-          title: cluster_id
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: Required. The id of the cluster.
-      title: GetClusterRequest
-      required:
-      - clusterId
-      additionalProperties: false
-      description: Request message for GetCluster method.
-    deployment.v1.GetClusterResponse:
-      type: object
-      properties:
-        cluster:
-          title: cluster
-          readOnly: true
-          $ref: '#/components/schemas/deployment.v1.Cluster'
-      title: GetClusterResponse
-      additionalProperties: false
-      description: Response message for GetCluster method.
-    deployment.v1.GetKubeConfigRequest:
-      type: object
-      properties:
-        clusterId:
-          type: string
-          title: cluster_id
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: Required. The cluster id for the kubeconfig.
-      title: GetKubeConfigRequest
-      required:
-      - clusterId
-      additionalProperties: false
-      description: Request message for Get KubeConfig method
-    deployment.v1.GetKubeConfigResponse:
-      type: object
-      properties:
-        kubeConfigInfo:
-          title: kube_config_info
-          $ref: '#/components/schemas/deployment.v1.KubeConfigInfo'
-      title: GetKubeConfigResponse
-      additionalProperties: false
-      description: Response message for Get KubeConfig method
-    deployment.v1.KubeConfigInfo:
-      type: object
-      properties:
-        kubeConfig:
-          type: string
-          title: kube_config
-          format: byte
-          readOnly: true
-      title: KubeConfigInfo
-      additionalProperties: false
-    deployment.v1.ListClustersRequest:
-      type: object
-      properties:
-        labels:
-          type: array
-          items:
-            type: string
-            description: '(OPTIONAL) '
-          title: labels
-          description: "(OPTIONAL) Optional. A string array that filters cluster labels\
-            \ to be\n displayed ie color=blue,customer=intel. Labels separated by\
-            \ a comma."
-        orderBy:
-          type: string
-          title: order_by
-          description: (OPTIONAL) Optional. Select field and order based on which
-            cluster list will be sorted.
-        filter:
-          type: string
-          title: filter
-          description: (OPTIONAL) Optional. Selection criteria to list clusters.
-        pageSize:
-          type: integer
-          title: page_size
-          maximum: 500
-          minimum: 0
-          format: int32
-          description: (OPTIONAL) Optional. Select count of clusters to be listed
-            per page.
-        offset:
-          type: integer
-          title: offset
-          minimum: 0
-          format: int32
-          description: "(OPTIONAL) Optional. Offset is used to select the correct\
-            \ page from which clusters list will be displayed.\n (E.g If there are\
-            \ 10 clusters, page size is 2 and offset is set as 4, then the response\
-            \ will display clusters 5 and 6)."
-      title: ListClustersRequest
-      additionalProperties: false
-      description: Request message for the ListClusters method.
-    deployment.v1.ListClustersResponse:
-      type: object
-      properties:
-        clusters:
-          type: array
-          items:
-            $ref: '#/components/schemas/deployment.v1.ClusterInfo'
-          title: clusters
-          maxItems: 500
-          description: A list of Cluster Objects.
-        totalElements:
-          type: integer
-          title: total_elements
-          format: int32
-      title: ListClustersResponse
-      required:
-      - clusters
-      - totalElements
-      additionalProperties: false
-      description: Response message for the ListClusters method.
