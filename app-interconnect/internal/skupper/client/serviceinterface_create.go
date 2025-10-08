@@ -9,15 +9,15 @@ import (
 )
 
 func (cli *VanClient) ServiceInterfaceCreate(ctx context.Context, service *types.ServiceInterface) error {
-	/*	policy := NewPolicyValidatorAPI(cli)
-		res, err := policy.Service(service.Address)
-		if err != nil {
-			return err
-		}
-		if !res.Allowed {
-			return res.Err()
-		}
-	*/
+	policy := NewPolicyValidatorAPI(cli)
+	res, err := policy.Service(service.Address)
+	if err != nil {
+		return err
+	}
+	if !res.Allowed {
+		return res.Err()
+	}
+
 	owner, err := getRootObject(cli)
 	if err == nil {
 		err = validateServiceInterface(service, cli)

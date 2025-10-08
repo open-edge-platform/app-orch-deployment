@@ -28,6 +28,13 @@ import (
 	authv1 "k8s.io/client-go/kubernetes/typed/authorization/v1"
 )
 
+const (
+	// We do not use skupper's policy support in the interconnect service. The policies are checked
+	// using `kubectl exec` by this client, which tends to cause timeouts, even when there are no
+	// policies. As such, disable policy support here in the client.
+	SKUPPER_POLICIES_UNSUPPORTED = true
+)
+
 type PolicyValidationResult struct {
 	err             error
 	enabled         bool
@@ -396,6 +403,14 @@ func (p *PolicyAPIClient) execGet(args ...string) (*PolicyAPIResult, error) {
 			Enabled: false,
 		}, nil
 	}
+
+	if SKUPPER_POLICIES_UNSUPPORTED {
+		return &PolicyAPIResult{
+			Allowed: true,
+			Enabled: false,
+		}, nil
+	}
+
 	ctx, cn := context.WithTimeout(context.Background(), time.Second*30)
 	defer cn()
 	notEnabledErr := fmt.Errorf("Skupper is not enabled in namespace '%s'", p.cli.Namespace)
