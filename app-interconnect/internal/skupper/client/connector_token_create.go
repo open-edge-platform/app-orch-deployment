@@ -129,7 +129,6 @@ func (cli *VanClient) ConnectorTokenCreateFile(ctx context.Context, subject stri
 	if !res.Allowed {
 		return res.Err()
 	}
-
 	secret, localOnly, err := cli.ConnectorTokenCreate(ctx, subject, "")
 	if err == nil {
 		return certs.GenerateSecretFile(secretFile, secret, localOnly)

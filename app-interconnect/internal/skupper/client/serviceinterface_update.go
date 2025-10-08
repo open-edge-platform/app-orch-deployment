@@ -191,7 +191,6 @@ func (cli *VanClient) ServiceInterfaceBind(ctx context.Context, service *types.S
 	if !res.Allowed {
 		return res.Err()
 	}
-
 	owner, err := getRootObject(cli)
 	if err == nil {
 		err = validateServiceInterface(service, cli)

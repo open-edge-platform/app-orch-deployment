@@ -17,7 +17,6 @@ func (cli *VanClient) ServiceInterfaceCreate(ctx context.Context, service *types
 	if !res.Allowed {
 		return res.Err()
 	}
-
 	owner, err := getRootObject(cli)
 	if err == nil {
 		err = validateServiceInterface(service, cli)
