@@ -7,6 +7,8 @@ package clusterclient
 import (
 	"context"
 	"fmt"
+	"os"
+
 	"github.com/labstack/gommon/log"
 	admapiv1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
 	"github.com/open-edge-platform/orch-library/go/pkg/auth"
@@ -17,7 +19,6 @@ import (
 	"google.golang.org/grpc/metadata"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"os"
 )
 
 const (
@@ -91,6 +92,7 @@ func (c *orchClient) GetClusterConfig(ctx context.Context, clusterID ClusterID, 
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("Kubeconfig: %s\n", string(resp.KubeConfigInfo.KubeConfig))
 	return clientcmd.RESTConfigFromKubeConfig(resp.KubeConfigInfo.KubeConfig)
 }
 

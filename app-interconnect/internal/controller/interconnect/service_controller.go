@@ -6,7 +6,10 @@ package interconnect
 import (
 	"context"
 	"fmt"
-	"github.com/open-edge-platform/app-orch-deployment/app-interconnect/internal/cluster"
+	"strings"
+	"time"
+
+	clusterclient "github.com/open-edge-platform/app-orch-deployment/app-interconnect/internal/cluster"
 	"github.com/open-edge-platform/app-orch-deployment/app-interconnect/internal/controller"
 	"github.com/open-edge-platform/app-orch-deployment/app-interconnect/internal/controller/utils"
 	skupperlib "github.com/open-edge-platform/app-orch-deployment/app-interconnect/internal/skupper"
@@ -21,8 +24,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-	"strings"
-	"time"
 )
 
 const serviceFinalizer = "service.interconnect.app.edge-orchestrator.intel.com/finalizer"
@@ -123,6 +124,7 @@ func (c *ServiceController) Reconcile(ctx context.Context, request reconcile.Req
 		} else {
 			targetName = service.Spec.ServiceRef.Name
 		}
+		log.Infof("XXX exposing service %s on cluster %s, targetName %s, ports %v", serviceName, clusterID, targetName, ports)
 		err = skupperlib.SkupperExposeService(ctx, clusterConfig, targetName, "service", serviceName, ports)
 		if err != nil {
 			log.Warn(err)
