@@ -24,14 +24,14 @@ func getSiteId(service *corev1.Service) string {
 }
 
 func (cli *VanClient) TokenClaimCreateFile(ctx context.Context, name string, password []byte, expiry time.Duration, uses int, secretFile string) error {
-	policy := NewPolicyValidatorAPI(cli)
+	/*policy := NewPolicyValidatorAPI(cli)
 	res, err := policy.IncomingLink()
 	if err != nil {
 		return err
 	}
 	if !res.Allowed {
 		return res.Err()
-	}
+	}*/
 	claim, localOnly, err := cli.TokenClaimCreate(ctx, name, password, expiry, uses)
 	if err != nil {
 		return err

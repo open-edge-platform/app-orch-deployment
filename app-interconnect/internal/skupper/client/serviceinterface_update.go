@@ -183,14 +183,15 @@ func (cli *VanClient) ServiceInterfaceUpdate(ctx context.Context, service *types
 }
 
 func (cli *VanClient) ServiceInterfaceBind(ctx context.Context, service *types.ServiceInterface, targetType string, targetName string, targetPorts map[int]int, namespace string) error {
-	policy := NewPolicyValidatorAPI(cli)
-	res, err := policy.Expose(targetType, targetName)
-	if err != nil {
-		return err
-	}
-	if !res.Allowed {
-		return res.Err()
-	}
+	/*	policy := NewPolicyValidatorAPI(cli)
+		res, err := policy.Expose(targetType, targetName)
+		if err != nil {
+			return err
+		}
+		if !res.Allowed {
+			return res.Err()
+		}
+	*/
 	owner, err := getRootObject(cli)
 	if err == nil {
 		err = validateServiceInterface(service, cli)
