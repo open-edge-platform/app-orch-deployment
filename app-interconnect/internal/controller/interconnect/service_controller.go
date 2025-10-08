@@ -124,7 +124,6 @@ func (c *ServiceController) Reconcile(ctx context.Context, request reconcile.Req
 		} else {
 			targetName = service.Spec.ServiceRef.Name
 		}
-		log.Infof("XXX exposing service %s on cluster %s, targetName %s, ports %v", serviceName, clusterID, targetName, ports)
 		err = skupperlib.SkupperExposeService(ctx, clusterConfig, targetName, "service", serviceName, ports)
 		if err != nil {
 			log.Warn(err)

@@ -92,7 +92,6 @@ func (c *orchClient) GetClusterConfig(ctx context.Context, clusterID ClusterID, 
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("Kubeconfig: %s\n", string(resp.KubeConfigInfo.KubeConfig))
 	return clientcmd.RESTConfigFromKubeConfig(resp.KubeConfigInfo.KubeConfig)
 }
 
