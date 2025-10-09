@@ -278,7 +278,6 @@ func SkupperExposeService(ctx context.Context, restConfig *rest.Config, targetNa
 		return err
 	}
 
-	// below code will be enable once kubectl exec operation if fixed
 	var policy *client.PolicyAPIClient
 	policy = client.NewPolicyValidatorAPI(cli)
 	res, err := policy.Expose(targetType, targetName)
@@ -291,7 +290,6 @@ func SkupperExposeService(ctx context.Context, restConfig *rest.Config, targetNa
 	}
 
 	if service == nil {
-		// below code will be enable once kubectl exec operation if fixed
 		res, err := policy.Service(address)
 		if err != nil {
 			return err

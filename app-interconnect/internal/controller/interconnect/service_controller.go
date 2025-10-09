@@ -6,7 +6,10 @@ package interconnect
 import (
 	"context"
 	"fmt"
-	"github.com/open-edge-platform/app-orch-deployment/app-interconnect/internal/cluster"
+	"strings"
+	"time"
+
+	clusterclient "github.com/open-edge-platform/app-orch-deployment/app-interconnect/internal/cluster"
 	"github.com/open-edge-platform/app-orch-deployment/app-interconnect/internal/controller"
 	"github.com/open-edge-platform/app-orch-deployment/app-interconnect/internal/controller/utils"
 	skupperlib "github.com/open-edge-platform/app-orch-deployment/app-interconnect/internal/skupper"
@@ -21,8 +24,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-	"strings"
-	"time"
 )
 
 const serviceFinalizer = "service.interconnect.app.edge-orchestrator.intel.com/finalizer"
