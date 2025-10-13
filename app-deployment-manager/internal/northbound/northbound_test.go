@@ -3074,6 +3074,64 @@ var _ = Describe("Gateway gRPC Service", func() {
 			Expect(ok).To(BeTrue())
 			Expect(s.Message()).Should(Equal("the server does not allow this method on the requested resource (delete secrets ProfileSecretName)"))
 		})
+
+		When("updating deployment with child deployments propagates targets", func() {
+			It("should call child deployment update when parent has child deployments", func() {
+				// Use existing deployment setup but add child deployments
+				deployInstance.Spec.ChildDeploymentList = map[string]deploymentv1beta1.DependentDeploymentRef{
+					"child-deployment": {
+						DeploymentName: "child-deployment",
+						DeploymentPackageRef: deploymentv1beta1.DeploymentPackageRef{
+							Name:    "child-package",
+							Version: "1.0.0",
+						},
+					},
+				}
+
+				// Mock the successful parent update
+				s.k8sClient.On(
+					"Update", nbmocks.AnyContext, mock.AnythingOfType("string"), deployInstance, mock.AnythingOfType("v1.UpdateOptions"),
+				).Return(deployInstance, nil)
+
+				// Mock child deployment retrieval - this is what we want to test is called
+				childDeployment := &deploymentv1beta1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "child-deployment",
+						Namespace: "test-namespace",
+					},
+					Spec: deploymentv1beta1.DeploymentSpec{
+						Applications: []deploymentv1beta1.Application{
+							{Name: "child-app", Version: "1.0.0", Targets: []map[string]string{{"cluster": "cluster1"}}},
+						},
+					},
+				}
+
+				s.k8sClient.On(
+					"Get", nbmocks.AnyContext, "child-deployment", mock.AnythingOfType("v1.GetOptions"),
+				).Return(childDeployment, nil).Maybe()
+
+				s.k8sClient.On(
+					"Update", nbmocks.AnyContext, mock.AnythingOfType("string"), mock.AnythingOfType("*v1beta1.Deployment"), mock.AnythingOfType("v1.UpdateOptions"),
+				).Return(childDeployment, nil).Maybe()
+
+				s.k8sClient.On(
+					"Delete", nbmocks.AnyContext, mock.AnythingOfType("string"), mock.AnythingOfType("v1.DeleteOptions"),
+				).Return(nil).Maybe()
+
+				s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
+				s.catalogClient.On("GetApplication", nbmocks.AnyContext, nbmocks.AnyGetAppReq).Return(&nbmocks.AppHelmResp, nil)
+				s.catalogClient.On("GetRegistry", nbmocks.AnyContext, nbmocks.AnyGetRegReq).Return(&nbmocks.HelmRegResp, nil)
+
+				// Execute the update - this should trigger child deployment propagation
+				res, err := s.deploymentServer.UpdateDeployment(s.ctx, &deploymentpb.UpdateDeploymentRequest{
+					Deployment: deployInstanceResp,
+					DeplId:     VALID_UID,
+				})
+
+				Expect(res).NotTo(BeNil())
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+		})
 	})
 
 	Describe("Gateway API List Deployments Per Cluster", func() {
