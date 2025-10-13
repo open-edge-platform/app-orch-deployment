@@ -1436,7 +1436,7 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 	// When the main deployment is updated with new clusters, ensure child deployments
 	// (dependencies) are also deployed to the same clusters
 	if len(updateInstance.Spec.ChildDeploymentList) > 0 {
-		err = s.propagateTargetsToChildDeployments(ctx, updateInstance, d)
+		err = s.propagateTargetsToChildDeployments(ctx, updateInstance)
 		if err != nil {
 			log.Warnf("failed to propagate targets to child deployments: %v", err)
 		}
@@ -1579,7 +1579,7 @@ func (s *DeploymentSvc) ListDeploymentClusters(ctx context.Context, in *deployme
 
 // propagateTargetsToChildDeployments updates child deployments (dependencies) to ensure
 // they are deployed to the same clusters as the parent deployment
-func (s *DeploymentSvc) propagateTargetsToChildDeployments(ctx context.Context, parentDeployment *deploymentv1beta1.Deployment, parentDeploymentData *Deployment) error {
+func (s *DeploymentSvc) propagateTargetsToChildDeployments(ctx context.Context, parentDeployment *deploymentv1beta1.Deployment) error {
 	// Collect all targets from parent deployment applications
 	allTargets := make([]map[string]string, 0)
 	for _, app := range parentDeployment.Spec.Applications {
