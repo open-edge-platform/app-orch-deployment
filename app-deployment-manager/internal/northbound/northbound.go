@@ -392,18 +392,33 @@ func (c *DeploymentInstance) queryFilter(ctx context.Context, labelSet []string,
 
 // Return the deployment object.
 func (c *DeploymentInstance) createDeploymentObject(ctx context.Context, s *DeploymentSvc) (*deploymentpb.Deployment, bool) {
+	deploymentMatchesFilter := len(c.checkFilters) == 0
+
+	if len(c.checkFilters) > 0 {
+		// Check all targets across all applications to see if any match (OR logic)
+		for _, app := range c.deployment.Spec.Applications {
+			if deploymentMatchesFilter {
+				break
+			}
+			for _, target := range app.Targets {
+				if c.checkFilter(target) {
+					deploymentMatchesFilter = true
+					break
+				}
+			}
+		}
+
+		if !deploymentMatchesFilter {
+			return &deploymentpb.Deployment{}, false
+		}
+	}
+
 	// Create the TargetClusters list
 	targetClustersList := make([]*deploymentpb.TargetClusters, 0)
+
 	for _, app := range c.deployment.Spec.Applications {
 		labelCheckList := app.Targets
 		for _, l := range labelCheckList {
-			if len(c.checkFilters) > 0 {
-				foundFilter := c.checkFilter(l)
-				if !foundFilter {
-					return &deploymentpb.Deployment{}, false
-				}
-			}
-
 			if _, ok := l[string(deploymentv1beta1.ClusterName)]; ok {
 				targetClustersList = append(targetClustersList, &deploymentpb.TargetClusters{
 					AppName:   app.Name,
