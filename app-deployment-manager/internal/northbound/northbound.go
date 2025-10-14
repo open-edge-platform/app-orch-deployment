@@ -392,18 +392,33 @@ func (c *DeploymentInstance) queryFilter(ctx context.Context, labelSet []string,
 
 // Return the deployment object.
 func (c *DeploymentInstance) createDeploymentObject(ctx context.Context, s *DeploymentSvc) (*deploymentpb.Deployment, bool) {
+	deploymentMatchesFilter := len(c.checkFilters) == 0
+
+	if len(c.checkFilters) > 0 {
+		// Check all targets across all applications to see if any match (OR logic)
+		for _, app := range c.deployment.Spec.Applications {
+			if deploymentMatchesFilter {
+				break
+			}
+			for _, target := range app.Targets {
+				if c.checkFilter(target) {
+					deploymentMatchesFilter = true
+					break
+				}
+			}
+		}
+
+		if !deploymentMatchesFilter {
+			return &deploymentpb.Deployment{}, false
+		}
+	}
+
 	// Create the TargetClusters list
 	targetClustersList := make([]*deploymentpb.TargetClusters, 0)
+
 	for _, app := range c.deployment.Spec.Applications {
 		labelCheckList := app.Targets
 		for _, l := range labelCheckList {
-			if len(c.checkFilters) > 0 {
-				foundFilter := c.checkFilter(l)
-				if !foundFilter {
-					return &deploymentpb.Deployment{}, false
-				}
-			}
-
 			if _, ok := l[string(deploymentv1beta1.ClusterName)]; ok {
 				targetClustersList = append(targetClustersList, &deploymentpb.TargetClusters{
 					AppName:   app.Name,
@@ -1432,6 +1447,16 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 		return nil, errors.Status(k8serrors.K8sToTypedError(err)).Err()
 	}
 
+	// Propagate targets to child deployments (dependencies)
+	// When the main deployment is updated with new clusters, ensure child deployments
+	// (dependencies) are also deployed to the same clusters
+	if len(updateInstance.Spec.ChildDeploymentList) > 0 {
+		err = s.propagateTargetsToChildDeployments(ctx, updateInstance)
+		if err != nil {
+			log.Warnf("failed to propagate targets to child deployments: %v", err)
+		}
+	}
+
 	// Need to update Owner Reference to clean up secrets. Cannot add required details during secret creation
 	// since deployment UID is required.
 	d, err = updateOwnerRefSecrets(ctx, s.k8sClient, d)
@@ -1565,4 +1590,79 @@ func (s *DeploymentSvc) ListDeploymentClusters(ctx context.Context, in *deployme
 	resp.TotalElements = utils.ToInt32Clamped(totalNumClusters)
 	utils.LogActivity(ctx, "get", "Clusters for A Deployment", "deployment name "+name, "deploy id "+UID)
 	return resp, nil
+}
+
+// propagateTargetsToChildDeployments updates child deployments (dependencies) to ensure
+// they are deployed to the same clusters as the parent deployment
+func (s *DeploymentSvc) propagateTargetsToChildDeployments(ctx context.Context, parentDeployment *deploymentv1beta1.Deployment) error {
+	// Collect all targets from parent deployment applications
+	allTargets := make([]map[string]string, 0)
+	for _, app := range parentDeployment.Spec.Applications {
+		allTargets = append(allTargets, app.Targets...)
+	}
+
+	// Remove duplicate targets
+	uniqueTargets := make([]map[string]string, 0)
+	targetSet := make(map[string]bool)
+	for _, target := range allTargets {
+		clusterName := target[string(deploymentv1beta1.ClusterName)]
+		if !targetSet[clusterName] {
+			targetSet[clusterName] = true
+			uniqueTargets = append(uniqueTargets, target)
+		}
+	}
+
+	log.Infof("Propagating targets to child deployments: %d unique clusters", len(uniqueTargets))
+
+	// Update each child deployment to include all targets
+	for childName := range parentDeployment.Spec.ChildDeploymentList {
+		log.Infof("Updating child deployment: %s", childName)
+
+		// Get the child deployment
+		childDeployment, err := s.crClient.Deployments(parentDeployment.Namespace).Get(ctx, childName, metav1.GetOptions{})
+		if err != nil {
+			log.Warnf("Failed to get child deployment %s: %v", childName, err)
+			continue
+		}
+
+		// Update targets for all applications in the child deployment
+		updated := false
+		for i := range childDeployment.Spec.Applications {
+			app := &childDeployment.Spec.Applications[i]
+
+			// Add missing targets to the child application
+			for _, newTarget := range uniqueTargets {
+				targetExists := false
+				newClusterName := newTarget[string(deploymentv1beta1.ClusterName)]
+
+				// Check if this target already exists
+				for _, existingTarget := range app.Targets {
+					existingClusterName := existingTarget[string(deploymentv1beta1.ClusterName)]
+					if existingClusterName == newClusterName {
+						targetExists = true
+						break
+					}
+				}
+
+				// Add the target if it doesn't exist
+				if !targetExists {
+					app.Targets = append(app.Targets, newTarget)
+					updated = true
+					log.Infof("Added cluster %s to child app %s", newClusterName, app.Name)
+				}
+			}
+		}
+
+		// Update the child deployment if targets were modified
+		if updated {
+			_, err = s.crClient.Deployments(parentDeployment.Namespace).Update(ctx, childName, childDeployment, metav1.UpdateOptions{})
+			if err != nil {
+				log.Warnf("Failed to update child deployment %s: %v", childName, err)
+			} else {
+				log.Infof("Successfully updated child deployment %s with new targets", childName)
+			}
+		}
+	}
+
+	return nil
 }
