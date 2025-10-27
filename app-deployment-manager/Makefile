@@ -88,7 +88,6 @@ PKG_LIST := ./cmd/... ./controllers/... ./webhooks/... ./pkg/... ./internal/...
 
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 ENVTEST_K8S_VERSION = 1.25.0
-ENVTEST_VERSION = v0.0.0-20241009054333-7d9c9cc4ea7d
 OPA_FILE_PATH ?= deployment/charts/app-deployment-manager/files/openpolicyagent
 OPA_IMAGE_VER       = 1.5.0-static
 GOLANG_GOCOV_VERSION := latest
@@ -167,7 +166,7 @@ opa-test: docker-opa ## Test OPA policies
 
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary
 $(ENVTEST): $(LOCALBIN)
-	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@$(ENVTEST_VERSION)
+	test -s $(LOCALBIN)/setup-envtest || GOTOOLCHAIN=go1.25.0 GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
 test: manifests fmt vet envtest opa-test ## Run tests
 	go install github.com/axw/gocov/gocov@${GOLANG_GOCOV_VERSION}
