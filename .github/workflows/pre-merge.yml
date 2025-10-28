@@ -20,14 +20,14 @@ jobs:
     outputs:
       filtered_projects: ${{ steps.filter-changes.outputs.filtered_projects }}
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
         with:
           persist-credentials: false
       - name: "Verify Branch Name"
-        uses: open-edge-platform/orch-ci/verify-branch-name@a7adb596be29b5b9f3a7053bed637d20875ef1df # 0.1.54
+        uses: open-edge-platform/orch-ci/verify-branch-name@a7adb596be29b5b9f3a7053bed637d20875ef1df  # 0.1.54
       - name: "Discover Changed Subfolders"
         id: discover-changes
-        uses: open-edge-platform/orch-ci/discover-changed-subfolders@a7adb596be29b5b9f3a7053bed637d20875ef1df # 0.1.54
+        uses: open-edge-platform/orch-ci/discover-changed-subfolders@a7adb596be29b5b9f3a7053bed637d20875ef1df  # 0.1.54
       - name: "Filter Out Unwanted Changed Subfolders"
         id: filter-changes
         env:
@@ -43,7 +43,7 @@ jobs:
       fail-fast: false
       matrix:
         project_folder: ${{ fromJson(needs.pre-checks.outputs.filtered_projects) }}
-    uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@a7adb596be29b5b9f3a7053bed637d20875ef1df # 0.1.54
+    uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@a7adb596be29b5b9f3a7053bed637d20875ef1df  # 0.1.54
     with:
       run_version_check: true
       run_dep_version_check: false
@@ -66,10 +66,10 @@ jobs:
             PRE_MERGE_PIPELINE_RESULT: ${{ needs.pre-merge-pipeline.result }}
           run: |
             echo "Pre-merge pipeline result: $PRE_MERGE_PIPELINE_RESULT"
-            
+
             if [ "$PRE_MERGE_PIPELINE_RESULT" == "success" ] || [ "$PRE_MERGE_PIPELINE_RESULT" == "skipped" ]; then
               echo "Pre-merge check passed successfully."
             else
               echo "Pre-merge checks failed. PR can't get merged"
               exit 1
-            fi  
+            fi

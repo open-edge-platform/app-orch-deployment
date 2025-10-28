@@ -7,7 +7,7 @@ on:
   pull_request:
     types: [labeled]
   schedule:
-    - cron: "0 0 * * *" # Run every day at midnight
+    - cron: "0 0 * * *"  # Run every day at midnight
   workflow_dispatch:  # Run on manual trigger
     inputs:
       run-adm:
@@ -33,4 +33,4 @@ jobs:
       component: app-deployment-manager
       use-enic: true
       emf-branch: ${{ inputs.emf-branch || '51d847c5b3a831454981f5fce7cecbbe1ade5e87' }}
-    secrets: inherit # zizmor: ignore[secrets-inherit]
+    secrets: inherit  # zizmor: ignore[secrets-inherit]
