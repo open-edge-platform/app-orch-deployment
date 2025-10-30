@@ -714,6 +714,8 @@ func updatePbValue(s *structpb.Struct, structKeys []string, inValInt int, inValS
 	return inValInt, inValStr
 }
 
+// Mask secret values in the structpb.Struct. Modifies the function argument s in place.
+// Returns the original secret value.
 func maskPbValue(s *structpb.Struct, structKeys []string, inValStr string, currentDepth int) string {
 	// Check if the current depth exceeds the maximum depth
 	if currentDepth > maxDepth {
@@ -744,6 +746,7 @@ func maskPbValue(s *structpb.Struct, structKeys []string, inValStr string, curre
 	return inValStr
 }
 
+// Remove all items in list2 from list1 and return the result.
 func cleanUpList(list1, list2 []string) []string {
 	outList := []string{}
 	for _, item1 := range list1 {
@@ -761,6 +764,7 @@ func cleanUpList(list1, list2 []string) []string {
 	return outList
 }
 
+// Get all keys in the structpb.Struct including nested keys.
 func getAllPbStructKeys(s *structpb.Struct, emptyValKeys []string, currentDepth int) ([]string, []string) {
 	var keys []string
 	// Check if the current depth exceeds the maximum depth
@@ -827,6 +831,9 @@ func trimAllPbStructStrings(s *structpb.Struct, currentDepth int) {
 	}
 }
 
+// Check parameter template values for mandatory and secret keys.
+// Masks the secrets and puts the original secrets into ParameterTemplateSecrets map.
+// Returns error if any mandatory values are missing.
 func checkParameterTemplate(d *Deployment, allOverrideKeys map[string][]string) (*Deployment, error) {
 	var notFoundApp []string
 	var OverrideValuesNotMasked []*deploymentpb.OverrideValues
