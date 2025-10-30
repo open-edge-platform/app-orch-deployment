@@ -154,8 +154,9 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 
 			if (val.Values) != nil {
 				var emptyValKeys []string
-				// Map each override values with app name to enforce mandatory parameter template values
+				// Remove any leading or trailing spaces in all string values
 				trimAllPbStructStrings(val.Values, 0)
+				// Map each override values with app name to enforce mandatory parameter template values
 				allOverrideKeys[val.AppName], _ = getAllPbStructKeys(val.Values, emptyValKeys, 0)
 			}
 		}
