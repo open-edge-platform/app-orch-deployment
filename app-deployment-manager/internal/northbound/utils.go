@@ -799,6 +799,34 @@ func getAllPbStructKeys(s *structpb.Struct, emptyValKeys []string, currentDepth 
 	return keys, emptyValKeys
 }
 
+// Trim spaces from all string values in the structpb.Struct. Moddifies the function argument in place.
+func trimAllPbStructStrings(s *structpb.Struct, currentDepth int) {
+	// Check if the current depth exceeds the maximum depth
+	if currentDepth > maxDepth {
+		fmt.Println("Maximum recursion depth reached")
+		return
+	}
+
+	for k := range s.Fields {
+		v := s.Fields[k]
+		if v.Kind == nil {
+			continue
+		}
+
+		switch v.Kind.(type) {
+		case *structpb.Value_StringValue:
+			if strVal := v.GetStringValue(); strVal != "" {
+				trimmed := strings.TrimSpace(strVal)
+				if trimmed != strVal {
+					s.Fields[k] = structpb.NewStringValue(trimmed)
+				}
+			}
+		case *structpb.Value_StructValue:
+			trimAllPbStructStrings(v.GetStructValue(), currentDepth+1)
+		}
+	}
+}
+
 func checkParameterTemplate(d *Deployment, allOverrideKeys map[string][]string) (*Deployment, error) {
 	var notFoundApp []string
 	var OverrideValuesNotMasked []*deploymentpb.OverrideValues
