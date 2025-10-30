@@ -1031,6 +1031,14 @@ func configureRsProxy(ctx context.Context, s *kubernetes.Clientset, nsName strin
 		return err
 	}
 
+	// Create rolebinding for fleet-default namespace since Fleet creates external secrets there
+	fleetDefaultNs := "fleet-default"
+	err = utils.CreateRoleBinding(ctx, s, fleetDefaultNs, rbName, remoteNsName)
+	if err != nil {
+		utils.LogActivity(ctx, "create", "ADM", "cannot create rolebinding "+rbName+" for fleet-default namespace "+fmt.Sprintf("%v", err))
+		return err
+	}
+
 	return nil
 }
 
