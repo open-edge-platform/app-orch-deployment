@@ -221,6 +221,8 @@ traefikReverseProxy:
   # -- tlsOption is the name of the Traefik option for handling TLS or mTLS connections.
   tlsOption: gateway-tls
 
+traefikApiGroup: "traefik.containo.us/v1alpha1"
+
 openidc:
   # -- the endpoint of a Keycloak Realm e.g. http://keycloak/realms/master
   issuer: "http://platform-keycloak.orch-platform.svc/realms/master"
