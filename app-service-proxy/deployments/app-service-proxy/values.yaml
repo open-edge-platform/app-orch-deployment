@@ -185,6 +185,8 @@ traefik:
   matchRouteSrc: Host(`app-service-proxy.kind.internal`) && PathPrefix(`/app-service-proxy`)
   tlsOption: gateway-tls
 
+traefikApiGroup: "traefik.containo.us/v1alpha1"
+
 ## @section OIDC Parameters
 ##
 
