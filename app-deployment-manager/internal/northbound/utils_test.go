@@ -585,5 +585,32 @@ var _ = Describe("Gateway gRPC Service", func() {
 			// Verify the updated slice has the item removed
 			Expect(updatedItems).To(Equal([]string{"item1", "item2", "item4"}))
 		})
+
+		It("removes leading and trailing spaces from all string fields in a structpb.Struct", func() {
+			// Create a struct with leading and trailing spaces
+			input := &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					"field1": structpb.NewStringValue("  value1  "),
+					"field2": structpb.NewStringValue("value2"),
+					"nested": structpb.NewStructValue(&structpb.Struct{
+						Fields: map[string]*structpb.Value{
+							"subfield1": structpb.NewStringValue("  subvalue1  "),
+							"subfield2": structpb.NewStringValue("subvalue2"),
+						},
+					}),
+				},
+			}
+
+			// Call the trimming function
+			trimAllPbStructStrings(input, 0)
+
+			// Verify that spaces have been trimmed
+			Expect(input.Fields["field1"].GetStringValue()).To(Equal("value1"))
+			Expect(input.Fields["field2"].GetStringValue()).To(Equal("value2"))
+
+			nested := input.Fields["nested"].GetStructValue()
+			Expect(nested.Fields["subfield1"].GetStringValue()).To(Equal("subvalue1"))
+			Expect(nested.Fields["subfield2"].GetStringValue()).To(Equal("subvalue2"))
+		})
 	})
 })
