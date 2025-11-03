@@ -20,7 +20,7 @@ spec:
     {{- end }}
 ---
 {{- if .Values.traefik.enabled -}}
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: {{ .Values.traefikApiGroup }}
 kind: Middleware
 metadata:
   name: {{ include "app-service-proxy.fullname" . }}
@@ -30,7 +30,7 @@ spec:
     customRequestHeaders:
       Host: {{ include "app-service-proxy.fullname" . }}.{{ .Release.Namespace }}.svc
 ---
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: {{ .Values.traefikApiGroup }}
 kind: IngressRoute
 metadata:
   name: {{ include "app-service-proxy.fullname" . }}
@@ -57,7 +57,7 @@ spec:
       namespace: {{ .Values.traefik.gatewayNamespace }}
 {{- end }}
 ---
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: {{ .Values.traefikApiGroup }}
 kind: IngressRoute
 metadata:
   name: {{ include "app-service-proxy.fullname" . }}-src

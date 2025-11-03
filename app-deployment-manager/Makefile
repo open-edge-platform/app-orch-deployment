@@ -166,7 +166,7 @@ opa-test: docker-opa ## Test OPA policies
 
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary
 $(ENVTEST): $(LOCALBIN)
-	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+	test -s $(LOCALBIN)/setup-envtest || GOTOOLCHAIN=go1.25.0 GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
 test: manifests fmt vet envtest opa-test ## Run tests
 	go install github.com/axw/gocov/gocov@${GOLANG_GOCOV_VERSION}
@@ -184,7 +184,8 @@ component-test: common-component-test ## Run component tests
 
 go-fuzz: FUZZ_FUNCS ?= FuzzCreateDeployment FuzzListDeployments$$ FuzzGetDeployment FuzzDeleteDeployment \
 	FuzzUpdateDeployment FuzzDeploymentsStatus FuzzListDeploymentsPerCluster FuzzListDeploymentClusters \
-	FuzzGetCluster FuzzListClusters FuzzGetKubeConfig FuzzGetAppNamespace FuzzRESTRouter
+	FuzzGetCluster FuzzListClusters FuzzGetKubeConfig FuzzGetAppNamespace FuzzRESTRouter \
+	FuzzNorthboundEndpoints FuzzNorthboundEdgeCases
 
 go-fuzz: FUZZ_FUNC_PATH := ./internal/northbound/fuzztests
 go-fuzz: common-go-fuzz-test ## Run go fuzz tests
