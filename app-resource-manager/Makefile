@@ -100,7 +100,8 @@ proto-generate: common-buf-update common-buf-generate merge-connectrpc-openapi c
 
 merge-connectrpc-openapi: ## Merge ConnectRPC individual OpenAPI files into consolidated specification
 	@echo "Merging ConnectRPC OpenAPI files..."
-	@python3 scripts/merge_openapi.py \
+	@set +u; . ./venv_app-resource-manager/bin/activate; set -u; \
+	python scripts/merge_openapi.py \
 		"api/nbi/v2/spec/resource/v2" \
 		"api/nbi/v2/spec/v2/openapi.yaml" \
 		"App Resource Manager API" \

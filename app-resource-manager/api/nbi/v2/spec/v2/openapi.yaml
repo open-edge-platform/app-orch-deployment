@@ -4,54 +4,6 @@ info:
   description: App Resource Manager service providing operations for resource management
   version: 1.0.0
 paths:
-  /resource.orchestrator.apis/v2/workloads/pods/{cluster_id}/{namespace}/{pod_name}/delete:
-    put:
-      tags:
-      - resource.v2.PodService
-      summary: DeletePod
-      description: Deletes the pod for an application in a cluster.
-      operationId: resource.v2.PodService.DeletePod
-      parameters:
-      - name: cluster_id
-        in: path
-        description: Cluster ID
-        required: true
-        schema:
-          type: string
-          title: cluster_id
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: Cluster ID
-      - name: namespace
-        in: path
-        description: Namespace that the pod is running on.
-        required: true
-        schema:
-          type: string
-          title: namespace
-          maxLength: 253
-          minLength: 1
-          pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
-          description: Namespace that the pod is running on.
-      - name: pod_name
-        in: path
-        description: Name of the pod.
-        required: true
-        schema:
-          type: string
-          title: pod_name
-          maxLength: 253
-          minLength: 1
-          pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
-          description: Name of the pod.
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/resource.v2.DeletePodResponse'
   /resource.orchestrator.apis/v2/endpoints/{app_id}/{cluster_id}:
     get:
       tags:
@@ -310,161 +262,56 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/resource.v2.ListAppWorkloadsResponse'
-components:
-  schemas:
-    resource.v2.DeletePodRequest:
-      type: object
-      properties:
-        clusterId:
+  /resource.orchestrator.apis/v2/workloads/pods/{cluster_id}/{namespace}/{pod_name}/delete:
+    put:
+      tags:
+      - resource.v2.PodService
+      summary: DeletePod
+      description: Deletes the pod for an application in a cluster.
+      operationId: resource.v2.PodService.DeletePod
+      parameters:
+      - name: cluster_id
+        in: path
+        description: Cluster ID
+        required: true
+        schema:
           type: string
           title: cluster_id
           maxLength: 40
           minLength: 1
           pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
           description: Cluster ID
-        namespace:
+      - name: namespace
+        in: path
+        description: Namespace that the pod is running on.
+        required: true
+        schema:
           type: string
           title: namespace
           maxLength: 253
           minLength: 1
           pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
           description: Namespace that the pod is running on.
-        podName:
+      - name: pod_name
+        in: path
+        description: Name of the pod.
+        required: true
+        schema:
           type: string
           title: pod_name
           maxLength: 253
           minLength: 1
           pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
           description: Name of the pod.
-      title: DeletePodRequest
-      required:
-      - clusterId
-      - namespace
-      - podName
-      additionalProperties: false
-      description: Request message for DeletePod method
-    resource.v2.DeletePodResponse:
-      type: object
-      title: DeletePodResponse
-      additionalProperties: false
-      description: Response message for the DeletePod method.
-    google.protobuf.Timestamp:
-      type: string
-      example: '2023-01-15T01:30:15.01Z'
-      format: date-time
-      description: "A Timestamp represents a point in time independent of any time zone or local\n calendar, encoded as a\
-        \ count of seconds and fractions of seconds at\n nanosecond resolution. The count is relative to an epoch at UTC midnight\
-        \ on\n January 1, 1970, in the proleptic Gregorian calendar which extends the\n Gregorian calendar backwards to year\
-        \ one.\n\n All minutes are 60 seconds long. Leap seconds are \"smeared\" so that no leap\n second table is needed\
-        \ for interpretation, using a [24-hour linear\n smear](https://developers.google.com/time/smear).\n\n The range is\
-        \ from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z. By\n restricting to that range, we ensure that we can\
-        \ convert to and from [RFC\n 3339](https://www.ietf.org/rfc/rfc3339.txt) date strings.\n\n # Examples\n\n Example\
-        \ 1: Compute Timestamp from POSIX `time()`.\n\n     Timestamp timestamp;\n     timestamp.set_seconds(time(NULL));\n\
-        \     timestamp.set_nanos(0);\n\n Example 2: Compute Timestamp from POSIX `gettimeofday()`.\n\n     struct timeval\
-        \ tv;\n     gettimeofday(&tv, NULL);\n\n     Timestamp timestamp;\n     timestamp.set_seconds(tv.tv_sec);\n     timestamp.set_nanos(tv.tv_usec\
-        \ * 1000);\n\n Example 3: Compute Timestamp from Win32 `GetSystemTimeAsFileTime()`.\n\n     FILETIME ft;\n     GetSystemTimeAsFileTime(&ft);\n\
-        \     UINT64 ticks = (((UINT64)ft.dwHighDateTime) << 32) | ft.dwLowDateTime;\n\n     // A Windows tick is 100 nanoseconds.\
-        \ Windows epoch 1601-01-01T00:00:00Z\n     // is 11644473600 seconds before Unix epoch 1970-01-01T00:00:00Z.\n   \
-        \  Timestamp timestamp;\n     timestamp.set_seconds((INT64) ((ticks / 10000000) - 11644473600LL));\n     timestamp.set_nanos((INT32)\
-        \ ((ticks % 10000000) * 100));\n\n Example 4: Compute Timestamp from Java `System.currentTimeMillis()`.\n\n     long\
-        \ millis = System.currentTimeMillis();\n\n     Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)\n\
-        \         .setNanos((int) ((millis % 1000) * 1000000)).build();\n\n Example 5: Compute Timestamp from Java `Instant.now()`.\n\
-        \n     Instant now = Instant.now();\n\n     Timestamp timestamp =\n         Timestamp.newBuilder().setSeconds(now.getEpochSecond())\n\
-        \             .setNanos(now.getNano()).build();\n\n Example 6: Compute Timestamp from current time in Python.\n\n\
-        \     timestamp = Timestamp()\n     timestamp.GetCurrentTime()\n\n # JSON Mapping\n\n In JSON format, the Timestamp\
-        \ type is encoded as a string in the\n [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format. That is, the\n format\
-        \ is \"{year}-{month}-{day}T{hour}:{min}:{sec}[.{frac_sec}]Z\"\n where {year} is always expressed using four digits\
-        \ while {month}, {day},\n {hour}, {min}, and {sec} are zero-padded to two digits each. The fractional\n seconds, which\
-        \ can go up to 9 digits (i.e. up to 1 nanosecond resolution),\n are optional. The \"Z\" suffix indicates the timezone\
-        \ (\"UTC\"); the timezone\n is required. A proto3 JSON serializer should always use UTC (as indicated by\n \"Z\")\
-        \ when printing the Timestamp type and a proto3 JSON parser should be\n able to accept both UTC and other timezones\
-        \ (as indicated by an offset).\n\n For example, \"2017-01-15T01:30:15.01Z\" encodes 15.01 seconds past\n 01:30 UTC\
-        \ on January 15, 2017.\n\n In JavaScript, one can convert a Date object to this format using the\n standard\n [toISOString()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString)\n\
-        \ method. In Python, a standard `datetime.datetime` object can be converted\n to this format using\n [`strftime`](https://docs.python.org/2/library/time.html#time.strftime)\
-        \ with\n the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in Java, one can use\n the Joda Time's [`ISODateTimeFormat.dateTime()`](\n\
-        \ http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime()\n ) to obtain a\
-        \ formatter capable of generating timestamps in this format."
-    resource.v2.AdminStatus:
-      type: object
-      properties:
-        state:
-          title: state
-          description: State information
-          $ref: '#/components/schemas/resource.v2.AdminStatus.State'
-      title: AdminStatus
-      additionalProperties: false
-      description: Represents the associated VirtualMachineInstance's state, either created (up state) or not (down state).
-    resource.v2.AdminStatus.State:
-      type: string
-      title: State
-      enum:
-      - STATE_UNSPECIFIED
-      - STATE_UP
-      - STATE_DOWN
-    resource.v2.AppWorkload:
-      type: object
-      allOf:
-      - properties:
-          type:
-            title: type
-            description: Application workload type, e.g. virtual machine and pod.
-            $ref: '#/components/schemas/resource.v2.AppWorkload.Type'
-          id:
-            type: string
-            title: id
-            format: uuid
-            description: Workload UUID
-          name:
-            type: string
-            title: name
-            maxLength: 253
-            minLength: 1
-            pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
-            description: Workload name
-          namespace:
-            type: string
-            title: namespace
-            description: Namespace where the workload is created.
-            readOnly: true
-          createTime:
-            title: create_time
-            description: The time when the workload is created.
-            readOnly: true
-            $ref: '#/components/schemas/google.protobuf.Timestamp'
-          workloadReady:
-            type: boolean
-            title: workload_ready
-            description: Ready status to determines if a workload is fully functional or not.
-            readOnly: true
-      - oneOf:
-        - properties:
-            pod:
-              title: pod
-              $ref: '#/components/schemas/resource.v2.Pod'
-          title: pod
-          required:
-          - pod
-        - properties:
-            virtualMachine:
-              title: virtual_machine
-              $ref: '#/components/schemas/resource.v2.VirtualMachine'
-          title: virtual_machine
-          required:
-          - virtualMachine
-      title: AppWorkload
-      required:
-      - id
-      - name
-      additionalProperties: false
-      description: "AppWorkload a high-level abstraction for representing different types of application workloads.\n The\
-        \ application workloads can be virtual machine-based or container-based."
-    resource.v2.AppWorkload.Type:
-      type: string
-      title: Type
-      enum:
-      - TYPE_UNSPECIFIED
-      - TYPE_VIRTUAL_MACHINE
-      - TYPE_POD
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resource.v2.DeletePodResponse'
+components:
+  schemas:
     resource.v2.Container:
       type: object
       properties:
@@ -603,6 +450,123 @@ components:
       - STATE_RUNNING
       - STATE_SUCCEEDED
       - STATE_FAILED
+    google.protobuf.Timestamp:
+      type: string
+      example: '2023-01-15T01:30:15.01Z'
+      format: date-time
+      description: "A Timestamp represents a point in time independent of any time zone or local\n calendar, encoded as a\
+        \ count of seconds and fractions of seconds at\n nanosecond resolution. The count is relative to an epoch at UTC midnight\
+        \ on\n January 1, 1970, in the proleptic Gregorian calendar which extends the\n Gregorian calendar backwards to year\
+        \ one.\n\n All minutes are 60 seconds long. Leap seconds are \"smeared\" so that no leap\n second table is needed\
+        \ for interpretation, using a [24-hour linear\n smear](https://developers.google.com/time/smear).\n\n The range is\
+        \ from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z. By\n restricting to that range, we ensure that we can\
+        \ convert to and from [RFC\n 3339](https://www.ietf.org/rfc/rfc3339.txt) date strings.\n\n # Examples\n\n Example\
+        \ 1: Compute Timestamp from POSIX `time()`.\n\n     Timestamp timestamp;\n     timestamp.set_seconds(time(NULL));\n\
+        \     timestamp.set_nanos(0);\n\n Example 2: Compute Timestamp from POSIX `gettimeofday()`.\n\n     struct timeval\
+        \ tv;\n     gettimeofday(&tv, NULL);\n\n     Timestamp timestamp;\n     timestamp.set_seconds(tv.tv_sec);\n     timestamp.set_nanos(tv.tv_usec\
+        \ * 1000);\n\n Example 3: Compute Timestamp from Win32 `GetSystemTimeAsFileTime()`.\n\n     FILETIME ft;\n     GetSystemTimeAsFileTime(&ft);\n\
+        \     UINT64 ticks = (((UINT64)ft.dwHighDateTime) << 32) | ft.dwLowDateTime;\n\n     // A Windows tick is 100 nanoseconds.\
+        \ Windows epoch 1601-01-01T00:00:00Z\n     // is 11644473600 seconds before Unix epoch 1970-01-01T00:00:00Z.\n   \
+        \  Timestamp timestamp;\n     timestamp.set_seconds((INT64) ((ticks / 10000000) - 11644473600LL));\n     timestamp.set_nanos((INT32)\
+        \ ((ticks % 10000000) * 100));\n\n Example 4: Compute Timestamp from Java `System.currentTimeMillis()`.\n\n     long\
+        \ millis = System.currentTimeMillis();\n\n     Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)\n\
+        \         .setNanos((int) ((millis % 1000) * 1000000)).build();\n\n Example 5: Compute Timestamp from Java `Instant.now()`.\n\
+        \n     Instant now = Instant.now();\n\n     Timestamp timestamp =\n         Timestamp.newBuilder().setSeconds(now.getEpochSecond())\n\
+        \             .setNanos(now.getNano()).build();\n\n Example 6: Compute Timestamp from current time in Python.\n\n\
+        \     timestamp = Timestamp()\n     timestamp.GetCurrentTime()\n\n # JSON Mapping\n\n In JSON format, the Timestamp\
+        \ type is encoded as a string in the\n [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format. That is, the\n format\
+        \ is \"{year}-{month}-{day}T{hour}:{min}:{sec}[.{frac_sec}]Z\"\n where {year} is always expressed using four digits\
+        \ while {month}, {day},\n {hour}, {min}, and {sec} are zero-padded to two digits each. The fractional\n seconds, which\
+        \ can go up to 9 digits (i.e. up to 1 nanosecond resolution),\n are optional. The \"Z\" suffix indicates the timezone\
+        \ (\"UTC\"); the timezone\n is required. A proto3 JSON serializer should always use UTC (as indicated by\n \"Z\")\
+        \ when printing the Timestamp type and a proto3 JSON parser should be\n able to accept both UTC and other timezones\
+        \ (as indicated by an offset).\n\n For example, \"2017-01-15T01:30:15.01Z\" encodes 15.01 seconds past\n 01:30 UTC\
+        \ on January 15, 2017.\n\n In JavaScript, one can convert a Date object to this format using the\n standard\n [toISOString()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString)\n\
+        \ method. In Python, a standard `datetime.datetime` object can be converted\n to this format using\n [`strftime`](https://docs.python.org/2/library/time.html#time.strftime)\
+        \ with\n the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in Java, one can use\n the Joda Time's [`ISODateTimeFormat.dateTime()`](\n\
+        \ http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime()\n ) to obtain a\
+        \ formatter capable of generating timestamps in this format."
+    resource.v2.AdminStatus:
+      type: object
+      properties:
+        state:
+          title: state
+          description: State information
+          $ref: '#/components/schemas/resource.v2.AdminStatus.State'
+      title: AdminStatus
+      additionalProperties: false
+      description: Represents the associated VirtualMachineInstance's state, either created (up state) or not (down state).
+    resource.v2.AdminStatus.State:
+      type: string
+      title: State
+      enum:
+      - STATE_UNSPECIFIED
+      - STATE_UP
+      - STATE_DOWN
+    resource.v2.AppWorkload:
+      type: object
+      allOf:
+      - properties:
+          type:
+            title: type
+            description: Application workload type, e.g. virtual machine and pod.
+            $ref: '#/components/schemas/resource.v2.AppWorkload.Type'
+          id:
+            type: string
+            title: id
+            format: uuid
+            description: Workload UUID
+          name:
+            type: string
+            title: name
+            maxLength: 253
+            minLength: 1
+            pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
+            description: Workload name
+          namespace:
+            type: string
+            title: namespace
+            description: Namespace where the workload is created.
+            readOnly: true
+          createTime:
+            title: create_time
+            description: The time when the workload is created.
+            readOnly: true
+            $ref: '#/components/schemas/google.protobuf.Timestamp'
+          workloadReady:
+            type: boolean
+            title: workload_ready
+            description: Ready status to determines if a workload is fully functional or not.
+            readOnly: true
+      - oneOf:
+        - properties:
+            pod:
+              title: pod
+              $ref: '#/components/schemas/resource.v2.Pod'
+          title: pod
+          required:
+          - pod
+        - properties:
+            virtualMachine:
+              title: virtual_machine
+              $ref: '#/components/schemas/resource.v2.VirtualMachine'
+          title: virtual_machine
+          required:
+          - virtualMachine
+      title: AppWorkload
+      required:
+      - id
+      - name
+      additionalProperties: false
+      description: "AppWorkload a high-level abstraction for representing different types of application workloads.\n The\
+        \ application workloads can be virtual machine-based or container-based."
+    resource.v2.AppWorkload.Type:
+      type: string
+      title: Type
+      enum:
+      - TYPE_UNSPECIFIED
+      - TYPE_VIRTUAL_MACHINE
+      - TYPE_POD
     resource.v2.VirtualMachine:
       type: object
       properties:
@@ -718,6 +682,36 @@ components:
       title: Fqdn
       additionalProperties: false
       description: Fully qualified domain name.
+    resource.v2.Port:
+      type: object
+      properties:
+        name:
+          type: string
+          title: name
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: Port name
+          readOnly: true
+        value:
+          type: integer
+          title: value
+          format: int32
+          description: Port value
+          readOnly: true
+        protocol:
+          type: string
+          title: protocol
+          description: Protocol for a port.
+          readOnly: true
+        serviceProxyUrl:
+          type: string
+          title: service_proxy_url
+          description: Service proxy URL for a port.
+          readOnly: true
+      title: Port
+      additionalProperties: false
+      description: Port information
     resource.v2.ListAppEndpointsRequest:
       type: object
       properties:
@@ -755,36 +749,6 @@ components:
       title: ListAppEndpointsResponse
       additionalProperties: false
       description: Response message for the ListAppEndpoints method.
-    resource.v2.Port:
-      type: object
-      properties:
-        name:
-          type: string
-          title: name
-          maxLength: 40
-          minLength: 1
-          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
-          description: Port name
-          readOnly: true
-        value:
-          type: integer
-          title: value
-          format: int32
-          description: Port value
-          readOnly: true
-        protocol:
-          type: string
-          title: protocol
-          description: Protocol for a port.
-          readOnly: true
-        serviceProxyUrl:
-          type: string
-          title: service_proxy_url
-          description: Service proxy URL for a port.
-          readOnly: true
-      title: Port
-      additionalProperties: false
-      description: Port information
     resource.v2.GetVNCRequest:
       type: object
       properties:
@@ -963,9 +927,43 @@ components:
       title: ListAppWorkloadsResponse
       additionalProperties: false
       description: Response message for the ListAppWorkloadsResponse method.
+    resource.v2.DeletePodRequest:
+      type: object
+      properties:
+        clusterId:
+          type: string
+          title: cluster_id
+          maxLength: 40
+          minLength: 1
+          pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+          description: Cluster ID
+        namespace:
+          type: string
+          title: namespace
+          maxLength: 253
+          minLength: 1
+          pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
+          description: Namespace that the pod is running on.
+        podName:
+          type: string
+          title: pod_name
+          maxLength: 253
+          minLength: 1
+          pattern: ^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$
+          description: Name of the pod.
+      title: DeletePodRequest
+      required:
+      - clusterId
+      - namespace
+      - podName
+      additionalProperties: false
+      description: Request message for DeletePod method
+    resource.v2.DeletePodResponse:
+      type: object
+      title: DeletePodResponse
+      additionalProperties: false
+      description: Response message for the DeletePod method.
 tags:
-- name: resource.v2.PodService
-  description: Provides API to manage a pod workload such as deleting a pod.
 - name: resource.v2.EndpointsService
   description: Provides API to list endpoints.
 - name: resource.v2.VirtualMachineService
@@ -974,3 +972,5 @@ tags:
 - name: resource.v2.AppWorkloadService
   description: Provides API endpoints for listing and lifecycle management of workloads, including virtual machines and container-based
     workloads.
+- name: resource.v2.PodService
+  description: Provides API to manage a pod workload such as deleting a pod.
