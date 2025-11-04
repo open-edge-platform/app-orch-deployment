@@ -29,9 +29,9 @@ func (s *TestSuite) ensureVMState(appID string, workloadID string, desiredState 
 	}
 
 	// Find the specific workload by ID in the list of workloads
-	var targetWorkload *armClient.AppWorkload
+	var targetWorkload *armClient.ResourceV2AppWorkload
 	for _, wl := range *appWorkloads {
-		if wl.Id == workloadID {
+		if wl.Id.String() == workloadID {
 			targetWorkload = &wl
 			break
 		}
@@ -43,7 +43,11 @@ func (s *TestSuite) ensureVMState(appID string, workloadID string, desiredState 
 	}
 
 	// Check if VM is already in the desired state to avoid unnecessary operations
-	currState := string(*targetWorkload.VirtualMachine.Status.State)
+	vm, err := targetWorkload.AsResourceV2AppWorkload1()
+	if err != nil {
+		return err
+	}
+	currState := string(*vm.VirtualMachine.Status.State)
 	if currState == desiredState {
 		// VM already in desired state, do nothing
 		return nil
@@ -123,10 +127,10 @@ func (s *TestSuite) TestGetVNC() {
 		s.Assert().Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		for _, appWorkload := range *appWorkloads {
-			retCode, err = utils.GetVNC(s.ArmClient, appID, appWorkload.Id)
+			retCode, err = utils.GetVNC(s.ArmClient, appID, appWorkload.Id.String())
 			s.Equal(retCode, 200)
 			s.NoError(err)
-			s.T().Logf("get VM pod %s\n", appWorkload.Name)
+			s.T().Logf("get VM pod %s\n", *appWorkload.Name)
 		}
 	}
 }
@@ -149,7 +153,7 @@ func (s *TestSuite) TestVMStart() {
 
 		for _, appWorkload := range *appWorkloads {
 			// Perform the start action, ensuring VM is first stopped, and should end up running
-			s.performVMAction(appID, appWorkload.Id, appWorkload.Name, "start", VMStopped, VMRunning)
+			s.performVMAction(appID, appWorkload.Id.String(), *appWorkload.Name, "start", VMStopped, VMRunning)
 		}
 	}
 }
@@ -172,7 +176,7 @@ func (s *TestSuite) TestVMStop() {
 
 		for _, appWorkload := range *appWorkloads {
 			// Perform the stop action, ensuring VM is first running, and should end up stopped
-			s.performVMAction(appID, appWorkload.Id, appWorkload.Name, "stop", VMRunning, VMStopped)
+			s.performVMAction(appID, appWorkload.Id.String(), *appWorkload.Name, "stop", VMRunning, VMStopped)
 		}
 	}
 }
@@ -195,9 +199,11 @@ func (s *TestSuite) TestVMRestart() {
 
 		for _, appWorkload := range *appWorkloads {
 			// For restart, we need to ensure it's already running and check if it's still running after
-			currState := string(*appWorkload.VirtualMachine.Status.State)
+			vm, err := appWorkload.AsResourceV2AppWorkload1()
+			s.NoError(err)
+			currState := string(*vm.VirtualMachine.Status.State)
 			// Perform the restart action, ensuring VM is first running, and should maintain the same state
-			s.performVMAction(appID, appWorkload.Id, appWorkload.Name, "restart", VMRunning, currState)
+			s.performVMAction(appID, appWorkload.Id.String(), *appWorkload.Name, "restart", VMRunning, currState)
 		}
 	}
 }

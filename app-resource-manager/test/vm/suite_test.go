@@ -25,8 +25,8 @@ import (
 )
 
 const (
-	VMRunning = string(armClient.VirtualMachineStatusStateSTATERUNNING)
-	VMStopped = string(armClient.VirtualMachineStatusStateSTATESTOPPED)
+	VMRunning = string(armClient.ResourceV2VirtualMachineStatusStateSTATERUNNING)
+	VMStopped = string(armClient.ResourceV2VirtualMachineStatusStateSTATESTOPPED)
 )
 
 // TestSuite is the basic test suite
@@ -35,7 +35,7 @@ type TestSuite struct {
 	ResourceRESTServerUrl string
 	Token                 string
 	ProjectID             string
-	DeployApps            []*admClient.App
+	DeployApps            []*admClient.DeploymentV1App
 	ArmClient             *armClient.ClientWithResponses
 	AdmClient             *admClient.ClientWithResponses
 	OrchDomain            string

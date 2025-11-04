@@ -32,7 +32,7 @@ type TestSuite struct {
 	ResourceRESTServerUrl string
 	Token                 string
 	ProjectID             string
-	DeployApps            []*admClient.App
+	DeployApps            []*admClient.DeploymentV1App
 	ArmClient             *armClient.ClientWithResponses
 	AdmClient             *admClient.ClientWithResponses
 	KeycloakServer        string

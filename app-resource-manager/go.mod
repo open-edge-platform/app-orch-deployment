@@ -7,6 +7,7 @@ module github.com/open-edge-platform/app-orch-deployment/app-resource-manager
 go 1.24.9
 
 replace (
+	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 => ../app-deployment-manager/api/nbi/v2
 	github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 => ./api/nbi/v2
 	github.com/open-edge-platform/app-orch-deployment/test-common-utils => ../test-common-utils
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20210105115604-44119421ec6b
