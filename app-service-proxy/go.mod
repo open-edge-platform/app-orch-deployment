@@ -4,7 +4,7 @@
 
 module github.com/open-edge-platform/app-orch-deployment/app-service-proxy
 
-go 1.24.6
+go 1.24.9
 
 require (
 	github.com/chromedp/cdproto v0.0.0-20250521201632-aadd49e0822c
