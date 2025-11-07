@@ -89,7 +89,7 @@ PKG_LIST := ./cmd/... ./controllers/... ./webhooks/... ./pkg/... ./internal/...
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 ENVTEST_K8S_VERSION = 1.25.0
 OPA_FILE_PATH ?= deployment/charts/app-deployment-manager/files/openpolicyagent
-OPA_IMAGE_VER       = 1.5.0-static
+OPA_IMAGE_VER       = 1.10.0-envoy-static
 GOLANG_GOCOV_VERSION := latest
 GOLANG_GOCOV_XML_VERSION := latest
 
@@ -113,7 +113,8 @@ proto-generate: common-buf-update common-buf-generate merge-connectrpc-openapi c
 
 merge-connectrpc-openapi: ## Merge ConnectRPC individual OpenAPI files into consolidated specification
 	@echo "Merging ConnectRPC OpenAPI files..."
-	@python3 scripts/merge_openapi.py \
+	@set +u; . ./venv_app-deployment-manager/bin/activate; set -u; \
+	python scripts/merge_openapi.py \
 		"api/nbi/v2/spec/deployment/v1" \
 		"api/nbi/v2/spec/openapi.yaml" \
 		"Application Deployment Manager API" \

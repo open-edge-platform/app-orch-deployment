@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-24.04-16core-64GB  # ubuntu-24.04-4core-16GB ubuntu-22.04-32core-128GB & ubuntu-24.04-16core-64GB
     timeout-minutes: 60
     env:
-      ORCH_DEFAULT_PASSWORD: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
+      ORCH_DEFAULT_PASSWORD: 'ChangeMeOn1stLogin!'
       CODER_DIR: ${{ github.workspace }}
       DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
       DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
@@ -39,20 +39,22 @@ jobs:
     steps:
       - name: Deploy Kind Orchestrator
         id: deploy-kind-orchestrator
-        uses: open-edge-platform/edge-manageability-framework/.github/actions/deploy_kind@2c42a7c3c0649deaef5841f79a97958a4211b33a
-        timeout-minutes: 30
+        uses: open-edge-platform/edge-manageability-framework/.github/actions/deploy_kind@e8ae6a389d133948435aacbd38de90d952b1e05e
+        timeout-minutes: 45
         with:
           orch_version: ${{ inputs.emf-branch || 'main' }}
-          orch_password: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
+          orch_password: 'ChangeMeOn1stLogin!'
           docker_username: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
           docker_password: ${{ secrets.SYS_DOCKERHUB_RO }}
           token: ${{ secrets.SYS_ORCH_GITHUB }}
           deployment_type: 'minimal'
+        env:
+          ORCH_DEFAULT_PASSWORD: 'ChangeMeOn1stLogin!'
 
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: 1.24
+          go-version: 1.24.9
 
       - name: Checkout app-orch-deployment repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
@@ -69,8 +71,10 @@ jobs:
           GIT_HASH: ${{ github.event.pull_request.head.sha }}
         run: echo "GIT_HASH_CHARTS=${GIT_HASH}" >> "$GITHUB_ENV"
 
-      - name: Describe ${{ inputs.component }} application  # zizmor: ignore[template-injection]
-        run: kubectl describe application -n dev ${{ inputs.component }} || true
+      - name: Describe component application
+        env:
+          COMPONENT: ${{ inputs.component }}
+        run: kubectl describe application -n dev "$COMPONENT" || true
 
       - name: Setup Test environment
         run: |
@@ -99,17 +103,21 @@ jobs:
           echo "Deployment packages uploaded to catalog!"
 
       - name: Redeploy and Rebuild Component
-        working-directory: app-orch-deployment/${{ inputs.component }}  # zizmor: ignore[template-injection]
+        working-directory: app-orch-deployment/${{ inputs.component }}
+        env:
+          COMPONENT: ${{ inputs.component }}
         run: |
-          echo "Redeploying and rebuilding component ${{ inputs.component }}"
+          echo "Redeploying and rebuilding component $COMPONENT"
           make coder-rebuild
           make coder-redeploy
       - name: Run Component Tests
-        working-directory: app-orch-deployment/${{ inputs.component }}  # zizmor: ignore[template-injection]
+        working-directory: app-orch-deployment/${{ inputs.component }}
+        env:
+          COMPONENT: ${{ inputs.component }}
         run: |
-          echo "Running component tests for ${{ inputs.component }}"
+          echo "Running component tests for $COMPONENT"
           make component-test
-          echo "${{ inputs.component }} component tests done!"
+          echo "$COMPONENT component tests done!"
 
       - name: Report
         uses: becheran/go-testreport@90efc1ce13c872f23d6bc8a069527c26288b8f9c

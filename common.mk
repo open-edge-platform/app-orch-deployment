@@ -26,9 +26,9 @@ SHELL := bash -eu -o pipefail
 GOARCH	:= $(shell go env GOARCH)
 GOCMD   := go
 GOTESTSUM_PKG := gotest.tools/gotestsum@v1.12.2
-OAPI_CODEGEN_VERSION ?= v2.2.0
+OAPI_CODEGEN_VERSION ?= v2.5.0
 LOCALBIN ?= $(shell pwd)/bin
-BUF_VERSION ?= v1.57.0
+BUF_VERSION ?= v1.59.0
 
 ## Path variables ##
 OUT_DIR	:= out
@@ -109,7 +109,7 @@ common-install-protoc-plugins:
 	@echo "Installing protoc-gen-connect-openapi..."
 	@go install github.com/sudorandom/protoc-gen-connect-openapi@latest
 	@echo "Installing oapi-codegen"
-	@go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@${OAPI_CODEGEN_VERSION}
+	@go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@${OAPI_CODEGEN_VERSION}
 	@echo "Installing buf"
 	@go install github.com/bufbuild/buf/cmd/buf@${BUF_VERSION}
 	@echo "*** You need to add "$(GOBIN)" directory to your PATH..."
@@ -282,14 +282,14 @@ common-go-fuzz-test: ## GO fuzz tests
 #### Protobuf Targets ####
 
 common-buf-lint-fix: $(VENV_NAME) ## Lint and when possible fix protobuf files
-	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf --version
-	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf format -d -w
-	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf lint
+	buf --version
+	buf format -d -w
+	buf lint
 
 common-buf-generate: $(VENV_NAME) ## Compile protobuf files in api into code
 	set +u; . ./$</bin/activate; set -u ;\
-        PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf --version ;\
-        PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf generate
+        buf --version ;\
+        buf generate
 
 common-openapi-spec-validate: $(VENV_NAME)
 		set +u; . ./$</bin/activate; set -u ;\
@@ -297,14 +297,14 @@ common-openapi-spec-validate: $(VENV_NAME)
 
 common-buf-update: $(VENV_NAME) ## Update buf modules
 	set +u; . ./$</bin/activate; set -u ;\
-  PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf --version ;\
-  pushd api; PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf mod update; popd ;\
-  PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf build
+  buf --version ;\
+  pushd api; buf mod update; popd ;\
+  buf build
 
 common-buf-lint: $(VENV_NAME) ## Lint and format protobuf files
-	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf --version
-	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf format -d --exit-code
-	PATH="/home/seu/.asdf/installs/golang/1.24.4/bin:$$PATH" buf lint
+	buf --version
+	buf format -d --exit-code
+	buf lint
 
 #### Rest Client Targets ####
 common-rest-client-gen: ## Generate rest-client.

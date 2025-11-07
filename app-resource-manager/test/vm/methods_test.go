@@ -105,7 +105,7 @@ func (s *TestSuite) TestGetVNCResponseCodeValidation() {
 		for _, appWorkload := range *appWorkloads {
 			// Test all HTTP methods on the VNC endpoint
 			// No desired state is specified ("") since VNC doesn't change VM state
-			s.testVMMethod(appID, appWorkload.Id, getVncMethods, utils.MethodGetVNC, "")
+			s.testVMMethod(appID, appWorkload.Id.String(), getVncMethods, utils.MethodGetVNC, "")
 		}
 	}
 }
@@ -126,12 +126,12 @@ func (s *TestSuite) TestStartVMResponseCodeValidation() {
 		for _, appWorkload := range *appWorkloads {
 			// Make sure VM is stopped before testing start methods
 			// This ensures that the PUT method has a state to change
-			err := s.ensureVMState(appID, appWorkload.Id, VMStopped)
+			err := s.ensureVMState(appID, appWorkload.Id.String(), VMStopped)
 			s.NoError(err)
 
 			// Test all HTTP methods on the start endpoint
 			// The desired state after successful operation is VMRunning
-			s.testVMMethod(appID, appWorkload.Id, startVMMethods, utils.MethodVMStart, VMRunning)
+			s.testVMMethod(appID, appWorkload.Id.String(), startVMMethods, utils.MethodVMStart, VMRunning)
 		}
 	}
 }
@@ -152,12 +152,12 @@ func (s *TestSuite) TestStopVMResponseCodeValidation() {
 		for _, appWorkload := range *appWorkloads {
 			// Make sure VM is running before testing stop methods
 			// This ensures that the PUT method has a state to change
-			err := s.ensureVMState(appID, appWorkload.Id, VMRunning)
+			err := s.ensureVMState(appID, appWorkload.Id.String(), VMRunning)
 			s.NoError(err)
 
 			// Test all HTTP methods on the stop endpoint
 			// The desired state after successful operation is VMStopped
-			s.testVMMethod(appID, appWorkload.Id, stopVMMethods, utils.MethodVMStop, VMStopped)
+			s.testVMMethod(appID, appWorkload.Id.String(), stopVMMethods, utils.MethodVMStop, VMStopped)
 		}
 	}
 }
@@ -178,12 +178,12 @@ func (s *TestSuite) TestRestartVMResponseCodeValidation() {
 		for _, appWorkload := range *appWorkloads {
 			// Make sure VM is running before testing restart methods
 			// VM must be running to be restarted
-			err := s.ensureVMState(appID, appWorkload.Id, VMRunning)
+			err := s.ensureVMState(appID, appWorkload.Id.String(), VMRunning)
 			s.NoError(err)
 
 			// Test all HTTP methods on the restart endpoint
-			// The desired state after successful operation is VMRunning
-			s.testVMMethod(appID, appWorkload.Id, restartVMMethods, utils.MethodVMRestart, VMRunning)
+			// The desired state after successful operation is VMRunRunning
+			s.testVMMethod(appID, appWorkload.Id.String(), restartVMMethods, utils.MethodVMRestart, VMRunning)
 		}
 	}
 }

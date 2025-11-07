@@ -259,5 +259,5 @@ openpolicyagent:
   enabled: true
   port: 8181
   image: openpolicyagent/opa
-  tag: 1.5.0-static
+  tag: 1.10.0-envoy-static
   loglevel: info
