@@ -49,11 +49,11 @@ func (s *TestSuite) TestDeletePod() {
 		s.Equal(1, len(*appWorkloads), "invalid app workloads len: %+v expected len 1", len(*appWorkloads))
 
 		for _, appWorkload := range *appWorkloads {
-			retCode, err := utils.PodDelete(s.ArmClient, *appWorkload.Namespace, appWorkload.Name, appID)
+			retCode, err := utils.PodDelete(s.ArmClient, *appWorkload.Namespace, *appWorkload.Name, appID)
 			s.Equal(retCode, http.StatusOK)
 			s.NoError(err)
 
-			s.T().Logf("deleted pod %s\n", appWorkload.Name)
+			s.T().Logf("deleted pod %s\n", *appWorkload.Name)
 		}
 	}
 }
@@ -74,9 +74,7 @@ func (s *TestSuite) TestListWorkloadsResponseDetails() {
 			s.NotEmpty(appWorkload.Id, "Workload ID should not be empty")
 			s.NotEmpty(appWorkload.Namespace, "Namespace should not be empty")
 			s.NotEmpty(appWorkload.CreateTime, "Workload create time should not be empty")
-			s.NotEmpty(appWorkload.Pod, "Workload pod should not be empty")
 			s.NotEmpty(appWorkload.Type, "Workload type should not be empty")
-			s.NotEmpty(appWorkload.WorkloadReady, "Workload ready status should not be empty")
 
 			// Additional checks can be added here based on expected values
 			s.T().Logf("Workload details: %#v\n", appWorkload)

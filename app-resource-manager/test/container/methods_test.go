@@ -71,11 +71,11 @@ func (s *TestSuite) TestDeletePodMethod() {
 
 		for _, appWorkload := range *appWorkloads {
 			namespace := *appWorkload.Namespace
-			podName := appWorkload.Name
+			podName := *appWorkload.Name
 
 			for method, expectedStatus := range deleteMethods {
 				if expectedStatus == http.StatusOK {
-					err = utils.GetPodStatus(s.ArmClient, appID, appWorkload.Id, "STATE_RUNNING")
+					err = utils.GetPodStatus(s.ArmClient, appID, appWorkload.Id.String(), "STATE_RUNNING")
 					s.NoError(err)
 				}
 

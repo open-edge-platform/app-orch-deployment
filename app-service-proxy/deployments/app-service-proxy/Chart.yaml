@@ -4,9 +4,9 @@
 ---
 apiVersion: v2
 name: app-service-proxy
-version: "1.5.1"
+version: "1.5.2-dev"
 description: Application Service Proxy
 annotations:
-  revision: "a2dc8ce"
-  created: "2025-10-31T16:33:46Z"
-appVersion: 1.5.1
+  revision: "074ee3e"
+  created: "2025-11-03T16:21:14Z"
+appVersion: 1.5.2-dev-074ee3e

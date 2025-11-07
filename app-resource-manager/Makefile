@@ -25,7 +25,7 @@ VNC_PROXY_NAME  := vnc-proxy
 REST_PROXY_NAME := rest-proxy
 CHART_PATH      := deployments/app-resource-manager
 OPA_FILE_PATH   := ${CHART_PATH}/files/openpolicyagent/v2
-OPA_IMAGE_VER   := 1.5.0-static
+OPA_IMAGE_VER   := 1.10.0-envoy-static
 TMP_DIR         := /tmp
 
 # Deployment variables
@@ -100,7 +100,8 @@ proto-generate: common-buf-update common-buf-generate merge-connectrpc-openapi c
 
 merge-connectrpc-openapi: ## Merge ConnectRPC individual OpenAPI files into consolidated specification
 	@echo "Merging ConnectRPC OpenAPI files..."
-	@python3 scripts/merge_openapi.py \
+	@set +u; . ./venv_app-resource-manager/bin/activate; set -u; \
+	python scripts/merge_openapi.py \
 		"api/nbi/v2/spec/resource/v2" \
 		"api/nbi/v2/spec/v2/openapi.yaml" \
 		"App Resource Manager API" \
