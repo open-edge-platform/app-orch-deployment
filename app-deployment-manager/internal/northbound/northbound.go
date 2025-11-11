@@ -418,20 +418,48 @@ func (c *DeploymentInstance) createDeploymentObject(ctx context.Context, s *Depl
 	// Create the TargetClusters list
 	targetClustersList := make([]*deploymentpb.TargetClusters, 0)
 
+	// For auto-scaling deployments, build a map of app names to their actual deployed cluster IDs
+	// from DeploymentCluster objects. This provides the actual cluster mapping after Fleet matching.
+	appClusterMap := make(map[string][]string)
+	if c.deployment.Spec.DeploymentType == deploymentv1beta1.AutoScaling && c.deploymentClusters != nil {
+		for _, dc := range c.deploymentClusters.Items {
+			if dc.Spec.ClusterID != "" {
+				// Extract app names from this deployment cluster
+				for _, app := range dc.Status.Apps {
+					appClusterMap[app.Name] = append(appClusterMap[app.Name], dc.Spec.ClusterID)
+				}
+			}
+		}
+	}
+
 	for _, app := range c.deployment.Spec.Applications {
 		labelCheckList := app.Targets
 		for _, l := range labelCheckList {
 			if _, ok := l[string(deploymentv1beta1.ClusterName)]; ok {
+				// Targeted deployment - cluster ID is in the labels
 				targetClustersList = append(targetClustersList, &deploymentpb.TargetClusters{
 					AppName:   app.Name,
 					ClusterId: l[string(deploymentv1beta1.ClusterName)],
 					Labels:    l,
 				})
 			} else {
-				targetClustersList = append(targetClustersList, &deploymentpb.TargetClusters{
-					AppName: app.Name,
-					Labels:  l,
-				})
+				// Auto-scaling deployment - use cluster IDs from DeploymentCluster objects if available
+				if clusterIDs, found := appClusterMap[app.Name]; found && len(clusterIDs) > 0 {
+					// For auto-scaling, create one entry per matched cluster
+					for _, clusterID := range clusterIDs {
+						targetClustersList = append(targetClustersList, &deploymentpb.TargetClusters{
+							AppName:   app.Name,
+							ClusterId: clusterID,
+							Labels:    l,
+						})
+					}
+				} else {
+					// No clusters matched yet or deployment not yet reconciled by Fleet
+					targetClustersList = append(targetClustersList, &deploymentpb.TargetClusters{
+						AppName: app.Name,
+						Labels:  l,
+					})
+				}
 			}
 		}
 	}
