@@ -89,7 +89,7 @@ PKG_LIST := ./cmd/... ./controllers/... ./webhooks/... ./pkg/... ./internal/...
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 ENVTEST_K8S_VERSION = 1.25.0
 OPA_FILE_PATH ?= deployment/charts/app-deployment-manager/files/openpolicyagent
-OPA_IMAGE_VER       = 1.10.0-envoy-static
+OPA_IMAGE_VER       = 1.10.1-static
 GOLANG_GOCOV_VERSION := latest
 GOLANG_GOCOV_XML_VERSION := latest
 
