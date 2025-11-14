@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -48,7 +49,10 @@ func GetXAuthHeader(url, _ string) (string, error) {
 	var preText string
 
 	username := "sample-project-edge-mgr"
-	password := "ChangeMeOn1stLogin!"
+	password := os.Getenv("ORCH_DEFAULT_PASSWORD")
+	if password == "" {
+		panic("ORCH_DEFAULT_PASSWORD environment variable must be set")
+	}
 	var cookies []*network.Cookie
 	// Run tasks
 	err := chromedp.Run(ctx,
@@ -158,7 +162,10 @@ func GetCliSecretHarbor(url, token string) (string, error) {
 	// This will hold the IDs
 
 	username := "sample-project-edge-mgr"
-	password := "ChangeMeOn1stLogin!"
+	password := os.Getenv("ORCH_DEFAULT_PASSWORD")
+	if password == "" {
+		panic("ORCH_DEFAULT_PASSWORD environment variable must be set")
+	}
 
 	selectors := []string{"#log_oidc"}
 
