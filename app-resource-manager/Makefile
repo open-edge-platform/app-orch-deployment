@@ -25,7 +25,7 @@ VNC_PROXY_NAME  := vnc-proxy
 REST_PROXY_NAME := rest-proxy
 CHART_PATH      := deployments/app-resource-manager
 OPA_FILE_PATH   := ${CHART_PATH}/files/openpolicyagent/v2
-OPA_IMAGE_VER   := 1.10.0-envoy-static
+OPA_IMAGE_VER   := 1.10.1-static
 TMP_DIR         := /tmp
 
 # Deployment variables

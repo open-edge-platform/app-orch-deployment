@@ -155,7 +155,7 @@ openpolicyagent:
   ## @param openpolicyagent.tag Name of the openpolicy image tag.
   enabled: true
   image: openpolicyagent/opa
-  tag: 1.10.0-envoy-static
+  tag: 1.10.1-static
   loglevel: info
   port: 8181
 

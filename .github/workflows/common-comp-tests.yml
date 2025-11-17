@@ -20,7 +20,7 @@ on:
         required: true
         description: "Branch in edge-manageability-framework to checkout"
         type: string
-        default: main
+        default: '51d847c5b3a831454981f5fce7cecbbe1ade5e87'
 
 permissions:
   contents: read
@@ -30,10 +30,11 @@ jobs:
     runs-on: ubuntu-24.04-16core-64GB  # ubuntu-24.04-4core-16GB ubuntu-22.04-32core-128GB & ubuntu-24.04-16core-64GB
     timeout-minutes: 60
     env:
-      ORCH_DEFAULT_PASSWORD: 'ChangeMeOn1stLogin!'
-      CODER_DIR: ${{ github.workspace }}
-      DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
-      DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
+      ORCH_DEFAULT_PASSWORD: ${{ env.ORCH_DEFAULT_PASSWORD }}
+      CODER_DIR: ${{ github.workspace }}/
+      # Skip Docker Hub credentials since they're not available
+      # DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
+      # DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
       GH_TOKEN: ${{ secrets.SYS_ORCH_GITHUB }}
 
     steps:
@@ -43,13 +44,13 @@ jobs:
         timeout-minutes: 45
         with:
           orch_version: ${{ inputs.emf-branch || 'main' }}
-          orch_password: 'ChangeMeOn1stLogin!'
-          docker_username: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
-          docker_password: ${{ secrets.SYS_DOCKERHUB_RO }}
+          orch_password: ${{ env.ORCH_DEFAULT_PASSWORD }}
+          # Skip Docker Hub credentials since they're not available
+          # docker_username: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
+          # docker_password: ${{ secrets.SYS_DOCKERHUB_RO }}
           token: ${{ secrets.SYS_ORCH_GITHUB }}
-          deployment_type: 'minimal'
         env:
-          ORCH_DEFAULT_PASSWORD: 'ChangeMeOn1stLogin!'
+          ORCH_DEFAULT_PASSWORD: ${{ env.ORCH_DEFAULT_PASSWORD }}
 
       - name: Setup Go
         uses: actions/setup-go@v6
