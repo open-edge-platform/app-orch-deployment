@@ -4,7 +4,10 @@
 
 package types
 
-import "time"
+import (
+	"os"
+	"time"
+)
 
 const (
 	RestAddressPortForward      = "127.0.0.1"
@@ -19,16 +22,22 @@ const (
 )
 
 const (
+	RetryDelay = 10 * time.Second
+	RetryCount = 20
+)
+
+const (
 	SampleOrg     = "sample-org"
 	SampleProject = "sample-project"
-	KCPass        = "ChangeMeOn1stLogin!"
 	TestClusterID = "demo-cluster"
 )
 
-const (
-	RetryDelay = 10 * time.Second
-)
+var KCPass = mustGetKCPassword()
 
-const (
-	RetryCount = 20
-)
+func mustGetKCPassword() string {
+	pass := os.Getenv("ORCH_DEFAULT_PASSWORD")
+	if pass == "" {
+		panic("ORCH_DEFAULT_PASSWORD environment variable must be set")
+	}
+	return pass
+}

@@ -8,9 +8,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	//"os"
+	"os"
 	"strings"
 	"time"
+
 	//"path/filepath"
 
 	"github.com/chromedp/cdproto/network"
@@ -42,7 +43,10 @@ func GetCliSecretHarbor(url, token string) (string, error) {
 	// This will hold the IDs
 
 	username := "sample-project-edge-mgr"
-	password := "ChangeMeOn1stLogin!"
+	password := os.Getenv("ORCH_DEFAULT_PASSWORD")
+	if password == "" {
+		panic("ORCH_DEFAULT_PASSWORD environment variable must be set")
+	}
 
 	selectors := []string{"#log_oidc"}
 
@@ -166,7 +170,10 @@ func OpenPageInHeadlessChrome(url, search, _ string) (bool, error) {
 	// This will hold the IDs
 
 	username := "sample-project-edge-mgr"
-	password := "ChangeMeOn1stLogin!"
+	password := os.Getenv("ORCH_DEFAULT_PASSWORD")
+	if password == "" {
+		panic("ORCH_DEFAULT_PASSWORD environment variable must be set")
+	}
 
 	/*selectorPassword := "#password" // change as needed
 	    selectorLogin := "#login" // change as needed
