@@ -600,6 +600,49 @@ var _ = Describe("Fleet config generator", func() {
 				Expect(yaml).Should(BeAnExistingFile())
 				verifyFleetNamespaceConfig(yaml, deployment.Spec.DeploymentPackageRef.Namespaces[1])
 			})
+
+			It("should add Phase1 management labels via Fleet config NamespaceLabels", func() {
+				app := &deployment.Spec.Applications[0]
+
+				// Provide deployment package ref (name, version, profile) and one namespace
+				deployment.Spec.DeploymentPackageRef.Name = "dpname"
+				deployment.Spec.DeploymentPackageRef.Version = "1.2.3"
+				deployment.Spec.DeploymentPackageRef.ProfileName = "base"
+				deployment.Spec.DeploymentPackageRef.Namespaces = []v1beta1.Namespace{
+					{
+						Name:        "phase1-ns",
+						Labels:      map[string]string{"existing-label": "value"},
+						Annotations: map[string]string{"existing-ann": "value"},
+					},
+				}
+
+				basedir := "/tmp/fleet-phase1"
+				Expect(os.RemoveAll(basedir)).To(Succeed())
+				Expect(GenerateFleetConfigs(deployment, basedir, k8sClient, nexusClient.RuntimeprojectEdgeV1())).To(Succeed())
+
+				// Verify namespace sub-bundle directory
+				nsDir := filepath.Join(basedir, app.Name, "phase1-ns-ns")
+				Expect(nsDir).To(BeADirectory())
+
+				// Verify fleet.yaml has labels (Fleet will apply them when creating namespace)
+				fleetYaml := filepath.Join(nsDir, "fleet.yaml")
+				Expect(fleetYaml).Should(BeAnExistingFile())
+
+				fleetConfigStruct := &Config{}
+				fleetconf, err := os.ReadFile(fleetYaml)
+				Expect(err).To(BeNil())
+				Expect(yamlv3.Unmarshal(fleetconf, fleetConfigStruct)).To(Succeed())
+
+				// Check labels in fleet config
+				Expect(fleetConfigStruct.NamespaceLabels["existing-label"]).To(Equal("value"))
+				Expect(fleetConfigStruct.NamespaceLabels["app.edge-orchestrator.intel.com/managed-namespace"]).To(Equal("true"))
+				Expect(fleetConfigStruct.NamespaceLabels["app.edge-orchestrator.intel.com/creation-mode"]).To(Equal("explicit"))
+				Expect(fleetConfigStruct.NamespaceLabels["app.edge-orchestrator.intel.com/deployment-package"]).To(Equal("dpname-1.2.3-base"))
+
+				// Verify empty.yaml exists (not namespace.yaml - Fleet manages namespace)
+				emptyYaml := filepath.Join(nsDir, "empty.yaml")
+				Expect(emptyYaml).Should(BeAnExistingFile())
+			})
 		})
 
 		Context("ImageRegistrySecretName is provided", func() {

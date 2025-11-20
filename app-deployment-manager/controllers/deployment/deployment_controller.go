@@ -15,7 +15,9 @@ import (
 
 	nexus "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/client/clientset/versioned"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/fleet"
@@ -108,6 +110,7 @@ type Reconciler struct {
 // +kubebuilder:rbac:groups=fleet.cattle.io,resources=gitrepos,verbs=get;list;watch;create;update;patch;delete;deletecollection
 // +kubebuilder:rbac:groups=fleet.cattle.io,resources=bundles,verbs=get;list;watch
 // +kubebuilder:rbac:groups=fleet.cattle.io,resources=bundledeployments,verbs=get;list;watch;delete
+// +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;update;patch
 
 func gitRepoIdxFunc(rawObj client.Object) []string {
 	gitrepo := rawObj.(*fleetv1alpha1.GitRepo)
@@ -621,6 +624,12 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrlRes c
 		return ctrl.Result{}, nil
 	}
 
+	// Add namespace cleanup finalizer
+	if !cutil.ContainsFinalizer(d, "app.edge-orchestrator.intel.com/namespace-cleanup") && d.ObjectMeta.DeletionTimestamp.IsZero() {
+		cutil.AddFinalizer(d, "app.edge-orchestrator.intel.com/namespace-cleanup")
+		return ctrl.Result{}, nil
+	}
+
 	if !d.ObjectMeta.DeletionTimestamp.IsZero() {
 		return r.delete(ctx, d)
 	}
@@ -680,6 +689,7 @@ func (r *Reconciler) delete(ctx context.Context, d *v1beta1.Deployment) (ctrl.Re
 
 	phases := []func(context.Context, *v1beta1.Deployment) (ctrl.Result, error){
 		r.handleFinalizerDependency,
+		r.handleFinalizerNamespaceCleanup,
 		r.handleFinalizerGitRemote,
 		r.handleFinalizerCatalog,
 	}
@@ -783,6 +793,160 @@ func (r *Reconciler) handleFinalizerDependency(ctx context.Context, d *v1beta1.D
 	cutil.RemoveFinalizer(d, v1beta1.FinalizerDependency)
 	log.V(2).Info("Removing finalizer", "finalizer", v1beta1.FinalizerDependency)
 	return ctrl.Result{}, nil
+}
+
+// handleFinalizerNamespaceCleanup removes deployment UID from namespaces and deletes empty ones immediately.
+//immediate namespace cleanup on deployment deletion.
+func (r *Reconciler) handleFinalizerNamespaceCleanup(ctx context.Context, d *v1beta1.Deployment) (ctrl.Result, error) {
+	log := log.FromContext(ctx)
+
+	finalizerName := "app.edge-orchestrator.intel.com/namespace-cleanup"
+	if !cutil.ContainsFinalizer(d, finalizerName) {
+		return ctrl.Result{}, nil
+	}
+
+	// Get all unique namespaces used by this deployment
+	namespaces := make(map[string]struct{})
+	for _, app := range d.Spec.Applications {
+		if app.Namespace != "" {
+			namespaces[app.Namespace] = struct{}{}
+		}
+	}
+
+	// Process each target cluster
+	var clusterList v1beta1.ClusterList
+	if err := r.Client.List(ctx, &clusterList, client.InNamespace(d.Namespace)); err != nil {
+		log.Error(err, "Failed to list clusters for namespace cleanup")
+		return ctrl.Result{}, err
+	}
+
+	for i := range clusterList.Items {
+		cluster := &clusterList.Items[i]
+
+		// Check if this deployment targets this cluster
+		targetsCluster := false
+		for _, app := range d.Spec.Applications {
+			for _, target := range app.Targets {
+				if clusterName, ok := target["edge-orchestrator.intel.com/clustername"]; ok && clusterName == cluster.Name {
+					targetsCluster = true
+					break
+				}
+			}
+			if targetsCluster {
+				break
+			}
+		}
+
+		if !targetsCluster {
+			continue
+		}
+
+		// Get target cluster client
+		targetClient, err := r.getTargetClusterClientForTagging(ctx, cluster)
+		if err != nil {
+			log.Error(err, "Failed to create target cluster client for namespace cleanup", "cluster", cluster.Name)
+			continue // Don't fail entire deletion if one cluster is unreachable
+		}
+
+		// Process each namespace
+		for nsName := range namespaces {
+			if err := r.cleanupNamespaceOnCluster(ctx, targetClient, nsName, string(d.UID)); err != nil {
+				log.Error(err, "Failed to cleanup namespace on cluster", "namespace", nsName, "cluster", cluster.Name)
+				// Continue with other namespaces even if one fails
+			}
+		}
+	}
+
+	cutil.RemoveFinalizer(d, finalizerName)
+	log.V(2).Info("Removing finalizer", "finalizer", finalizerName)
+	return ctrl.Result{}, nil
+}
+
+// cleanupNamespaceOnCluster removes deployment UID from namespace and deletes if empty.
+func (r *Reconciler) cleanupNamespaceOnCluster(ctx context.Context, targetClient *kubernetes.Clientset, nsName string, depUID string) error {
+	log := log.FromContext(ctx)
+
+	// Get the namespace
+	ns, err := targetClient.CoreV1().Namespaces().Get(ctx, nsName, metav1.GetOptions{})
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return nil // Namespace already gone
+		}
+		return err
+	}
+
+	// Check if namespace has deployment-ids annotation
+	idsKey := "app.edge-orchestrator.intel.com/deployment-ids"
+	if ns.Annotations == nil || ns.Annotations[idsKey] == "" {
+		return nil // No deployment IDs to remove
+	}
+
+	// Remove this deployment's UID from the list
+	currentIDs := strings.Split(ns.Annotations[idsKey], ",")
+	newIDs := []string{}
+	for _, uid := range currentIDs {
+		uid = strings.TrimSpace(uid)
+		if uid != "" && uid != depUID {
+			newIDs = append(newIDs, uid)
+		}
+	}
+
+	// Update annotation
+	newValue := strings.Join(newIDs, ",")
+	ns.Annotations[idsKey] = newValue
+
+	_, err = targetClient.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+
+	log.Info("Removed deployment UID from namespace", "namespace", nsName, "deploymentUID", depUID, "remainingCount", len(newIDs))
+
+	// If no deployments left and namespace is managed, delete it immediately
+	if newValue == "" {
+		// Check if namespace is managed
+		if ns.Labels != nil && ns.Labels["app.edge-orchestrator.intel.com/managed-namespace"] == "true" {
+			log.Info("Namespace has zero deployments - deleting immediately", "namespace", nsName)
+			if err := targetClient.CoreV1().Namespaces().Delete(ctx, nsName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+				return err
+			}
+			log.Info("Successfully deleted orphaned namespace", "namespace", nsName)
+		}
+	}
+
+	return nil
+}
+
+// getTargetClusterClientForTagging creates a kubernetes.Clientset for the target cluster.
+func (r *Reconciler) getTargetClusterClientForTagging(ctx context.Context, cluster *v1beta1.Cluster) (*kubernetes.Clientset, error) {
+	if cluster.Spec.KubeConfigSecretName == "" {
+		return nil, fmt.Errorf("cluster %s has no kubeconfig secret", cluster.Name)
+	}
+
+	var secret corev1.Secret
+	if err := r.Client.Get(ctx, types.NamespacedName{
+		Namespace: cluster.Namespace,
+		Name:      cluster.Spec.KubeConfigSecretName,
+	}, &secret); err != nil {
+		return nil, fmt.Errorf("failed to get kubeconfig secret: %w", err)
+	}
+
+	kubeconfigData, ok := secret.Data["value"]
+	if !ok {
+		return nil, fmt.Errorf("kubeconfig secret missing 'value' key")
+	}
+
+	restConfig, err := clientcmd.RESTConfigFromKubeConfig(kubeconfigData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse kubeconfig: %w", err)
+	}
+
+	clientset, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create clientset: %w", err)
+	}
+
+	return clientset, nil
 }
 
 func (r *Reconciler) handleFinalizerGitRemote(ctx context.Context, d *v1beta1.Deployment) (ctrl.Result, error) {
@@ -894,7 +1058,7 @@ func (r *Reconciler) reconcileDependency(ctx context.Context, d *v1beta1.Deploym
 	return ctrl.Result{}, nil
 }
 
-func (r *Reconciler) reconcileState(_ context.Context, d *v1beta1.Deployment) (ctrl.Result, error) {
+func (r *Reconciler) reconcileState(ctx context.Context, d *v1beta1.Deployment) (ctrl.Result, error) {
 	// Update state to Deploying or Updating
 	if d.Status.State == "" || d.Generation == 1 {
 		projectID := d.Labels[string(v1beta1.AppOrchActiveProjectID)]
@@ -910,6 +1074,7 @@ func (r *Reconciler) reconcileState(_ context.Context, d *v1beta1.Deployment) (c
 	}
 
 	d.Status.DeployInProgress = true
+
 	return ctrl.Result{}, nil
 }
 
@@ -1515,4 +1680,32 @@ func getGitRepoName(appName string, depID string) string {
 func getAppNameForGitRepo(gitrepo *fleetv1alpha1.GitRepo, depID string) string {
 	suffix := fmt.Sprintf("-%s", depID)
 	return strings.TrimSuffix(gitrepo.Name, suffix)
+}
+
+
+// updateDeploymentIDsAnnotation updates only the deployment-ids annotation for an already-managed namespace.
+func (r *Reconciler) updateDeploymentIDsAnnotation(ctx context.Context, targetClient *kubernetes.Clientset, ns *corev1.Namespace, depUID string) error {
+	if ns.Annotations == nil {
+		ns.Annotations = map[string]string{}
+	}
+
+	idsKey := "app.edge-orchestrator.intel.com/deployment-ids"
+	current := ns.Annotations[idsKey]
+
+	// Check if this deployment ID is already present
+	if current != "" {
+		parts := strings.Split(current, ",")
+		for _, p := range parts {
+			if p == depUID {
+				return nil // Already present, no update needed
+			}
+		}
+		// Add to existing list
+		ns.Annotations[idsKey] = current + "," + depUID
+	} else {
+		ns.Annotations[idsKey] = depUID
+	}
+
+	_, err := targetClient.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{})
+	return err
 }

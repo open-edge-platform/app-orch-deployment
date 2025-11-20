@@ -404,7 +404,7 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 		// If declared in dp, create namespace with labels and annotations
 		for _, ns := range d.Spec.DeploymentPackageRef.Namespaces {
 			nsBundleName := fmt.Sprintf("%s-%s", ns.Name, initNsBundleName)
-			err = injectNamespaceToSubDir(ns, fleetPath, nsBundleName)
+			err = injectNamespaceToSubDir(ns, fleetPath, nsBundleName, d)
 			if err != nil {
 				return err
 			}
@@ -638,26 +638,54 @@ func BundleName(app v1beta1.Application, depName string) string {
 }
 
 // injectNamespaceToSubDir adds namespace with required labels and annotations to new fleet.yaml.
-func injectNamespaceToSubDir(ns v1beta1.Namespace, fleetPath string, bundleName string) error {
+func injectNamespaceToSubDir(ns v1beta1.Namespace, fleetPath string, bundleName string, d *v1beta1.Deployment) error {
+	// Phase 1: Add management labels via Fleet config (not direct manifest)
+	// Fleet/Helm will create the namespace with these labels when deploying the bundle.
+
+	// Merge existing labels with required management markers
+	labels := make(map[string]string)
+	for k, v := range ns.Labels {
+		labels[k] = v
+	}
+	labels["app.edge-orchestrator.intel.com/managed-namespace"] = "true"
+	labels["app.edge-orchestrator.intel.com/creation-mode"] = "explicit"
+
+	// Optional deployment-package label (name-version-profile)
+	if d != nil && d.Spec.DeploymentPackageRef.Name != "" {
+		deploymentPackage := d.Spec.DeploymentPackageRef.Name
+		if d.Spec.DeploymentPackageRef.Version != "" {
+			deploymentPackage = deploymentPackage + "-" + d.Spec.DeploymentPackageRef.Version
+		}
+		if d.Spec.DeploymentPackageRef.ProfileName != "" {
+			deploymentPackage = deploymentPackage + "-" + d.Spec.DeploymentPackageRef.ProfileName
+		}
+		labels["app.edge-orchestrator.intel.com/deployment-package"] = deploymentPackage
+	}
+
+	// Add deployment-ids annotation for reference counting
+	annotations := make(map[string]string)
+	for k, v := range ns.Annotations {
+		annotations[k] = v
+	}
+	if d != nil {
+		annotations["app.edge-orchestrator.intel.com/deployment-ids"] = string(d.UID)
+	}
+
 	subFleetConf := Config{
 		Name:                 bundleName,
 		DefaultNamespace:     ns.Name,
-		NamespaceLabels:      ns.Labels,
-		NamespaceAnnotations: ns.Annotations,
+		NamespaceLabels:      labels,      // Fleet will apply these when creating namespace
+		NamespaceAnnotations: annotations, // Fleet will apply these when creating namespace
 	}
 
 	// Generate fleet.yaml from Config
-	err := WriteFleetConfig(filepath.Join(fleetPath, ns.Name+"-ns"), subFleetConf)
-	if err != nil {
+	if err := WriteFleetConfig(filepath.Join(fleetPath, ns.Name+"-ns"), subFleetConf); err != nil {
 		return err
 	}
 
-	// Adding an empty YAML file to trigger bundle creation
+	// Add empty YAML to trigger bundle creation (Fleet/Helm manages namespace lifecycle)
 	emptyYaml := map[string]interface{}{}
-	err = WriteResourceConfig(
-		filepath.Join(fleetPath, ns.Name+"-ns"),
-		emptyYaml, "empty.yaml")
-	if err != nil {
+	if err := WriteResourceConfig(filepath.Join(fleetPath, ns.Name+"-ns"), emptyYaml, "empty.yaml"); err != nil {
 		return err
 	}
 
