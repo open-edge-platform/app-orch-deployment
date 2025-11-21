@@ -13,7 +13,8 @@ on:
       - 'app-deployment-manager/api/nbi/**'
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
   post-merge-pipeline:
