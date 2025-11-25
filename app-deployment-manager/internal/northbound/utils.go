@@ -74,7 +74,7 @@ func deploymentState(s string) deploymentpb.State {
 }
 
 // Set the details of the deployment and return the instance.
-func createDeploymentCr(d *Deployment, scenario string, resourceVersion string) (*deploymentv1beta1.Deployment, error) {
+func createDeploymentCr(d *Deployment, scenario string, resourceVersion string, existingDeployment *deploymentv1beta1.Deployment) (*deploymentv1beta1.Deployment, error) {
 	labelList := map[string]string{
 		"app.kubernetes.io/name":       "deployment",
 		"app.kubernetes.io/instance":   d.Name,
@@ -107,13 +107,45 @@ func createDeploymentCr(d *Deployment, scenario string, resourceVersion string) 
 				}
 			}
 
+			// For update scenario, preserve existing targets from the deployed CR
+			// and merge with new targets from the request
+			if scenario == "update" && existingDeployment != nil {
+				// Find existing app in the deployment
+				for _, existingApp := range existingDeployment.Spec.Applications {
+					if existingApp.Name == app.Name {
+						// Start with existing targets
+						targetsList = append(targetsList, existingApp.Targets...)
+						break
+					}
+				}
+			}
+
+			// Add or update targets from the request
 			for _, target := range d.TargetClusters {
 				if app.Name == target.AppName {
 					if d.DeploymentType == string(deploymentv1beta1.Targeted) {
 						target.Labels[string(deploymentv1beta1.ClusterName)] = target.ClusterId
 					}
 
-					targetsList = append(targetsList, target.Labels)
+					// Check if this target already exists (to avoid duplicates)
+					targetExists := false
+					targetClusterName := target.Labels[string(deploymentv1beta1.ClusterName)]
+					for _, existingTarget := range targetsList {
+						existingClusterName := existingTarget[string(deploymentv1beta1.ClusterName)]
+						if existingClusterName == targetClusterName {
+							targetExists = true
+							// Update the existing target with new metadata
+							for key, value := range target.Labels {
+								existingTarget[key] = value
+							}
+							break
+						}
+					}
+
+					// Add new target if it doesn't exist
+					if !targetExists {
+						targetsList = append(targetsList, target.Labels)
+					}
 				}
 			}
 
