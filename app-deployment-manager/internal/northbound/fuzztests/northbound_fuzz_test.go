@@ -179,15 +179,21 @@ func FuzzCreateDeployment(f *testing.F) {
 			return
 		}
 
-		// Clear mock expectations every 1000 iterations to prevent memory exhaustion
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
 		// This prevents accumulation of expectations during long fuzz runs
-		// With 3 expectations per iteration, this limits max to ~3000 expectations
+		// With 3 expectations per iteration, this limits max to ~1500 expectations
+		// Reduced from 1000 to 500 to be more aggressive for very long runs
 		iterationCount++
-		if iterationCount%1000 == 0 {
+		if iterationCount%500 == 0 {
 			s.k8sClient.ExpectedCalls = nil
 			s.k8sClient.Calls = nil
 			s.catalogClient.ExpectedCalls = nil
 			s.catalogClient.Calls = nil
+
+			// Log progress periodically to track execution
+			if iterationCount%10000 == 0 {
+				t.Logf("Fuzz progress: %d iterations completed", iterationCount)
+			}
 		}
 
 		appDeploymentInstance := createAppDeployment(req)
@@ -275,12 +281,20 @@ func FuzzListDeployments(f *testing.F) {
 
 	deploymentServer := northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, kc, nil, s.catalogClient, s.vaultAuthMock, &s.protoValidator)
 
+	var iterationCount int64
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
 		req := &deploymentpb.ListDeploymentsRequest{}
 		err = consumer.GenerateStruct(&req)
 		if err != nil {
 			return
+		}
+
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
+		iterationCount++
+		if iterationCount%500 == 0 {
+			s.k8sClient.ExpectedCalls = nil
+			s.k8sClient.Calls = nil
 		}
 
 		s.k8sClient.On(
@@ -325,12 +339,20 @@ func FuzzListDeploymentClusters(f *testing.F) {
 
 	deploymentServer := northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, kc, nil, s.catalogClient, s.vaultAuthMock, &s.protoValidator)
 
+	var iterationCount int64
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
 		req := &deploymentpb.ListDeploymentClustersRequest{}
 		err = consumer.GenerateStruct(&req)
 		if err != nil {
 			return
+		}
+
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
+		iterationCount++
+		if iterationCount%500 == 0 {
+			s.k8sClient.ExpectedCalls = nil
+			s.k8sClient.Calls = nil
 		}
 
 		s.k8sClient.On(
@@ -378,12 +400,20 @@ func FuzzListClusters(f *testing.F) {
 
 	deploymentServer := northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, kc, nil, s.catalogClient, s.vaultAuthMock, &s.protoValidator)
 
+	var iterationCount int64
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
 		req := &deploymentpb.ListClustersRequest{}
 		err = consumer.GenerateStruct(&req)
 		if err != nil {
 			return
+		}
+
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
+		iterationCount++
+		if iterationCount%500 == 0 {
+			s.k8sClient.ExpectedCalls = nil
+			s.k8sClient.Calls = nil
 		}
 
 		s.k8sClient.On(
@@ -428,12 +458,20 @@ func FuzzDeploymentsStatus(f *testing.F) {
 
 	deploymentServer := northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, kc, nil, s.catalogClient, s.vaultAuthMock, &s.protoValidator)
 
+	var iterationCount int64
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
 		req := &deploymentpb.GetDeploymentsStatusRequest{}
 		err = consumer.GenerateStruct(&req)
 		if err != nil {
 			return
+		}
+
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
+		iterationCount++
+		if iterationCount%500 == 0 {
+			s.k8sClient.ExpectedCalls = nil
+			s.k8sClient.Calls = nil
 		}
 
 		s.k8sClient.On(
@@ -476,12 +514,20 @@ func FuzzGetDeployment(f *testing.F) {
 
 	deploymentServer := northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, nil, nil, nil, nil, &s.protoValidator)
 
+	var iterationCount int64
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
 		req := &deploymentpb.GetDeploymentRequest{}
 		err = consumer.GenerateStruct(&req)
 		if err != nil {
 			return
+		}
+
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
+		iterationCount++
+		if iterationCount%500 == 0 {
+			s.k8sClient.ExpectedCalls = nil
+			s.k8sClient.Calls = nil
 		}
 
 		s.k8sClient.On(
@@ -508,12 +554,20 @@ func FuzzGetCluster(f *testing.F) {
 
 	deploymentServer := northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, nil, nil, nil, nil, &s.protoValidator)
 
+	var iterationCount int64
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
 		req := &deploymentpb.GetClusterRequest{}
 		err = consumer.GenerateStruct(&req)
 		if err != nil {
 			return
+		}
+
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
+		iterationCount++
+		if iterationCount%500 == 0 {
+			s.k8sClient.ExpectedCalls = nil
+			s.k8sClient.Calls = nil
 		}
 
 		s.k8sClient.On(
@@ -598,6 +652,8 @@ func FuzzGetKubeConfig(f *testing.F) {
 	deploymentServer := northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, kc, nil, nil, nil, &s.protoValidator)
 
 	f.Add(seedData1)
+
+	var iterationCount int64
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
 		req := &deploymentpb.GetKubeConfigRequest{}
@@ -606,13 +662,20 @@ func FuzzGetKubeConfig(f *testing.F) {
 			return
 		}
 
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
+		iterationCount++
+		if iterationCount%500 == 0 {
+			s.k8sClient.ExpectedCalls = nil
+			s.k8sClient.Calls = nil
+		}
+
 		s.k8sClient.On(
 			"Get", s.ctx, CLUSTER_NAME, mock.AnythingOfType("v1.GetOptions"),
-		).Return(&s.clusterListSrc.Items[0], nil)
+		).Return(&s.clusterListSrc.Items[0], nil).Maybe()
 
 		s.k8sClient.On(
 			"Get", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("v1.GetOptions"),
-		).Return((*deploymentv1beta1.Cluster)(nil), k8serrors.NewNotFound(schema.GroupResource{}, ""))
+		).Return((*deploymentv1beta1.Cluster)(nil), k8serrors.NewNotFound(schema.GroupResource{}, "")).Maybe()
 
 		resp, err := deploymentServer.GetKubeConfig(s.ctx, req)
 		if err != nil {
@@ -642,6 +705,7 @@ func FuzzDeleteDeployment(f *testing.F) {
 	f.Add(seedData1)
 	f.Add(seedData2)
 
+	var iterationCount int64
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
 		req := &deploymentpb.DeleteDeploymentRequest{}
@@ -650,9 +714,16 @@ func FuzzDeleteDeployment(f *testing.F) {
 			return
 		}
 
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
+		iterationCount++
+		if iterationCount%500 == 0 {
+			s.k8sClient.ExpectedCalls = nil
+			s.k8sClient.Calls = nil
+		}
+
 		s.k8sClient.On(
 			"List", s.ctx, mock.AnythingOfType("v1.ListOptions"),
-		).Return(&deploymentv1beta1.DeploymentList{}, nil)
+		).Return(&deploymentv1beta1.DeploymentList{}, nil).Maybe()
 
 		resp, err := s.deploymentServer.DeleteDeployment(s.ctx, req)
 		if err != nil {
@@ -678,6 +749,8 @@ func FuzzUpdateDeployment(f *testing.F) {
 	err := proto.Unmarshal(seedData, seedReq)
 	assert.NoError(f, err)
 	f.Add(seedData)
+
+	var iterationCount int64
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
 		req := &deploymentpb.UpdateDeploymentRequest{}
@@ -686,9 +759,16 @@ func FuzzUpdateDeployment(f *testing.F) {
 			return
 		}
 
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
+		iterationCount++
+		if iterationCount%500 == 0 {
+			s.k8sClient.ExpectedCalls = nil
+			s.k8sClient.Calls = nil
+		}
+
 		s.k8sClient.On(
 			"Update", context.Background(), mock.AnythingOfType("string"), s.deployInstance, mock.AnythingOfType("v1.UpdateOptions"),
-		).Return(s.deployInstance, nil)
+		).Return(s.deployInstance, nil).Maybe()
 
 		resp, err := s.deploymentServer.UpdateDeployment(s.ctx, req)
 		if err != nil {
@@ -721,12 +801,21 @@ func FuzzListDeploymentsPerCluster(f *testing.F) {
 	deploymentServer := northbound.NewDeploymentMustSucceed(s.k8sClient, s.opaMock, kc, nil, nil, nil, &s.protoValidator)
 
 	f.Add(seedData)
+
+	var iterationCount int64
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
 		req := &deploymentpb.ListDeploymentsPerClusterRequest{}
 		err = consumer.GenerateStruct(&req)
 		if err != nil {
 			return
+		}
+
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
+		iterationCount++
+		if iterationCount%500 == 0 {
+			s.k8sClient.ExpectedCalls = nil
+			s.k8sClient.Calls = nil
 		}
 
 		req.PageSize = 1

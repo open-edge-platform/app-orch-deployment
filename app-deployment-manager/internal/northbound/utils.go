@@ -73,17 +73,25 @@ func deploymentState(s string) deploymentpb.State {
 	}
 }
 
-// labelsMatch checks if two label maps are identical
-func labelsMatch(labels1, labels2 map[string]string) bool {
-	if len(labels1) != len(labels2) {
-		return false
-	}
-	for key, value := range labels1 {
-		if labels2[key] != value {
+// labelsSubsetMatch checks if all labels from subset exist in superset with the same values
+// Returns true if subset labels are all present in superset (superset may have additional labels)
+func labelsSubsetMatch(subset, superset map[string]string) bool {
+	for key, value := range subset {
+		if superset[key] != value {
 			return false
 		}
 	}
 	return true
+}
+
+// targetsWouldSelectSameClusters checks if two target label sets would select overlapping clusters
+// For AutoScaling, if target1's labels are a subset of target2, or vice versa, they would
+// select overlapping/same clusters and should be considered as updates not separate targets
+func targetsWouldSelectSameClusters(target1, target2 map[string]string) bool {
+	// If either is a subset of the other, they would select overlapping clusters
+	// Example: {app: emt} is subset of {app: emt, user: customer}
+	// Both would select a cluster with labels {app: emt, user: customer, ...}
+	return labelsSubsetMatch(target1, target2) || labelsSubsetMatch(target2, target1)
 }
 
 // Set the details of the deployment and return the instance.
@@ -120,10 +128,9 @@ func createDeploymentCr(d *Deployment, scenario string, resourceVersion string, 
 				}
 			}
 
-			// For update scenario, preserve existing targets from the deployed CR
-			// and merge with new targets from the request
+			// For update scenario, start with existing targets from the deployed CR
+			// This ensures targets accumulate across updates (UI sends one target at a time)
 			if scenario == "update" && existingDeployment != nil {
-				// Find existing app in the deployment
 				for _, existingApp := range existingDeployment.Spec.Applications {
 					if existingApp.Name == app.Name {
 						// Start with existing targets
@@ -144,7 +151,7 @@ func createDeploymentCr(d *Deployment, scenario string, resourceVersion string, 
 					targetExists := false
 
 					// For Targeted deployments, match by ClusterName
-					// For AutoScaling deployments, match by exact label set to determine if it's truly the same target
+					// For AutoScaling deployments, match by exact label set
 					if d.DeploymentType == string(deploymentv1beta1.Targeted) {
 						targetClusterName := target.Labels[string(deploymentv1beta1.ClusterName)]
 						for _, existingTarget := range targetsList {
@@ -159,15 +166,17 @@ func createDeploymentCr(d *Deployment, scenario string, resourceVersion string, 
 							}
 						}
 					} else {
-						// For AutoScaling, check if the exact label set already exists
-						// This allows adding new targets with different label sets
-						for _, existingTarget := range targetsList {
-							if labelsMatch(target.Labels, existingTarget) {
+						// For AutoScaling, check if this target would select the same clusters as an existing target
+						// If labels overlap (one is subset of other), they select the same clusters
+						// Example: {app: emt} and {app: emt, user: customer} both select clusters with both labels
+						for i, existingTarget := range targetsList {
+							if targetsWouldSelectSameClusters(target.Labels, existingTarget) {
 								targetExists = true
-								// Update the existing target with new metadata
-								for key, value := range target.Labels {
-									existingTarget[key] = value
+								// Replace with the more specific target (has more labels)
+								if len(target.Labels) > len(existingTarget) {
+									targetsList[i] = target.Labels
 								}
+								// If existing is more specific, keep it
 								break
 							}
 						}
