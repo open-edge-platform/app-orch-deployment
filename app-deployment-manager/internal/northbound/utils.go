@@ -73,6 +73,19 @@ func deploymentState(s string) deploymentpb.State {
 	}
 }
 
+// labelsMatch checks if two label maps are identical
+func labelsMatch(labels1, labels2 map[string]string) bool {
+	if len(labels1) != len(labels2) {
+		return false
+	}
+	for key, value := range labels1 {
+		if labels2[key] != value {
+			return false
+		}
+	}
+	return true
+}
+
 // Set the details of the deployment and return the instance.
 func createDeploymentCr(d *Deployment, scenario string, resourceVersion string, existingDeployment *deploymentv1beta1.Deployment) (*deploymentv1beta1.Deployment, error) {
 	labelList := map[string]string{
@@ -129,16 +142,34 @@ func createDeploymentCr(d *Deployment, scenario string, resourceVersion string, 
 
 					// Check if this target already exists (to avoid duplicates)
 					targetExists := false
-					targetClusterName := target.Labels[string(deploymentv1beta1.ClusterName)]
-					for _, existingTarget := range targetsList {
-						existingClusterName := existingTarget[string(deploymentv1beta1.ClusterName)]
-						if existingClusterName == targetClusterName {
-							targetExists = true
-							// Update the existing target with new metadata
-							for key, value := range target.Labels {
-								existingTarget[key] = value
+
+					// For Targeted deployments, match by ClusterName
+					// For AutoScaling deployments, match by exact label set to determine if it's truly the same target
+					if d.DeploymentType == string(deploymentv1beta1.Targeted) {
+						targetClusterName := target.Labels[string(deploymentv1beta1.ClusterName)]
+						for _, existingTarget := range targetsList {
+							existingClusterName := existingTarget[string(deploymentv1beta1.ClusterName)]
+							if existingClusterName == targetClusterName && targetClusterName != "" {
+								targetExists = true
+								// Update the existing target with new metadata
+								for key, value := range target.Labels {
+									existingTarget[key] = value
+								}
+								break
 							}
-							break
+						}
+					} else {
+						// For AutoScaling, check if the exact label set already exists
+						// This allows adding new targets with different label sets
+						for _, existingTarget := range targetsList {
+							if labelsMatch(target.Labels, existingTarget) {
+								targetExists = true
+								// Update the existing target with new metadata
+								for key, value := range target.Labels {
+									existingTarget[key] = value
+								}
+								break
+							}
 						}
 					}
 
@@ -272,6 +303,11 @@ func createDeploymentCr(d *Deployment, scenario string, resourceVersion string, 
 				DeploymentPackageRef: dpRef,
 				Applications:         applicationsList,
 				DeploymentType:       deploymentType(d.DeploymentType),
+				NetworkRef: corev1.ObjectReference{
+					Name:       d.NetworkName,
+					Kind:       "Network",
+					APIVersion: "network.edge-orchestrator.intel/v1",
+				},
 			},
 		}
 		return setInstance, nil
