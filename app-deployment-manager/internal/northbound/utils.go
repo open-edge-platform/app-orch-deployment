@@ -73,25 +73,18 @@ func deploymentState(s string) deploymentpb.State {
 	}
 }
 
-// labelsSubsetMatch checks if all labels from subset exist in superset with the same values
-// Returns true if subset labels are all present in superset (superset may have additional labels)
-func labelsSubsetMatch(subset, superset map[string]string) bool {
-	for key, value := range subset {
-		if superset[key] != value {
+// labelsMatch checks if two label maps are exactly identical.
+// Returns true only if both maps have the same keys and values.
+func labelsMatch(labels1, labels2 map[string]string) bool {
+	if len(labels1) != len(labels2) {
+		return false
+	}
+	for key, value := range labels1 {
+		if labels2Value, exists := labels2[key]; !exists || labels2Value != value {
 			return false
 		}
 	}
 	return true
-}
-
-// targetsWouldSelectSameClusters checks if two target label sets would select overlapping clusters
-// For AutoScaling, if target1's labels are a subset of target2, or vice versa, they would
-// select overlapping/same clusters and should be considered as updates not separate targets
-func targetsWouldSelectSameClusters(target1, target2 map[string]string) bool {
-	// If either is a subset of the other, they would select overlapping clusters
-	// Example: {app: emt} is subset of {app: emt, user: customer}
-	// Both would select a cluster with labels {app: emt, user: customer, ...}
-	return labelsSubsetMatch(target1, target2) || labelsSubsetMatch(target2, target1)
 }
 
 // Set the details of the deployment and return the instance.
@@ -107,6 +100,13 @@ func createDeploymentCr(d *Deployment, scenario string, resourceVersion string, 
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
 
 	labelList[activeProjectIDKey] = d.ActiveProjectID
+
+	// For update scenario, preserve NetworkRef if not provided in the request
+	if scenario == "update" && existingDeployment != nil {
+		if d.NetworkName == "" && existingDeployment.Spec.NetworkRef.Name != "" {
+			d.NetworkName = existingDeployment.Spec.NetworkRef.Name
+		}
+	}
 
 	// fixme: understand where namespaceLabel is retrieved from ie controller, fleet ?
 	namespaceLabels := map[string]string{}
@@ -147,42 +147,102 @@ func createDeploymentCr(d *Deployment, scenario string, resourceVersion string, 
 						target.Labels[string(deploymentv1beta1.ClusterName)] = target.ClusterId
 					}
 
-					// Check if this target already exists (to avoid duplicates)
+					// Check if this target overlaps with any existing target
 					targetExists := false
+					overlappingTargetIndex := -1
 
-					// For Targeted deployments, match by ClusterName
-					// For AutoScaling deployments, match by exact label set
+					// For Targeted deployments, match by ClusterName and merge metadata
 					if d.DeploymentType == string(deploymentv1beta1.Targeted) {
 						targetClusterName := target.Labels[string(deploymentv1beta1.ClusterName)]
-						for _, existingTarget := range targetsList {
+						for i, existingTarget := range targetsList {
 							existingClusterName := existingTarget[string(deploymentv1beta1.ClusterName)]
 							if existingClusterName == targetClusterName && targetClusterName != "" {
 								targetExists = true
-								// Update the existing target with new metadata
-								for key, value := range target.Labels {
-									existingTarget[key] = value
-								}
+								overlappingTargetIndex = i
 								break
 							}
 						}
+
+						if targetExists {
+							// Merge new metadata into existing target
+							for key, value := range target.Labels {
+								targetsList[overlappingTargetIndex][key] = value
+							}
+						}
 					} else {
-						// For AutoScaling, check if this target would select the same clusters as an existing target
-						// If labels overlap (one is subset of other), they select the same clusters
-						// Example: {app: emt} and {app: emt, user: customer} both select clusters with both labels
-						for i, existingTarget := range targetsList {
-							if targetsWouldSelectSameClusters(target.Labels, existingTarget) {
+						// For AutoScaling deployments during UPDATE:
+						// UI sends merged labels, and we need to extract NEW metadata
+						// "NEW" means: key-value pairs that don't exist in ANY existing target
+						//
+						// Examples:
+						// - Existing: {app: test}, New: {app: test, user: customer}
+						//   → Extract {user: customer} as new target
+						// - Existing: {app: test}, New: {app: enic}
+						//   → Extract {app: enic} as new target (different value = new)
+						// - Existing: {app: test, user: customer}, New: {app: enic}
+						//   → Extract {app: enic} as new target
+
+						// First, check if this exact target already exists (idempotent case)
+						exactMatchFound := false
+						for i := range targetsList {
+							if labelsMatch(targetsList[i], target.Labels) {
+								exactMatchFound = true
 								targetExists = true
-								// Replace with the more specific target (has more labels)
-								if len(target.Labels) > len(existingTarget) {
-									targetsList[i] = target.Labels
-								}
-								// If existing is more specific, keep it
 								break
+							}
+						}
+
+						if !exactMatchFound && scenario == "update" && len(targetsList) > 0 {
+							projectIDKey := string(deploymentv1beta1.FleetProjectID)
+
+							// Collect all existing key-value pairs across all targets
+							existingKeyValues := make(map[string]map[string]bool)
+							for _, existingTarget := range targetsList {
+								for key, value := range existingTarget {
+									if key != projectIDKey {
+										if existingKeyValues[key] == nil {
+											existingKeyValues[key] = make(map[string]bool)
+										}
+										existingKeyValues[key][value] = true
+									}
+								}
+							}
+
+							// Extract new key-value pairs from incoming target
+							// A pair is "new" if:
+							// - The key doesn't exist at all, OR
+							// - The key exists but with a different value
+							newKeyValues := make(map[string]string)
+							hasNewKeyValues := false
+
+							for key, value := range target.Labels {
+								if key == projectIDKey {
+									// Always include project-id
+									newKeyValues[key] = value
+								} else {
+									// Check if this exact key-value pair exists
+									if values, keyExists := existingKeyValues[key]; !keyExists {
+										// Key doesn't exist at all - this is new
+										newKeyValues[key] = value
+										hasNewKeyValues = true
+									} else if !values[value] {
+										// Key exists but with different value - this is also new
+										newKeyValues[key] = value
+										hasNewKeyValues = true
+									}
+									// If key exists with same value, skip it (already deployed)
+								}
+							}
+
+							// Add new target with the new key-value pairs
+							if hasNewKeyValues {
+								targetsList = append(targetsList, newKeyValues)
+								targetExists = true
 							}
 						}
 					}
 
-					// Add new target if it doesn't exist
+					// Add new target if it's a completely new target (not an update scenario)
 					if !targetExists {
 						targetsList = append(targetsList, target.Labels)
 					}
