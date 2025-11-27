@@ -13,7 +13,8 @@ on:
       - 'app-deployment-manager/api/nbi/**'
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
   post-merge-pipeline:
@@ -21,7 +22,7 @@ jobs:
       contents: read
       security-events: write
       id-token: write
-    uses: open-edge-platform/orch-ci/.github/workflows/post-merge.yml@57ae89489027070792089531710c450af3b66c26  # 0.1.64
+    uses: open-edge-platform/orch-ci/.github/workflows/post-merge.yml@79c4381f9be567527d8782094317b0282493e45a  # 0.1.66
     with:
       run_version_check: false
       run_dep_version_check: false
