@@ -811,13 +811,11 @@ func (s *DeploymentSvc) CreateDeployment(ctx context.Context, in *deploymentpb.C
 				return nil, errors.Status(err).Err()
 			}
 
-			depCreateInstance, err := createDeploymentCr(dependentDepls[k], "create", "")
+			depCreateInstance, err := createDeploymentCr(dependentDepls[k], "create", "", nil)
 			if err != nil {
 				log.Warnf("cannot create dependent deployment: %v", err)
 				return nil, errors.Status(err).Err()
-			}
-
-			// fill out child deployment list in Deployment CR spec
+			} // fill out child deployment list in Deployment CR spec
 			addRelationshipToDeploymentCR(dependentDepls[k], depCreateInstance)
 
 			dependentDeploymentCR, err = s.crClient.Deployments(d.Namespace).Create(ctx, depCreateInstance, metav1.CreateOptions{})
@@ -866,7 +864,7 @@ func (s *DeploymentSvc) CreateDeployment(ctx context.Context, in *deploymentpb.C
 		return nil, errors.Status(err).Err()
 	}
 
-	createInstance, err := createDeploymentCr(d, "create", "")
+	createInstance, err := createDeploymentCr(d, "create", "", nil)
 	if err != nil {
 		log.Warnf("cannot create deployment: %v", err)
 		return nil, errors.Status(err).Err()
@@ -1461,7 +1459,7 @@ func (s *DeploymentSvc) UpdateDeployment(ctx context.Context, in *deploymentpb.U
 		return nil, errors.Status(err).Err()
 	}
 
-	updateInstance, err := createDeploymentCr(d, "update", deployment.ObjectMeta.ResourceVersion)
+	updateInstance, err := createDeploymentCr(d, "update", deployment.ObjectMeta.ResourceVersion, deployment)
 	if err != nil {
 		log.Warnf("cannot update deployment: %v", err)
 		return nil, errors.Status(err).Err()

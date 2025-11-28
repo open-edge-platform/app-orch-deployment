@@ -2721,8 +2721,22 @@ var _ = Describe("Gateway gRPC Service", func() {
 		It("successfully update deployment", func() {
 			defer ts.Close()
 
+			// With the fix, targets are now preserved from existing deployment during update
+			// So we need to use mock.MatchedBy to verify the deployment has the preserved targets
 			s.k8sClient.On(
-				"Update", nbmocks.AnyContext, mock.AnythingOfType("string"), deployInstance, mock.AnythingOfType("v1.UpdateOptions"),
+				"Update", nbmocks.AnyContext, mock.AnythingOfType("string"),
+				mock.MatchedBy(func(d *deploymentv1beta1.Deployment) bool {
+					// Verify that targets are preserved from the existing deployment
+					if len(d.Spec.Applications) != 1 {
+						return false
+					}
+					if len(d.Spec.Applications[0].Targets) != 1 {
+						return false
+					}
+					// The existing deployment from List mock has targets [{"test":"foo"}]
+					return d.Spec.Applications[0].Targets[0]["test"] == "foo"
+				}),
+				mock.AnythingOfType("v1.UpdateOptions"),
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
@@ -3011,8 +3025,14 @@ var _ = Describe("Gateway gRPC Service", func() {
 				Items:    deploymentListSrc.Items,
 			}, nil).Once()
 
+			// With the fix, targets are now preserved - use mock.MatchedBy to accept any deployment
 			k8sClient.On(
-				"Update", nbmocks.AnyContext, mock.AnythingOfType("string"), deployInstance, mock.AnythingOfType("v1.UpdateOptions"),
+				"Update", nbmocks.AnyContext, mock.AnythingOfType("string"),
+				mock.MatchedBy(func(d *deploymentv1beta1.Deployment) bool {
+					// Accept any deployment since we're testing the error handling, not the content
+					return true
+				}),
+				mock.AnythingOfType("v1.UpdateOptions"),
 			).Return(deployInstance, errors.New("mock update err"))
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)

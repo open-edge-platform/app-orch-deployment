@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	url2 "net/url"
 	"os"
@@ -23,14 +24,28 @@ import (
 )
 
 type FuzzTestSuite struct {
-	ctx    context.Context
-	cancel context.CancelFunc
-	server *server.Server
-	addr   string
-	wg     sync.WaitGroup
+	ctx        context.Context
+	cancel     context.CancelFunc
+	server     *server.Server
+	addr       string
+	wg         sync.WaitGroup
+	httpClient *http.Client
 }
 
-func setupDummyHttpServer(t testing.TB) *http.Server {
+func getFreePort() (int, error) {
+	listener, err := net.Listen("tcp", "localhost:0")
+	if err != nil {
+		return 0, err
+	}
+	port := listener.Addr().(*net.TCPAddr).Port
+	listener.Close()
+	return port, nil
+}
+
+func setupDummyHttpServer(t testing.TB) (*http.Server, int) {
+	port, err := getFreePort()
+	require.NoError(t, err)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -39,12 +54,12 @@ func setupDummyHttpServer(t testing.TB) *http.Server {
 	})
 
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    fmt.Sprintf(":%d", port),
 		Handler: mux,
 	}
 
 	go func() {
-		if err := server.ListenAndServe(); err != nil {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logrus.Warnf("Dummy HTTP server exited: %v", err)
 			t.Error(err)
 		}
@@ -52,13 +67,13 @@ func setupDummyHttpServer(t testing.TB) *http.Server {
 
 	time.Sleep(1 * time.Second)
 
-	resp, err := http.Get("http://localhost:8080/app-service-proxy-test")
+	resp, err := http.Get(fmt.Sprintf("http://localhost:%d/app-service-proxy-test", port))
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	logrus.Warn("Dummy HTTP server started on port 8080")
+	logrus.Warnf("Dummy HTTP server started on port %d", port)
 
-	return server
+	return server, port
 }
 
 func setupFuzzTest(t testing.TB, enableAuth bool) *FuzzTestSuite {
@@ -74,7 +89,15 @@ func setupFuzzTest(t testing.TB, enableAuth bool) *FuzzTestSuite {
 	os.Setenv("TOKEN_TTL_HOURS", "100")
 	os.Setenv("RATE_LIMITER_QPS", "30")
 	os.Setenv("RATE_LIMITER_BURST", "2000")
-	os.Setenv("CCG_ADDRESS", "localhost:8080")
+
+	s := &FuzzTestSuite{}
+	s.addr = "127.0.0.1:8124"
+	s.ctx, s.cancel = context.WithCancel(context.Background())
+
+	// Set up dummy HTTP server first to get its port
+	httpServer, httpPort := setupDummyHttpServer(t)
+	os.Setenv("CCG_ADDRESS", fmt.Sprintf("localhost:%d", httpPort))
+
 	os.Setenv("GIT_REPO_NAME", "mock-git-repo")
 	os.Setenv("GIT_SERVER", "mock-git-server")
 	os.Setenv("GIT_PROVIDER", "mock-git-provider")
@@ -83,10 +106,6 @@ func setupFuzzTest(t testing.TB, enableAuth bool) *FuzzTestSuite {
 	os.Setenv("AGENT_TARGET_NAMESPACE", "mock-app-namespace")
 	os.Setenv("AUTH_TOKEN_SERVICE_ACCOUNT", "mock-service-account")
 	os.Setenv("AUTH_TOKEN_EXPIRATION", "100")
-
-	s := &FuzzTestSuite{}
-	s.addr = "127.0.0.1:8124"
-	s.ctx, s.cancel = context.WithCancel(context.Background())
 
 	var err error
 	s.server, err = server.NewServer(s.addr)
@@ -106,8 +125,6 @@ func setupFuzzTest(t testing.TB, enableAuth bool) *FuzzTestSuite {
 		}
 		logrus.Warnf("ASP server exited: %v", err)
 	}()
-
-	httpServer := setupDummyHttpServer(t)
 
 	// Close servers when the context is done
 	s.wg.Add(1)
@@ -129,6 +146,18 @@ func setupFuzzTest(t testing.TB, enableAuth bool) *FuzzTestSuite {
 	resp, err := http.Get("http://" + s.addr + "/app-service-proxy-test")
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	// Create a custom HTTP client with connection limits to prevent resource exhaustion
+	// during long-running fuzz tests
+	s.httpClient = &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConns:        10,
+			MaxIdleConnsPerHost: 2,
+			IdleConnTimeout:     30 * time.Second,
+			DisableKeepAlives:   true, // Don't keep connections alive during fuzzing
+		},
+		Timeout: 30 * time.Second,
+	}
 
 	logrus.SetLevel(logrus.ErrorLevel)
 	logrus.SetReportCaller(true)
@@ -153,7 +182,7 @@ func FuzzRouter(f *testing.F) {
 		req.Header.Add("X-Forwarded-Host", "app-service-proxy.kind.internal")
 		req.Header.Add("X-Forwarded-Proto", "https")
 		require.NoError(t, err)
-		resp, err := http.DefaultClient.Do(req)
+		resp, err := s.httpClient.Do(req)
 		require.NoError(t, err)
 		if resp.StatusCode != http.StatusBadRequest && resp.StatusCode != http.StatusUnauthorized && resp.StatusCode != http.StatusOK {
 			t.Errorf("Unexpected status code: %d", resp.StatusCode)
@@ -195,7 +224,7 @@ func FuzzProxyHeaderHost(f *testing.F) {
 		require.NoError(t, err)
 		req.Header.Add("X-Forwarded-Host", escapeHeaderValue(seedData))
 		req.Header.Add("X-Forwarded-Proto", "https")
-		resp, err := http.DefaultClient.Do(req)
+		resp, err := s.httpClient.Do(req)
 		require.NoError(t, err)
 		require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 		_, err = io.Copy(io.Discard, resp.Body)
@@ -224,7 +253,7 @@ func FuzzProxyHeaderProto(f *testing.F) {
 		req.Header.Add("X-Forwarded-Proto", escapeHeaderValue(seedData))
 		req.Header.Add("X-Forwarded-Host", "app-service-proxy.kind.internal")
 		req.Header.Add("X-Forwarded-Port", "8080")
-		resp, err := http.DefaultClient.Do(req)
+		resp, err := s.httpClient.Do(req)
 		require.NoError(t, err)
 		require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 		_, err = io.Copy(io.Discard, resp.Body)

@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -66,52 +67,87 @@ func setupFuzzTestREST(f testing.TB) *FuzzTestSuiteRest {
 	ctrl := gomock.NewController(t)
 	s.mock = mocks.NewMockDeploymentServiceServer(ctrl)
 
-	// Use fixed gRPC port
-	grpcPort := 8080
-	grpcAddr := fmt.Sprintf("localhost:%d", grpcPort)
+	// Use port 0 to let the OS assign a free port for gRPC
+	// This avoids port conflicts and int16 overflow issues
+	serverConfig := libnorthbound.NewInsecureServerConfig(0)
+	srv := libnorthbound.NewServer(serverConfig)
+	srv.AddService(&mockServiceWrapper{mock: s.mock})
+	doneCh := make(chan string, 1)
+	errCh := make(chan error, 1)
+	go func() {
+		err := srv.Serve(func(started string) {
+			f.Log("gRPC server started on", started)
+			doneCh <- started
+		}, grpc.MaxRecvMsgSize(1*1024*1024))
+		if err != nil {
+			errCh <- err
+		}
+	}()
 
+	// Wait for gRPC server to start and get the actual address
+	var grpcAddr string
+	select {
+	case actualAddr := <-doneCh:
+		f.Logf("gRPC server ready at %s", actualAddr)
+		// Extract port from address like "[::]:46095" and convert to "localhost:46095"
+		// for the gateway to connect to
+		parts := strings.Split(actualAddr, ":")
+		if len(parts) >= 2 {
+			grpcAddr = fmt.Sprintf("localhost:%s", parts[len(parts)-1])
+		} else {
+			f.Fatalf("Failed to parse gRPC address: %s", actualAddr)
+		}
+	case err := <-errCh:
+		f.Fatalf("gRPC server failed to start: %v", err)
+	case <-time.After(10 * time.Second):
+		f.Fatal("gRPC server did not start within 10 seconds")
+	}
+
+	f.Cleanup(func() {
+		if srv != nil {
+			srv.Stop()
+		}
+	})
+
+	// Get a free port for the gateway
 	gwAddr, err := getFreePort()
 	require.NoError(f, err)
 	s.gwport = uint16(gwAddr)
 
-	serverConfig := libnorthbound.NewInsecureServerConfig(int16(grpcPort))
-	srv := libnorthbound.NewServer(serverConfig)
-	srv.AddService(&mockServiceWrapper{mock: s.mock})
-	doneCh := make(chan error)
+	gwErrCh := make(chan error, 1)
 	go func() {
-		err := srv.Serve(func(started string) {
-			f.Log("gRPC server started on port", started)
-			close(doneCh)
-		}, grpc.MaxRecvMsgSize(1*1024*1024))
-		if err != nil {
-			doneCh <- err
-		}
-	}()
-
-	f.Cleanup(func() {
-		srv.Stop()
-	})
-
-	go func() {
-		f.Logf("gRPC gateway started on port %v", gwAddr)
+		f.Logf("gRPC gateway starting on port %v", gwAddr)
 		err := restproxy.Run(grpcAddr, gwAddr, allowedCorsOrigins, basePath, "../../../api/nbi/v2/spec/openapi.yaml")
-		require.NoError(f, err)
+		if err != nil {
+			f.Logf("gRPC gateway error: %v", err)
+			gwErrCh <- err
+		}
 	}()
 
 	s.client, err = restClient.NewClientWithResponses(fmt.Sprintf("http://localhost:%d", gwAddr))
 	require.NoError(f, err)
 
 	// Wait until the gateway is ready
+	// Increased timeout to 30 seconds for fuzzing environment which may be under load
 	require.Eventually(f, func() bool {
+		select {
+		case err := <-gwErrCh:
+			f.Fatalf("gRPC gateway failed: %v", err)
+			return false
+		default:
+		}
 		resp, err := http.Get(fmt.Sprintf("http://localhost:%d/healthz", gwAddr))
 		if err != nil {
+			f.Logf("Health check error: %v", err)
 			return false
 		}
+		defer resp.Body.Close()
 		if resp.StatusCode != http.StatusOK {
+			f.Logf("Health check returned status: %d", resp.StatusCode)
 			return false
 		}
 		return true
-	}, time.Second*10, time.Millisecond*500)
+	}, time.Second*30, time.Second*1)
 
 	return s
 }

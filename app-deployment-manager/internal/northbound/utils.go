@@ -73,8 +73,22 @@ func deploymentState(s string) deploymentpb.State {
 	}
 }
 
+// labelsMatch checks if two label maps are exactly identical.
+// Returns true only if both maps have the same keys and values.
+func labelsMatch(labels1, labels2 map[string]string) bool {
+	if len(labels1) != len(labels2) {
+		return false
+	}
+	for key, value := range labels1 {
+		if labels2Value, exists := labels2[key]; !exists || labels2Value != value {
+			return false
+		}
+	}
+	return true
+}
+
 // Set the details of the deployment and return the instance.
-func createDeploymentCr(d *Deployment, scenario string, resourceVersion string) (*deploymentv1beta1.Deployment, error) {
+func createDeploymentCr(d *Deployment, scenario string, resourceVersion string, existingDeployment *deploymentv1beta1.Deployment) (*deploymentv1beta1.Deployment, error) {
 	labelList := map[string]string{
 		"app.kubernetes.io/name":       "deployment",
 		"app.kubernetes.io/instance":   d.Name,
@@ -86,6 +100,13 @@ func createDeploymentCr(d *Deployment, scenario string, resourceVersion string) 
 	activeProjectIDKey := string(deploymentv1beta1.AppOrchActiveProjectID)
 
 	labelList[activeProjectIDKey] = d.ActiveProjectID
+
+	// For update scenario, preserve NetworkRef if not provided in the request
+	if scenario == "update" && existingDeployment != nil {
+		if d.NetworkName == "" && existingDeployment.Spec.NetworkRef.Name != "" {
+			d.NetworkName = existingDeployment.Spec.NetworkRef.Name
+		}
+	}
 
 	// fixme: understand where namespaceLabel is retrieved from ie controller, fleet ?
 	namespaceLabels := map[string]string{}
@@ -107,13 +128,124 @@ func createDeploymentCr(d *Deployment, scenario string, resourceVersion string) 
 				}
 			}
 
+			// For update scenario, start with existing targets from the deployed CR
+			// This ensures targets accumulate across updates (UI sends one target at a time)
+			if scenario == "update" && existingDeployment != nil {
+				for _, existingApp := range existingDeployment.Spec.Applications {
+					if existingApp.Name == app.Name {
+						// Start with existing targets
+						targetsList = append(targetsList, existingApp.Targets...)
+						break
+					}
+				}
+			}
+
+			// Add or update targets from the request
 			for _, target := range d.TargetClusters {
 				if app.Name == target.AppName {
 					if d.DeploymentType == string(deploymentv1beta1.Targeted) {
 						target.Labels[string(deploymentv1beta1.ClusterName)] = target.ClusterId
 					}
 
-					targetsList = append(targetsList, target.Labels)
+					// Check if this target overlaps with any existing target
+					targetExists := false
+					overlappingTargetIndex := -1
+
+					// For Targeted deployments, match by ClusterName and merge metadata
+					if d.DeploymentType == string(deploymentv1beta1.Targeted) {
+						targetClusterName := target.Labels[string(deploymentv1beta1.ClusterName)]
+						for i, existingTarget := range targetsList {
+							existingClusterName := existingTarget[string(deploymentv1beta1.ClusterName)]
+							if existingClusterName == targetClusterName && targetClusterName != "" {
+								targetExists = true
+								overlappingTargetIndex = i
+								break
+							}
+						}
+
+						if targetExists {
+							// Merge new metadata into existing target
+							for key, value := range target.Labels {
+								targetsList[overlappingTargetIndex][key] = value
+							}
+						}
+					} else {
+						// For AutoScaling deployments during UPDATE:
+						// UI sends merged labels, and we need to extract NEW metadata
+						// "NEW" means: key-value pairs that don't exist in ANY existing target
+						//
+						// Examples:
+						// - Existing: {app: test}, New: {app: test, user: customer}
+						//   → Extract {user: customer} as new target
+						// - Existing: {app: test}, New: {app: enic}
+						//   → Extract {app: enic} as new target (different value = new)
+						// - Existing: {app: test, user: customer}, New: {app: enic}
+						//   → Extract {app: enic} as new target
+
+						// First, check if this exact target already exists (idempotent case)
+						exactMatchFound := false
+						for i := range targetsList {
+							if labelsMatch(targetsList[i], target.Labels) {
+								exactMatchFound = true
+								targetExists = true
+								break
+							}
+						}
+
+						if !exactMatchFound && scenario == "update" && len(targetsList) > 0 {
+							projectIDKey := string(deploymentv1beta1.FleetProjectID)
+
+							// Collect all existing key-value pairs across all targets
+							existingKeyValues := make(map[string]map[string]bool)
+							for _, existingTarget := range targetsList {
+								for key, value := range existingTarget {
+									if key != projectIDKey {
+										if existingKeyValues[key] == nil {
+											existingKeyValues[key] = make(map[string]bool)
+										}
+										existingKeyValues[key][value] = true
+									}
+								}
+							}
+
+							// Extract new key-value pairs from incoming target
+							// A pair is "new" if:
+							// - The key doesn't exist at all, OR
+							// - The key exists but with a different value
+							newKeyValues := make(map[string]string)
+							hasNewKeyValues := false
+
+							for key, value := range target.Labels {
+								if key == projectIDKey {
+									// Always include project-id
+									newKeyValues[key] = value
+								} else {
+									// Check if this exact key-value pair exists
+									if values, keyExists := existingKeyValues[key]; !keyExists {
+										// Key doesn't exist at all - this is new
+										newKeyValues[key] = value
+										hasNewKeyValues = true
+									} else if !values[value] {
+										// Key exists but with different value - this is also new
+										newKeyValues[key] = value
+										hasNewKeyValues = true
+									}
+									// If key exists with same value, skip it (already deployed)
+								}
+							}
+
+							// Add new target with the new key-value pairs
+							if hasNewKeyValues {
+								targetsList = append(targetsList, newKeyValues)
+								targetExists = true
+							}
+						}
+					}
+
+					// Add new target if it's a completely new target (not an update scenario)
+					if !targetExists {
+						targetsList = append(targetsList, target.Labels)
+					}
 				}
 			}
 
@@ -240,6 +372,11 @@ func createDeploymentCr(d *Deployment, scenario string, resourceVersion string) 
 				DeploymentPackageRef: dpRef,
 				Applications:         applicationsList,
 				DeploymentType:       deploymentType(d.DeploymentType),
+				NetworkRef: corev1.ObjectReference{
+					Name:       d.NetworkName,
+					Kind:       "Network",
+					APIVersion: "network.edge-orchestrator.intel/v1",
+				},
 			},
 		}
 		return setInstance, nil

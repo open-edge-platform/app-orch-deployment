@@ -44,6 +44,7 @@ func FuzzGetVNC(f *testing.F) {
 	assert.NoError(f, err)
 	f.Add(seedData)
 
+	var iterationCount int64
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 
 		consumer := fuzz.NewConsumer(seedData)
@@ -52,9 +53,17 @@ func FuzzGetVNC(f *testing.F) {
 		if err != nil {
 			return
 		}
+
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
+		iterationCount++
+		if iterationCount%500 == 0 {
+			s.sbHandlerMock.ExpectedCalls = nil
+			s.sbHandlerMock.Calls = nil
+		}
+
 		s.sbHandlerMock.On("AccessVMWithVNC", mock.AnythingOfType("*context.cancelCtx"),
 			mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).
-			Return(nil, nil)
+			Return(nil, nil).Maybe()
 
 		resp, err := s.server.GetVNC(s.ctx, req)
 		if err != nil {
@@ -77,6 +86,7 @@ func FuzzStartVM(f *testing.F) {
 	assert.NoError(f, err)
 	f.Add(seedData)
 
+	var iterationCount int64
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
 		req := &resourcev2.StartVirtualMachineRequest{}
@@ -84,9 +94,17 @@ func FuzzStartVM(f *testing.F) {
 		if err != nil {
 			return
 		}
+
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
+		iterationCount++
+		if iterationCount%500 == 0 {
+			s.sbHandlerMock.ExpectedCalls = nil
+			s.sbHandlerMock.Calls = nil
+		}
+
 		s.sbHandlerMock.On("StartVM", mock.AnythingOfType("*context.cancelCtx"),
 			mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).
-			Return(nil)
+			Return(nil).Maybe()
 
 		resp, err := s.server.StartVirtualMachine(s.ctx, req)
 		if err != nil {
@@ -111,6 +129,7 @@ func FuzzStopVM(f *testing.F) {
 	assert.NoError(f, err)
 	f.Add(seedData)
 
+	var iterationCount int64
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
 		req := &resourcev2.StopVirtualMachineRequest{}
@@ -119,9 +138,16 @@ func FuzzStopVM(f *testing.F) {
 			return
 		}
 
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
+		iterationCount++
+		if iterationCount%500 == 0 {
+			s.sbHandlerMock.ExpectedCalls = nil
+			s.sbHandlerMock.Calls = nil
+		}
+
 		s.sbHandlerMock.On("StopVM", mock.AnythingOfType("*context.cancelCtx"),
 			mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).
-			Return(nil)
+			Return(nil).Maybe()
 		resp, err := s.server.StopVirtualMachine(s.ctx, req)
 		if err != nil {
 			assert.Nil(t, resp)
@@ -144,6 +170,7 @@ func FuzzRestartVM(f *testing.F) {
 	assert.NoError(f, err)
 	f.Add(seedData)
 
+	var iterationCount int64
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
 		req := &resourcev2.RestartVirtualMachineRequest{}
@@ -152,9 +179,16 @@ func FuzzRestartVM(f *testing.F) {
 			return
 		}
 
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
+		iterationCount++
+		if iterationCount%500 == 0 {
+			s.sbHandlerMock.ExpectedCalls = nil
+			s.sbHandlerMock.Calls = nil
+		}
+
 		s.sbHandlerMock.On("RestartVM", mock.AnythingOfType("*context.cancelCtx"),
 			mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).
-			Return(nil)
+			Return(nil).Maybe()
 		resp, err := s.server.RestartVirtualMachine(s.ctx, req)
 		if err != nil {
 			assert.Nil(t, resp)
@@ -175,12 +209,21 @@ func FuzzDeletePod(f *testing.F) {
 	assert.NoError(t, err)
 	f.Add(seedData)
 
+	var iterationCount int64
+
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
 		req := &resourcev2.DeletePodRequest{}
 		err = consumer.GenerateStruct(&req)
 		if err != nil {
 			return
+		}
+
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
+		iterationCount++
+		if iterationCount%500 == 0 {
+			s.sbHandlerMock.ExpectedCalls = nil
+			s.sbHandlerMock.Calls = nil
 		}
 
 		s.sbHandlerMock.On("DeletePod", mock.AnythingOfType("*context.cancelCtx"),
@@ -205,12 +248,20 @@ func FuzzListAppEndpoints(f *testing.F) {
 	assert.NoError(t, err)
 	f.Add(seedData)
 
+	var iterationCount int64
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
 		req := &resourcev2.ListAppEndpointsRequest{}
 		err = consumer.GenerateStruct(&req)
 		if err != nil {
 			return
+		}
+
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
+		iterationCount++
+		if iterationCount%500 == 0 {
+			s.sbHandlerMock.ExpectedCalls = nil
+			s.sbHandlerMock.Calls = nil
 		}
 
 		s.sbHandlerMock.On("GetAppEndpointsV2", mock.AnythingOfType("*context.cancelCtx"),
@@ -235,12 +286,20 @@ func FuzzListAppWorkloads(f *testing.F) {
 	assert.NoError(t, err)
 	f.Add(seedData)
 
+	var iterationCount int64
 	f.Fuzz(func(t *testing.T, seedData []byte) {
 		consumer := fuzz.NewConsumer(seedData)
 		req := &resourcev2.ListAppWorkloadsRequest{}
 		err = consumer.GenerateStruct(&req)
 		if err != nil {
 			return
+		}
+
+		// Clear mock expectations every 500 iterations to prevent memory exhaustion
+		iterationCount++
+		if iterationCount%500 == 0 {
+			s.sbHandlerMock.ExpectedCalls = nil
+			s.sbHandlerMock.Calls = nil
 		}
 
 		s.sbHandlerMock.On("GetAppWorkLoads", mock.AnythingOfType("*context.cancelCtx"),
