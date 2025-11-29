@@ -462,20 +462,24 @@ func SetGitCaCert(cert []byte) {
 // WatchGitCaCertFile monitors for new Git CA Cert file. This is needed to handle for certificate rotation for secure webservers
 func WatchGitCaCertFile(ctx context.Context, gitCaCertFolder, gitCaCertFile string) {
 	absFilePath := filepath.Join(gitCaCertFolder, gitCaCertFile)
-	// Check if the ca certificate exists in the first place. If it does not, it is because we are using
-	// insecure git server or the certificate to be used with git server is already part of cert pool.
-	// If the ca certificate does not exist, no more action is needed in this function and we can safely return.
+	// Check if the ca certificate exists initially and load it if available.
+	// If it does not exist yet (e.g., during startup or after upgrade), we'll continue monitoring
+	// and load it when it becomes available. This handles cases where volume mounts complete after
+	// the controller starts or where certificates are added post-deployment.
 	if _, err := os.Stat(absFilePath); err != nil && stdErr.Is(err, os.ErrNotExist) {
-		log.Error("ca.crt file %v does not exist, not monitoring", absFilePath)
-		return
+		log.Warnf("ca.crt file %v does not exist yet, will continue monitoring for when it becomes available", absFilePath)
+		// Don't return here - continue to set up the file watcher so we can load the cert when it appears
+	} else {
+		// File exists, read the initial ca.crt file
+		cert, err := os.ReadFile(absFilePath)
+		if err != nil {
+			log.Errorf("unable to read the ca cert file: %v", err)
+			// Don't fatal - continue monitoring in case it becomes readable later
+		} else {
+			log.Infof("successfully loaded initial ca cert from %v", absFilePath)
+			SetGitCaCert(cert)
+		}
 	}
-	// To start with read the initial ca.crt file. Then start the watcher for monitoring changes due to certificate rotation.
-	cert, err := os.ReadFile(absFilePath)
-	if err != nil {
-		log.Fatal("unable to read the ca cert file: %v", err)
-	}
-	log.Infof("successfully loaded initial ca cert: %v", string(cert))
-	SetGitCaCert(cert)
 
 	// Start FS watcher
 	watcher, err := fsnotify.NewWatcher()
@@ -502,9 +506,11 @@ func WatchGitCaCertFile(ctx context.Context, gitCaCertFolder, gitCaCertFile stri
 					// Reload the certificate or handle the change here
 					cert, err := os.ReadFile(absFilePath) //nolint: govet
 					if err != nil {
-						log.Fatal("unable to read the ca cert file: %v", err)
+						log.Errorf("unable to read the ca cert file after fs event: %v", err)
+						// Don't fatal here - the file might be temporarily unavailable during rotation
+						continue
 					}
-					log.Infof("successfully read new ca cert: %v", string(cert))
+					log.Infof("successfully read updated ca cert from %v", absFilePath)
 					SetGitCaCert(cert)
 				}
 			case err, ok := <-watcher.Errors: //nolint: govet
