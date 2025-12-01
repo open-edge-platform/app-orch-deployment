@@ -1623,7 +1623,57 @@ func (s *DeploymentSvc) ListDeploymentClusters(ctx context.Context, in *deployme
 // propagateTargetsToChildDeployments updates child deployments (dependencies) to ensure
 // they are deployed to the same clusters as the parent deployment
 func (s *DeploymentSvc) propagateTargetsToChildDeployments(ctx context.Context, parentDeployment *deploymentv1beta1.Deployment) error {
-	// Collect all targets from parent deployment applications
+	// For auto-scaling deployments, update child deployments with the same cluster labels/selectors
+	// For targeted deployments, collect explicit target clusters and propagate them
+	
+	if parentDeployment.Spec.DeploymentType == deploymentv1beta1.AutoScaling {
+		// For auto-scaling: Update child deployments to use the same cluster selector labels
+		log.Infof("Propagating cluster selector labels to child deployments (auto-scaling mode)")
+		
+		for childName := range parentDeployment.Spec.ChildDeploymentList {
+			log.Infof("Updating child deployment (auto-scaling): %s", childName)
+			
+			childDeployment, err := s.crClient.Deployments(parentDeployment.Namespace).Get(ctx, childName, metav1.GetOptions{})
+			if err != nil {
+				log.Warnf("Failed to get child deployment %s: %v", childName, err)
+				continue
+			}
+			
+			// Update the deployment type and targets for each application in child deployment
+			updated := false
+			childDeployment.Spec.DeploymentType = deploymentv1beta1.AutoScaling
+			
+			for i := range childDeployment.Spec.Applications {
+				app := &childDeployment.Spec.Applications[i]
+				
+				// Get the parent app's targets (labels for auto-scaling)
+				if len(parentDeployment.Spec.Applications) > 0 {
+					parentTargets := parentDeployment.Spec.Applications[0].Targets
+					
+					// For auto-scaling, targets contain cluster selector labels
+					// Replace child app targets with parent's targets to match cluster selection
+					if !reflect.DeepEqual(app.Targets, parentTargets) {
+						app.Targets = make([]map[string]string, len(parentTargets))
+						copy(app.Targets, parentTargets)
+						updated = true
+						log.Infof("Updated cluster selector labels for child app %s", app.Name)
+					}
+				}
+			}
+			
+			if updated {
+				_, err = s.crClient.Deployments(parentDeployment.Namespace).Update(ctx, childName, childDeployment, metav1.UpdateOptions{})
+				if err != nil {
+					log.Warnf("Failed to update child deployment %s: %v", childName, err)
+				} else {
+					log.Infof("Successfully updated child deployment %s with cluster selector labels", childName)
+				}
+			}
+		}
+		return nil
+	}
+	
+	// For targeted deployments: Collect all explicit target clusters
 	allTargets := make([]map[string]string, 0)
 	for _, app := range parentDeployment.Spec.Applications {
 		allTargets = append(allTargets, app.Targets...)
@@ -1640,7 +1690,7 @@ func (s *DeploymentSvc) propagateTargetsToChildDeployments(ctx context.Context, 
 		}
 	}
 
-	log.Infof("Propagating targets to child deployments: %d unique clusters", len(uniqueTargets))
+	log.Infof("Propagating targets to child deployments (targeted mode): %d unique clusters", len(uniqueTargets))
 
 	// Update each child deployment to include all targets
 	for childName := range parentDeployment.Spec.ChildDeploymentList {
