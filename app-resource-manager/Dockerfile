@@ -111,4 +111,6 @@ COPY --from=build --chown=nonroot:nonroot \
      /go/src/github.com/open-edge-platform/app-orch-deployment/app-resource-manager/bin/vnc-proxy \
      /usr/local/bin/
 
+COPY --chown=nonroot:nonroot vnc-proxy-web-ui/ /usr/local/html/vnc-proxy-web-ui/
+
 ENTRYPOINT ["rest-proxy"]

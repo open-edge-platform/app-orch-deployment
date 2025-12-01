@@ -110,24 +110,24 @@ func (m *Manager) initRouter(filebase string) {
 		}
 		rw.Header().Set("Content-Type", "text/html")
 		http.ServeFile(rw, req, filebase+"/vnc-proxy-index.html")
-	}).Methods("GET").Queries("project", "{project}", "app", "{app}", "cluster", "{cluster}", "vm", "{vm}")
+	}).Methods("GET", "HEAD").Queries("project", "{project}", "app", "{app}", "cluster", "{cluster}", "vm", "{vm}")
 
 	m.router.HandleFunc("/vnc-proxy-main.js", func(rw http.ResponseWriter, req *http.Request) {
 		rw.Header().Set("Content-Type", "application/javascript")
 		http.ServeFile(rw, req, filebase+"/vnc-proxy-main.js")
-	}).Methods("GET")
+	}).Methods("GET", "HEAD")
 	m.router.HandleFunc("/vnc-proxy-styles.css", func(rw http.ResponseWriter, req *http.Request) {
 		rw.Header().Set("Content-Type", "text/css")
 		http.ServeFile(rw, req, filebase+"/vnc-proxy-styles.css")
-	}).Methods("GET")
+	}).Methods("GET", "HEAD")
 	m.router.HandleFunc("/rfb.js", func(rw http.ResponseWriter, req *http.Request) {
 		rw.Header().Set("Content-Type", "application/javascript")
 		http.ServeFile(rw, req, filebase+"/rfb.js")
-	}).Methods("GET")
+	}).Methods("GET", "HEAD")
 	m.router.HandleFunc("/keycloak.min.js", func(rw http.ResponseWriter, req *http.Request) {
 		rw.Header().Set("Content-Type", "application/javascript")
 		http.ServeFile(rw, req, filebase+"/keycloak.min.js")
-	}).Methods("GET")
+	}).Methods("GET", "HEAD")
 
 	// VNC websocket handler is added in start()
 }
