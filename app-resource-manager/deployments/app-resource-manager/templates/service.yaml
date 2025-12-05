@@ -82,8 +82,11 @@ spec:
       X-Forwarded-Proto: "https"
     customRequestHeaders:
       Host: {{ include "vnc-proxy.fullname" . }}-websocket-server.{{ .Release.Namespace }}.svc
-      Connection: "Upgrade"
-      Upgrade: "websocket"
+      # Browser requests: GET /vnc-proxy-main.js
+      # Middleware adds: Connection: Upgrade, Upgrade: websocket
+      # Result: Browser receives confused mixed-protocol response
+      # Connection: "Upgrade"
+      # Upgrade: "websocket"
 ---
 apiVersion: {{ .Values.traefikApiGroup }}
 kind: IngressRoute

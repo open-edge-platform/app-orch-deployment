@@ -379,6 +379,19 @@ var _ = Describe("Gateway gRPC Service", func() {
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
 				Items:    deploymentClusterListSrc.Items,
 			}, nil).Once()
+
+			// Mock Cluster.Get() for selector matching in auto-scaling deployments
+			s.k8sClient.On(
+				"Get", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("v1.GetOptions"),
+			).Return(&deploymentv1beta1.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: VALID_CLUSTERID,
+					Labels: map[string]string{
+						"app": "test",
+						string(deploymentv1beta1.AppOrchActiveProjectID): VALID_PROJECT_ID,
+					},
+				},
+			}, nil).Maybe()
 		})
 
 		It("successfully returns all deployments status with no filter labels", func() {
@@ -647,6 +660,20 @@ var _ = Describe("Gateway gRPC Service", func() {
 				Items:    deploymentClusterListSrc.Items,
 			}, nil).Once()
 
+			// Mock Cluster.Get() for selector matching with filter labels
+			s.k8sClient.On(
+				"Get", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("v1.GetOptions"),
+			).Return(&deploymentv1beta1.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: VALID_CLUSTERID,
+					Labels: map[string]string{
+						"hello": "world",
+						"test":  "foo",
+						"mock":  "go",
+						string(deploymentv1beta1.AppOrchActiveProjectID): VALID_PROJECT_ID,
+					},
+				},
+			}, nil).Maybe()
 			matchingLabelList = append(matchingLabelList, "hello=world")
 			matchingLabelList = append(matchingLabelList, "test=foo")
 			matchingLabelList = append(matchingLabelList, "mock=go")
@@ -1596,8 +1623,9 @@ var _ = Describe("Gateway gRPC Service", func() {
 				Items:    deploymentListSrc.Items,
 			}, nil).Once()
 
+			// Mock Deployment.Get() for VALID_UID specifically
 			s.k8sClient.On(
-				"Get", context.Background(), mock.AnythingOfType("string"), mock.AnythingOfType("v1.GetOptions"),
+				"Get", context.Background(), VALID_UID, mock.AnythingOfType("v1.GetOptions"),
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
@@ -1608,6 +1636,18 @@ var _ = Describe("Gateway gRPC Service", func() {
 				Items:    deploymentClusterListSrc.Items,
 			}, nil).Once()
 
+			// Mock Cluster.Get() for VALID_CLUSTERID
+			s.k8sClient.On(
+				"Get", mock.Anything, VALID_CLUSTERID, mock.AnythingOfType("v1.GetOptions"),
+			).Return(&deploymentv1beta1.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: VALID_CLUSTERID,
+					Labels: map[string]string{
+						"app": "test",
+						string(deploymentv1beta1.AppOrchActiveProjectID): VALID_PROJECT_ID,
+					},
+				},
+			}, nil).Maybe()
 		})
 
 		It("successfully get a deployment", func() {
