@@ -509,7 +509,7 @@ func createSecrets(ctx context.Context, k8sClient *kubernetes.Clientset, d *Depl
 	for _, app := range *d.HelmApps {
 		contents = ""
 		// ProfileSecretName contains the override values at run-time per application.
-		secretName := fmt.Sprintf("%s-%s-%s-profile", d.Name, app.Name, app.Version)
+		secretName := fmt.Sprintf("%s-%s-%s-profile", d.Name, app.Name, strings.ToLower(app.Version))
 		d.ProfileSecretName[app.Name] = secretName
 
 		data := map[string]string{}
@@ -533,7 +533,7 @@ func createSecrets(ctx context.Context, k8sClient *kubernetes.Clientset, d *Depl
 		// ValueSecretName contains the override values at run-time per application.
 		// If no overrides provided, don't create secret to avoid empty data secret.
 		if contents != "" {
-			secretName := fmt.Sprintf("%s-%s-%s-overrides", d.Name, app.Name, app.Version)
+			secretName := fmt.Sprintf("%s-%s-%s-overrides", d.Name, app.Name, strings.ToLower(app.Version))
 			d.ValueSecretName[app.Name] = secretName
 
 			data := map[string]string{}
@@ -555,7 +555,7 @@ func createSecrets(ctx context.Context, k8sClient *kubernetes.Clientset, d *Depl
 			data["username"] = app.HelmCredential.Username
 
 			if (data["cacerts"] != "") || ((data["password"] != "") && (data["username"] != "")) {
-				secretName := fmt.Sprintf("%s-%s-%s-helmrepo", d.Name, app.Name, app.Version)
+				secretName := fmt.Sprintf("%s-%s-%s-helmrepo", d.Name, app.Name, strings.ToLower(app.Version))
 				d.RepoSecretName[app.Name] = secretName
 				err = utils.CreateSecret(ctx, k8sClient, d.Namespace, secretName, data, false)
 				if err != nil {
@@ -573,7 +573,7 @@ func createSecrets(ctx context.Context, k8sClient *kubernetes.Clientset, d *Depl
 			data["username"] = app.DockerCredential.Username
 
 			if (data["password"] != "") && (data["username"] != "") {
-				secretName := fmt.Sprintf("%s-%s-%s-imagerepo", d.Name, app.Name, app.Version)
+				secretName := fmt.Sprintf("%s-%s-%s-imagerepo", d.Name, app.Name, strings.ToLower(app.Version))
 				d.ImageRegistrySecretName[app.Name] = secretName
 				err = utils.CreateSecret(ctx, k8sClient, d.Namespace, secretName, data, false)
 				if err != nil {
@@ -608,7 +608,7 @@ func createSecrets(ctx context.Context, k8sClient *kubernetes.Clientset, d *Depl
 			// contentsMasked contains the override values masked at run-time per application.
 			// This secret will be used when GetDeployment is called to avoid showing secrets from override values.
 			if contentsMasked != "" {
-				secretName := fmt.Sprintf("%s-%s-%s-overrides-masked", d.Name, app.Name, app.Version)
+				secretName := fmt.Sprintf("%s-%s-%s-overrides-masked", d.Name, app.Name, strings.ToLower(app.Version))
 
 				data := map[string]string{}
 				data["values"] = contentsMasked
