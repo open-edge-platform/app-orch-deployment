@@ -37,12 +37,6 @@ jobs:
           filtered_projects=$(echo "$CHANGED_PROJECTS" | jq -cr --argjson folders_to_remove "$folders_to_remove" 'map(select(. as $item | $folders_to_remove | index($item) | not))')
           echo "filtered_projects=$filtered_projects" >> $GITHUB_OUTPUT
   pre-merge-pipeline:
-    needs: pre-checks
-    if: ${{ needs.pre-checks.outputs.filtered_projects != '[]' }}
-    strategy:
-      fail-fast: false
-      matrix:
-        project_folder: ${{ fromJson(needs.pre-checks.outputs.filtered_projects) }}
     uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@d3fe218ea585fb390b73c87f9e482cbe1424829c  # 0.1.68
     with:
       run_version_check: true
@@ -58,8 +52,6 @@ jobs:
       project_folder: ${{ matrix.project_folder }}
   final-check:
       runs-on: ubuntu-latest
-      if: ${{ always() }}
-      needs: [pre-merge-pipeline]
       steps:
         - name: Final Status Check
           env:
