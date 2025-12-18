@@ -35,7 +35,7 @@ jobs:
       # Skip Docker Hub credentials since they're not available
       # DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
       # DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
-      GH_TOKEN: ${{ secrets.SYS_ORCH_GITHUB }}
+      GH_TOKEN: ${{ secrets.SYS_EMF_GH_TOKEN }}
 
     steps:
       - name: Deploy Kind Orchestrator
@@ -48,7 +48,7 @@ jobs:
           # Skip Docker Hub credentials since they're not available
           # docker_username: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
           # docker_password: ${{ secrets.SYS_DOCKERHUB_RO }}
-          token: ${{ secrets.SYS_ORCH_GITHUB }}
+          token: ${{ secrets.SYS_EMF_GH_TOKEN }}
         env:
           ORCH_DEFAULT_PASSWORD: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
 
@@ -63,7 +63,7 @@ jobs:
           repository: open-edge-platform/app-orch-deployment
           persist-credentials: false
           path: app-orch-deployment
-          token: ${{ secrets.SYS_ORCH_GITHUB }}
+          token: ${{ secrets.SYS_EMF_GH_TOKEN }}
 
       - name: Get current git hash of the app-orch-deployment PR
         id: get-git-hash-app-orch-deployment
