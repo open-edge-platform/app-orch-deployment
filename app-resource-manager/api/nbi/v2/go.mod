@@ -7,10 +7,10 @@ module github.com/open-edge-platform/app-orch-deployment/app-resource-manager/ap
 go 1.25.5
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.10-20250912141014-52f32327d4b0.1
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
-	github.com/oapi-codegen/runtime v1.1.1
-	google.golang.org/genproto/googleapis/api v0.0.0-20251029180050-ab9386a59fda
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20251209175733-2a1774d88802.1
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.4
+	github.com/oapi-codegen/runtime v1.1.2
+	google.golang.org/genproto/googleapis/api v0.0.0-20251222181119-0a764e51fe1b
 	google.golang.org/grpc v1.78.0
 	google.golang.org/protobuf v1.36.11
 )
