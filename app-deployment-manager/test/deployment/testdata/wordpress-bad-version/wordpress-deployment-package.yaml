@@ -1,0 +1,16 @@
+---
+specSchema: "DeploymentPackage"
+schemaVersion: "0.1"
+$schema: "https://schema.intel.com/catalog.orchestrator/0.1/schema"
+
+name: wordpress
+version: 24.1.18-bad2
+description: ""
+applications:
+- name: wordpress
+  version: 24.1.18-bad2
+deploymentProfiles:
+- name: default
+  applicationProfiles:
+  - application: wordpress
+    profile: default
