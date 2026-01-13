@@ -56,8 +56,8 @@ HELM_DIRS         := $(shell find ./deploy/charts -maxdepth 1 -mindepth 1 -type 
 #  TEST_TARGET='TestAuth.*' make test
 TEST_TARGET ?= .
 # Default TEST_PKG, overwrite to select particular test pakages
-TEST_PKG ?= $(shell go list ./... | grep -v "internal" | tr '\n' ,)
-TEST_COVER := atomic ./...
+TEST_PKG ?= $(shell go list ./... | grep "/internal/" | grep -v "/mocks" | tr '\n' ,)
+TEST_COVER := atomic $(shell go list ./... | grep -v "/test/" | grep -v "/cmd/" | grep -v "/mocks")
 
 # Include shared makefile
 include ../common.mk

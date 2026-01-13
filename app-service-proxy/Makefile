@@ -89,9 +89,9 @@ YAML_IGNORE        := vendor, deployments, $(VENV_NAME)
 TEST_TARGET ?= .
 # Default TEST_PKG, overwrite to select particular test pakages
 
-TEST_PKG ?= $(shell go list ./... | grep -v "internal/admclient" | grep -v "internal/auth" | grep -v "internal/rbac" | grep -v "internal/vault" | grep -v "cmd" | grep -v "controller" | tr '\n' ,)
+TEST_PKG ?= $(shell go list ./... | grep "/internal/" | grep -v "/mocks" | grep -v "internal/admclient" | grep -v "internal/auth" | grep -v "internal/rbac" | grep -v "internal/vault" | tr '\n' ,)
 
-TEST_COVER ?= atomic $(shell go list ./cmd/... ./internal/... | grep -v "internal/admclient" | grep -v "internal/auth" | grep -v "internal/rbac" | grep -v "internal/vault" | grep -v "cmd" | grep -v "controller")
+TEST_COVER ?= atomic $(shell go list ./... | grep -v "/test/" | grep -v "/cmd/" | grep -v "/mocks" | grep -v "internal/admclient" | grep -v "internal/auth" | grep -v "internal/rbac" | grep -v "internal/vault" | grep -v "controller")
 
 FUZZ_SECONDS ?= 60
 

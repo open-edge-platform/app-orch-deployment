@@ -101,7 +101,7 @@ func (m *Manager) initRouter(filebase string) {
 			if len(v) == 0 {
 				rw.WriteHeader(http.StatusBadRequest)
 				rw.Header().Set("Content-Type", "text/plain; charset=utf-8")
-				_, err := rw.Write([]byte(fmt.Sprintf("%s is blank", k)))
+				_, err := fmt.Fprintf(rw, "%s is blank", k)
 				if err != nil {
 					return
 				}

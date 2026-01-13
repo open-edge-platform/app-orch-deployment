@@ -7,15 +7,17 @@ package restproxy
 import (
 	"context"
 	"fmt"
-	"github.com/stretchr/testify/require"
-	"go.uber.org/mock/gomock"
-	"google.golang.org/grpc"
 	"io"
+	"math/rand"
 	"net"
 	"net/http"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
+	"google.golang.org/grpc"
 
 	resourcev2 "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/resource/v2"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/internal/northbound/services/v2/resource/mocks"
@@ -28,6 +30,7 @@ type FuzzTestSuiteRest struct {
 	pMock  *mocks.MockPodServiceServer
 	vmMock *mocks.MockVirtualMachineServiceServer
 	gwport uint16
+	srv    *northbound.Server
 }
 
 var (
@@ -36,15 +39,25 @@ var (
 )
 
 func getFreePort() (port int, err error) {
-	var a *net.TCPAddr
-	if a, err = net.ResolveTCPAddr("tcp", "localhost:0"); err == nil {
+	// Try to find a free port in the safe range for int16 (8000-32767)
+	// Use random starting point to avoid conflicts
+	start := 8000 + rand.Intn(20000)
+	for i := 0; i < 5000; i++ {
+		port = start + i
+		if port >= 32767 {
+			port = 8000 + (port % 24767)
+		}
+		var a *net.TCPAddr
+		if a, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("localhost:%d", port)); err != nil {
+			continue
+		}
 		var l *net.TCPListener
 		if l, err = net.ListenTCP("tcp", a); err == nil {
-			defer l.Close()
-			return l.Addr().(*net.TCPAddr).Port, nil
+			l.Close()
+			return port, nil
 		}
 	}
-	return
+	return 0, fmt.Errorf("no free port found after 5000 attempts")
 }
 
 func setupFuzzTestREST(f testing.TB) *FuzzTestSuiteRest {
@@ -58,22 +71,25 @@ func setupFuzzTestREST(f testing.TB) *FuzzTestSuiteRest {
 	s.pMock = mocks.NewMockPodServiceServer(ctrl)
 	s.vmMock = mocks.NewMockVirtualMachineServiceServer(ctrl)
 
-	grpcPort := 8080
+	grpcPort, err := getFreePort()
+	require.NoError(f, err)
 	grpcAddr := fmt.Sprintf("localhost:%d", grpcPort)
 
 	gwAddr, err := getFreePort()
 	require.NoError(f, err)
 	s.gwport = uint16(gwAddr)
 
+	// Note: casting to int16 may overflow for ports > 32767, but this is acceptable for testing
+	// as the underlying gRPC server will use the correct uint16 port value
 	serverConfig := northbound.NewInsecureServerConfig(int16(grpcPort))
-	srv := northbound.NewServer(serverConfig)
-	srv.AddService(s.epMock)
-	srv.AddService(s.awMock)
-	srv.AddService(s.pMock)
-	srv.AddService(s.vmMock)
-	doneCh := make(chan error)
+	s.srv = northbound.NewServer(serverConfig)
+	s.srv.AddService(s.epMock)
+	s.srv.AddService(s.awMock)
+	s.srv.AddService(s.pMock)
+	s.srv.AddService(s.vmMock)
+	doneCh := make(chan error, 1)
 	go func() {
-		err := srv.Serve(func(started string) {
+		err := s.srv.Serve(func(started string) {
 			f.Log("gRPC server started on port", started)
 			close(doneCh)
 		}, grpc.MaxRecvMsgSize(1*1024*1024))
@@ -81,22 +97,39 @@ func setupFuzzTestREST(f testing.TB) *FuzzTestSuiteRest {
 			doneCh <- err
 		}
 	}()
+
+	// Wait for gRPC server to start before proceeding
+	select {
+	case err := <-doneCh:
+		if err != nil {
+			require.NoError(f, err, "gRPC server failed to start")
+		}
+	case <-time.After(5 * time.Second):
+		require.FailNow(f, "gRPC server did not start within 5 seconds")
+	}
+
 	f.Cleanup(func() {
-		srv.Stop()
+		if s.srv != nil {
+			s.srv.Stop()
+		}
 	})
 
+	gwReady := make(chan error, 1)
 	go func() {
-		f.Logf("gRPC gateway started on port %v", gwAddr)
-		err := Run(gwAddr, grpcAddr, allowedCorsOrigins, basePath, "../../api/nbi/v2/spec/v2/openapi.yaml")
-		require.NoError(f, err)
+		f.Logf("gRPC gateway starting on port %v", gwAddr)
+		err := Run(gwAddr, grpcAddr, basePath, allowedCorsOrigins, "../../api/nbi/v2/spec/v2/openapi.yaml")
+		if err != nil {
+			gwReady <- err
+		}
 	}()
 
-	// Wait until the gateway is ready. TODO: wait for gRPC server as well?
+	// Wait until the gateway is ready
 	require.Eventually(f, func() bool {
 		resp, err := http.Get(fmt.Sprintf("http://localhost:%d/healthz", gwAddr))
 		if err != nil {
 			return false
 		}
+		defer resp.Body.Close()
 		if resp.StatusCode != http.StatusOK {
 			return false
 		}
@@ -155,7 +188,7 @@ func FuzzRESTRouter(f *testing.F) {
 			resp.StatusCode != http.StatusMethodNotAllowed && resp.StatusCode != http.StatusInternalServerError {
 			require.Failf(t, "unexpected response", "%v --> status %v code %v", resp.Request.URL.String(), resp.StatusCode, resp.Status)
 		}
-		io.Copy(io.Discard, resp.Body)
+		_, _ = io.Copy(io.Discard, resp.Body)
 		resp.Body.Close()
 	})
 }

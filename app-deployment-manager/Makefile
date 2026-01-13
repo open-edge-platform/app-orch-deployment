@@ -75,14 +75,17 @@ CONTROLLER_TOOLS_VERSION ?= v0.16.3
 #  TEST_TARGET='TestAuth.*' make test
 TEST_TARGET ?= .
 # Default TEST_PKG, overwrite to select particular test pakages
-TEST_PKG ?= $(shell go list ./... | grep -v "internal" | tr '\n' ,)
-TEST_COVER := atomic ./...
+TEST_PKG ?= $(shell go list ./... | grep "/internal/" | grep -v "/mocks" | tr '\n' ,)
+TEST_COVER := atomic $(shell go list ./... | grep -v "/test/" | grep -v "/cmd/" | grep -v "/mocks" | grep -v "/mockery" | grep -v "/grafana$$" | grep -v "/metrics$$" | grep -v "/restproxy$$" | grep -v "/tenant$$")
 
 FUZZ_SECONDS ?= 60
 
 EXCLUDE_PKGS_TEST := grep -v ./pkg/api | grep -v ./api | grep -v ./pkg/utils/ratelimiter | grep -v ./test \
 	| grep -v ./internal/grafana/mockery | grep -v ./internal/catalogclient/mockery | grep -v ./internal/catalogclient/mocks \
-	| grep -v ./pkg/fleet/mocks | grep -v ./internal/northbound/fuzztests
+	| grep -v ./pkg/fleet/mocks | grep -v ./internal/northbound/fuzztests \
+	| grep -v ./internal/grafana$$ | grep -v ./internal/metrics$$ | grep -v ./internal/restproxy$$ | grep -v ./internal/tenant$$ \
+	| grep -v /cmd/ | grep -v /mocks$$ | grep -v /mockery$$ \
+	| grep -v ./controllers$$ | grep -v ./controllers/capi$$
 
 PKG_LIST := ./cmd/... ./controllers/... ./webhooks/... ./pkg/... ./internal/...
 

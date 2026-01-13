@@ -466,7 +466,7 @@ func getDisplayName(ctx context.Context, projectID, deploymentID string, r *Reco
 
 	if deployment == nil {
 		log.Error(nil, "Deployment not found", "DeploymentID", deploymentID)
-		return "", errors.New("Deployment not found")
+		return "", errors.New("deployment not found")
 	}
 
 	displayName := deployment.Spec.DisplayName
