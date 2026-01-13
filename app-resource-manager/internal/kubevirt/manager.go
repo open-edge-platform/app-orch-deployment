@@ -421,12 +421,9 @@ func (m *manager) GetVNCWebSocketHandler(ctx context.Context, opaClient openpoli
 		pipeInReader, pipeInWriter := io.Pipe()
 		pipeOutReader, pipeOutWriter := io.Pipe()
 
-		k8ResChan := make(chan error)
-		writeStop := make(chan error)
-		readStop := make(chan error)
-
-		defer pipeInReader.Close()
-		defer pipeInWriter.Close()
+		k8ResChan := make(chan error, 1)
+		writeStop := make(chan error, 1)
+		readStop := make(chan error, 1)
 		defer pipeOutReader.Close()
 		defer pipeOutWriter.Close()
 		defer conn.Close()
