@@ -93,8 +93,6 @@ ENVTEST ?= $(LOCALBIN)/setup-envtest
 ENVTEST_K8S_VERSION = 1.25.0
 OPA_FILE_PATH ?= deployment/charts/app-deployment-manager/files/openpolicyagent
 OPA_IMAGE_VER       = 1.10.1-static
-GOLANG_GOCOV_VERSION := latest
-GOLANG_GOCOV_XML_VERSION := latest
 
 # Include shared makefile
 include ../common.mk
@@ -173,12 +171,10 @@ $(ENVTEST): $(LOCALBIN)
 	test -s $(LOCALBIN)/setup-envtest || GOTOOLCHAIN=go1.25.0 GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
 test: manifests fmt vet envtest opa-test ## Run tests
-	go install github.com/axw/gocov/gocov@${GOLANG_GOCOV_VERSION}
-	go install github.com/AlekSi/gocov-xml@${GOLANG_GOCOV_XML_VERSION}
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" \
 		go test -gcflags="-l" -race -coverpkg=$$(go list ./... | ${EXCLUDE_PKGS_TEST} | tr '\n' ,) -coverprofile cover.out \
 		-covermode atomic `go list ${PKG_LIST} | grep -v "/mocks" | grep -v "/mockery" | ${EXCLUDE_PKGS_TEST}`
-	${GOBIN}/gocov convert cover.out | ${GOBIN}/gocov-xml > coverage.xml
+	gocover-cobertura < cover.out > coverage.xml
 	go tool cover -html=cover.out -o coverage.html
 
 COMP_TEST_COVER := atomic ./test/...
