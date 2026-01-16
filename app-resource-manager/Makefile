@@ -72,8 +72,8 @@ endif
 #  TEST_TARGET='TestAuth.*' make test
 TEST_TARGET ?= .
 # Default TEST_PKG, overwrite to select particular test pakages
-TEST_PKG ?= $(shell go list ./... | grep -v "internal" | tr '\n' ,)
-TEST_COVER := atomic $(shell go list ./... | grep -v "/test/")
+TEST_PKG ?= $(shell go list ./... | grep "/internal/" | grep -v "/mocks" | tr '\n' ,)
+TEST_COVER := atomic $(shell go list ./... | grep -v "/test/" | grep -v "/cmd/" | grep -v "/mocks" | grep -v "/adm$$" | grep -v "/manager$$")
 
 FUZZ_SECONDS ?= 60
 

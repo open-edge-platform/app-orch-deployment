@@ -6,6 +6,10 @@ package kubevirt
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/http"
+	"slices"
+
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	resourcev2 "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2/resource/v2"
 	"github.com/open-edge-platform/app-orch-deployment/app-resource-manager/internal/adm"
@@ -18,11 +22,8 @@ import (
 	"github.com/open-edge-platform/orch-library/go/pkg/openpolicyagent"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"io"
-	"k8s.io/utils/strings/slices"
 	v1 "kubevirt.io/api/core/v1"
 	"kubevirt.io/client-go/kubecli"
-	"net/http"
 	"os"
 	"sort"
 	"strconv"
@@ -420,12 +421,9 @@ func (m *manager) GetVNCWebSocketHandler(ctx context.Context, opaClient openpoli
 		pipeInReader, pipeInWriter := io.Pipe()
 		pipeOutReader, pipeOutWriter := io.Pipe()
 
-		k8ResChan := make(chan error)
-		writeStop := make(chan error)
-		readStop := make(chan error)
-
-		defer pipeInReader.Close()
-		defer pipeInWriter.Close()
+		k8ResChan := make(chan error, 1)
+		writeStop := make(chan error, 1)
+		readStop := make(chan error, 1)
 		defer pipeOutReader.Close()
 		defer pipeOutWriter.Close()
 		defer conn.Close()

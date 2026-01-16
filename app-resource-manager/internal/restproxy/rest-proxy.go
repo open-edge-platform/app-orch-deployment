@@ -6,6 +6,9 @@ package restproxy
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/secure"
 	"github.com/gin-gonic/gin"
@@ -14,17 +17,13 @@ import (
 	envutils "github.com/open-edge-platform/app-orch-deployment/app-resource-manager/internal/utils/env"
 	"github.com/open-edge-platform/orch-library/go/dazl"
 	orcherror "github.com/open-edge-platform/orch-library/go/pkg/errors"
-
 	ginlogger "github.com/open-edge-platform/orch-library/go/pkg/logging/gin"
 	ginmiddleware "github.com/open-edge-platform/orch-library/go/pkg/middleware/gin"
-	ginutils "github.com/open-edge-platform/orch-library/go/pkg/middleware/gin"
 	openapiutils "github.com/open-edge-platform/orch-library/go/pkg/openapi"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"net/http"
-	"strings"
 )
 
 const ActiveProjectID = "ActiveProjectID"
@@ -82,7 +81,7 @@ func Run(restPort int, grpcEndpoint string, basePath string, allowedCorsOrigins 
 			md := metadata.Pairs("auth", authHeader, "activeprojectid", projectIDHeader)
 			return md
 		}),
-		runtime.WithRoutingErrorHandler(ginutils.HandleRoutingError),
+		runtime.WithRoutingErrorHandler(ginmiddleware.HandleRoutingError),
 		runtime.WithErrorHandler(errorHandler),
 	)
 

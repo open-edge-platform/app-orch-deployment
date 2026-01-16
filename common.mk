@@ -251,7 +251,7 @@ mdlint: ## Link MD files
 helmlint: ## Lint Helm charts.
 	helm lint ${CHART_PATH}
 
-GOLANG_CLI_LINT_VERSION := v1.64.8
+GOLANG_CLI_LINT_VERSION := v2.7.2
 go-lint: $(OUT_DIR) ## Run go lint
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b ${GOBIN} ${GOLANG_CLI_LINT_VERSION}
 	${GOBIN}/golangci-lint --version

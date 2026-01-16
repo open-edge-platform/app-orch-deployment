@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package types
+package types //nolint:revive // types is an appropriate name for this package
 
 import (
 	"os"
