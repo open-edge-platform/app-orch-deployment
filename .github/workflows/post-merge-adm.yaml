@@ -34,6 +34,7 @@ jobs:
       run_helm_push: true
       prefix_tag_separator: "/"
       project_folder: "app-deployment-manager"
+      trivy_image_skip: "ghcr.io/dependabot/dependabot-updater-core:latest"
     secrets:
       SYS_EMF_GH_TOKEN: ${{ secrets.SYS_EMF_GH_TOKEN }}
       NO_AUTH_ECR_PUSH_USERNAME: ${{ secrets.NO_AUTH_ECR_PUSH_USERNAME }}
