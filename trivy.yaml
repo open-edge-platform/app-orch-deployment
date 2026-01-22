@@ -9,9 +9,6 @@ scan:
     - app-service-proxy/deployment
 
   skip-files:
-    - app-interconnect/deploy/charts/interconnect-manager/templates/clusterrole.yaml
-    - app-interconnect/deploy/charts/app-interconnect-manager/templates/deployment.yaml
-    - app-interconnect/deploy/charts/app-interconnect-manager/templates/clusterrole.yaml
     - app-resource-manager/deployments/app-resource-manager/templates/deployment.yaml
     - app-resource-manager/deployments/app-resource-manager/templates/deployment-vnc-proxy.yaml
     - app-deployment-manager/config/default/manager_auth_proxy_patch.yaml

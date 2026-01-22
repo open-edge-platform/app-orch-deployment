@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 SHELL            := bash -eu -o pipefail
-SUBPROJECTS      := app-resource-manager app-deployment-manager app-interconnect app-service-proxy
+SUBPROJECTS      := app-resource-manager app-deployment-manager app-service-proxy
 FUZZ_SUBPROJECTS ?= app-resource-manager app-deployment-manager app-service-proxy
 
 .DEFAULT_GOAL := help
