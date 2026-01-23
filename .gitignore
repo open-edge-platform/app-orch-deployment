@@ -47,7 +47,7 @@ env/
 node_modules/
 
 # Build outputs
-*/build/
+*/build/*
 !*/build/Dockerfile.*
 */out/
 */bin/app-*
