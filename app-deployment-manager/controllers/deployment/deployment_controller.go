@@ -563,6 +563,89 @@ func (r *Reconciler) cleanupOrphanedDeploymentClusters(ctx context.Context, d *v
 	return nil
 }
 
+// cleanupRemovedTargetClustersPhase is a reconcile phase wrapper for cleanupRemovedTargetClusters
+func (r *Reconciler) cleanupRemovedTargetClustersPhase(ctx context.Context, d *v1beta1.Deployment) (ctrl.Result, error) {
+	return ctrl.Result{}, r.cleanupRemovedTargetClusters(ctx, d)
+}
+
+// cleanupRemovedTargetClusters removes DeploymentCluster resources for clusters that are no longer
+// in the deployment's target list (handles the case when a cluster is removed during edit)
+func (r *Reconciler) cleanupRemovedTargetClusters(ctx context.Context, d *v1beta1.Deployment) error {
+	log := log.FromContext(ctx)
+
+	// Only applies to targeted/manual deployments
+	if d.Spec.DeploymentType != v1beta1.Targeted {
+		return nil
+	}
+
+	log.V(2).Info("Checking for removed target clusters", "deploymentID", d.GetId(), "deploymentName", d.Name)
+
+	// Build a set of current target cluster IDs from the deployment spec
+	currentTargets := make(map[string]bool)
+	for _, app := range d.Spec.Applications {
+		for _, target := range app.Targets {
+			if clusterName, ok := target[string(v1beta1.ClusterName)]; ok && clusterName != "" {
+				currentTargets[clusterName] = true
+			}
+		}
+	}
+
+	// Find all DeploymentClusters that belong to this deployment
+	dcList := &v1beta1.DeploymentClusterList{}
+	labels := map[string]string{
+		string(v1beta1.DeploymentID): d.GetId(),
+	}
+
+	if err := r.List(ctx, dcList, client.MatchingLabels(labels)); err != nil {
+		log.Error(err, "Failed to list DeploymentClusters", "deploymentID", d.GetId())
+		return err
+	}
+
+	if len(dcList.Items) == 0 {
+		log.V(2).Info("No DeploymentClusters found", "deploymentID", d.GetId())
+		return nil
+	}
+
+	// Delete DeploymentClusters for clusters no longer in the target list
+	deletedCount := 0
+	for i := range dcList.Items {
+		dc := &dcList.Items[i]
+		clusterID := dc.Spec.ClusterID
+
+		// If this cluster is not in the current targets, delete the DeploymentCluster
+		if !currentTargets[clusterID] {
+			log.Info("Deleting DeploymentCluster for removed target cluster",
+				"deploymentCluster", dc.Name,
+				"namespace", dc.Namespace,
+				"deploymentID", d.GetId(),
+				"clusterID", clusterID)
+
+			if err := r.Client.Delete(ctx, dc); err != nil && !apierrors.IsNotFound(err) {
+				log.Error(err, "Failed to delete DeploymentCluster for removed target",
+					"deploymentCluster", dc.Name,
+					"deploymentID", d.GetId(),
+					"clusterID", clusterID)
+				return err
+			}
+			deletedCount++
+			log.Info("Successfully deleted DeploymentCluster for removed target",
+				"deploymentCluster", dc.Name,
+				"deploymentID", d.GetId(),
+				"clusterID", clusterID)
+		}
+	}
+
+	if deletedCount > 0 {
+		log.Info("Completed cleanup of removed target clusters",
+			"deleted", deletedCount,
+			"deploymentID", d.GetId())
+	} else {
+		log.V(2).Info("No removed target clusters to cleanup", "deploymentID", d.GetId())
+	}
+
+	return nil
+}
+
 func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrlRes ctrl.Result, reterr error) {
 	log := log.FromContext(ctx)
 
@@ -707,6 +790,7 @@ func (r *Reconciler) delete(ctx context.Context, d *v1beta1.Deployment) (ctrl.Re
 func (r *Reconciler) reconcile(ctx context.Context, d *v1beta1.Deployment) (ctrl.Result, error) {
 	phases := []func(context.Context, *v1beta1.Deployment) (ctrl.Result, error){
 		r.reconcileState,
+		r.cleanupRemovedTargetClustersPhase,
 		r.reconcileDependency,
 		r.reconcileRepository,
 		r.reconcileGitRepo,
