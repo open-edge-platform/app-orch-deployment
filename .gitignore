@@ -59,7 +59,6 @@ node_modules/
 app-deployment-manager/app-deployment-manager
 app-deployment-manager/rest-proxy
 app-resource-manager/app-resource-manager
-app-interconnect/app-interconnect
 app-service-proxy/app-service-proxy
 
 # Test coverage
