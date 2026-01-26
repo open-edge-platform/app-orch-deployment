@@ -128,12 +128,13 @@ func createDeploymentCr(d *Deployment, scenario string, resourceVersion string, 
 				}
 			}
 
-			// For update scenario, start with existing targets from the deployed CR
-			// This ensures targets accumulate across updates (UI sends one target at a time)
-			if scenario == "update" && existingDeployment != nil {
+			// For update scenario:
+			// - For AutoScaling: accumulate targets (UI sends one label set at a time)
+			// - For Targeted: replacement logic (UI sends complete desired state)
+			if scenario == "update" && existingDeployment != nil && d.DeploymentType == string(deploymentv1beta1.AutoScaling) {
 				for _, existingApp := range existingDeployment.Spec.Applications {
 					if existingApp.Name == app.Name {
-						// Start with existing targets
+						// Start with existing targets for AutoScaling only
 						targetsList = append(targetsList, existingApp.Targets...)
 						break
 					}
