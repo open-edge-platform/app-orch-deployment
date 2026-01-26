@@ -962,6 +962,16 @@ func (s *DeploymentSvc) CreateDeployment(ctx context.Context, in *deploymentpb.C
 		return nil, errors.Status(err).Err()
 	}
 
+	// Propagate targets to child deployments (dependencies)
+	// When the deployment is created with multiple clusters, ensure child deployments
+	// (dependencies) are also deployed to the same clusters
+	if len(createInstance.Spec.ChildDeploymentList) > 0 {
+		err = s.propagateTargetsToChildDeployments(ctx, deploymentCR)
+		if err != nil {
+			log.Warnf("failed to propagate targets to child deployments during creation: %v", err)
+		}
+	}
+
 	utils.LogActivity(ctx, "create", "ADM", "deployment-name "+d.Name, "deploy-id "+d.DeployID, "deployment-app-version "+d.AppVersion)
 	return &deploymentpb.CreateDeploymentResponse{DeploymentId: d.DeployID}, nil
 }
