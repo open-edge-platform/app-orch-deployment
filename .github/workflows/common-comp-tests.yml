@@ -32,9 +32,8 @@ jobs:
     env:
       ORCH_DEFAULT_PASSWORD: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
       CODER_DIR: ${{ github.workspace }}/
-      # Skip Docker Hub credentials since they're not available
-      # DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
-      # DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO || '' }}
+      DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME || '' }}
       GH_TOKEN: ${{ secrets.SYS_EMF_GH_TOKEN }}
 
     steps:
@@ -45,9 +44,8 @@ jobs:
         with:
           orch_version: ${{ inputs.emf-branch || 'main' }}
           orch_password: ${{ env.ORCH_DEFAULT_PASSWORD }}
-          # Skip Docker Hub credentials since they're not available
-          # docker_username: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
-          # docker_password: ${{ secrets.SYS_DOCKERHUB_RO }}
+          docker_username: ${{ secrets.SYS_DOCKERHUB_USERNAME || '' }}
+          docker_password: ${{ secrets.SYS_DOCKERHUB_RO || '' }}
           token: ${{ secrets.SYS_EMF_GH_TOKEN }}
           deployment_type: 'all'
         env:
