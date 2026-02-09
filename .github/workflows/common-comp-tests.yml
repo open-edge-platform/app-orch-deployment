@@ -31,29 +31,22 @@ jobs:
     timeout-minutes: 60
     env:
       ORCH_DEFAULT_PASSWORD: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
-      CODER_DIR: ${{ github.workspace }}/
-      DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO || '' }}
-      DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME || '' }}
+      # Skip Docker Hub credentials since they're not available
+      # DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
+      # DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
       GH_TOKEN: ${{ secrets.SYS_EMF_GH_TOKEN }}
 
     steps:
-      - name: Login to Docker Hub
-        if: env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != ''
-        uses: docker/login-action@v3
-        with:
-          username: ${{ env.DOCKERHUB_USERNAME }}
-          password: ${{ env.DOCKERHUB_TOKEN }}
-        continue-on-error: true
-
       - name: Deploy Kind Orchestrator
         id: deploy-kind-orchestrator
-        uses: open-edge-platform/edge-manageability-framework/.github/actions/deploy_kind@3a2d9869daa26e1925daf159dabb7307fc24e3ed
+        uses: open-edge-platform/edge-manageability-framework/.github/actions/deploy_kind@ba4e3dbbdbf1e5c7248d1afe755eae4a7365cbd5
         timeout-minutes: 45
         with:
           orch_version: ${{ inputs.emf-branch || 'main' }}
           orch_password: ${{ env.ORCH_DEFAULT_PASSWORD }}
-          docker_username: ${{ secrets.SYS_DOCKERHUB_USERNAME || '' }}
-          docker_password: ${{ secrets.SYS_DOCKERHUB_RO || '' }}
+          # Skip Docker Hub credentials since they're not available
+          # docker_username: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
+          # docker_password: ${{ secrets.SYS_DOCKERHUB_RO }}
           token: ${{ secrets.SYS_EMF_GH_TOKEN }}
           deployment_type: 'all'
         env:
@@ -98,6 +91,13 @@ jobs:
           echo "Orch org/project/users created!"
           echo "Project uID:"
           kubectl get projects.project -o json | jq -r ".items[0].status.projectStatus.uID"
+
+      - name: Cleanup Previous ENIC Cluster
+        if: ${{ inputs.use-enic }}
+        continue-on-error: true
+        run: |
+          # Cleanup any previous ENIC cluster before deploying
+          mage undeploy:edgeCluster sample-org sample-project || echo "No previous cluster to cleanup"
 
       - name: Deploy Edge Cluster using EniC
         if: ${{ inputs.use-enic }}
