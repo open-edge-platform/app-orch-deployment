@@ -20,7 +20,7 @@ on:
         required: true
         description: "Branch in edge-manageability-framework to checkout"
         type: string
-        default: '51d847c5b3a831454981f5fce7cecbbe1ade5e87'
+        default: main
 
 permissions:
   contents: read
@@ -49,6 +49,7 @@ jobs:
           # docker_username: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
           # docker_password: ${{ secrets.SYS_DOCKERHUB_RO }}
           token: ${{ secrets.SYS_EMF_GH_TOKEN }}
+          deployment_type: 'all'
         env:
           ORCH_DEFAULT_PASSWORD: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
 
