@@ -31,5 +31,5 @@ jobs:
     with:
       component: app-resource-manager
       use-enic: true
-      emf-branch: ${{ inputs.emf-branch || '51d847c5b3a831454981f5fce7cecbbe1ade5e87' }}
+      emf-branch: ${{ inputs.emf-branch || 'main' }}
     secrets: inherit  # zizmor: ignore[secrets-inherit]
