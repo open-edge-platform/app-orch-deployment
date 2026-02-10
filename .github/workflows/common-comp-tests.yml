@@ -31,6 +31,7 @@ jobs:
     timeout-minutes: 60
     env:
       ORCH_DEFAULT_PASSWORD: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
+      CODER_DIR: ${{ github.workspace }}/
       # Skip Docker Hub credentials since they're not available
       # DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
       # DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
