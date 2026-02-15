@@ -1,0 +1,4 @@
+service:
+  name: dummy-svc-4
+  type: ClusterIP
+  port: 8084

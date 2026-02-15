@@ -1,0 +1,4 @@
+service:
+  name: dummy-svc-7
+  type: ClusterIP
+  port: 8087
