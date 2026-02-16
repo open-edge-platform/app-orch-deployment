@@ -8,6 +8,6 @@ name: app-deployment-crd
 # Correct version will be added by "make helm-package" from VERSION
 version: 2.5.7
 annotations:
-  revision: "ef63389"
-  created: "2025-11-20T10:52:26Z"
+  revision: "e211263"
+  created: "2025-11-20T13:57:31Z"
 appVersion: 2.5.7

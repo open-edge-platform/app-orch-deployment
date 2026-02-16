@@ -796,7 +796,7 @@ func (r *Reconciler) handleFinalizerDependency(ctx context.Context, d *v1beta1.D
 }
 
 // handleFinalizerNamespaceCleanup removes deployment UID from namespaces and deletes empty ones immediately.
-//immediate namespace cleanup on deployment deletion.
+// immediate namespace cleanup on deployment deletion.
 func (r *Reconciler) handleFinalizerNamespaceCleanup(ctx context.Context, d *v1beta1.Deployment) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 
@@ -865,6 +865,12 @@ func (r *Reconciler) handleFinalizerNamespaceCleanup(ctx context.Context, d *v1b
 // cleanupNamespaceOnCluster removes deployment UID from namespace and deletes if empty.
 func (r *Reconciler) cleanupNamespaceOnCluster(ctx context.Context, targetClient *kubernetes.Clientset, nsName string, depUID string) error {
 	log := log.FromContext(ctx)
+
+	// Skip protected system namespaces
+	if utils.IsProtectedNamespace(nsName) {
+		log.V(2).Info("Skipping cleanup for protected namespace", "namespace", nsName)
+		return nil
+	}
 
 	// Get the namespace
 	ns, err := targetClient.CoreV1().Namespaces().Get(ctx, nsName, metav1.GetOptions{})
@@ -1682,9 +1688,15 @@ func getAppNameForGitRepo(gitrepo *fleetv1alpha1.GitRepo, depID string) string {
 	return strings.TrimSuffix(gitrepo.Name, suffix)
 }
 
-
 // updateDeploymentIDsAnnotation updates only the deployment-ids annotation for an already-managed namespace.
 func (r *Reconciler) updateDeploymentIDsAnnotation(ctx context.Context, targetClient *kubernetes.Clientset, ns *corev1.Namespace, depUID string) error {
+	// Skip protected system namespaces
+	if utils.IsProtectedNamespace(ns.Name) {
+		log := log.FromContext(context.Background())
+		log.V(2).Info("Skipping annotation update for protected namespace", "namespace", ns.Name)
+		return nil
+	}
+
 	if ns.Annotations == nil {
 		ns.Annotations = map[string]string{}
 	}

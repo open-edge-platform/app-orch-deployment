@@ -1,0 +1,129 @@
+// SPDX-FileCopyrightText: (C) 2024 Intel Corporation
+//
+// SPDX-License-Identifier: Apache-2.0
+
+package deployment
+
+// This file contains the backup of cluster-scoped resources cleanup logic
+// that was added to handle cleanup of ClusterRoles, ClusterRoleBindings,
+// ValidatingWebhookConfigurations, MutatingWebhookConfigurations, and CRDs
+// when deployments are deleted.
+
+// Original implementation location:
+// - cleanupClusterScopedResources() - lines 928-1014 in deployment_controller.go
+// - cleanupCRDs() - lines 1016-1022 in deployment_controller.go
+// - Integration call in handleFinalizerNamespaceCleanup() - lines 858-866
+
+/*
+// cleanupClusterScopedResources removes cluster-scoped resources created by applications.
+// This includes CRDs, ClusterRoles, ClusterRoleBindings, and Webhooks that have ownership metadata.
+func (r *Reconciler) cleanupClusterScopedResources(ctx context.Context, targetClient *kubernetes.Clientset, app v1beta1.Application, clusterName string) error {
+	log := log.FromContext(ctx)
+
+	// Define label selector based on app name - most Helm charts use app.kubernetes.io/name
+	labelSelector := fmt.Sprintf("app.kubernetes.io/name=%s", app.Name)
+
+	log.Info("Cleaning up cluster-scoped resources", "app", app.Name, "cluster", clusterName, "labelSelector", labelSelector)
+
+	// Note: CRD cleanup requires apiextensions client which needs additional setup
+	// For now, we'll focus on RBAC and webhook resources that are accessible via standard clientset
+
+	// Delete ClusterRoles
+	clusterRoles, err := targetClient.RbacV1().ClusterRoles().List(ctx, metav1.ListOptions{
+		LabelSelector: labelSelector,
+	})
+	if err != nil {
+		log.Error(err, "Failed to list ClusterRoles", "app", app.Name, "cluster", clusterName)
+	} else {
+		for _, cr := range clusterRoles.Items {
+			log.Info("Deleting ClusterRole", "name", cr.Name, "app", app.Name, "cluster", clusterName)
+			if err := targetClient.RbacV1().ClusterRoles().Delete(ctx, cr.Name, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+				log.Error(err, "Failed to delete ClusterRole", "name", cr.Name)
+			}
+		}
+	}
+
+	// Delete ClusterRoleBindings
+	clusterRoleBindings, err := targetClient.RbacV1().ClusterRoleBindings().List(ctx, metav1.ListOptions{
+		LabelSelector: labelSelector,
+	})
+	if err != nil {
+		log.Error(err, "Failed to list ClusterRoleBindings", "app", app.Name, "cluster", clusterName)
+	} else {
+		for _, crb := range clusterRoleBindings.Items {
+			log.Info("Deleting ClusterRoleBinding", "name", crb.Name, "app", app.Name, "cluster", clusterName)
+			if err := targetClient.RbacV1().ClusterRoleBindings().Delete(ctx, crb.Name, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+				log.Error(err, "Failed to delete ClusterRoleBinding", "name", crb.Name)
+			}
+		}
+	}
+
+	// Delete ValidatingWebhookConfigurations
+	validatingWebhooks, err := targetClient.AdmissionregistrationV1().ValidatingWebhookConfigurations().List(ctx, metav1.ListOptions{
+		LabelSelector: labelSelector,
+	})
+	if err != nil {
+		log.Error(err, "Failed to list ValidatingWebhookConfigurations", "app", app.Name, "cluster", clusterName)
+	} else {
+		for _, vwh := range validatingWebhooks.Items {
+			log.Info("Deleting ValidatingWebhookConfiguration", "name", vwh.Name, "app", app.Name, "cluster", clusterName)
+			if err := targetClient.AdmissionregistrationV1().ValidatingWebhookConfigurations().Delete(ctx, vwh.Name, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+				log.Error(err, "Failed to delete ValidatingWebhookConfiguration", "name", vwh.Name)
+			}
+		}
+	}
+
+	// Delete MutatingWebhookConfigurations
+	mutatingWebhooks, err := targetClient.AdmissionregistrationV1().MutatingWebhookConfigurations().List(ctx, metav1.ListOptions{
+		LabelSelector: labelSelector,
+	})
+	if err != nil {
+		log.Error(err, "Failed to list MutatingWebhookConfigurations", "app", app.Name, "cluster", clusterName)
+	} else {
+		for _, mwh := range mutatingWebhooks.Items {
+			log.Info("Deleting MutatingWebhookConfiguration", "name", mwh.Name, "app", app.Name, "cluster", clusterName)
+			if err := targetClient.AdmissionregistrationV1().MutatingWebhookConfigurations().Delete(ctx, mwh.Name, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+				log.Error(err, "Failed to delete MutatingWebhookConfiguration", "name", mwh.Name)
+			}
+		}
+	}
+
+	// Cleanup CRDs using dynamic approach with kubectl command execution
+	// This is a workaround since CRDs require apiextensions client
+	if err := r.cleanupCRDs(ctx, app.Name, clusterName); err != nil {
+		log.Error(err, "Failed to cleanup CRDs (non-fatal)", "app", app.Name, "cluster", clusterName)
+	}
+
+	log.Info("Completed cluster-scoped resource cleanup", "app", app.Name, "cluster", clusterName)
+	return nil
+}
+
+// cleanupCRDs attempts to clean up CRDs by using controller-runtime client
+func (r *Reconciler) cleanupCRDs(ctx context.Context, appName string, clusterName string) error {
+	// For CRD cleanup, we would need to use apiextensions client or dynamic client
+	// This is left as a placeholder for now and can be enhanced later
+	// Most critical resources (ClusterRoles, Webhooks) are handled above
+	return nil
+}
+*/
+
+// Integration point in handleFinalizerNamespaceCleanup():
+/*
+	// After the namespace cleanup loop (around line 857), add:
+	
+	// Cleanup cluster-scoped resources for applications
+	for _, app := range d.Spec.Applications {
+		if err := r.cleanupClusterScopedResources(ctx, targetClient, app, cluster.Name); err != nil {
+			log.Error(err, "Failed to cleanup cluster-scoped resources", "app", app.Name, "cluster", cluster.Name)
+			// Continue with other apps even if one fails
+		}
+	}
+*/
+
+// Notes:
+// - This cleanup logic handles ClusterRoles, ClusterRoleBindings, ValidatingWebhookConfigurations,
+//   and MutatingWebhookConfigurations based on the label selector "app.kubernetes.io/name=<appName>"
+// - CRD cleanup is stubbed out as it requires apiextensions client setup
+// - The cleanup is non-blocking and logs errors but continues with other resources
+// - This is integrated into the namespace cleanup finalizer to ensure cluster-scoped resources
+//   are cleaned up when deployments are deleted

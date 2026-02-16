@@ -46,11 +46,26 @@ var (
 	utilsLog                  = dazl.GetPackageLogger().WithSkipCalls(1)
 	gitCaCert     []byte
 	gitCaCertLock sync.RWMutex
+
+	// ProtectedNamespaces are system namespaces that should not be modified
+	// with deployment labels and annotations
+	ProtectedNamespaces = map[string]bool{
+		"kube-system":          true,
+		"kube-public":          true,
+		"kube-node-lease":      true,
+		"default":              true,
+		"cert-manager":         true,
+	}
 )
 
 const (
 	appRefFilter = ".metadata.deployment-package-ref"
 )
+
+// IsProtectedNamespace checks if a namespace is a protected system namespace
+func IsProtectedNamespace(nsName string) bool {
+	return ProtectedNamespaces[nsName]
+}
 
 // CreateClient creates the k8s client
 func CreateClient(kubeconfig string) (*clientv1beta1.AppDeploymentClient, error) {

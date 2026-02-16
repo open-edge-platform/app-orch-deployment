@@ -639,7 +639,29 @@ func BundleName(app v1beta1.Application, depName string) string {
 
 // injectNamespaceToSubDir adds namespace with required labels and annotations to new fleet.yaml.
 func injectNamespaceToSubDir(ns v1beta1.Namespace, fleetPath string, bundleName string, d *v1beta1.Deployment) error {
-	// Phase 1: Add management labels via Fleet config (not direct manifest)
+	// Skip protected system namespaces - don't add management labels/annotations
+	if utils.IsProtectedNamespace(ns.Name) {
+		// For protected namespaces, create minimal Fleet config without namespace management
+		subFleetConf := Config{
+			Name:             bundleName,
+			DefaultNamespace: ns.Name,
+			// No NamespaceLabels or NamespaceAnnotations for protected namespaces
+		}
+
+		yamlData, err := yaml.Marshal(&subFleetConf)
+		if err != nil {
+			return fmt.Errorf("failed to marshal fleet config for protected namespace %s: %w", ns.Name, err)
+		}
+
+		fleetYamlPath := filepath.Join(fleetPath, "fleet.yaml")
+		if err := os.WriteFile(fleetYamlPath, yamlData, 0600); err != nil {
+			return fmt.Errorf("failed to write fleet.yaml for protected namespace %s: %w", ns.Name, err)
+		}
+
+		return nil
+	}
+
+	// Add management labels via Fleet config (not direct manifest)
 	// Fleet/Helm will create the namespace with these labels when deploying the bundle.
 
 	// Merge existing labels with required management markers
