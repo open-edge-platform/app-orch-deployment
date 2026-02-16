@@ -30,6 +30,6 @@ jobs:
     uses: ./.github/workflows/common-comp-tests.yml
     with:
       component: app-resource-manager
-      use-enic: true
+      use-ven: true
       emf-branch: ${{ inputs.emf-branch || 'main' }}
     secrets: inherit  # zizmor: ignore[secrets-inherit]
