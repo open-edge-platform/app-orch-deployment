@@ -20,7 +20,7 @@ on:
         required: true
         description: "Branch in edge-manageability-framework to checkout"
         type: string
-        default: main
+        default: ven-with-kind-v1
 
 permissions:
   contents: read
