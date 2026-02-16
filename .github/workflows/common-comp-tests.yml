@@ -48,10 +48,16 @@ jobs:
           sparse-checkout: ci/ven
           token: ${{ secrets.SYS_EMF_GH_TOKEN }}
 
+      - name: Preserve VEN scripts
+        if: ${{ inputs.use-ven }}
+        run: |
+          cp -r emf/ci/ven /tmp/ven-scripts
+          ls -la /tmp/ven-scripts/
+
       - name: Install DNSmasq
         if: ${{ inputs.use-ven }}
         run: |
-          cd emf/ci/ven
+          cd /tmp/ven-scripts
           ./dnsmasq-setup.sh "kind.internal" setup
 
       - name: Install Libvirt
@@ -59,7 +65,7 @@ jobs:
         env:
           LIBVIRT_DEFAULT_URI: 'qemu:///system'
         run: |
-          cd emf/ci/ven
+          cd /tmp/ven-scripts
           ./libvirt-setup.sh
 
       - name: Deploy Kind Orchestrator
@@ -79,7 +85,7 @@ jobs:
       - name: Config DNSmasq
         if: ${{ inputs.use-ven }}
         run: |
-          cd emf/ci/ven
+          cd /tmp/ven-scripts
           ./dnsmasq-setup.sh "kind.internal" config
 
       - name: Setup Go
