@@ -29,10 +29,22 @@ const (
 const (
 	SampleOrg     = "sample-org"
 	SampleProject = "sample-project"
-	TestClusterID = "demo-cluster"
 )
 
+// TestClusterID is the cluster ID used for testing.
+// It reads from TEST_CLUSTER_ID environment variable, defaults to "demo-cluster".
+var TestClusterID = getTestClusterID()
+
 var KCPass = mustGetKCPassword()
+
+// getTestClusterID returns the cluster ID from environment variable or default.
+func getTestClusterID() string {
+	clusterID := os.Getenv("TEST_CLUSTER_ID")
+	if clusterID == "" {
+		return "demo-cluster"
+	}
+	return clusterID
+}
 
 func mustGetKCPassword() string {
 	pass := os.Getenv("ORCH_DEFAULT_PASSWORD")
