@@ -573,22 +573,12 @@ func (r *Reconciler) cleanupRemovedTargetClustersPhase(ctx context.Context, d *v
 func (r *Reconciler) cleanupRemovedTargetClusters(ctx context.Context, d *v1beta1.Deployment) error {
 	log := log.FromContext(ctx)
 
-	// Only applies to targeted/manual deployments
-	if d.Spec.DeploymentType != v1beta1.Targeted {
+	// Skip if not Targeted or AutoScaling
+	if d.Spec.DeploymentType != v1beta1.Targeted && d.Spec.DeploymentType != v1beta1.AutoScaling {
 		return nil
 	}
 
-	log.V(2).Info("Checking for removed target clusters", "deploymentID", d.GetId(), "deploymentName", d.Name)
-
-	// Build a set of current target cluster IDs from the deployment spec
-	currentTargets := make(map[string]bool)
-	for _, app := range d.Spec.Applications {
-		for _, target := range app.Targets {
-			if clusterName, ok := target[string(v1beta1.ClusterName)]; ok && clusterName != "" {
-				currentTargets[clusterName] = true
-			}
-		}
-	}
+	log.V(2).Info("Checking for removed target clusters", "deploymentID", d.GetId(), "deploymentName", d.Name, "deploymentType", d.Spec.DeploymentType)
 
 	// Find all DeploymentClusters that belong to this deployment
 	dcList := &v1beta1.DeploymentClusterList{}
@@ -606,39 +596,144 @@ func (r *Reconciler) cleanupRemovedTargetClusters(ctx context.Context, d *v1beta
 		return nil
 	}
 
-	// Delete DeploymentClusters for clusters no longer in the target list
+	// Delete logic depends on deployment type
 	deletedCount := 0
-	for i := range dcList.Items {
-		dc := &dcList.Items[i]
-		clusterID := dc.Spec.ClusterID
 
-		// If this cluster is not in the current targets, delete the DeploymentCluster
-		if !currentTargets[clusterID] {
-			log.Info("Deleting DeploymentCluster for removed target cluster",
-				"deploymentCluster", dc.Name,
-				"namespace", dc.Namespace,
-				"deploymentID", d.GetId(),
-				"clusterID", clusterID)
+	if d.Spec.DeploymentType == v1beta1.Targeted {
+		// For Targeted: Build a set of current target cluster IDs from the deployment spec
+		currentTargets := make(map[string]bool)
+		for _, app := range d.Spec.Applications {
+			for _, target := range app.Targets {
+				if clusterName, ok := target[string(v1beta1.ClusterName)]; ok && clusterName != "" {
+					currentTargets[clusterName] = true
+				}
+			}
+		}
 
-			if err := r.Client.Delete(ctx, dc); err != nil && !apierrors.IsNotFound(err) {
-				log.Error(err, "Failed to delete DeploymentCluster for removed target",
+		// Delete DeploymentClusters for clusters no longer in the target list
+		for i := range dcList.Items {
+			dc := &dcList.Items[i]
+			clusterID := dc.Spec.ClusterID
+
+			// If this cluster is not in the current targets, delete the DeploymentCluster
+			if !currentTargets[clusterID] {
+				log.Info("Deleting DeploymentCluster for removed target cluster",
+					"deploymentCluster", dc.Name,
+					"namespace", dc.Namespace,
+					"deploymentID", d.GetId(),
+					"clusterID", clusterID)
+
+				if err := r.Client.Delete(ctx, dc); err != nil && !apierrors.IsNotFound(err) {
+					log.Error(err, "Failed to delete DeploymentCluster for removed target",
+						"deploymentCluster", dc.Name,
+						"deploymentID", d.GetId(),
+						"clusterID", clusterID)
+					return err
+				}
+				deletedCount++
+				log.Info("Successfully deleted DeploymentCluster for removed target",
 					"deploymentCluster", dc.Name,
 					"deploymentID", d.GetId(),
 					"clusterID", clusterID)
-				return err
 			}
-			deletedCount++
-			log.Info("Successfully deleted DeploymentCluster for removed target",
-				"deploymentCluster", dc.Name,
-				"deploymentID", d.GetId(),
-				"clusterID", clusterID)
+		}
+	} else if d.Spec.DeploymentType == v1beta1.AutoScaling {
+		// For AutoScaling: Fetch GitRepos to get current targets
+		var childGitRepos fleetv1alpha1.GitRepoList
+		if err := r.List(ctx, &childGitRepos, client.InNamespace(d.Namespace), client.MatchingFields{ownerKey: d.Name}); err != nil {
+			log.Error(err, "Failed to list GitRepos for AutoScaling cleanup", "deploymentID", d.GetId())
+			return err
+		}
+
+		// Build a map of clusterID -> whether it still has a matching GitRepo target
+		// A DeploymentCluster should be kept if ANY GitRepo target would still match its cluster
+		clusterHasMatchingTarget := make(map[string]bool)
+
+		// For each DeploymentCluster, check if any GitRepo target would still match it
+		for i := range dcList.Items {
+			dc := &dcList.Items[i]
+			clusterID := dc.Spec.ClusterID
+
+			if clusterID == "" {
+				continue
+			}
+
+			// Fetch the Cluster CR to get its labels
+			cluster := &v1beta1.Cluster{}
+			clusterKey := client.ObjectKey{
+				Name:      clusterID,
+				Namespace: d.Namespace,
+			}
+			if err := r.Get(ctx, clusterKey, cluster); err != nil {
+				log.V(2).Info("Could not fetch cluster for matching check",
+					"clusterID", clusterID,
+					"error", err.Error())
+				// If we can't fetch the cluster, keep the DeploymentCluster (conservative approach)
+				clusterHasMatchingTarget[clusterID] = true
+				continue
+			}
+
+			// Check if any GitRepo target matches this cluster's labels
+			hasMatch := false
+			for j := range childGitRepos.Items {
+				gr := &childGitRepos.Items[j]
+				for _, target := range gr.Spec.Targets {
+					if target.ClusterSelector != nil && target.ClusterSelector.MatchLabels != nil {
+						// Check if all matchLabels exist in the cluster's labels
+						allMatch := true
+						for key, value := range target.ClusterSelector.MatchLabels {
+							if cluster.Labels[key] != value {
+								allMatch = false
+								break
+							}
+						}
+						if allMatch {
+							hasMatch = true
+							break
+						}
+					}
+				}
+				if hasMatch {
+					break
+				}
+			}
+
+			clusterHasMatchingTarget[clusterID] = hasMatch
+		}
+
+		// Delete DeploymentClusters that no longer have any matching GitRepo target
+		for i := range dcList.Items {
+			dc := &dcList.Items[i]
+			clusterID := dc.Spec.ClusterID
+
+			if !clusterHasMatchingTarget[clusterID] {
+				log.Info("Deleting DeploymentCluster for removed AutoScaling target",
+					"deploymentCluster", dc.Name,
+					"namespace", dc.Namespace,
+					"deploymentID", d.GetId(),
+					"clusterID", clusterID)
+
+				if err := r.Client.Delete(ctx, dc); err != nil && !apierrors.IsNotFound(err) {
+					log.Error(err, "Failed to delete DeploymentCluster for removed AutoScaling target",
+						"deploymentCluster", dc.Name,
+						"deploymentID", d.GetId(),
+						"clusterID", clusterID)
+					return err
+				}
+				deletedCount++
+				log.Info("Successfully deleted DeploymentCluster for removed AutoScaling target",
+					"deploymentCluster", dc.Name,
+					"deploymentID", d.GetId(),
+					"clusterID", clusterID)
+			}
 		}
 	}
 
 	if deletedCount > 0 {
 		log.Info("Completed cleanup of removed target clusters",
 			"deleted", deletedCount,
-			"deploymentID", d.GetId())
+			"deploymentID", d.GetId(),
+			"deploymentType", d.Spec.DeploymentType)
 	} else {
 		log.V(2).Info("No removed target clusters to cleanup", "deploymentID", d.GetId())
 	}

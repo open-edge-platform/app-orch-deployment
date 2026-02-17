@@ -175,6 +175,15 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 
 	d.HelmApps = helmApps
 
+	// Add entries from AllAppTargetClusters into TargetClusters
+	// This must be done AFTER d.HelmApps is populated so we can iterate through apps
+	if d.AllAppTargetClusters != nil {
+		err = mergeAllAppTargetClusters(ctx, d)
+		if err != nil {
+			return d, errors.Status(err).Err()
+		}
+	}
+
 	// Validate namespaces
 	if len(dp.Namespaces) > 0 {
 		nsNameRegex := regexp.MustCompile("^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$")
@@ -295,14 +304,6 @@ func initDeployment(ctx context.Context, s *DeploymentSvc, scenario string, in *
 		d.DisplayName = in.GetDisplayName()
 	}
 
-	// Add entries from AllAppTargetClusters into TargetClusters
-	if d.AllAppTargetClusters != nil {
-		err = mergeAllAppTargetClusters(ctx, d)
-		if err != nil {
-			return d, errors.Status(err).Err()
-		}
-	}
-
 	d, err = addDepAndRelationships(ctx, d, s, in, dependentDepls, activeProjectID)
 	if err != nil {
 		return d, errors.Status(err).Err()
@@ -418,56 +419,6 @@ func (c *DeploymentInstance) createDeploymentObject(ctx context.Context, s *Depl
 	// Create the TargetClusters list
 	targetClustersList := make([]*deploymentpb.TargetClusters, 0)
 
-	// For auto-scaling deployments, build a map of app names to their actual deployed cluster IDs
-	// from DeploymentCluster objects. This provides the actual cluster mapping after Fleet matching.
-	appClusterMap := make(map[string][]string)
-	if c.deployment.Spec.DeploymentType == deploymentv1beta1.AutoScaling && c.deploymentClusters != nil {
-		currentDeploymentID := string(c.deployment.ObjectMeta.UID)
-		for _, dc := range c.deploymentClusters.Items {
-			// Only process deployment clusters that belong to THIS deployment
-			if dc.Labels[string(deploymentv1beta1.DeploymentID)] != currentDeploymentID {
-				continue
-			}
-			if dc.Spec.ClusterID != "" {
-				// Extract app names from this deployment cluster
-				for _, app := range dc.Status.Apps {
-					appClusterMap[app.Name] = append(appClusterMap[app.Name], dc.Spec.ClusterID)
-				}
-			}
-		}
-	}
-
-	// For auto-scaling deployments, fetch actual cluster labels to determine which selector matched
-	// This map stores: clusterID -> actual cluster labels
-	clusterLabelsMap := make(map[string]map[string]string)
-	if c.deployment.Spec.DeploymentType == deploymentv1beta1.AutoScaling && c.deploymentClusters != nil && s.crClient != nil {
-		namespace := c.deployment.Namespace
-		currentDeploymentID := string(c.deployment.ObjectMeta.UID)
-
-		for _, dc := range c.deploymentClusters.Items {
-			// Only process deployment clusters that belong to THIS deployment
-			if dc.Labels[string(deploymentv1beta1.DeploymentID)] != currentDeploymentID {
-				continue
-			}
-			if dc.Spec.ClusterID != "" {
-				// Fetch the Cluster CR to get actual cluster labels for selector matching
-				cluster, err := s.crClient.Clusters(namespace).Get(ctx, dc.Spec.ClusterID, metav1.GetOptions{})
-				if err != nil {
-					log.Warnf("Failed to fetch cluster labels for cluster %s in deployment %s: %v. Using fallback selector matching.",
-						dc.Spec.ClusterID, c.deployment.Name, err)
-					continue
-				}
-				if cluster != nil && cluster.Labels != nil {
-					// Store the actual cluster labels for this cluster
-					clusterLabelsMap[dc.Spec.ClusterID] = cluster.Labels
-					log.Debugf("Successfully fetched %d labels for cluster %s", len(cluster.Labels), dc.Spec.ClusterID)
-				} else {
-					log.Warnf("Cluster %s exists but has no labels. Using fallback selector matching.", dc.Spec.ClusterID)
-				}
-			}
-		}
-	}
-
 	for _, app := range c.deployment.Spec.Applications {
 		labelCheckList := app.Targets
 		for _, l := range labelCheckList {
@@ -479,61 +430,13 @@ func (c *DeploymentInstance) createDeploymentObject(ctx context.Context, s *Depl
 					Labels:    l,
 				})
 			} else if c.deployment.Spec.DeploymentType == deploymentv1beta1.AutoScaling {
-				// Auto-scaling deployment - show the selector that matched each cluster
-				if clusterIDs, found := appClusterMap[app.Name]; found && len(clusterIDs) > 0 {
-					// For auto-scaling, create one entry per matched cluster with its matching selector
-					for _, clusterID := range clusterIDs {
-						// Find the matching selector for this cluster
-						var matchedSelector map[string]string
-
-						if actualClusterLabels, ok := clusterLabelsMap[clusterID]; ok {
-							// We have actual cluster labels, so match against all selectors
-							for _, selector := range labelCheckList {
-								matched := true
-								// A selector matches if all its key-value pairs exist in the cluster labels
-								for selectorKey, selectorValue := range selector {
-									if selectorKey == string(deploymentv1beta1.FleetProjectID) {
-										continue
-									}
-									if actualClusterLabels[selectorKey] != selectorValue {
-										matched = false
-										break
-									}
-								}
-								if matched {
-									matchedSelector = selector
-									log.Debugf("Cluster %s matched selector with %d labels", clusterID, len(matchedSelector))
-									break
-								}
-							}
-							if matchedSelector == nil {
-								log.Warnf("Cluster %s labels did not match any selector. Using first selector as fallback.", clusterID)
-							}
-						} else {
-							// Could not fetch cluster labels
-							log.Debugf("No cluster labels available for cluster %s, using first selector as fallback", clusterID)
-						}
-
-						// Fallback to first selector if no match found or no labels available
-						if matchedSelector == nil && len(labelCheckList) > 0 {
-							matchedSelector = labelCheckList[0]
-						}
-
-						targetClustersList = append(targetClustersList, &deploymentpb.TargetClusters{
-							AppName:   app.Name,
-							ClusterId: clusterID,
-							Labels:    matchedSelector,
-						})
-					}
-				} else {
-					// No clusters matched yet or deployment not yet reconciled by Fleet
-					if len(labelCheckList) > 0 {
-						targetClustersList = append(targetClustersList, &deploymentpb.TargetClusters{
-							AppName: app.Name,
-							Labels:  labelCheckList[0],
-						})
-					}
-				}
+				// For AutoScaling, return the label selectors from the deployment spec
+				// Don't populate clusterId - only show the labels that define the selector
+				// This returns what the user configured, not which clusters matched
+				targetClustersList = append(targetClustersList, &deploymentpb.TargetClusters{
+					AppName: app.Name,
+					Labels:  l,
+				})
 			}
 		}
 	}

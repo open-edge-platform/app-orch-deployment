@@ -128,24 +128,112 @@ func createDeploymentCr(d *Deployment, scenario string, resourceVersion string, 
 				}
 			}
 
-			// For update scenario:
-			// - For AutoScaling: accumulate targets (UI sends one label set at a time)
-			// - For Targeted: replacement logic (UI sends complete desired state)
-			if scenario == "update" && existingDeployment != nil && d.DeploymentType == string(deploymentv1beta1.AutoScaling) {
-				for _, existingApp := range existingDeployment.Spec.Applications {
-					if existingApp.Name == app.Name {
-						// Start with existing targets for AutoScaling only
-						targetsList = append(targetsList, existingApp.Targets...)
-						break
-					}
-				}
-			}
+			// For both AutoScaling and Targeted: UI sends complete desired state during UPDATE
+			// No need to accumulate - just process the targets from the request
 
 			// Add or update targets from the request
 			for _, target := range d.TargetClusters {
 				if app.Name == target.AppName {
 					if d.DeploymentType == string(deploymentv1beta1.Targeted) {
 						target.Labels[string(deploymentv1beta1.ClusterName)] = target.ClusterId
+					}
+
+					// For AutoScaling: Support multiple expansion strategies for OR logic:
+					// 1. Comma-separated values: {"host": "ubuntu,emt"} → [{"host":"ubuntu"}, {"host":"emt"}]
+					// 2. Multiple different keys: {"host": "ubuntu", "test": "app"} → [{"host":"ubuntu"}, {"test":"app"}]
+					// This allows matching clusters that have ANY of the labels, not ALL of them
+					if d.DeploymentType == string(deploymentv1beta1.AutoScaling) {
+						projectIDKey := string(deploymentv1beta1.FleetProjectID)
+
+						// First, check for comma-separated values and expand them
+						expandedTargets := []map[string]string{}
+						hasCommaSeparated := false
+
+						for key, value := range target.Labels {
+							if key != projectIDKey && strings.Contains(value, ",") {
+								hasCommaSeparated = true
+								// Split comma-separated values into separate targets
+								values := strings.Split(value, ",")
+								for _, v := range values {
+									v = strings.TrimSpace(v)
+									if v != "" {
+										labelMap := make(map[string]string)
+										labelMap[projectIDKey] = target.Labels[projectIDKey]
+										labelMap[key] = v
+										expandedTargets = append(expandedTargets, labelMap)
+									}
+								}
+								break // Only support one comma-separated key at a time
+							}
+						}
+
+						if hasCommaSeparated {
+							// Add all expanded targets
+							for _, labelSet := range expandedTargets {
+								isDuplicate := false
+								for _, existing := range targetsList {
+									if labelsMatch(existing, labelSet) {
+										isDuplicate = true
+										break
+									}
+								}
+								if !isDuplicate {
+									targetsList = append(targetsList, labelSet)
+								}
+							}
+							continue // Skip the normal processing below
+						}
+						hasMultipleLabels := false
+
+						// Check if target has multiple non-project-id labels
+						for key := range target.Labels {
+							if key != projectIDKey {
+								if hasMultipleLabels {
+									// Found second non-project label, needs splitting
+									break
+								}
+								hasMultipleLabels = true
+							}
+						}
+
+						// Only split if there are multiple non-project-id labels
+						labelCount := 0
+						for key := range target.Labels {
+							if key != projectIDKey {
+								labelCount++
+							}
+						}
+
+						if labelCount > 1 {
+							var nonProjectLabels []map[string]string
+
+							for key, value := range target.Labels {
+								if key != projectIDKey {
+									labelMap := make(map[string]string)
+									labelMap[projectIDKey] = target.Labels[projectIDKey] // Always include project ID
+									labelMap[key] = value
+									nonProjectLabels = append(nonProjectLabels, labelMap)
+								}
+							}
+
+							// Add each label as a separate target entry (OR logic)
+							if len(nonProjectLabels) > 0 {
+								for _, labelSet := range nonProjectLabels {
+									// Check if this exact label set already exists
+									isDuplicate := false
+									for _, existing := range targetsList {
+										if labelsMatch(existing, labelSet) {
+											isDuplicate = true
+											break
+										}
+									}
+									if !isDuplicate {
+										targetsList = append(targetsList, labelSet)
+									}
+								}
+								continue // Skip the normal processing below
+							}
+						}
 					}
 
 					// Check if this target overlaps with any existing target
@@ -171,19 +259,11 @@ func createDeploymentCr(d *Deployment, scenario string, resourceVersion string, 
 							}
 						}
 					} else {
-						// For AutoScaling deployments during UPDATE:
-						// UI sends merged labels, and we need to extract NEW metadata
-						// "NEW" means: key-value pairs that don't exist in ANY existing target
-						//
-						// Examples:
-						// - Existing: {app: test}, New: {app: test, user: customer}
-						//   → Extract {user: customer} as new target
-						// - Existing: {app: test}, New: {app: enic}
-						//   → Extract {app: enic} as new target (different value = new)
-						// - Existing: {app: test, user: customer}, New: {app: enic}
-						//   → Extract {app: enic} as new target
+						// For AutoScaling deployments:
+						// Each target is a separate label selector that should be preserved independently
+						// Simply check if this exact target already exists to avoid duplicates
 
-						// First, check if this exact target already exists (idempotent case)
+						// Check if this exact target already exists
 						exactMatchFound := false
 						for i := range targetsList {
 							if labelsMatch(targetsList[i], target.Labels) {
@@ -193,53 +273,10 @@ func createDeploymentCr(d *Deployment, scenario string, resourceVersion string, 
 							}
 						}
 
-						if !exactMatchFound && scenario == "update" && len(targetsList) > 0 {
-							projectIDKey := string(deploymentv1beta1.FleetProjectID)
-
-							// Collect all existing key-value pairs across all targets
-							existingKeyValues := make(map[string]map[string]bool)
-							for _, existingTarget := range targetsList {
-								for key, value := range existingTarget {
-									if key != projectIDKey {
-										if existingKeyValues[key] == nil {
-											existingKeyValues[key] = make(map[string]bool)
-										}
-										existingKeyValues[key][value] = true
-									}
-								}
-							}
-
-							// Extract new key-value pairs from incoming target
-							// A pair is "new" if:
-							// - The key doesn't exist at all, OR
-							// - The key exists but with a different value
-							newKeyValues := make(map[string]string)
-							hasNewKeyValues := false
-
-							for key, value := range target.Labels {
-								if key == projectIDKey {
-									// Always include project-id
-									newKeyValues[key] = value
-								} else {
-									// Check if this exact key-value pair exists
-									if values, keyExists := existingKeyValues[key]; !keyExists {
-										// Key doesn't exist at all - this is new
-										newKeyValues[key] = value
-										hasNewKeyValues = true
-									} else if !values[value] {
-										// Key exists but with different value - this is also new
-										newKeyValues[key] = value
-										hasNewKeyValues = true
-									}
-									// If key exists with same value, skip it (already deployed)
-								}
-							}
-
-							// Add new target with the new key-value pairs
-							if hasNewKeyValues {
-								targetsList = append(targetsList, newKeyValues)
-								targetExists = true
-							}
+						// For UPDATE: If not an exact match, it's a new target - add it
+						// For CREATE: Will be added below if !targetExists
+						if !exactMatchFound {
+							targetExists = false
 						}
 					}
 
@@ -1095,28 +1132,52 @@ func mergeAllAppTargetClusters(ctx context.Context, d *Deployment) error {
 			}
 		}
 	} else {
-		// In case targetClusters field exists, then loop through helm apps
-		// for every app check if there is an entry in targetClusters
-		// corresponding to labels in AllAppTargetClusters
-		// if not found, then add the entry for that app else move on.
+		// In case targetClusters field exists, then check if AllAppTargetClusters
+		// should be added as a NEW separate target for each app
+		// We add it as a new target if it's NOT an exact duplicate of any existing target
 		if len(*d.HelmApps) != 0 {
 			for _, app := range *d.HelmApps {
 				target := d.AllAppTargetClusters
+
+				// Check if this exact target already exists for this app
+				targetExists := false
 				for _, tc := range d.TargetClusters {
 					if tc.AppName == app.Name {
-						if d.DeploymentType == string(deploymentv1beta1.AutoScaling) {
+						// Check for exact match (all key-value pairs must match)
+						allLabelsMatch := true
+						if len(tc.Labels) != len(target.Labels) {
+							allLabelsMatch = false
+						} else {
 							for key, val := range target.Labels {
-								if _, exists := tc.Labels[key]; !exists {
-									utils.LogActivity(ctx, "create", "ADM", "label added with key "+key+" and value "+val+" for app "+app.Name)
-									tc.Labels[key] = val
-								} else {
-									utils.LogActivity(ctx, "create", "ADM", "label already exists with key "+key+" for app "+app.Name)
+								if tc.Labels[key] != val {
+									allLabelsMatch = false
+									break
 								}
 							}
-						} else if d.DeploymentType == string(deploymentv1beta1.Targeted) {
-							utils.LogActivity(ctx, "create", "ADM", "Target cluster ID "+tc.ClusterId+" already exists for app "+app.Name)
+						}
+						if allLabelsMatch {
+							targetExists = true
+							utils.LogActivity(ctx, "create", "ADM", "Target already exists for app "+app.Name)
+							break
 						}
 					}
+				}
+
+				// If this exact target doesn't exist, add it as a NEW target
+				if !targetExists {
+					targetClusterItem := &deploymentpb.TargetClusters{
+						AppName: app.Name,
+					}
+					if d.DeploymentType == string(deploymentv1beta1.Targeted) {
+						targetClusterItem.ClusterId = target.ClusterId
+					} else if d.DeploymentType == string(deploymentv1beta1.AutoScaling) {
+						targetClusterItem.Labels = make(map[string]string)
+						for k, v := range target.Labels {
+							targetClusterItem.Labels[k] = v
+						}
+					}
+					d.TargetClusters = append(d.TargetClusters, targetClusterItem)
+					utils.LogActivity(ctx, "create", "ADM", "Added new target for app "+app.Name)
 				}
 			}
 		}
