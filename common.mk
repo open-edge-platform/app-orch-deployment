@@ -25,7 +25,7 @@ SHELL := bash -eu -o pipefail
 ## GO variables ##
 GOARCH	:= $(shell go env GOARCH)
 GOCMD   := go
-GOTESTSUM_PKG := gotest.tools/gotestsum@v1.12.2
+GOTESTSUM_PKG := gotest.tools/gotestsum@v1.13.0
 OAPI_CODEGEN_VERSION ?= v2.5.0
 LOCALBIN ?= $(shell pwd)/bin
 BUF_VERSION ?= v1.59.0
