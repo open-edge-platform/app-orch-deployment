@@ -20,7 +20,7 @@ on:
         required: true
         description: "Branch in edge-manageability-framework to checkout"
         type: string
-        default: ven-with-kind-v1
+        default: main
 
 permissions:
   contents: read
@@ -43,7 +43,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: open-edge-platform/edge-manageability-framework
-          ref: ${{ inputs.emf-branch || 'ven-with-kind-v1' }}
+          ref: ${{ inputs.emf-branch || 'main' }}
           path: emf
           sparse-checkout: ci/ven
           token: ${{ secrets.SYS_EMF_GH_TOKEN }}
@@ -73,7 +73,7 @@ jobs:
         uses: open-edge-platform/edge-manageability-framework/.github/actions/deploy_kind@3a2d9869daa26e1925daf159dabb7307fc24e3ed
         timeout-minutes: 45
         with:
-          orch_version: ${{ inputs.emf-branch || 'ven-with-kind-v1' }}
+          orch_version: ${{ inputs.emf-branch || 'main' }}
           orch_password: ${{ env.ORCH_DEFAULT_PASSWORD }}
           # Skip Docker Hub credentials since they're not available
           docker_username: ${{ secrets.SYS_DOCKERHUB_USERNAME }}

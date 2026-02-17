@@ -19,7 +19,7 @@ on:
         description: 'The branch, tag or SHA to checkout EMF'
         required: true
         type: string
-        default: ven-with-kind-v1
+        default: main
 permissions:
   contents: read
 
@@ -32,5 +32,5 @@ jobs:
     with:
       component: app-deployment-manager
       use-ven: true
-      emf-branch: ${{ inputs.emf-branch || 'ven-with-kind-v1' }}
+      emf-branch: ${{ inputs.emf-branch || 'main' }}
     secrets: inherit  # zizmor: ignore[secrets-inherit]
