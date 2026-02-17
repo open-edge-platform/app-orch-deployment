@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	deploymentv1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
@@ -132,7 +133,7 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 		}
 		for _, deployment := range deployments {
 			if *deployment.DisplayName == displayName && *deployment.Status.State == restClient.RUNNING {
-				fmt.Printf("%s deployment already exists in cluster %s, skipping creation\n", useDP["deployPackage"], types.TestClusterID)
+				fmt.Printf("%s deployment already exists in cluster %s, skipping creation\n", useDP["deployPackage"], types.GetTestClusterID())
 				return "", retCode, nil
 			}
 		}
@@ -159,8 +160,9 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 
 	overrideValues := useDP["overrideValues"].([]map[string]any)
 
+        fmt.Printf("Using cluster ID: %s (env: TEST_CLUSTER_ID=%s)\n", types.GetTestClusterID(), os.Getenv("TEST_CLUSTER_ID"))
 	deployID, retCode, err := createDeployment(opts.AdmClient, CreateDeploymentParams{
-		ClusterID:      useDP["clusterId"].(string),
+		ClusterID:      types.GetTestClusterID(),
 		DpName:         useDP["deployPackage"].(string),
 		AppNames:       useDP["appNames"].([]string),
 		AppVersion:     useDP["deployPackageVersion"].(string),

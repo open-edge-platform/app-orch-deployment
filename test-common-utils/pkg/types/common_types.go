@@ -38,6 +38,12 @@ var TestClusterID = getTestClusterID()
 var KCPass = mustGetKCPassword()
 
 // getTestClusterID returns the cluster ID from environment variable or default.
+// GetTestClusterID returns the cluster ID from environment variable or default.
+// This function is exported so it can be called at runtime to get the current value.
+func GetTestClusterID() string {
+	return getTestClusterID()
+}
+
 func getTestClusterID() string {
 	clusterID := os.Getenv("TEST_CLUSTER_ID")
 	if clusterID == "" {
