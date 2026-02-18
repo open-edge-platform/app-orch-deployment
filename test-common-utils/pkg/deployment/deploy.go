@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	deploymentv1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
@@ -160,9 +159,19 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 
 	overrideValues := useDP["overrideValues"].([]map[string]any)
 
-        fmt.Printf("Using cluster ID: %s (env: TEST_CLUSTER_ID=%s)\n", types.GetTestClusterID(), os.Getenv("TEST_CLUSTER_ID"))
+	// Get cluster ID from API for targeted deployments
+	clusterID := ""
+	if opts.DeploymentType == DeploymentTypeTargeted {
+		clusterID, err = GetFirstClusterID(opts.AdmClient)
+		if err != nil {
+			fmt.Printf("Warning: failed to get cluster ID from API: %v, falling back to env var\n", err)
+			clusterID = types.GetTestClusterID()
+		}
+	}
+	fmt.Printf("Using cluster ID: %s (type: %s)\n", clusterID, opts.DeploymentType)
+
 	deployID, retCode, err := createDeployment(opts.AdmClient, CreateDeploymentParams{
-		ClusterID:      types.GetTestClusterID(),
+		ClusterID:      clusterID,
 		DpName:         useDP["deployPackage"].(string),
 		AppNames:       useDP["appNames"].([]string),
 		AppVersion:     useDP["deployPackageVersion"].(string),
@@ -566,4 +575,32 @@ func GetDeployApps(client *restClient.ClientWithResponses, deployID string) ([]*
 	}
 
 	return []*restClient.DeploymentV1App{}, fmt.Errorf("did not find deployment id %s", deployID)
+}
+
+// GetFirstClusterID retrieves the first available cluster ID from the deployment API.
+// This returns the actual cluster ID (UUID) that should be used for targeted deployments.
+func GetFirstClusterID(client *restClient.ClientWithResponses) (string, error) {
+	resp, err := client.DeploymentV1ClusterServiceListClustersWithResponse(context.TODO(), nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to list clusters: %w", err)
+	}
+	if resp.StatusCode() != 200 {
+		return "", fmt.Errorf("failed to list clusters: status %d, body: %s", resp.StatusCode(), string(resp.Body))
+	}
+
+	if resp.JSON200 == nil || len(resp.JSON200.Clusters) == 0 {
+		return "", fmt.Errorf("no clusters found")
+	}
+
+	clusterID := ""
+	clusterName := ""
+	if resp.JSON200.Clusters[0].Id != nil {
+		clusterID = *resp.JSON200.Clusters[0].Id
+	}
+	if resp.JSON200.Clusters[0].Name != nil {
+		clusterName = *resp.JSON200.Clusters[0].Name
+	}
+
+	fmt.Printf("Found cluster - Name: %s, ID: %s\n", clusterName, clusterID)
+	return clusterID, nil
 }
