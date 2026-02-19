@@ -48,7 +48,7 @@ jobs:
   go-fuzz-adm:
     if: ${{ inputs.run_adm || github.event_name == 'schedule' }}
     name: ADM Go Fuzzing Tests
-    uses: open-edge-platform/orch-ci/.github/workflows/apporch-go-fuzz.yml@467367d6f859a4654f2645ca78efd60035cf390c  # 2026.0.8
+    uses: open-edge-platform/orch-ci/.github/workflows/apporch-go-fuzz.yml@cd0b18b2ef0e2c52665525fa5503b8ec5edd232f  # 2026.0.10
     with:
       # Declare 1200 secs duration since schedule event will not pick up input values from workflow_dispatch
       fuzz_seconds: ${{ fromJSON(inputs.fuzz_seconds_adm || 1200) }}
@@ -57,7 +57,7 @@ jobs:
   go-fuzz-arm:
     if: ${{ inputs.run_arm || github.event_name == 'schedule' }}
     name: ARM Go Fuzzing Tests
-    uses: open-edge-platform/orch-ci/.github/workflows/apporch-go-fuzz.yml@467367d6f859a4654f2645ca78efd60035cf390c  # 2026.0.8
+    uses: open-edge-platform/orch-ci/.github/workflows/apporch-go-fuzz.yml@cd0b18b2ef0e2c52665525fa5503b8ec5edd232f  # 2026.0.10
     with:
       # Declare 2100 secs duration since schedule event will not pick up input values from workflow_dispatch
       fuzz_seconds: ${{ fromJSON(inputs.fuzz_seconds_arm || 2100) }}
@@ -66,7 +66,7 @@ jobs:
   go-fuzz-asp:
     if: ${{ inputs.run_asp || github.event_name == 'schedule'}}
     name: ASP Go Fuzzing Tests
-    uses: open-edge-platform/orch-ci/.github/workflows/apporch-go-fuzz.yml@467367d6f859a4654f2645ca78efd60035cf390c  # 2026.0.8
+    uses: open-edge-platform/orch-ci/.github/workflows/apporch-go-fuzz.yml@cd0b18b2ef0e2c52665525fa5503b8ec5edd232f  # 2026.0.10
     with:
       # Declare 4800 secs duration since schedule event will not pick up input values from workflow_dispatch
       fuzz_seconds: ${{ fromJSON(inputs.fuzz_seconds_asp || 4800) }}
