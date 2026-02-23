@@ -24,7 +24,7 @@ var DpConfigs = map[string]any{
 		"deployPackageVersion": "0.1.0",
 		"profileName":          "testing-default",
 		"clusterId":            types.TestClusterID,
-		"labels":               map[string]string{"color": "blue"},
+		"labels":               map[string]string{"user": "customer"},
 		"overrideValues":       []map[string]any{},
 	},
 	CirrosAppName: map[string]any{
@@ -33,7 +33,7 @@ var DpConfigs = map[string]any{
 		"deployPackageVersion": "0.1.0",
 		"profileName":          "default",
 		"clusterId":            types.TestClusterID,
-		"labels":               map[string]string{"color": "blue"},
+		"labels":               map[string]string{"user": "customer"},
 		"overrideValues":       []map[string]any{},
 	},
 	VirtualizationExtensionAppName: map[string]any{
@@ -42,7 +42,7 @@ var DpConfigs = map[string]any{
 		"deployPackageVersion": "0.5.1",
 		"profileName":          "with-software-emulation-profile-nosm",
 		"clusterId":            types.TestClusterID,
-		"labels":               map[string]string{"color": "blue"},
+		"labels":               map[string]string{"user": "customer"},
 		"overrideValues":       []map[string]any{},
 	},
 	WordpressAppName: map[string]any{
@@ -51,7 +51,7 @@ var DpConfigs = map[string]any{
 		"deployPackageVersion": "0.1.1",
 		"profileName":          "testing",
 		"clusterId":            types.TestClusterID,
-		"labels":               map[string]string{"color": "blue"},
+		"labels":               map[string]string{"user": "customer"},
 		"overrideValues":       []map[string]any{},
 	},
 	HttpbinAppName: map[string]any{
@@ -60,7 +60,7 @@ var DpConfigs = map[string]any{
 		"deployPackageVersion": "2.3.5",
 		"profileName":          "default",
 		"clusterId":            types.TestClusterID,
-		"labels":               map[string]string{"color": "blue"},
+		"labels":               map[string]string{"user": "customer"},
 		"overrideValues":       []map[string]any{},
 	},
 }

@@ -121,13 +121,6 @@ jobs:
           echo "Updated Hostfile entries!"
           mage gen:orchCa deploy:orchCa
 
-      - name: Setup users and project/org
-        id: default-mt-setup
-        run: |
-          mage tenantUtils:createDefaultMtSetup
-          echo "Orch org/project/users created!"
-          echo "Project uID:"
-          kubectl get projects.project -o json | jq -r ".items[0].status.projectStatus.uID"
 
       - name: Checkout edge-manage-test-automation
         if: ${{ inputs.use-ven }}
@@ -153,7 +146,7 @@ jobs:
           popd
 
       - name: Deploy VEN and Edge Cluster via Golden Suite
-        if: ${{ inputs.use-ven && steps.deploy-kind-orchestrator.conclusion == 'success' && steps.default-mt-setup.conclusion == 'success' }}
+        if: ${{ inputs.use-ven && steps.deploy-kind-orchestrator.conclusion == 'success' }}
         id: deploy-ven
         working-directory: edge-manage-test-automation
         timeout-minutes: 45
@@ -190,6 +183,10 @@ jobs:
             edge-manage-test-automation/robot_output/**/*
 
       - name: Upload Deployment Packages to Catalog
+        env:
+          ORCH_PROJECT: project-2
+          ORCH_USER: p-edge-manager-2
+          ORCH_PASS: Samp1ePassw@rd
         run: |
           mage app:upload
           echo "Deployment packages uploaded to catalog!"
