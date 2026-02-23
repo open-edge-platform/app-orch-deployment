@@ -4,7 +4,7 @@
 
 module github.com/open-edge-platform/app-orch-deployment/app-resource-manager
 
-go 1.25.5
+go 1.25.7
 
 replace (
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 => ../app-deployment-manager/api/nbi/v2
