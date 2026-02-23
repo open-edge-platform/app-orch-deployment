@@ -85,11 +85,14 @@ const (
 	AppNginx = "nginx"
 
 	// DeploymentTimeout represents the timeout in seconds for deployment operations
-	DeploymentTimeout = 20 * time.Second // 20 seconds
+	// Increased from 20s to 40s to allow more time for new clusters to schedule pods
+	DeploymentTimeout = 40 * time.Second // 40 seconds
 
-	RetryCount = 20 // Number of retries for deployment operations
+	// RetryCount is the number of retries for deployment operations
+	// Increased from 20 to 30 to allow more time for new clusters
+	RetryCount = 30 // Number of retries for deployment operations
 
-	DeleteTimeout = 10 * time.Second // Timeout for deletion operations
+	DeleteTimeout = 15 * time.Second // Timeout for deletion operations
 )
 
 type CreateDeploymentParams struct {
@@ -155,6 +158,22 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 	err := DeleteAndRetryUntilDeleted(opts.AdmClient, displayName, types.RetryCount, opts.DeleteTimeout)
 	if err != nil {
 		return "", retCode, err
+	}
+
+	// Wait for cluster to be ready before creating deployment
+	// This is especially important for newly created clusters
+	if waitErr := WaitForClusterReady(opts.AdmClient); waitErr != nil {
+		fmt.Printf("Warning: cluster readiness check failed: %v, continuing anyway\n", waitErr)
+	}
+
+	// For auto-scaling deployments, update labels with actual cluster labels
+	if opts.DeploymentType == DeploymentTypeAutoScaling {
+		if updateErr := UpdateDpConfigsWithClusterLabels(opts.AdmClient); updateErr != nil {
+			fmt.Printf("Warning: failed to update DpConfigs with cluster labels: %v\n", updateErr)
+			// Continue anyway, the default labels might work
+		}
+		// Re-read the config after potential update
+		useDP = DpConfigs[opts.DpPackageName].(map[string]any)
 	}
 
 	labels := useDP["labels"].(map[string]string)
@@ -636,6 +655,121 @@ func GetFirstClusterID(client *restClient.ClientWithResponses) (string, error) {
 	}
 
 	return "", fmt.Errorf("no clusters found after %d retries", maxRetries)
+}
+
+// WaitForClusterReady waits for the first cluster to be available for deployments.
+// A cluster is considered ready when it exists and has an ID assigned.
+// This should be called before creating deployments on a newly created cluster.
+func WaitForClusterReady(client *restClient.ClientWithResponses) error {
+	maxRetries := 15
+	retryDelay := 20 * time.Second // Wait 20 seconds between checks
+
+	fmt.Println("Waiting for cluster to be ready for deployments...")
+
+	for retry := 0; retry < maxRetries; retry++ {
+		if retry > 0 {
+			time.Sleep(retryDelay)
+			fmt.Printf("Checking cluster readiness (%d/%d)...\n", retry+1, maxRetries)
+		}
+
+		resp, err := client.DeploymentV1ClusterServiceListClustersWithResponse(context.TODO(), nil)
+		if err != nil {
+			fmt.Printf("ListClusters API error while checking readiness: %v\n", err)
+			continue
+		}
+
+		if resp.StatusCode() != 200 || resp.JSON200 == nil || len(resp.JSON200.Clusters) == 0 {
+			fmt.Println("No clusters available yet, waiting...")
+			continue
+		}
+
+		cluster := resp.JSON200.Clusters[0]
+		clusterName := ""
+		if cluster.Name != nil {
+			clusterName = *cluster.Name
+		}
+
+		// Check if cluster exists and has an ID assigned
+		// Having an ID means the cluster has been created and registered
+		if cluster.Id != nil && *cluster.Id != "" {
+			fmt.Printf("Cluster %s is ready (ID: %s)\n", clusterName, *cluster.Id)
+			// Wait a bit more to ensure the cluster is fully initialized
+			time.Sleep(10 * time.Second)
+			return nil
+		}
+
+		fmt.Printf("Cluster %s exists but no ID yet, waiting...\n", clusterName)
+	}
+
+	// After all retries, if we have a cluster, proceed anyway
+	// The deployment might work or provide a more meaningful error
+	fmt.Println("Warning: Cluster readiness check timed out, proceeding anyway...")
+	return nil
+}
+
+// GetFirstClusterLabels retrieves the labels of the first available cluster from the deployment API.
+// This is useful for auto-scaling deployments that need to match cluster labels.
+func GetFirstClusterLabels(client *restClient.ClientWithResponses) (map[string]string, error) {
+	maxRetries := 10
+	retryDelay := 5 * time.Second
+
+	for retry := 0; retry < maxRetries; retry++ {
+		if retry > 0 {
+			time.Sleep(retryDelay)
+			fmt.Printf("Retrying GetFirstClusterLabels (%d/%d)...\n", retry+1, maxRetries)
+		}
+
+		resp, err := client.DeploymentV1ClusterServiceListClustersWithResponse(context.TODO(), nil)
+		if err != nil {
+			fmt.Printf("ListClusters API error for labels: %v\n", err)
+			continue
+		}
+
+		if resp.StatusCode() != 200 || resp.JSON200 == nil || len(resp.JSON200.Clusters) == 0 {
+			continue
+		}
+
+		// Found clusters, get the first one's labels
+		cluster := resp.JSON200.Clusters[0]
+		if cluster.Labels != nil && len(*cluster.Labels) > 0 {
+			fmt.Printf("Found cluster labels: %v\n", *cluster.Labels)
+			return *cluster.Labels, nil
+		}
+
+		// Cluster has no labels, return empty map
+		fmt.Printf("Cluster has no labels\n")
+		return map[string]string{}, nil
+	}
+
+	return nil, fmt.Errorf("no clusters found after %d retries", maxRetries)
+}
+
+// UpdateDpConfigsWithClusterLabels updates all DpConfigs entries with the actual cluster labels.
+// This ensures auto-scaling deployments can match the cluster.
+func UpdateDpConfigsWithClusterLabels(client *restClient.ClientWithResponses) error {
+	labels, err := GetFirstClusterLabels(client)
+	if err != nil {
+		return fmt.Errorf("failed to get cluster labels: %w", err)
+	}
+
+	// If cluster has no labels, we can't use auto-scaling deployments effectively
+	// In this case, we log a warning but continue (tests using targeted will still work)
+	if len(labels) == 0 {
+		fmt.Println("Warning: Cluster has no labels. Auto-scaling deployments may not find matching clusters.")
+		// Use a default label that might work
+		labels = map[string]string{"user": "customer"}
+	}
+
+	// Update all DpConfigs with the actual cluster labels
+	for dpName, config := range DpConfigs {
+		if dpConfig, ok := config.(map[string]any); ok {
+			dpConfig["labels"] = labels
+			DpConfigs[dpName] = dpConfig
+		}
+	}
+
+	fmt.Printf("Updated DpConfigs with cluster labels: %v\n", labels)
+	return nil
 }
 
 // GetClusterIDFromKubectl retrieves the cluster ID using kubectl as a fallback.
