@@ -26,10 +26,45 @@ const (
 	RetryCount = 20
 )
 
+// Default values for org and project names
 const (
-	SampleOrg     = "sample-org"
-	SampleProject = "sample-project"
+	DefaultSampleOrg     = "sample-org"
+	DefaultSampleProject = "sample-project"
 )
+
+// SampleOrg returns the organization name from environment variable or default.
+var SampleOrg = getSampleOrg()
+
+// SampleProject returns the project name from environment variable or default.
+var SampleProject = getSampleProject()
+
+// SampleUsername returns the test username from environment variable or default.
+var SampleUsername = getSampleUsername()
+
+func getSampleOrg() string {
+	org := os.Getenv("TEST_ORG_NAME")
+	if org == "" {
+		return DefaultSampleOrg
+	}
+	return org
+}
+
+func getSampleProject() string {
+	project := os.Getenv("TEST_PROJECT_NAME")
+	if project == "" {
+		return DefaultSampleProject
+	}
+	return project
+}
+
+func getSampleUsername() string {
+	username := os.Getenv("TEST_USERNAME")
+	if username == "" {
+		// Default format: {project}-edge-mgr
+		return getSampleProject() + "-edge-mgr"
+	}
+	return username
+}
 
 // TestClusterID is the cluster ID used for testing.
 // It reads from TEST_CLUSTER_ID environment variable, defaults to "demo-cluster".

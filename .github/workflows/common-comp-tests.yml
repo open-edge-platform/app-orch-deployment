@@ -206,6 +206,10 @@ jobs:
         working-directory: app-orch-deployment/${{ inputs.component }}
         env:
           COMPONENT: ${{ inputs.component }}
+          ORCH_DEFAULT_PASSWORD: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
+          TEST_ORG_NAME: org-2
+          TEST_PROJECT_NAME: project-2
+          TEST_USERNAME: p-edge-manager-2
         run: |
           echo "Running component tests for $COMPONENT"
           make component-test

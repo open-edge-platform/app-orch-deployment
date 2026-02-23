@@ -8,6 +8,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os/exec"
+	"strings"
 	"time"
 
 	deploymentv1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
@@ -164,8 +166,13 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 	if opts.DeploymentType == DeploymentTypeTargeted {
 		clusterID, err = GetFirstClusterID(opts.AdmClient)
 		if err != nil {
-			fmt.Printf("Warning: failed to get cluster ID from API: %v, falling back to env var\n", err)
-			clusterID = types.GetTestClusterID()
+			fmt.Printf("Warning: failed to get cluster ID from API: %v\n", err)
+			// Try kubectl fallback
+			clusterID, err = GetClusterIDFromKubectl()
+			if err != nil {
+				fmt.Printf("Warning: kubectl fallback also failed: %v, using env var\n", err)
+				clusterID = types.GetTestClusterID()
+			}
 		}
 	}
 	fmt.Printf("Using cluster ID: %s (type: %s)\n", clusterID, opts.DeploymentType)
@@ -629,4 +636,32 @@ func GetFirstClusterID(client *restClient.ClientWithResponses) (string, error) {
 	}
 
 	return "", fmt.Errorf("no clusters found after %d retries", maxRetries)
+}
+
+// GetClusterIDFromKubectl retrieves the cluster ID using kubectl as a fallback.
+// This queries the nexus CRD directly to get the cluster UID.
+func GetClusterIDFromKubectl() (string, error) {
+	// First, get the list of cluster names
+	// #nosec G204 -- Arguments are controlled within application context.
+	cmd := exec.Command("kubectl", "get", "clusterinfos.nexus.api.resourcemanager.orchestrator.apis",
+		"-n", "nexus", "-o", "jsonpath={.items[0].metadata.uid}")
+	output, err := cmd.Output()
+	if err != nil {
+		// Try alternative CRD names
+		// #nosec G204 -- Arguments are controlled within application context.
+		cmd = exec.Command("kubectl", "get", "clusters.cluster.orchestrator.apis",
+			"-A", "-o", "jsonpath={.items[0].metadata.uid}")
+		output, err = cmd.Output()
+		if err != nil {
+			return "", fmt.Errorf("failed to get cluster ID via kubectl: %w", err)
+		}
+	}
+
+	clusterID := strings.TrimSpace(string(output))
+	if clusterID == "" {
+		return "", fmt.Errorf("kubectl returned empty cluster ID")
+	}
+
+	fmt.Printf("Got cluster ID from kubectl: %s\n", clusterID)
+	return clusterID, nil
 }

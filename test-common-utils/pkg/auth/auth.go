@@ -37,7 +37,7 @@ func SetUpAccessToken(server string) (string, error) {
 	}
 	data := url.Values{}
 	data.Set("client_id", "system-client")
-	data.Set("username", fmt.Sprintf("%s-edge-mgr", types.SampleProject))
+	data.Set("username", types.SampleUsername)
 	data.Set("password", types.KCPass)
 	data.Set("grant_type", "password")
 	url := "https://" + server + "/realms/master/protocol/openid-connect/token"
