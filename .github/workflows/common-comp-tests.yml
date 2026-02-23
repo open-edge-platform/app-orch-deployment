@@ -210,6 +210,7 @@ jobs:
           TEST_ORG_NAME: org-2
           TEST_PROJECT_NAME: project-2
           TEST_USERNAME: p-edge-manager-2
+          TEST_PASSWORD: Samp1ePassw@rd
         run: |
           echo "Running component tests for $COMPONENT"
           make component-test

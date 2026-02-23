@@ -88,9 +88,15 @@ func getTestClusterID() string {
 }
 
 func mustGetKCPassword() string {
-	pass := os.Getenv("ORCH_DEFAULT_PASSWORD")
+	// First check TEST_PASSWORD for test user credentials (used by Golden Suite)
+	pass := os.Getenv("TEST_PASSWORD")
+	if pass != "" {
+		return pass
+	}
+	// Fall back to ORCH_DEFAULT_PASSWORD (orchestrator admin password)
+	pass = os.Getenv("ORCH_DEFAULT_PASSWORD")
 	if pass == "" {
-		panic("ORCH_DEFAULT_PASSWORD environment variable must be set")
+		panic("Either TEST_PASSWORD or ORCH_DEFAULT_PASSWORD environment variable must be set")
 	}
 	return pass
 }
