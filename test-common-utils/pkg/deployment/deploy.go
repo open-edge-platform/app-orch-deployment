@@ -579,28 +579,54 @@ func GetDeployApps(client *restClient.ClientWithResponses, deployID string) ([]*
 
 // GetFirstClusterID retrieves the first available cluster ID from the deployment API.
 // This returns the actual cluster ID (UUID) that should be used for targeted deployments.
+// It retries a few times in case clusters are not immediately available.
 func GetFirstClusterID(client *restClient.ClientWithResponses) (string, error) {
-	resp, err := client.DeploymentV1ClusterServiceListClustersWithResponse(context.TODO(), nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to list clusters: %w", err)
-	}
-	if resp.StatusCode() != 200 {
-		return "", fmt.Errorf("failed to list clusters: status %d, body: %s", resp.StatusCode(), string(resp.Body))
+	maxRetries := 5
+	retryDelay := 10 * time.Second
+
+	for retry := 0; retry < maxRetries; retry++ {
+		if retry > 0 {
+			fmt.Printf("Retrying GetFirstClusterID (%d/%d)...\n", retry+1, maxRetries)
+			time.Sleep(retryDelay)
+		}
+
+		resp, err := client.DeploymentV1ClusterServiceListClustersWithResponse(context.TODO(), nil)
+		if err != nil {
+			fmt.Printf("ListClusters API error: %v\n", err)
+			continue
+		}
+
+		fmt.Printf("ListClusters API response - Status: %d, Body length: %d\n", resp.StatusCode(), len(resp.Body))
+
+		if resp.StatusCode() != 200 {
+			fmt.Printf("ListClusters non-200 response: %s\n", string(resp.Body))
+			continue
+		}
+
+		if resp.JSON200 == nil {
+			fmt.Printf("ListClusters JSON200 is nil\n")
+			continue
+		}
+
+		fmt.Printf("ListClusters returned %d clusters\n", len(resp.JSON200.Clusters))
+
+		if len(resp.JSON200.Clusters) == 0 {
+			continue
+		}
+
+		// Found clusters, get the first one
+		clusterID := ""
+		clusterName := ""
+		if resp.JSON200.Clusters[0].Id != nil {
+			clusterID = *resp.JSON200.Clusters[0].Id
+		}
+		if resp.JSON200.Clusters[0].Name != nil {
+			clusterName = *resp.JSON200.Clusters[0].Name
+		}
+
+		fmt.Printf("Found cluster - Name: %s, ID: %s\n", clusterName, clusterID)
+		return clusterID, nil
 	}
 
-	if resp.JSON200 == nil || len(resp.JSON200.Clusters) == 0 {
-		return "", fmt.Errorf("no clusters found")
-	}
-
-	clusterID := ""
-	clusterName := ""
-	if resp.JSON200.Clusters[0].Id != nil {
-		clusterID = *resp.JSON200.Clusters[0].Id
-	}
-	if resp.JSON200.Clusters[0].Name != nil {
-		clusterName = *resp.JSON200.Clusters[0].Name
-	}
-
-	fmt.Printf("Found cluster - Name: %s, ID: %s\n", clusterName, clusterID)
-	return clusterID, nil
+	return "", fmt.Errorf("no clusters found after %d retries", maxRetries)
 }
