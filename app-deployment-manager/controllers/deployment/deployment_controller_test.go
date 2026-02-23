@@ -1378,154 +1378,154 @@ var _ = Describe("Deployment controller", func() {
 	})
 
 	When("cleaning up removed target clusters", func() {
-	var (
-	ctx context.Context
-	r   *Reconciler
-	c   client.WithWatch
-	d   v1beta1.Deployment
-	dc1 v1beta1.DeploymentCluster
-	dc2 v1beta1.DeploymentCluster
-	dc3 v1beta1.DeploymentCluster
-	)
+		var (
+			ctx context.Context
+			r   *Reconciler
+			c   client.WithWatch
+			d   v1beta1.Deployment
+			dc1 v1beta1.DeploymentCluster
+			dc2 v1beta1.DeploymentCluster
+			dc3 v1beta1.DeploymentCluster
+		)
 
-	BeforeEach(func() {
-	ctx = context.Background()
+		BeforeEach(func() {
+			ctx = context.Background()
 
-	d = v1beta1.Deployment{
-	ObjectMeta: metav1.ObjectMeta{
-	Name:      "test-deployment",
-	Namespace: "default",
-	UID:       "test-uid-12345",
-	},
-	Spec: v1beta1.DeploymentSpec{
-	DeploymentType: v1beta1.Targeted,
-	Applications: []v1beta1.Application{
-	{
-	Name:      "app1",
-	Version:   "1.0.0",
-	Namespace: "default",
-	Targets: []map[string]string{
-	{string(v1beta1.ClusterName): "cluster-1"},
-	{string(v1beta1.ClusterName): "cluster-2"},
-	},
-	},
-	},
-	},
-	}
+			d = v1beta1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-deployment",
+					Namespace: "default",
+					UID:       "test-uid-12345",
+				},
+				Spec: v1beta1.DeploymentSpec{
+					DeploymentType: v1beta1.Targeted,
+					Applications: []v1beta1.Application{
+						{
+							Name:      "app1",
+							Version:   "1.0.0",
+							Namespace: "default",
+							Targets: []map[string]string{
+								{string(v1beta1.ClusterName): "cluster-1"},
+								{string(v1beta1.ClusterName): "cluster-2"},
+							},
+						},
+					},
+				},
+			}
 
-	dc1 = v1beta1.DeploymentCluster{
-	ObjectMeta: metav1.ObjectMeta{
-	Name:      "test-deployment-cluster-1",
-	Namespace: "default",
-	Labels: map[string]string{
-	string(v1beta1.BundleName):   "test-deployment",
-	string(v1beta1.DeploymentID): "test-uid-12345",
-	},
-	OwnerReferences: []metav1.OwnerReference{
-	{APIVersion: "app.edge-orchestrator.intel.com/v1beta1", Kind: "Deployment", Name: "test-deployment", UID: "test-uid-12345"},
-	},
-	},
-	Spec: v1beta1.DeploymentClusterSpec{ClusterID: "cluster-1"},
-	}
+			dc1 = v1beta1.DeploymentCluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-deployment-cluster-1",
+					Namespace: "default",
+					Labels: map[string]string{
+						string(v1beta1.BundleName):   "test-deployment",
+						string(v1beta1.DeploymentID): "test-uid-12345",
+					},
+					OwnerReferences: []metav1.OwnerReference{
+						{APIVersion: "app.edge-orchestrator.intel.com/v1beta1", Kind: "Deployment", Name: "test-deployment", UID: "test-uid-12345"},
+					},
+				},
+				Spec: v1beta1.DeploymentClusterSpec{ClusterID: "cluster-1"},
+			}
 
-	dc2 = v1beta1.DeploymentCluster{
-	ObjectMeta: metav1.ObjectMeta{
-	Name:      "test-deployment-cluster-2",
-	Namespace: "default",
-	Labels: map[string]string{
-	string(v1beta1.BundleName):   "test-deployment",
-	string(v1beta1.DeploymentID): "test-uid-12345",
-	},
-	OwnerReferences: []metav1.OwnerReference{
-	{APIVersion: "app.edge-orchestrator.intel.com/v1beta1", Kind: "Deployment", Name: "test-deployment", UID: "test-uid-12345"},
-	},
-	},
-	Spec: v1beta1.DeploymentClusterSpec{ClusterID: "cluster-2"},
-	}
+			dc2 = v1beta1.DeploymentCluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-deployment-cluster-2",
+					Namespace: "default",
+					Labels: map[string]string{
+						string(v1beta1.BundleName):   "test-deployment",
+						string(v1beta1.DeploymentID): "test-uid-12345",
+					},
+					OwnerReferences: []metav1.OwnerReference{
+						{APIVersion: "app.edge-orchestrator.intel.com/v1beta1", Kind: "Deployment", Name: "test-deployment", UID: "test-uid-12345"},
+					},
+				},
+				Spec: v1beta1.DeploymentClusterSpec{ClusterID: "cluster-2"},
+			}
 
-	dc3 = v1beta1.DeploymentCluster{
-	ObjectMeta: metav1.ObjectMeta{
-	Name:      "test-deployment-cluster-3",
-	Namespace: "default",
-	Labels: map[string]string{
-	string(v1beta1.BundleName):   "test-deployment",
-	string(v1beta1.DeploymentID): "test-uid-12345",
-	},
-	OwnerReferences: []metav1.OwnerReference{
-	{APIVersion: "app.edge-orchestrator.intel.com/v1beta1", Kind: "Deployment", Name: "test-deployment", UID: "test-uid-12345"},
-	},
-	},
-	Spec: v1beta1.DeploymentClusterSpec{ClusterID: "cluster-3"},
-	}
+			dc3 = v1beta1.DeploymentCluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-deployment-cluster-3",
+					Namespace: "default",
+					Labels: map[string]string{
+						string(v1beta1.BundleName):   "test-deployment",
+						string(v1beta1.DeploymentID): "test-uid-12345",
+					},
+					OwnerReferences: []metav1.OwnerReference{
+						{APIVersion: "app.edge-orchestrator.intel.com/v1beta1", Kind: "Deployment", Name: "test-deployment", UID: "test-uid-12345"},
+					},
+				},
+				Spec: v1beta1.DeploymentClusterSpec{ClusterID: "cluster-3"},
+			}
 
-	c = fake.NewClientBuilder().
-	WithScheme(scheme.Scheme).
-	WithObjects(&d, &dc1, &dc2, &dc3).
-	WithStatusSubresource(&v1beta1.Deployment{}).
-	Build()
+			c = fake.NewClientBuilder().
+				WithScheme(scheme.Scheme).
+				WithObjects(&d, &dc1, &dc2, &dc3).
+				WithStatusSubresource(&v1beta1.Deployment{}).
+				Build()
 
-	r = &Reconciler{
-	Client:   c,
-	Scheme:   scheme.Scheme,
-	recorder: record.NewFakeRecorder(1024),
-	}
-	})
+			r = &Reconciler{
+				Client:   c,
+				Scheme:   scheme.Scheme,
+				recorder: record.NewFakeRecorder(1024),
+			}
+		})
 
-	Context("when cluster is removed from targeted deployment", func() {
-	It("should delete the DeploymentCluster for removed cluster", func() {
-	err := r.cleanupRemovedTargetClusters(ctx, &d)
-	Expect(err).NotTo(HaveOccurred())
+		Context("when cluster is removed from targeted deployment", func() {
+			It("should delete the DeploymentCluster for removed cluster", func() {
+				err := r.cleanupRemovedTargetClusters(ctx, &d)
+				Expect(err).NotTo(HaveOccurred())
 
-	err = r.Get(ctx, types.NamespacedName{Name: dc1.Name, Namespace: dc1.Namespace}, &dc1)
-	Expect(err).NotTo(HaveOccurred())
+				err = r.Get(ctx, types.NamespacedName{Name: dc1.Name, Namespace: dc1.Namespace}, &dc1)
+				Expect(err).NotTo(HaveOccurred())
 
-	err = r.Get(ctx, types.NamespacedName{Name: dc2.Name, Namespace: dc2.Namespace}, &dc2)
-	Expect(err).NotTo(HaveOccurred())
+				err = r.Get(ctx, types.NamespacedName{Name: dc2.Name, Namespace: dc2.Namespace}, &dc2)
+				Expect(err).NotTo(HaveOccurred())
 
-	err = r.Get(ctx, types.NamespacedName{Name: dc3.Name, Namespace: dc3.Namespace}, &dc3)
-	Expect(apierrors.IsNotFound(err)).To(BeTrue())
-	})
-	})
+				err = r.Get(ctx, types.NamespacedName{Name: dc3.Name, Namespace: dc3.Namespace}, &dc3)
+				Expect(apierrors.IsNotFound(err)).To(BeTrue())
+			})
+		})
 
-	Context("when deployment is auto-scaling type", func() {
-	It("should not delete any DeploymentClusters", func() {
-	d.Spec.DeploymentType = v1beta1.AutoScaling
-	err := c.Update(ctx, &d)
-	Expect(err).NotTo(HaveOccurred())
+		Context("when deployment is auto-scaling type", func() {
+			It("should not delete any DeploymentClusters", func() {
+				d.Spec.DeploymentType = v1beta1.AutoScaling
+				err := c.Update(ctx, &d)
+				Expect(err).NotTo(HaveOccurred())
 
-	err = r.cleanupRemovedTargetClusters(ctx, &d)
-	Expect(err).NotTo(HaveOccurred())
+				err = r.cleanupRemovedTargetClusters(ctx, &d)
+				Expect(err).NotTo(HaveOccurred())
 
-	err = r.Get(ctx, types.NamespacedName{Name: dc1.Name, Namespace: dc1.Namespace}, &dc1)
-	Expect(err).NotTo(HaveOccurred())
+				err = r.Get(ctx, types.NamespacedName{Name: dc1.Name, Namespace: dc1.Namespace}, &dc1)
+				Expect(err).NotTo(HaveOccurred())
 
-	err = r.Get(ctx, types.NamespacedName{Name: dc2.Name, Namespace: dc2.Namespace}, &dc2)
-	Expect(err).NotTo(HaveOccurred())
+				err = r.Get(ctx, types.NamespacedName{Name: dc2.Name, Namespace: dc2.Namespace}, &dc2)
+				Expect(err).NotTo(HaveOccurred())
 
-	err = r.Get(ctx, types.NamespacedName{Name: dc3.Name, Namespace: dc3.Namespace}, &dc3)
-	Expect(err).NotTo(HaveOccurred())
-	})
-	})
+				err = r.Get(ctx, types.NamespacedName{Name: dc3.Name, Namespace: dc3.Namespace}, &dc3)
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
 
-	Context("when all clusters are removed from deployment", func() {
-	It("should delete all DeploymentClusters", func() {
-	d.Spec.Applications[0].Targets = []map[string]string{}
-	err := c.Update(ctx, &d)
-	Expect(err).NotTo(HaveOccurred())
+		Context("when all clusters are removed from deployment", func() {
+			It("should delete all DeploymentClusters", func() {
+				d.Spec.Applications[0].Targets = []map[string]string{}
+				err := c.Update(ctx, &d)
+				Expect(err).NotTo(HaveOccurred())
 
-	err = r.cleanupRemovedTargetClusters(ctx, &d)
-	Expect(err).NotTo(HaveOccurred())
+				err = r.cleanupRemovedTargetClusters(ctx, &d)
+				Expect(err).NotTo(HaveOccurred())
 
-	err = r.Get(ctx, types.NamespacedName{Name: dc1.Name, Namespace: dc1.Namespace}, &dc1)
-	Expect(apierrors.IsNotFound(err)).To(BeTrue())
+				err = r.Get(ctx, types.NamespacedName{Name: dc1.Name, Namespace: dc1.Namespace}, &dc1)
+				Expect(apierrors.IsNotFound(err)).To(BeTrue())
 
-	err = r.Get(ctx, types.NamespacedName{Name: dc2.Name, Namespace: dc2.Namespace}, &dc2)
-	Expect(apierrors.IsNotFound(err)).To(BeTrue())
+				err = r.Get(ctx, types.NamespacedName{Name: dc2.Name, Namespace: dc2.Namespace}, &dc2)
+				Expect(apierrors.IsNotFound(err)).To(BeTrue())
 
-	err = r.Get(ctx, types.NamespacedName{Name: dc3.Name, Namespace: dc3.Namespace}, &dc3)
-	Expect(apierrors.IsNotFound(err)).To(BeTrue())
-	})
-	})
+				err = r.Get(ctx, types.NamespacedName{Name: dc3.Name, Namespace: dc3.Namespace}, &dc3)
+				Expect(apierrors.IsNotFound(err)).To(BeTrue())
+			})
+		})
 	})
 
 })
