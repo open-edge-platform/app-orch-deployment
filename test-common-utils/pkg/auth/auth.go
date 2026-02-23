@@ -49,6 +49,8 @@ func SetUpAccessToken(server string) (string, error) {
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
+	fmt.Printf("Authenticating with keycloak as user: %s\n", types.SampleUsername)
+
 	resp, err := c.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("error from keycloak: %w", err)
@@ -63,13 +65,20 @@ func SetUpAccessToken(server string) (string, error) {
 		return "", fmt.Errorf("error reading response body: %w", err)
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("keycloak auth failed for user %s: status %d, body: %s", types.SampleUsername, resp.StatusCode, string(rawTokenData))
+	}
+
 	tokenData := map[string]any{}
 	err = json.Unmarshal(rawTokenData, &tokenData)
 	if err != nil {
 		return "", fmt.Errorf("error unmarshalling token data: %w", err)
 	}
 
-	accessToken := tokenData["access_token"].(string)
+	accessToken, ok := tokenData["access_token"].(string)
+	if !ok {
+		return "", fmt.Errorf("access token not found in keycloak response: %s", string(rawTokenData))
+	}
 	if accessToken == "" {
 		return "", fmt.Errorf("access token is empty")
 	}
