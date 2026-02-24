@@ -89,8 +89,8 @@ const (
 	DeploymentTimeout = 40 * time.Second // 40 seconds
 
 	// RetryCount is the number of retries for deployment operations
-	// Increased from 20 to 30 to allow more time for new clusters
-	RetryCount = 30 // Number of retries for deployment operations
+	// Increased to 60 to allow up to 40 minutes for deployments to become ready
+	RetryCount = 60 // Number of retries for deployment operations
 
 	DeleteTimeout = 15 * time.Second // Timeout for deletion operations
 )
@@ -344,23 +344,40 @@ func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName
 			return fmt.Errorf("failed to get deployments: %v", err)
 		}
 
+		var statusMessage string
 		for _, d := range deployments {
 			// In case there's several deployments only use the one with the same display name
 			if *d.DisplayName == displayName {
 				currState = string(*d.Status.State)
+				// Get status message for better diagnostics
+				if d.Status.Message != nil {
+					statusMessage = *d.Status.Message
+				}
+
+				// Check if deployment is in ERROR state - fail fast instead of waiting
+				if *d.Status.State == restClient.ERROR {
+					return fmt.Errorf("deployment %s is in ERROR state: %s", displayName, statusMessage)
+				}
 			}
 
 			if *d.DisplayName == displayName && *d.Status.State == targetState {
-				fmt.Printf("Waiting for deployment %s state %s ---> %s\n", displayName, currState, status.String())
+				fmt.Printf("Deployment %s reached target state %s\n", displayName, status.String())
 				return nil
 			}
 		}
 
-		fmt.Printf("Waiting for deployment %s state %s ---> %s\n", displayName, currState, status.String())
+		fmt.Printf("Waiting for deployment %s state %s ---> %s (attempt %d/%d)%s\n",
+			displayName, currState, status.String(), i+1, retries,
+			func() string {
+				if statusMessage != "" {
+					return fmt.Sprintf(" [%s]", statusMessage)
+				}
+				return ""
+			}())
 		time.Sleep(delay)
 	}
 
-	return fmt.Errorf("deployment %s did not reach status %s after %d retries", displayName, status.String(), retries)
+	return fmt.Errorf("deployment %s did not reach status %s after %d retries (last state: %s)", displayName, status.String(), retries, currState)
 }
 
 func UpdateDeployment(client *restClient.ClientWithResponses, deployID string, params restClient.DeploymentV1DeploymentServiceUpdateDeploymentJSONRequestBody) (int, error) {
