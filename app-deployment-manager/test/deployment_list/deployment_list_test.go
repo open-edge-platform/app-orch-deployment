@@ -73,7 +73,7 @@ func (s *TestSuite) TestListDeploymentsWithPagination() {
 }
 
 func (s *TestSuite) TestListDeploymentsInvalidPaginationParameters() {
-	s.T().Parallel()
+	// s.T().Parallel() // Disabled to run tests sequentially
 	testCases := []struct {
 		pageSize int32
 		offset   int32
@@ -108,7 +108,7 @@ func (s *TestSuite) TestListDeploymentsInvalidPaginationParameters() {
 }
 
 func (s *TestSuite) TestListDeploymentsWithFilter() {
-	s.T().Parallel()
+	// s.T().Parallel() // Disabled to run tests sequentially
 	testName := "ListDeploymentsWithFilter"
 	for _, app := range []string{deploymentutils.AppWordpress, deploymentutils.AppNginx} {
 		deploymentReq := deploymentutils.StartDeploymentRequest{
