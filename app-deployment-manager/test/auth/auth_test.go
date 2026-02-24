@@ -12,7 +12,7 @@ import (
 
 // TestListDeploymentsInvalidProjectID tests the list deployments method with invalid project ID
 func (s *TestSuite) TestListDeploymentsInvalidProjectID() {
-	s.T().Parallel()
+	// s.T().Parallel() // Disabled to run tests sequentially
 	admClient, err := clients.CreateAdmClient(s.deploymentRESTServerUrl, s.token, "invalidprojectid")
 	s.NoError(err)
 
@@ -28,7 +28,7 @@ func (s *TestSuite) TestListDeploymentsInvalidProjectID() {
 
 // TestGetDeploymentInvalidProjectID tests the get deployment method with invalid project ID
 func (s *TestSuite) TestGetDeploymentInvalidProjectID() {
-	s.T().Parallel()
+	// s.T().Parallel() // Disabled to run tests sequentially
 	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
 		DpPackageName:     deploymentutils.AppNginx,
@@ -59,7 +59,7 @@ func (s *TestSuite) TestGetDeploymentInvalidProjectID() {
 	s.NoError(err)
 }
 func (s *TestSuite) TestDeleteDeploymentInvalidProjectID() {
-	s.T().Parallel()
+	// s.T().Parallel() // Disabled to run tests sequentially
 	// Create a deployment to be deleted
 	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,

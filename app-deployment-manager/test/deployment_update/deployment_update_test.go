@@ -45,7 +45,7 @@ func (s *TestSuite) TestUpdateDeploymentValidParams() {
 }
 
 func (s *TestSuite) TestUpdateDeploymentInvalidParams() {
-	// s.T().Parallel()
+	// // s.T().Parallel() // Disabled to run tests sequentially
 	testName := "TestUpdateDeplInvalidParams"
 	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,

@@ -385,6 +385,12 @@ func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName
 				if *d.Status.State == restClient.ERROR {
 					return fmt.Errorf("deployment %s is in ERROR state: %s", displayName, statusMessage)
 				}
+
+				// Check if deployment has NO_TARGET_CLUSTERS - this means the cluster isn't matching
+				// This is a configuration issue, not a transient error, so fail fast
+				if *d.Status.State == restClient.NOTARGETCLUSTERS {
+					return fmt.Errorf("deployment %s has NO_TARGET_CLUSTERS: cluster not found or labels don't match. Message: %s", displayName, statusMessage)
+				}
 			}
 
 			if *d.DisplayName == displayName && *d.Status.State == targetState {
