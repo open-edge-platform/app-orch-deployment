@@ -23,7 +23,7 @@ const (
 
 const (
 	RetryDelay = 10 * time.Second
-	RetryCount = 20
+	RetryCount = 30
 )
 
 // Default values for org and project names

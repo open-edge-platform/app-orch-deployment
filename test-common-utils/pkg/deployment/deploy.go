@@ -744,32 +744,123 @@ func GetFirstClusterLabels(client *restClient.ClientWithResponses) (map[string]s
 	return nil, fmt.Errorf("no clusters found after %d retries", maxRetries)
 }
 
-// UpdateDpConfigsWithClusterLabels updates all DpConfigs entries with the actual cluster labels.
+// UpdateDpConfigsWithClusterLabels updates all DpConfigs entries with valid cluster labels.
 // This ensures auto-scaling deployments can match the cluster.
+// Only labels that pass validation are used (max 40 chars, matching pattern, non-empty values).
 func UpdateDpConfigsWithClusterLabels(client *restClient.ClientWithResponses) error {
 	labels, err := GetFirstClusterLabels(client)
 	if err != nil {
 		return fmt.Errorf("failed to get cluster labels: %w", err)
 	}
 
-	// If cluster has no labels, we can't use auto-scaling deployments effectively
-	// In this case, we log a warning but continue (tests using targeted will still work)
-	if len(labels) == 0 {
-		fmt.Println("Warning: Cluster has no labels. Auto-scaling deployments may not find matching clusters.")
-		// Use a default label that might work
-		labels = map[string]string{"user": "customer"}
+	// Filter labels to only include valid ones for deployment matching
+	// Validation rules:
+	// - Key must not contain uppercase letters or special chars that aren't allowed
+	// - Value must be 1-40 chars and match pattern: ^[a-z0-9]([-_.=,a-z0-9/]{0,38}[a-z0-9])?$
+	validLabels := filterValidLabels(labels)
+
+	// If no valid labels found, use default
+	if len(validLabels) == 0 {
+		fmt.Println("Warning: No valid cluster labels found. Using default labels.")
+		validLabels = map[string]string{"user": "customer"}
 	}
 
-	// Update all DpConfigs with the actual cluster labels
+	fmt.Printf("Using filtered valid labels for deployments: %v\n", validLabels)
+
+	// Update all DpConfigs with the valid cluster labels
 	for dpName, config := range DpConfigs {
 		if dpConfig, ok := config.(map[string]any); ok {
-			dpConfig["labels"] = labels
+			dpConfig["labels"] = validLabels
 			DpConfigs[dpName] = dpConfig
 		}
 	}
 
-	fmt.Printf("Updated DpConfigs with cluster labels: %v\n", labels)
+	fmt.Printf("Updated DpConfigs with cluster labels: %v\n", validLabels)
 	return nil
+}
+
+// filterValidLabels filters cluster labels to only include ones valid for deployment matching.
+// Valid labels must have:
+// - Non-empty values (at least 1 character)
+// - Values that are 40 chars or less
+// - Values matching pattern: lowercase alphanumeric, can contain -_.=,/
+// Additionally, we prioritize known good labels like "user" that are commonly used for matching.
+func filterValidLabels(labels map[string]string) map[string]string {
+	validLabels := make(map[string]string)
+
+	// Priority labels that are commonly used for auto-scaling matching
+	priorityKeys := []string{"user", "environment", "env", "tier", "app", "component"}
+
+	// First, check for priority labels
+	for _, key := range priorityKeys {
+		if value, exists := labels[key]; exists && isValidLabelValue(value) {
+			validLabels[key] = value
+		}
+	}
+
+	// If we found priority labels, use them
+	if len(validLabels) > 0 {
+		return validLabels
+	}
+
+	// Otherwise, filter all labels for valid ones
+	for key, value := range labels {
+		if isValidLabelValue(value) && isValidLabelKey(key) {
+			validLabels[key] = value
+		}
+	}
+
+	return validLabels
+}
+
+// isValidLabelValue checks if a label value meets the validation requirements.
+// - Must be 1-40 characters
+// - Must match pattern: lowercase alphanumeric with some special chars
+func isValidLabelValue(value string) bool {
+	if len(value) == 0 || len(value) > 40 {
+		return false
+	}
+
+	// Simple validation: must start and end with alphanumeric, can contain -_.=,/
+	// Pattern: ^[a-z0-9]([-_.=,a-z0-9/]{0,38}[a-z0-9])?$
+	if len(value) == 1 {
+		return isLowerAlphanumeric(rune(value[0]))
+	}
+
+	if !isLowerAlphanumeric(rune(value[0])) || !isLowerAlphanumeric(rune(value[len(value)-1])) {
+		return false
+	}
+
+	for _, c := range value[1 : len(value)-1] {
+		if !isLowerAlphanumeric(c) && c != '-' && c != '_' && c != '.' && c != '=' && c != ',' && c != '/' {
+			return false
+		}
+	}
+
+	return true
+}
+
+// isValidLabelKey checks if a label key is simple enough for deployment matching.
+// Avoids complex keys with multiple slashes or special prefixes.
+func isValidLabelKey(key string) bool {
+	if len(key) == 0 || len(key) > 63 {
+		return false
+	}
+
+	// Avoid keys with complex prefixes (e.g., kubernetes.io/, x-k8s.io/)
+	// These are usually system labels not meant for deployment matching
+	if strings.Contains(key, "kubernetes.io") ||
+		strings.Contains(key, "k8s.io") ||
+		strings.Contains(key, "orchestrator.intel.com") {
+		return false
+	}
+
+	return true
+}
+
+// isLowerAlphanumeric checks if a character is lowercase letter or digit.
+func isLowerAlphanumeric(c rune) bool {
+	return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')
 }
 
 // GetClusterIDFromKubectl retrieves the cluster ID using kubectl as a fallback.
