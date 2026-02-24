@@ -85,12 +85,13 @@ const (
 	AppNginx = "nginx"
 
 	// DeploymentTimeout represents the timeout in seconds for deployment operations
-	// Increased from 20s to 40s to allow more time for new clusters to schedule pods
-	DeploymentTimeout = 40 * time.Second // 40 seconds
+	// Set to 30s to balance between giving enough time and failing fast on errors
+	DeploymentTimeout = 30 * time.Second // 30 seconds
 
 	// RetryCount is the number of retries for deployment operations
-	// Increased to 60 to allow up to 40 minutes for deployments to become ready
-	RetryCount = 60 // Number of retries for deployment operations
+	// Set to 40 to allow up to 20 minutes for deployments to become ready
+	// Combined with the 3 retry attempts in StartDeployment, this gives enough time
+	RetryCount = 40 // Number of retries for deployment operations
 
 	DeleteTimeout = 15 * time.Second // Timeout for deletion operations
 )
@@ -196,30 +197,56 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 	}
 	fmt.Printf("Using cluster ID: %s (type: %s)\n", clusterID, opts.DeploymentType)
 
-	deployID, retCode, err := createDeployment(opts.AdmClient, CreateDeploymentParams{
-		ClusterID:      clusterID,
-		DpName:         useDP["deployPackage"].(string),
-		AppNames:       useDP["appNames"].([]string),
-		AppVersion:     useDP["deployPackageVersion"].(string),
-		DisplayName:    displayName,
-		ProfileName:    useDP["profileName"].(string),
-		DeploymentType: opts.DeploymentType,
-		OverrideValues: overrideValues,
-		Labels:         &labels,
-	})
-	if err != nil {
-		return "", retCode, err
+	// Add a small delay before creating deployment to reduce cluster resource pressure
+	// This helps when multiple tests are running concurrently
+	time.Sleep(2 * time.Second)
+
+	// Retry deployment creation up to 3 times on ERROR state
+	maxRetries := 3
+	var deployID string
+	var lastErr error
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		deployID, retCode, err = createDeployment(opts.AdmClient, CreateDeploymentParams{
+			ClusterID:      clusterID,
+			DpName:         useDP["deployPackage"].(string),
+			AppNames:       useDP["appNames"].([]string),
+			AppVersion:     useDP["deployPackageVersion"].(string),
+			DisplayName:    displayName,
+			ProfileName:    useDP["profileName"].(string),
+			DeploymentType: opts.DeploymentType,
+			OverrideValues: overrideValues,
+			Labels:         &labels,
+		})
+		if err != nil {
+			return "", retCode, err
+		}
+
+		fmt.Printf("Created %s deployment successfully, deployment id %s (attempt %d/%d)\n", displayName, deployID, attempt, maxRetries)
+
+		lastErr = waitForDeploymentStatus(opts.AdmClient, displayName, deploymentv1.State_RUNNING, types.RetryCount, opts.DeploymentTimeout)
+		if lastErr == nil {
+			fmt.Printf("%s deployment is now in RUNNING status\n", displayName)
+			return deployID, retCode, nil
+		}
+
+		// Check if it's an ERROR state that might be recoverable
+		if strings.Contains(lastErr.Error(), "is in ERROR state") && attempt < maxRetries {
+			fmt.Printf("Deployment %s failed with ERROR state, cleaning up and retrying (attempt %d/%d)\n", displayName, attempt, maxRetries)
+			// Delete the failed deployment
+			if deployID != "" {
+				_, _ = DeleteDeployment(opts.AdmClient, deployID)
+				time.Sleep(10 * time.Second) // Wait for cleanup
+			}
+			// Delete by display name to ensure cleanup
+			_ = DeleteAndRetryUntilDeleted(opts.AdmClient, displayName, 10, opts.DeleteTimeout)
+			continue
+		}
+
+		// Non-recoverable error or max retries reached
+		break
 	}
 
-	fmt.Printf("Created %s deployment successfully, deployment id %s\n", displayName, deployID)
-
-	err = waitForDeploymentStatus(opts.AdmClient, displayName, deploymentv1.State_RUNNING, types.RetryCount, opts.DeploymentTimeout)
-	if err != nil {
-		return "", retCode, err
-	}
-	fmt.Printf("%s deployment is now in RUNNING status\n", displayName)
-
-	return deployID, retCode, nil
+	return "", retCode, lastErr
 }
 
 func DeleteDeploymentWithDeleteType(client *restClient.ClientWithResponses, deployID string, deleteType deploymentv1.DeleteType) (int, error) {
