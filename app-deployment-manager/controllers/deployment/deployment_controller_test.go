@@ -1529,3 +1529,146 @@ var _ = Describe("Deployment controller", func() {
 	})
 
 })
+
+var _ = Describe("Deployment Metadata Cache for Metrics Cleanup", func() {
+	var (
+		cache *deploymentMetadataCache
+	)
+
+	BeforeEach(func() {
+		cache = &deploymentMetadataCache{
+			cache: make(map[string]*deploymentMetadata),
+		}
+	})
+
+	Context("when caching deployment metadata", func() {
+		It("should store deployment metadata correctly", func() {
+			d := &v1beta1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-deployment",
+					Namespace: "test-namespace",
+					UID:       types.UID("test-uid-12345"),
+					Labels: map[string]string{
+						string(v1beta1.AppOrchActiveProjectID): "test-project-id",
+					},
+				},
+				Spec: v1beta1.DeploymentSpec{
+					DisplayName: "Test Display Name",
+				},
+			}
+
+			cache.cacheDeploymentMetadata(d.Namespace, d.Name, d)
+
+			metadata := cache.getAndRemoveMetadata(d.Namespace, d.Name)
+			Expect(metadata).NotTo(BeNil())
+			Expect(metadata.deploymentID).To(Equal("test-uid-12345"))
+			Expect(metadata.displayName).To(Equal("Test Display Name"))
+			Expect(metadata.projectID).To(Equal("test-project-id"))
+		})
+
+		It("should return nil for non-existent entries", func() {
+			metadata := cache.getAndRemoveMetadata("non-existent", "deployment")
+			Expect(metadata).To(BeNil())
+		})
+
+		It("should remove metadata after retrieval", func() {
+			d := &v1beta1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-deployment",
+					Namespace: "test-namespace",
+					UID:       types.UID("test-uid-12345"),
+					Labels: map[string]string{
+						string(v1beta1.AppOrchActiveProjectID): "test-project-id",
+					},
+				},
+				Spec: v1beta1.DeploymentSpec{
+					DisplayName: "Test Display Name",
+				},
+			}
+
+			cache.cacheDeploymentMetadata(d.Namespace, d.Name, d)
+
+			// First retrieval should succeed
+			metadata := cache.getAndRemoveMetadata(d.Namespace, d.Name)
+			Expect(metadata).NotTo(BeNil())
+
+			// Second retrieval should return nil (already removed)
+			metadata = cache.getAndRemoveMetadata(d.Namespace, d.Name)
+			Expect(metadata).To(BeNil())
+		})
+	})
+
+	Context("when cleaning up old cache entries", func() {
+		It("should remove entries older than TTL", func() {
+			d := &v1beta1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-deployment",
+					Namespace: "test-namespace",
+					UID:       types.UID("test-uid-12345"),
+					Labels: map[string]string{
+						string(v1beta1.AppOrchActiveProjectID): "test-project-id",
+					},
+				},
+				Spec: v1beta1.DeploymentSpec{
+					DisplayName: "Test Display Name",
+				},
+			}
+
+			cache.cacheDeploymentMetadata(d.Namespace, d.Name, d)
+
+			// Manually set the timestamp to be older than TTL
+			key := d.Namespace + "/" + d.Name
+			cache.cache[key].timestamp = time.Now().Add(-40 * time.Minute)
+
+			cache.cleanupOldEntries()
+
+			metadata := cache.getAndRemoveMetadata(d.Namespace, d.Name)
+			Expect(metadata).To(BeNil())
+		})
+
+		It("should keep entries newer than TTL", func() {
+			d := &v1beta1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-deployment",
+					Namespace: "test-namespace",
+					UID:       types.UID("test-uid-12345"),
+					Labels: map[string]string{
+						string(v1beta1.AppOrchActiveProjectID): "test-project-id",
+					},
+				},
+				Spec: v1beta1.DeploymentSpec{
+					DisplayName: "Test Display Name",
+				},
+			}
+
+			cache.cacheDeploymentMetadata(d.Namespace, d.Name, d)
+
+			cache.cleanupOldEntries()
+
+			metadata := cache.getAndRemoveMetadata(d.Namespace, d.Name)
+			Expect(metadata).NotTo(BeNil())
+		})
+	})
+
+	Context("when handling deployment without project ID label", func() {
+		It("should handle missing project ID label gracefully", func() {
+			d := &v1beta1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-deployment",
+					Namespace: "test-namespace",
+					UID:       types.UID("test-uid-12345"),
+					Labels:    map[string]string{}, // No project ID label
+				},
+				Spec: v1beta1.DeploymentSpec{
+					DisplayName: "Test Display Name",
+				},
+			}
+
+			cache.cacheDeploymentMetadata(d.Namespace, d.Name, d)
+
+			metadata := cache.getAndRemoveMetadata(d.Namespace, d.Name)
+			Expect(metadata).NotTo(BeNil())
+			Expect(metadata.projectID).To(Equal(""))
+		})
+	})
+})
