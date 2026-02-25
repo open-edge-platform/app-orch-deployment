@@ -85,15 +85,14 @@ const (
 	AppNginx = "nginx"
 
 	// DeploymentTimeout represents the timeout in seconds for deployment operations
-	// Set to 30s to balance between giving enough time and failing fast on errors
-	DeploymentTimeout = 30 * time.Second // 30 seconds
+	// Set to 20s for faster polling
+	DeploymentTimeout = 20 * time.Second // 20 seconds
 
 	// RetryCount is the number of retries for deployment operations
-	// Set to 40 to allow up to 20 minutes for deployments to become ready
-	// Combined with the 3 retry attempts in StartDeployment, this gives enough time
-	RetryCount = 40 // Number of retries for deployment operations
+	// Set to 15 to allow up to 5 minutes for deployments to become ready per attempt
+	RetryCount = 15 // Number of retries for deployment operations
 
-	DeleteTimeout = 15 * time.Second // Timeout for deletion operations
+	DeleteTimeout = 10 * time.Second // Timeout for deletion operations
 )
 
 type CreateDeploymentParams struct {
@@ -201,8 +200,8 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 	// This helps when multiple tests are running concurrently
 	time.Sleep(2 * time.Second)
 
-	// Retry deployment creation up to 3 times on ERROR state
-	maxRetries := 3
+	// Retry deployment creation up to 2 times on ERROR state
+	maxRetries := 2
 	var deployID string
 	var lastErr error
 	for attempt := 1; attempt <= maxRetries; attempt++ {
