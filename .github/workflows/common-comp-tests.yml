@@ -199,6 +199,18 @@ jobs:
           echo "Redeploying and rebuilding component $COMPONENT"
           make coder-rebuild
           make coder-redeploy
+      - name: Get Edge Cluster ID
+        id: get-cluster-id
+        run: |
+          # Get the first available cluster ID from the orchestrator
+          CLUSTER_ID=$(kubectl get clusters.cluster -A -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+          if [ -z "$CLUSTER_ID" ]; then
+            echo "No clusters found, using default"
+            CLUSTER_ID="demo-cluster"
+          fi
+          echo "Found cluster ID: $CLUSTER_ID"
+          echo "CLUSTER_ID=$CLUSTER_ID" >> $GITHUB_OUTPUT
+
       - name: Run Component Tests
         working-directory: app-orch-deployment/${{ inputs.component }}
         env:
@@ -208,8 +220,10 @@ jobs:
           TEST_PROJECT_NAME: project-2
           TEST_USERNAME: p-edge-manager-2
           TEST_PASSWORD: Samp1ePassw@rd
+          TEST_CLUSTER_ID: ${{ steps.get-cluster-id.outputs.CLUSTER_ID }}
         run: |
           echo "Running component tests for $COMPONENT"
+          echo "Using cluster ID: $TEST_CLUSTER_ID"
           make component-test
           echo "$COMPONENT component tests done!"
 
