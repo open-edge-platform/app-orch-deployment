@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 
 	nexus "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/client/clientset/versioned"
@@ -75,6 +76,20 @@ const (
 	noTargetClustersWait = 5 * time.Minute
 )
 
+// deploymentMetadataCache stores deployment metadata for cleanup when the deployment object is deleted
+// This is needed to retrieve its metadata, when deployment is fully deleted
+type deploymentMetadataCache struct {
+	sync.RWMutex
+	cache map[string]*deploymentMetadata // key: namespace/name
+}
+
+type deploymentMetadata struct {
+	deploymentID string
+	displayName  string
+	projectID    string
+	timestamp    time.Time
+}
+
 var (
 	Clock clock.Clock = clock.RealClock{}
 
@@ -84,7 +99,91 @@ var (
 	gitjobGVStr            = "gitjob.cattle.io/v1"
 	getInclusterConfigFunc = rest.InClusterConfig
 	logchecker             *lc.LogChecker
+
+	// Cache to store deployment metadata during deletion
+	deletionMetadataCache = &deploymentMetadataCache{
+		cache: make(map[string]*deploymentMetadata),
+	}
+
+	// Cache entry TTL - entries older than this will be cleaned up
+	metadataCacheTTL = 30 * time.Minute
 )
+
+// cacheDeploymentMetadata stores deployment metadata for later cleanup when the deployment is deleted
+func (c *deploymentMetadataCache) cacheDeploymentMetadata(namespace, name string, d *v1beta1.Deployment) {
+	c.Lock()
+	defer c.Unlock()
+
+	key := namespace + "/" + name
+	projectID := ""
+	if pid, ok := d.Labels[string(v1beta1.AppOrchActiveProjectID)]; ok {
+		projectID = pid
+	}
+
+	c.cache[key] = &deploymentMetadata{
+		deploymentID: d.GetId(),
+		displayName:  d.Spec.DisplayName,
+		projectID:    projectID,
+		timestamp:    time.Now(),
+	}
+}
+
+// getAndRemoveMetadata retrieves and removes deployment metadata from cache
+func (c *deploymentMetadataCache) getAndRemoveMetadata(namespace, name string) *deploymentMetadata {
+	c.Lock()
+	defer c.Unlock()
+
+	key := namespace + "/" + name
+	metadata, exists := c.cache[key]
+	if exists {
+		delete(c.cache, key)
+		return metadata
+	}
+	return nil
+}
+
+// cleanupOldEntries removes cache entries older than TTL
+func (c *deploymentMetadataCache) cleanupOldEntries() {
+	c.Lock()
+	defer c.Unlock()
+
+	now := time.Now()
+	for key, entry := range c.cache {
+		if now.Sub(entry.timestamp) > metadataCacheTTL {
+			delete(c.cache, key)
+		}
+	}
+}
+
+// cleanupMetricsFromCache cleans up deployment metrics using cached metadata
+func cleanupMetricsFromCache(metadata *deploymentMetadata) {
+	if metadata == nil {
+		return
+	}
+
+	metricValue := make(map[string]float64)
+	metricValue[string(v1beta1.Running)] = 0
+	metricValue[string(v1beta1.Down)] = 0
+	metricValue[string(v1beta1.Unknown)] = 0
+	metricValue[string(v1beta1.Error)] = 0
+	metricValue[string(v1beta1.InternalError)] = 0
+	metricValue[string(v1beta1.Deploying)] = 0
+	metricValue[string(v1beta1.Updating)] = 0
+	metricValue[string(v1beta1.Terminating)] = 0
+	metricValue[string(v1beta1.NoTargetClusters)] = 0
+
+	// Delete all deployment status metrics
+	for status := range metricValue {
+		ctrlmetrics.DeploymentStatus.DeleteLabelValues(
+			metadata.projectID,
+			metadata.deploymentID,
+			metadata.displayName,
+			status,
+		)
+	}
+
+	orchLibMetrics.DeleteTimestampMetrics(metadata.projectID, metadata.deploymentID)
+}
 
 // Reconciler reconciles a Deployment object
 type Reconciler struct {
@@ -649,10 +748,27 @@ func (r *Reconciler) cleanupRemovedTargetClusters(ctx context.Context, d *v1beta
 func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrlRes ctrl.Result, reterr error) {
 	log := log.FromContext(ctx)
 
+	// Periodically cleanup old cache entries
+	deletionMetadataCache.cleanupOldEntries()
+
 	d := &v1beta1.Deployment{}
 	if err := r.Get(ctx, req.NamespacedName, d); err != nil {
-		// Error reading the object, requeue the request, unless error is "not found"
-		return ctrl.Result{}, client.IgnoreNotFound(err)
+		if apierrors.IsNotFound(err) {
+			// Deployment not found - it may have been deleted after finalizers were removed
+			// Cleanup metrics using cached metadata to prevent orphaned alerts
+			metadata := deletionMetadataCache.getAndRemoveMetadata(req.Namespace, req.Name)
+			if metadata != nil {
+				log.Info("Deployment not found, cleaning up metrics using cached metadata",
+					"namespace", req.Namespace,
+					"name", req.Name,
+					"deploymentID", metadata.deploymentID,
+					"displayName", metadata.displayName)
+				cleanupMetricsFromCache(metadata)
+			}
+			return ctrl.Result{}, nil
+		}
+		// Error reading the object, requeue the request
+		return ctrl.Result{}, err
 	}
 
 	// Create patchHelper to record the current state of the deployment object
@@ -668,6 +784,9 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrlRes c
 				"deploymentID", d.GetId(),
 				"deploymentName", d.Name,
 				"finalizers", len(d.ObjectMeta.Finalizers))
+
+			// Cache metadata as a safety measure in case the next reconcile finds the object deleted
+			deletionMetadataCache.cacheDeploymentMetadata(d.Namespace, d.Name, d)
 
 			updateStatusMetrics(d, true)
 
@@ -741,6 +860,10 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrlRes c
 
 func (r *Reconciler) delete(ctx context.Context, d *v1beta1.Deployment) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
+
+	// Cache deployment metadata for cleanup in case the deployment object is deleted
+	// before the next reconcile can retrieve it (race condition prevention)
+	deletionMetadataCache.cacheDeploymentMetadata(d.Namespace, d.Name, d)
 
 	log.Info("Cleaning up all Deployment and DeploymentCluster metrics immediately during deletion",
 		"deploymentID", d.GetId(),
