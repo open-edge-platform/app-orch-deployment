@@ -271,6 +271,10 @@ func FetchAndPrintClusterState(client *restClient.ClientWithResponses, clusterID
 		ConnectProtocolVersion: 1,
 	}
 
+	fmt.Printf("[DEBUG] Calling REST API path: /deployment.v1.ClusterService/GetKubeConfig\n")
+	fmt.Printf("[DEBUG] Request Body (JSON): %+v\n", reqBody)
+	fmt.Printf("[DEBUG] Request Params: %+v\n", params)
+
 	resp, err := client.DeploymentV1ClusterServiceGetKubeConfigWithResponse(context.TODO(), params, reqBody)
 	if err != nil {
 		fmt.Printf("Failed to fetch kubeconfig API call: %v\n", err)
@@ -279,6 +283,9 @@ func FetchAndPrintClusterState(client *restClient.ClientWithResponses, clusterID
 
 	if resp.StatusCode() != 200 {
 		fmt.Printf("Failed to fetch kubeconfig, status: %d\n", resp.StatusCode())
+		if resp.Body != nil {
+			fmt.Printf("[DEBUG] Response Body: %s\n", string(resp.Body))
+		}
 		return
 	}
 
