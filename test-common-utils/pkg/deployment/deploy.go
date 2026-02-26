@@ -374,6 +374,11 @@ func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName
 		for _, d := range deployments {
 			// In case there's several deployments only use the one with the same display name
 			if *d.DisplayName == displayName {
+				fmt.Printf("Deployment Details:\n  ID: %s\n  Display Name: %s\n  State: %s\n  Message: %s\n  Apps: %v\n",
+					*d.DeployId, *d.DisplayName, *d.Status.State, statusMessage, d.Apps)
+				if d.Status.Summary != nil {
+					fmt.Printf("Summary: %+v\n", *d.Status.Summary)
+				}
 				currState = string(*d.Status.State)
 				// Get status message for better diagnostics
 				if d.Status.Message != nil {
