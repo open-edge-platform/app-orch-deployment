@@ -11,16 +11,16 @@ on:
         required: true
         type: string
         description: "The component to test (e.g., app-deployment-manager, app-resource-manager)"
-      use-enic:
+      use-ven:
         required: true
-        description: "Deploy Edge Cluster using EniC"
+        description: "Deploy Edge Cluster using VEN (Virtual Edge Node)"
         type: boolean
         default: true
       emf-branch:
         required: true
         description: "Branch in edge-manageability-framework to checkout"
         type: string
-        default: '51d847c5b3a831454981f5fce7cecbbe1ade5e87'
+        default: main
 
 permissions:
   contents: read
@@ -28,16 +28,46 @@ permissions:
 jobs:
   component-test:
     runs-on: ubuntu-24.04-16core-64GB  # ubuntu-24.04-4core-16GB ubuntu-22.04-32core-128GB & ubuntu-24.04-16core-64GB
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       ORCH_DEFAULT_PASSWORD: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
       CODER_DIR: ${{ github.workspace }}/
       # Skip Docker Hub credentials since they're not available
-      # DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
-      # DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.SYS_DOCKERHUB_RO }}
+      DOCKERHUB_USERNAME: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
       GH_TOKEN: ${{ secrets.SYS_EMF_GH_TOKEN }}
 
     steps:
+      - name: Checkout EMF repository
+        if: ${{ inputs.use-ven }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: open-edge-platform/edge-manageability-framework
+          ref: ${{ inputs.emf-branch || 'main' }}
+          path: emf
+          sparse-checkout: ci/ven
+          token: ${{ secrets.SYS_EMF_GH_TOKEN }}
+
+      - name: Preserve VEN scripts
+        if: ${{ inputs.use-ven }}
+        run: |
+          cp -r emf/ci/ven /tmp/ven-scripts
+          ls -la /tmp/ven-scripts/
+
+      - name: Install DNSmasq
+        if: ${{ inputs.use-ven }}
+        run: |
+          cd /tmp/ven-scripts
+          ./dnsmasq-setup.sh "kind.internal" setup
+
+      - name: Install Libvirt
+        if: ${{ inputs.use-ven }}
+        env:
+          LIBVIRT_DEFAULT_URI: 'qemu:///system'
+        run: |
+          cd /tmp/ven-scripts
+          ./libvirt-setup.sh
+
       - name: Deploy Kind Orchestrator
         id: deploy-kind-orchestrator
         uses: open-edge-platform/edge-manageability-framework/.github/actions/deploy_kind@3a2d9869daa26e1925daf159dabb7307fc24e3ed
@@ -46,11 +76,17 @@ jobs:
           orch_version: ${{ inputs.emf-branch || 'main' }}
           orch_password: ${{ env.ORCH_DEFAULT_PASSWORD }}
           # Skip Docker Hub credentials since they're not available
-          # docker_username: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
-          # docker_password: ${{ secrets.SYS_DOCKERHUB_RO }}
+          docker_username: ${{ secrets.SYS_DOCKERHUB_USERNAME }}
+          docker_password: ${{ secrets.SYS_DOCKERHUB_RO }}
           token: ${{ secrets.SYS_EMF_GH_TOKEN }}
         env:
           ORCH_DEFAULT_PASSWORD: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
+
+      - name: Config DNSmasq
+        if: ${{ inputs.use-ven }}
+        run: |
+          cd /tmp/ven-scripts
+          ./dnsmasq-setup.sh "kind.internal" config
 
       - name: Setup Go
         uses: actions/setup-go@v6
@@ -85,20 +121,72 @@ jobs:
           echo "Updated Hostfile entries!"
           mage gen:orchCa deploy:orchCa
 
-      - name: Setup users and project/org
-        run: |
-          mage tenantUtils:createDefaultMtSetup
-          echo "Orch org/project/users created!"
-          echo "Project uID:"
-          kubectl get projects.project -o json | jq -r ".items[0].status.projectStatus.uID"
 
-      - name: Deploy Edge Cluster using EniC
-        if: ${{ inputs.use-enic }}
+      - name: Checkout edge-manage-test-automation
+        if: ${{ inputs.use-ven }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: open-edge-platform/edge-manage-test-automation
+          ref: '0.3.3'
+          path: edge-manage-test-automation
+          submodules: recursive
+          token: ${{ secrets.SYS_EMF_GH_TOKEN }}
+          persist-credentials: false
+
+      - name: Setup edge-manage-test-automation
+        if: ${{ inputs.use-ven }}
+        working-directory: edge-manage-test-automation
         run: |
-          mage deploy:edgeCluster dev-minimal
-          echo "ENIC deployment done!"
+          git submodule update --init --recursive
+          make asdf-install
+          make venv_edge-manage-test-automation
+          pushd repos/ven/pico
+          asdf install
+          sudo apt-get install -y xsltproc
+          popd
+
+      - name: Deploy VEN and Edge Cluster via Golden Suite
+        if: ${{ inputs.use-ven && steps.deploy-kind-orchestrator.conclusion == 'success' }}
+        id: deploy-ven
+        working-directory: edge-manage-test-automation
+        timeout-minutes: 45
+        env:
+          REQUESTS_CA_BUNDLE: /usr/local/share/ca-certificates/orch-ca.crt
+          LIBVIRT_DEFAULT_URI: 'qemu:///system'
+          ORCH_DEFAULT_PASSWORD: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
+        run: |
+          KC_ADMIN_PWD=$(kubectl -n orch-platform get secrets platform-keycloak -o jsonpath='{.data.admin-password}' | base64 -d)
+          yq eval ".orchestrator.admin_password = \"${KC_ADMIN_PWD}\"" -i orchestrator-configs/kind.yaml
+          yq eval '.infra.host.edgenode.hw_info.libvirt_pool_name = "default"' -i tests/core_foundation/data/cf_data_2_ven_VEN-libvirt_ubuntu-24.04-lts.yaml
+          yq eval '.infra.host.edgenode.hw_info.libvirt_network_name = "default"' -i tests/core_foundation/data/cf_data_2_ven_VEN-libvirt_ubuntu-24.04-lts.yaml
+          cat orchestrator-configs/kind.yaml
+          cat tests/core_foundation/data/cf_data_2_ven_VEN-libvirt_ubuntu-24.04-lts.yaml
+          source venv_edge-manage-test-automation/bin/activate
+          robot -L DEBUG --pythonpath . \
+            --name "VEN Onboarding for Component Tests" \
+            -d robot_output/ven_setup \
+            -V orchestrator-configs/kind.yaml \
+            -V tests/core_foundation/data/cf_data_2_ven_VEN-libvirt_ubuntu-24.04-lts.yaml \
+            --exitonfailure \
+            --include cf1 \
+            --include cf3 \
+            --include cf4 \
+            tests/core_foundation/core_foundation.robot
+          echo "VEN onboarding and cluster setup done!"
+
+      - name: Upload VEN setup artifacts
+        if: ${{ always() && inputs.use-ven }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # v6.0.0
+        with:
+          name: ven-setup-report
+          path: |
+            edge-manage-test-automation/robot_output/**/*
 
       - name: Upload Deployment Packages to Catalog
+        env:
+          ORCH_PROJECT: project-2
+          ORCH_USER: p-edge-manager-2
+          ORCH_PASS: Samp1ePassw@rd
         run: |
           mage app:upload
           echo "Deployment packages uploaded to catalog!"
@@ -111,12 +199,31 @@ jobs:
           echo "Redeploying and rebuilding component $COMPONENT"
           make coder-rebuild
           make coder-redeploy
+      - name: Get Edge Cluster ID
+        id: get-cluster-id
+        run: |
+          # Get the first available cluster ID from the orchestrator
+          CLUSTER_ID=$(kubectl get clusters.cluster -A -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+          if [ -z "$CLUSTER_ID" ]; then
+            echo "No clusters found, using default"
+            CLUSTER_ID="demo-cluster"
+          fi
+          echo "Found cluster ID: $CLUSTER_ID"
+          echo "CLUSTER_ID=$CLUSTER_ID" >> $GITHUB_OUTPUT
+
       - name: Run Component Tests
         working-directory: app-orch-deployment/${{ inputs.component }}
         env:
           COMPONENT: ${{ inputs.component }}
+          ORCH_DEFAULT_PASSWORD: ${{ secrets.ORCH_DEFAULT_PASSWORD }}
+          TEST_ORG_NAME: org-2
+          TEST_PROJECT_NAME: project-2
+          TEST_USERNAME: p-edge-manager-2
+          TEST_PASSWORD: Samp1ePassw@rd
+          TEST_CLUSTER_ID: ${{ steps.get-cluster-id.outputs.CLUSTER_ID }}
         run: |
           echo "Running component tests for $COMPONENT"
+          echo "Using cluster ID: $TEST_CLUSTER_ID"
           make component-test
           echo "$COMPONENT component tests done!"
 
@@ -134,44 +241,39 @@ jobs:
           name: test-report
           path: app-orch-deployment/${{ inputs.component }}/${{ github.event_name }}-${{ github.event.number }}-test-report.html
 
-      - name: Get ENiC diagnostic information
+      - name: Collect diagnostic information
         if: ${{ failure() }}
-        id: get-enic-diag-info
+        id: get-diag-info
         run: |
-          kubectl -n orch-cluster get pods -o wide -A > orch-cluster-list.log
-          kubectl logs -n orch-cluster -l app=cluster-manager-cm -c cluster-manager --tail=-1 > cluster-manager.log || echo "No current logs for cluster-manager"
-          kubectl logs -n orch-cluster -l app=cluster-manager-cm -c cluster-manager --previous --tail=-1 > cluster-manager-previous.log || echo "No previous logs for cluster-manager"
-          kubectl logs -n orch-cluster -l app.kubernetes.io/name=cluster-connect-gateway --tail=-1 > cluster-connect-gateway.log || echo "No current logs for cluster-connect-gateway"
-          kubectl logs -n orch-cluster -l app.kubernetes.io/name=cluster-connect-gateway --previous --tail=-1 > cluster-connect-gateway-previous.log || echo "No previous logs for cluster-connect-gateway"
-          kubectl logs -n orch-cluster -l app=intel-infra-provider-manager -c intel-infra-provider-manager --tail=-1 > intel-infra-provider-manager.log || echo "No current logs for intel-infra-provider-manager"
-          kubectl logs -n orch-cluster -l app=intel-infra-provider-manager -c intel-infra-provider-manager --previous --tail=-1 > intel-infra-provider-manager-previous.log || echo "No previous logs for intel-infra-provider-manager"
-          kubectl logs -n orch-cluster -l app=southbound-api -c intel-infra-provider-southbound --tail=-1 > intel-infra-provider-southbound.log || echo "No current logs for intel-infra-provider-southbound"
-          kubectl logs -n orch-cluster -l app=southbound-api -c intel-infra-provider-southbound --previous --tail=-1 > intel-infra-provider-southbound-previous.log || echo "No previous logs for intel-infra-provider-southbound"
-          kubectl logs -n enic -l app=enic -c edge-node --tail=-1 > enic.log || echo "No current logs for enic"
-          kubectl logs -n orch-app -l app=app-deployment-api -c app-deployment-api --tail=-1 > app-deployment-api.log || echo "No current logs for app-deployment-api"
-          kubectl logs -n orch-app -l app=app-deployment-api -c app-deployment-api-rest-proxy --tail=-1 > app-deployment-api-rest-proxy.log || echo "No current logs for app-deployment-api-rest-proxy"
-          kubectl logs -n orch-app -l app=ma-adm-app-deployment-manager -c controller --tail=-1 > ma-adm-app-deployment-manager.log || echo "No current logs for ma-adm-app-deployment-manager"
-          kubectl logs -n orch-app -l app=app-deployment-manager -c controller --tail=-1 > app-deployment-manager.log || echo "No current logs for app-deployment-manager"
-          kubectl logs -n orch-app -l app=app-orch-tenant-controller -c config-provisioner --tail=-1 > app-orch-tenant-controller.log || echo "No current logs for app-orch-tenant-controller"
-          kubectl logs -n orch-app -l app=app-resource-manager -c app-resource-manager --tail=-1 > app-resource-manager.log || echo "No current logs for app-resource-manager"
-          kubectl logs -n orch-app -l app=app-resource-manager -c app-resource-manager-rest-proxy --tail=-1 > app-resource-manager-rest-proxy.log || echo "No current logs for app-resource-manager-rest-proxy"
-          kubectl logs -n orch-app -l app=app-orch-catalog -c app-orch-catalog-server --tail=-1 > app-orch-catalog-server.log || echo "No current logs for app-orch-catalog-server"
-          kubectl logs -n orch-app -l app=app-orch-catalog -c app-orch-catalog-rest-proxy --tail=-1 > app-orch-catalog-rest-proxy.log || echo "No current logs for app-orch-catalog-rest-proxy"
-          kubectl logs -n orch-app -l app=app-service-proxy -c app-service-proxy --tail=-1 > app-service-proxy.log || echo "No current logs for app-service-proxy"
-          kubectl logs -n orch-app -l app=vnc-proxy-app-resource-manager -c vncproxy --tail=-1 > vnc-proxy-app-resource-manager.log || echo "No current logs for vnc-proxy-app-resource-manager"
+          mkdir -p diag-logs
+          kubectl get pods -o wide -A > diag-logs/all-pods.log || true
+          kubectl -n orch-cluster get pods -o wide > diag-logs/orch-cluster-pods.log || true
+          kubectl logs -n orch-cluster -l app=cluster-manager-cm -c cluster-manager --tail=-1 > diag-logs/cluster-manager.log || echo "No current logs for cluster-manager"
+          kubectl logs -n orch-cluster -l app=cluster-manager-cm -c cluster-manager --previous --tail=-1 > diag-logs/cluster-manager-previous.log || echo "No previous logs for cluster-manager"
+          kubectl logs -n orch-cluster -l app.kubernetes.io/name=cluster-connect-gateway --tail=-1 > diag-logs/cluster-connect-gateway.log || echo "No current logs for cluster-connect-gateway"
+          kubectl logs -n orch-cluster -l app.kubernetes.io/name=cluster-connect-gateway --previous --tail=-1 > diag-logs/cluster-connect-gateway-previous.log || echo "No previous logs for cluster-connect-gateway"
+          kubectl logs -n orch-cluster -l app=intel-infra-provider-manager -c intel-infra-provider-manager --tail=-1 > diag-logs/intel-infra-provider-manager.log || echo "No current logs for intel-infra-provider-manager"
+          kubectl logs -n orch-cluster -l app=intel-infra-provider-manager -c intel-infra-provider-manager --previous --tail=-1 > diag-logs/intel-infra-provider-manager-previous.log || echo "No previous logs for intel-infra-provider-manager"
+          kubectl logs -n orch-cluster -l app=southbound-api -c intel-infra-provider-southbound --tail=-1 > diag-logs/intel-infra-provider-southbound.log || echo "No current logs for intel-infra-provider-southbound"
+          kubectl logs -n orch-cluster -l app=southbound-api -c intel-infra-provider-southbound --previous --tail=-1 > diag-logs/intel-infra-provider-southbound-previous.log || echo "No previous logs for intel-infra-provider-southbound"
+          kubectl logs -n orch-app -l app=app-deployment-api -c app-deployment-api --tail=-1 > diag-logs/app-deployment-api.log || echo "No current logs for app-deployment-api"
+          kubectl logs -n orch-app -l app=app-deployment-api -c app-deployment-api-rest-proxy --tail=-1 > diag-logs/app-deployment-api-rest-proxy.log || echo "No current logs for app-deployment-api-rest-proxy"
+          kubectl logs -n orch-app -l app=ma-adm-app-deployment-manager -c controller --tail=-1 > diag-logs/ma-adm-app-deployment-manager.log || echo "No current logs for ma-adm-app-deployment-manager"
+          kubectl logs -n orch-app -l app=app-deployment-manager -c controller --tail=-1 > diag-logs/app-deployment-manager.log || echo "No current logs for app-deployment-manager"
+          kubectl logs -n orch-app -l app=app-orch-tenant-controller -c config-provisioner --tail=-1 > diag-logs/app-orch-tenant-controller.log || echo "No current logs for app-orch-tenant-controller"
+          kubectl logs -n orch-app -l app=app-resource-manager -c app-resource-manager --tail=-1 > diag-logs/app-resource-manager.log || echo "No current logs for app-resource-manager"
+          kubectl logs -n orch-app -l app=app-resource-manager -c app-resource-manager-rest-proxy --tail=-1 > diag-logs/app-resource-manager-rest-proxy.log || echo "No current logs for app-resource-manager-rest-proxy"
+          kubectl logs -n orch-app -l app=app-orch-catalog -c app-orch-catalog-server --tail=-1 > diag-logs/app-orch-catalog-server.log || echo "No current logs for app-orch-catalog-server"
+          kubectl logs -n orch-app -l app=app-orch-catalog -c app-orch-catalog-rest-proxy --tail=-1 > diag-logs/app-orch-catalog-rest-proxy.log || echo "No current logs for app-orch-catalog-rest-proxy"
+          kubectl logs -n orch-app -l app=app-service-proxy -c app-service-proxy --tail=-1 > diag-logs/app-service-proxy.log || echo "No current logs for app-service-proxy"
+          kubectl logs -n orch-app -l app=vnc-proxy-app-resource-manager -c vncproxy --tail=-1 > diag-logs/vnc-proxy-app-resource-manager.log || echo "No current logs for vnc-proxy-app-resource-manager"
+          # VEN/Libvirt diagnostics
+          virsh list --all > diag-logs/virsh-list.log 2>&1 || true
+          virsh net-list --all > diag-logs/virsh-networks.log 2>&1 || true
 
-      - name: Upload ENiC diagnostic artifacts
-        if: ${{ failure() && steps.get-enic-diag-info.conclusion == 'success' }}
+      - name: Upload diagnostic artifacts
+        if: ${{ failure() && steps.get-diag-info.conclusion == 'success' }}
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # v6.0.0
         with:
           name: pods-logs
-          path: |
-            orch-cluster-list.log
-            cluster-manager.log
-            cluster-manager-previous.log
-            cluster-connect-gateway.log
-            cluster-connect-gateway-previous.log
-            intel-infra-provider-manager.log
-            intel-infra-provider-manager-previous.log
-            intel-infra-provider-southbound.log
-            intel-infra-provider-southbound-previous.log
+          path: diag-logs/*

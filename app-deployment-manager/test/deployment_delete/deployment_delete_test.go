@@ -12,7 +12,7 @@ import (
 )
 
 func (s *TestSuite) TestDeleteExistingDeployment() {
-	s.T().Parallel()
+	// s.T().Parallel() // Disabled to run tests sequentially
 	// Create a deployment to be deleted
 	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
@@ -35,7 +35,7 @@ func (s *TestSuite) TestDeleteExistingDeployment() {
 }
 
 func (s *TestSuite) TestDeleteNonExistentDeployment() {
-	s.T().Parallel()
+	// s.T().Parallel() // Disabled to run tests sequentially
 	// Attempt to delete a deployment that does not exist
 	deploymentID := "non-existent-deployment"
 	status, err := deploymentutils.DeleteDeployment(s.AdmClient, deploymentID)
@@ -45,7 +45,7 @@ func (s *TestSuite) TestDeleteNonExistentDeployment() {
 }
 
 func (s *TestSuite) TestDeleteDeploymentParentOnlyDeleteType() {
-	s.T().Parallel()
+	// s.T().Parallel() // Disabled to run tests sequentially
 	// Create a deployment to be deleted
 	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
@@ -68,7 +68,7 @@ func (s *TestSuite) TestDeleteDeploymentParentOnlyDeleteType() {
 }
 
 func (s *TestSuite) TestDeleteDeploymentAllDeleteType() {
-	s.T().Parallel()
+	// s.T().Parallel() // Disabled to run tests sequentially
 	// Create a deployment to be deleted
 	deploymentReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,

@@ -23,21 +23,80 @@ const (
 
 const (
 	RetryDelay = 10 * time.Second
-	RetryCount = 20
+	RetryCount = 15
 )
 
+// Default values for org and project names
 const (
-	SampleOrg     = "sample-org"
-	SampleProject = "sample-project"
-	TestClusterID = "demo-cluster"
+	DefaultSampleOrg     = "sample-org"
+	DefaultSampleProject = "sample-project"
 )
+
+// SampleOrg returns the organization name from environment variable or default.
+var SampleOrg = getSampleOrg()
+
+// SampleProject returns the project name from environment variable or default.
+var SampleProject = getSampleProject()
+
+// SampleUsername returns the test username from environment variable or default.
+var SampleUsername = getSampleUsername()
+
+func getSampleOrg() string {
+	org := os.Getenv("TEST_ORG_NAME")
+	if org == "" {
+		return DefaultSampleOrg
+	}
+	return org
+}
+
+func getSampleProject() string {
+	project := os.Getenv("TEST_PROJECT_NAME")
+	if project == "" {
+		return DefaultSampleProject
+	}
+	return project
+}
+
+func getSampleUsername() string {
+	username := os.Getenv("TEST_USERNAME")
+	if username == "" {
+		// Default format: {project}-edge-mgr
+		return getSampleProject() + "-edge-mgr"
+	}
+	return username
+}
+
+// TestClusterID is the cluster ID used for testing.
+// It reads from TEST_CLUSTER_ID environment variable, defaults to "demo-cluster".
+var TestClusterID = getTestClusterID()
 
 var KCPass = mustGetKCPassword()
 
+// getTestClusterID returns the cluster ID from environment variable or default.
+// GetTestClusterID returns the cluster ID from environment variable or default.
+// This function is exported so it can be called at runtime to get the current value.
+func GetTestClusterID() string {
+	return getTestClusterID()
+}
+
+func getTestClusterID() string {
+	clusterID := os.Getenv("TEST_CLUSTER_ID")
+	if clusterID == "" {
+		return "demo-cluster"
+	}
+	return clusterID
+}
+
 func mustGetKCPassword() string {
-	pass := os.Getenv("ORCH_DEFAULT_PASSWORD")
+	// First check TEST_PASSWORD for test user credentials (used by Golden Suite)
+	pass := os.Getenv("TEST_PASSWORD")
+	if pass != "" {
+		return pass
+	}
+	// Fall back to ORCH_DEFAULT_PASSWORD (orchestrator admin password)
+	pass = os.Getenv("ORCH_DEFAULT_PASSWORD")
 	if pass == "" {
-		panic("ORCH_DEFAULT_PASSWORD environment variable must be set")
+		panic("Either TEST_PASSWORD or ORCH_DEFAULT_PASSWORD environment variable must be set")
 	}
 	return pass
 }

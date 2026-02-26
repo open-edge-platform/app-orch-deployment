@@ -8,6 +8,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os/exec"
+	"strings"
 	"time"
 
 	deploymentv1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
@@ -22,7 +24,7 @@ var DpConfigs = map[string]any{
 		"deployPackageVersion": "0.1.0",
 		"profileName":          "testing-default",
 		"clusterId":            types.TestClusterID,
-		"labels":               map[string]string{"color": "blue"},
+		"labels":               map[string]string{"user": "customer"},
 		"overrideValues":       []map[string]any{},
 	},
 	CirrosAppName: map[string]any{
@@ -31,7 +33,7 @@ var DpConfigs = map[string]any{
 		"deployPackageVersion": "0.1.0",
 		"profileName":          "default",
 		"clusterId":            types.TestClusterID,
-		"labels":               map[string]string{"color": "blue"},
+		"labels":               map[string]string{"user": "customer"},
 		"overrideValues":       []map[string]any{},
 	},
 	VirtualizationExtensionAppName: map[string]any{
@@ -40,7 +42,7 @@ var DpConfigs = map[string]any{
 		"deployPackageVersion": "0.5.1",
 		"profileName":          "with-software-emulation-profile-nosm",
 		"clusterId":            types.TestClusterID,
-		"labels":               map[string]string{"color": "blue"},
+		"labels":               map[string]string{"user": "customer"},
 		"overrideValues":       []map[string]any{},
 	},
 	WordpressAppName: map[string]any{
@@ -49,7 +51,7 @@ var DpConfigs = map[string]any{
 		"deployPackageVersion": "0.1.1",
 		"profileName":          "testing",
 		"clusterId":            types.TestClusterID,
-		"labels":               map[string]string{"color": "blue"},
+		"labels":               map[string]string{"user": "customer"},
 		"overrideValues":       []map[string]any{},
 	},
 	HttpbinAppName: map[string]any{
@@ -58,7 +60,7 @@ var DpConfigs = map[string]any{
 		"deployPackageVersion": "2.3.5",
 		"profileName":          "default",
 		"clusterId":            types.TestClusterID,
-		"labels":               map[string]string{"color": "blue"},
+		"labels":               map[string]string{"user": "customer"},
 		"overrideValues":       []map[string]any{},
 	},
 }
@@ -83,9 +85,12 @@ const (
 	AppNginx = "nginx"
 
 	// DeploymentTimeout represents the timeout in seconds for deployment operations
+	// Set to 20s for faster polling
 	DeploymentTimeout = 20 * time.Second // 20 seconds
 
-	RetryCount = 20 // Number of retries for deployment operations
+	// RetryCount is the number of retries for deployment operations
+	// Set to 15 to allow up to 5 minutes for deployments to become ready per attempt
+	RetryCount = 15 // Number of retries for deployment operations
 
 	DeleteTimeout = 10 * time.Second // Timeout for deletion operations
 )
@@ -132,7 +137,7 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 		}
 		for _, deployment := range deployments {
 			if *deployment.DisplayName == displayName && *deployment.Status.State == restClient.RUNNING {
-				fmt.Printf("%s deployment already exists in cluster %s, skipping creation\n", useDP["deployPackage"], types.TestClusterID)
+				fmt.Printf("%s deployment already exists in cluster %s, skipping creation\n", useDP["deployPackage"], types.GetTestClusterID())
 				return "", retCode, nil
 			}
 		}
@@ -155,34 +160,92 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 		return "", retCode, err
 	}
 
+	// Wait for cluster to be ready before creating deployment
+	// This is especially important for newly created clusters
+	if waitErr := WaitForClusterReady(opts.AdmClient); waitErr != nil {
+		fmt.Printf("Warning: cluster readiness check failed: %v, continuing anyway\n", waitErr)
+	}
+
+	// For auto-scaling deployments, update labels with actual cluster labels
+	if opts.DeploymentType == DeploymentTypeAutoScaling {
+		if updateErr := UpdateDpConfigsWithClusterLabels(opts.AdmClient); updateErr != nil {
+			fmt.Printf("Warning: failed to update DpConfigs with cluster labels: %v\n", updateErr)
+			// Continue anyway, the default labels might work
+		}
+		// Re-read the config after potential update
+		useDP = DpConfigs[opts.DpPackageName].(map[string]any)
+	}
+
 	labels := useDP["labels"].(map[string]string)
 
 	overrideValues := useDP["overrideValues"].([]map[string]any)
 
-	deployID, retCode, err := createDeployment(opts.AdmClient, CreateDeploymentParams{
-		ClusterID:      useDP["clusterId"].(string),
-		DpName:         useDP["deployPackage"].(string),
-		AppNames:       useDP["appNames"].([]string),
-		AppVersion:     useDP["deployPackageVersion"].(string),
-		DisplayName:    displayName,
-		ProfileName:    useDP["profileName"].(string),
-		DeploymentType: opts.DeploymentType,
-		OverrideValues: overrideValues,
-		Labels:         &labels,
-	})
-	if err != nil {
-		return "", retCode, err
+	// Get cluster ID from API for targeted deployments
+	clusterID := ""
+	if opts.DeploymentType == DeploymentTypeTargeted {
+		clusterID, err = GetFirstClusterID(opts.AdmClient)
+		if err != nil {
+			fmt.Printf("Warning: failed to get cluster ID from API: %v\n", err)
+			// Try kubectl fallback
+			clusterID, err = GetClusterIDFromKubectl()
+			if err != nil {
+				fmt.Printf("Warning: kubectl fallback also failed: %v, using env var\n", err)
+				clusterID = types.GetTestClusterID()
+			}
+		}
+	}
+	fmt.Printf("Using cluster ID: %s (type: %s)\n", clusterID, opts.DeploymentType)
+
+	// Add a small delay before creating deployment to reduce cluster resource pressure
+	// This helps when multiple tests are running concurrently
+	time.Sleep(2 * time.Second)
+
+	// Retry deployment creation up to 2 times on ERROR state
+	maxRetries := 2
+	var deployID string
+	var lastErr error
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		deployID, retCode, err = createDeployment(opts.AdmClient, CreateDeploymentParams{
+			ClusterID:      clusterID,
+			DpName:         useDP["deployPackage"].(string),
+			AppNames:       useDP["appNames"].([]string),
+			AppVersion:     useDP["deployPackageVersion"].(string),
+			DisplayName:    displayName,
+			ProfileName:    useDP["profileName"].(string),
+			DeploymentType: opts.DeploymentType,
+			OverrideValues: overrideValues,
+			Labels:         &labels,
+		})
+		if err != nil {
+			return "", retCode, err
+		}
+
+		fmt.Printf("Created %s deployment successfully, deployment id %s (attempt %d/%d)\n", displayName, deployID, attempt, maxRetries)
+
+		lastErr = waitForDeploymentStatus(opts.AdmClient, displayName, deploymentv1.State_RUNNING, types.RetryCount, opts.DeploymentTimeout)
+		if lastErr == nil {
+			fmt.Printf("%s deployment is now in RUNNING status\n", displayName)
+			return deployID, retCode, nil
+		}
+
+		// Check if it's an ERROR state that might be recoverable
+		if strings.Contains(lastErr.Error(), "is in ERROR state") && attempt < maxRetries {
+			fmt.Printf("Deployment %s failed with ERROR state, cleaning up and retrying (attempt %d/%d)\n", displayName, attempt, maxRetries)
+			// Delete the failed deployment
+			if deployID != "" {
+				_, _ = DeleteDeployment(opts.AdmClient, deployID)
+				time.Sleep(10 * time.Second) // Wait for cleanup
+			}
+			// Delete by display name to ensure cleanup
+			_ = DeleteAndRetryUntilDeleted(opts.AdmClient, displayName, 10, opts.DeleteTimeout)
+			continue
+		}
+
+		// Non-recoverable error or max retries reached
+		break
 	}
 
-	fmt.Printf("Created %s deployment successfully, deployment id %s\n", displayName, deployID)
-
-	err = waitForDeploymentStatus(opts.AdmClient, displayName, deploymentv1.State_RUNNING, types.RetryCount, opts.DeploymentTimeout)
-	if err != nil {
-		return "", retCode, err
-	}
-	fmt.Printf("%s deployment is now in RUNNING status\n", displayName)
-
-	return deployID, retCode, nil
+	return "", retCode, lastErr
 }
 
 func DeleteDeploymentWithDeleteType(client *restClient.ClientWithResponses, deployID string, deleteType deploymentv1.DeleteType) (int, error) {
@@ -307,23 +370,46 @@ func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName
 			return fmt.Errorf("failed to get deployments: %v", err)
 		}
 
+		var statusMessage string
 		for _, d := range deployments {
 			// In case there's several deployments only use the one with the same display name
 			if *d.DisplayName == displayName {
 				currState = string(*d.Status.State)
+				// Get status message for better diagnostics
+				if d.Status.Message != nil {
+					statusMessage = *d.Status.Message
+				}
+
+				// Check if deployment is in ERROR state - fail fast instead of waiting
+				if *d.Status.State == restClient.ERROR {
+					return fmt.Errorf("deployment %s is in ERROR state: %s", displayName, statusMessage)
+				}
+
+				// Check if deployment has NO_TARGET_CLUSTERS - this means the cluster isn't matching
+				// This is a configuration issue, not a transient error, so fail fast
+				if *d.Status.State == restClient.NOTARGETCLUSTERS {
+					return fmt.Errorf("deployment %s has NO_TARGET_CLUSTERS: cluster not found or labels don't match. Message: %s", displayName, statusMessage)
+				}
 			}
 
 			if *d.DisplayName == displayName && *d.Status.State == targetState {
-				fmt.Printf("Waiting for deployment %s state %s ---> %s\n", displayName, currState, status.String())
+				fmt.Printf("Deployment %s reached target state %s\n", displayName, status.String())
 				return nil
 			}
 		}
 
-		fmt.Printf("Waiting for deployment %s state %s ---> %s\n", displayName, currState, status.String())
+		fmt.Printf("Waiting for deployment %s state %s ---> %s (attempt %d/%d)%s\n",
+			displayName, currState, status.String(), i+1, retries,
+			func() string {
+				if statusMessage != "" {
+					return fmt.Sprintf(" [%s]", statusMessage)
+				}
+				return ""
+			}())
 		time.Sleep(delay)
 	}
 
-	return fmt.Errorf("deployment %s did not reach status %s after %d retries", displayName, status.String(), retries)
+	return fmt.Errorf("deployment %s did not reach status %s after %d retries (last state: %s)", displayName, status.String(), retries, currState)
 }
 
 func UpdateDeployment(client *restClient.ClientWithResponses, deployID string, params restClient.DeploymentV1DeploymentServiceUpdateDeploymentJSONRequestBody) (int, error) {
@@ -564,4 +650,292 @@ func GetDeployApps(client *restClient.ClientWithResponses, deployID string) ([]*
 	}
 
 	return []*restClient.DeploymentV1App{}, fmt.Errorf("did not find deployment id %s", deployID)
+}
+
+// GetFirstClusterID retrieves the first available cluster ID from the deployment API.
+// This returns the actual cluster ID (UUID) that should be used for targeted deployments.
+// It retries a few times in case clusters are not immediately available.
+func GetFirstClusterID(client *restClient.ClientWithResponses) (string, error) {
+	maxRetries := 5
+	retryDelay := 10 * time.Second
+
+	for retry := 0; retry < maxRetries; retry++ {
+		if retry > 0 {
+			fmt.Printf("Retrying GetFirstClusterID (%d/%d)...\n", retry+1, maxRetries)
+			time.Sleep(retryDelay)
+		}
+
+		resp, err := client.DeploymentV1ClusterServiceListClustersWithResponse(context.TODO(), nil)
+		if err != nil {
+			fmt.Printf("ListClusters API error: %v\n", err)
+			continue
+		}
+
+		fmt.Printf("ListClusters API response - Status: %d, Body length: %d\n", resp.StatusCode(), len(resp.Body))
+
+		if resp.StatusCode() != 200 {
+			fmt.Printf("ListClusters non-200 response: %s\n", string(resp.Body))
+			continue
+		}
+
+		if resp.JSON200 == nil {
+			fmt.Printf("ListClusters JSON200 is nil\n")
+			continue
+		}
+
+		fmt.Printf("ListClusters returned %d clusters\n", len(resp.JSON200.Clusters))
+
+		if len(resp.JSON200.Clusters) == 0 {
+			continue
+		}
+
+		// Found clusters, get the first one
+		clusterID := ""
+		clusterName := ""
+		if resp.JSON200.Clusters[0].Id != nil {
+			clusterID = *resp.JSON200.Clusters[0].Id
+		}
+		if resp.JSON200.Clusters[0].Name != nil {
+			clusterName = *resp.JSON200.Clusters[0].Name
+		}
+
+		fmt.Printf("Found cluster - Name: %s, ID: %s\n", clusterName, clusterID)
+		return clusterID, nil
+	}
+
+	return "", fmt.Errorf("no clusters found after %d retries", maxRetries)
+}
+
+// WaitForClusterReady waits for the first cluster to be available for deployments.
+// A cluster is considered ready when it exists and has an ID assigned.
+// This should be called before creating deployments on a newly created cluster.
+func WaitForClusterReady(client *restClient.ClientWithResponses) error {
+	maxRetries := 15
+	retryDelay := 20 * time.Second // Wait 20 seconds between checks
+
+	fmt.Println("Waiting for cluster to be ready for deployments...")
+
+	for retry := 0; retry < maxRetries; retry++ {
+		if retry > 0 {
+			time.Sleep(retryDelay)
+			fmt.Printf("Checking cluster readiness (%d/%d)...\n", retry+1, maxRetries)
+		}
+
+		resp, err := client.DeploymentV1ClusterServiceListClustersWithResponse(context.TODO(), nil)
+		if err != nil {
+			fmt.Printf("ListClusters API error while checking readiness: %v\n", err)
+			continue
+		}
+
+		if resp.StatusCode() != 200 || resp.JSON200 == nil || len(resp.JSON200.Clusters) == 0 {
+			fmt.Println("No clusters available yet, waiting...")
+			continue
+		}
+
+		cluster := resp.JSON200.Clusters[0]
+		clusterName := ""
+		if cluster.Name != nil {
+			clusterName = *cluster.Name
+		}
+
+		// Check if cluster exists and has an ID assigned
+		// Having an ID means the cluster has been created and registered
+		if cluster.Id != nil && *cluster.Id != "" {
+			fmt.Printf("Cluster %s is ready (ID: %s)\n", clusterName, *cluster.Id)
+			// Wait a bit more to ensure the cluster is fully initialized
+			time.Sleep(10 * time.Second)
+			return nil
+		}
+
+		fmt.Printf("Cluster %s exists but no ID yet, waiting...\n", clusterName)
+	}
+
+	// After all retries, if we have a cluster, proceed anyway
+	// The deployment might work or provide a more meaningful error
+	fmt.Println("Warning: Cluster readiness check timed out, proceeding anyway...")
+	return nil
+}
+
+// GetFirstClusterLabels retrieves the labels of the first available cluster from the deployment API.
+// This is useful for auto-scaling deployments that need to match cluster labels.
+func GetFirstClusterLabels(client *restClient.ClientWithResponses) (map[string]string, error) {
+	maxRetries := 10
+	retryDelay := 5 * time.Second
+
+	for retry := 0; retry < maxRetries; retry++ {
+		if retry > 0 {
+			time.Sleep(retryDelay)
+			fmt.Printf("Retrying GetFirstClusterLabels (%d/%d)...\n", retry+1, maxRetries)
+		}
+
+		resp, err := client.DeploymentV1ClusterServiceListClustersWithResponse(context.TODO(), nil)
+		if err != nil {
+			fmt.Printf("ListClusters API error for labels: %v\n", err)
+			continue
+		}
+
+		if resp.StatusCode() != 200 || resp.JSON200 == nil || len(resp.JSON200.Clusters) == 0 {
+			continue
+		}
+
+		// Found clusters, get the first one's labels
+		cluster := resp.JSON200.Clusters[0]
+		if cluster.Labels != nil && len(*cluster.Labels) > 0 {
+			fmt.Printf("Found cluster labels: %v\n", *cluster.Labels)
+			return *cluster.Labels, nil
+		}
+
+		// Cluster has no labels, return empty map
+		fmt.Printf("Cluster has no labels\n")
+		return map[string]string{}, nil
+	}
+
+	return nil, fmt.Errorf("no clusters found after %d retries", maxRetries)
+}
+
+// UpdateDpConfigsWithClusterLabels updates all DpConfigs entries with valid cluster labels.
+// This ensures auto-scaling deployments can match the cluster.
+// Only labels that pass validation are used (max 40 chars, matching pattern, non-empty values).
+func UpdateDpConfigsWithClusterLabels(client *restClient.ClientWithResponses) error {
+	labels, err := GetFirstClusterLabels(client)
+	if err != nil {
+		return fmt.Errorf("failed to get cluster labels: %w", err)
+	}
+
+	// Filter labels to only include valid ones for deployment matching
+	// Validation rules:
+	// - Key must not contain uppercase letters or special chars that aren't allowed
+	// - Value must be 1-40 chars and match pattern: ^[a-z0-9]([-_.=,a-z0-9/]{0,38}[a-z0-9])?$
+	validLabels := filterValidLabels(labels)
+
+	// If no valid labels found, use default
+	if len(validLabels) == 0 {
+		fmt.Println("Warning: No valid cluster labels found. Using default labels.")
+		validLabels = map[string]string{"user": "customer"}
+	}
+
+	fmt.Printf("Using filtered valid labels for deployments: %v\n", validLabels)
+
+	// Update all DpConfigs with the valid cluster labels
+	for dpName, config := range DpConfigs {
+		if dpConfig, ok := config.(map[string]any); ok {
+			dpConfig["labels"] = validLabels
+			DpConfigs[dpName] = dpConfig
+		}
+	}
+
+	fmt.Printf("Updated DpConfigs with cluster labels: %v\n", validLabels)
+	return nil
+}
+
+// filterValidLabels filters cluster labels to only include ones valid for deployment matching.
+// Valid labels must have:
+// - Non-empty values (at least 1 character)
+// - Values that are 40 chars or less
+// - Values matching pattern: lowercase alphanumeric, can contain -_.=,/
+// Additionally, we prioritize known good labels like "user" that are commonly used for matching.
+func filterValidLabels(labels map[string]string) map[string]string {
+	validLabels := make(map[string]string)
+
+	// Priority labels that are commonly used for auto-scaling matching
+	priorityKeys := []string{"user", "environment", "env", "tier", "app", "component"}
+
+	// First, check for priority labels
+	for _, key := range priorityKeys {
+		if value, exists := labels[key]; exists && isValidLabelValue(value) {
+			validLabels[key] = value
+		}
+	}
+
+	// If we found priority labels, use them
+	if len(validLabels) > 0 {
+		return validLabels
+	}
+
+	// Otherwise, filter all labels for valid ones
+	for key, value := range labels {
+		if isValidLabelValue(value) && isValidLabelKey(key) {
+			validLabels[key] = value
+		}
+	}
+
+	return validLabels
+}
+
+// isValidLabelValue checks if a label value meets the validation requirements.
+// - Must be 1-40 characters
+// - Must match pattern: lowercase alphanumeric with some special chars
+func isValidLabelValue(value string) bool {
+	if len(value) == 0 || len(value) > 40 {
+		return false
+	}
+
+	// Simple validation: must start and end with alphanumeric, can contain -_.=,/
+	// Pattern: ^[a-z0-9]([-_.=,a-z0-9/]{0,38}[a-z0-9])?$
+	if len(value) == 1 {
+		return isLowerAlphanumeric(rune(value[0]))
+	}
+
+	if !isLowerAlphanumeric(rune(value[0])) || !isLowerAlphanumeric(rune(value[len(value)-1])) {
+		return false
+	}
+
+	for _, c := range value[1 : len(value)-1] {
+		if !isLowerAlphanumeric(c) && c != '-' && c != '_' && c != '.' && c != '=' && c != ',' && c != '/' {
+			return false
+		}
+	}
+
+	return true
+}
+
+// isValidLabelKey checks if a label key is simple enough for deployment matching.
+// Avoids complex keys with multiple slashes or special prefixes.
+func isValidLabelKey(key string) bool {
+	if len(key) == 0 || len(key) > 63 {
+		return false
+	}
+
+	// Avoid keys with complex prefixes (e.g., kubernetes.io/, x-k8s.io/)
+	// These are usually system labels not meant for deployment matching
+	if strings.Contains(key, "kubernetes.io") ||
+		strings.Contains(key, "k8s.io") ||
+		strings.Contains(key, "orchestrator.intel.com") {
+		return false
+	}
+
+	return true
+}
+
+// isLowerAlphanumeric checks if a character is lowercase letter or digit.
+func isLowerAlphanumeric(c rune) bool {
+	return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')
+}
+
+// GetClusterIDFromKubectl retrieves the cluster ID using kubectl as a fallback.
+// This queries the nexus CRD directly to get the cluster UID.
+func GetClusterIDFromKubectl() (string, error) {
+	// First, get the list of cluster names
+	// #nosec G204 -- Arguments are controlled within application context.
+	cmd := exec.Command("kubectl", "get", "clusterinfos.nexus.api.resourcemanager.orchestrator.apis",
+		"-n", "nexus", "-o", "jsonpath={.items[0].metadata.uid}")
+	output, err := cmd.Output()
+	if err != nil {
+		// Try alternative CRD names
+		// #nosec G204 -- Arguments are controlled within application context.
+		cmd = exec.Command("kubectl", "get", "clusters.cluster.orchestrator.apis",
+			"-A", "-o", "jsonpath={.items[0].metadata.uid}")
+		output, err = cmd.Output()
+		if err != nil {
+			return "", fmt.Errorf("failed to get cluster ID via kubectl: %w", err)
+		}
+	}
+
+	clusterID := strings.TrimSpace(string(output))
+	if clusterID == "" {
+		return "", fmt.Errorf("kubectl returned empty cluster ID")
+	}
+
+	fmt.Printf("Got cluster ID from kubectl: %s\n", clusterID)
+	return clusterID, nil
 }
