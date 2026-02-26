@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -245,7 +246,68 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 		break
 	}
 
+	if lastErr != nil {
+		FetchAndPrintClusterState(opts.AdmClient, clusterID)
+	}
+
 	return "", retCode, lastErr
+}
+
+func FetchAndPrintClusterState(client *restClient.ClientWithResponses, clusterID string) {
+	if clusterID == "" {
+		var err error
+		clusterID, err = GetFirstClusterID(client)
+		if err != nil || clusterID == "" {
+			fmt.Printf("Deployment failed, and couldn't determine cluster ID to fetch kubeconfig: %v\n", err)
+			return
+		}
+	}
+
+	fmt.Printf("Deployment failed. Fetching kubeconfig for cluster %s to dump cluster state...\n", clusterID)
+	reqBody := restClient.DeploymentV1ClusterServiceGetKubeConfigJSONRequestBody{
+		ClusterId: clusterID,
+	}
+	params := &restClient.DeploymentV1ClusterServiceGetKubeConfigParams{
+		ConnectProtocolVersion: 1,
+	}
+
+	resp, err := client.DeploymentV1ClusterServiceGetKubeConfigWithResponse(context.TODO(), params, reqBody)
+	if err != nil {
+		fmt.Printf("Failed to fetch kubeconfig API call: %v\n", err)
+		return
+	}
+
+	if resp.StatusCode() != 200 {
+		fmt.Printf("Failed to fetch kubeconfig, status: %d\n", resp.StatusCode())
+		return
+	}
+
+	if resp.JSON200 == nil || resp.JSON200.KubeConfigInfo == nil || resp.JSON200.KubeConfigInfo.KubeConfig == nil {
+		fmt.Printf("Failed to fetch kubeconfig, no kubeconfig data returned\n")
+		return
+	}
+
+	kubeConfigData := *resp.JSON200.KubeConfigInfo.KubeConfig
+
+	tmpFile, err := os.CreateTemp("", "failed-cluster-kubeconfig-*")
+	if err != nil {
+		fmt.Printf("Failed to create temp file for kubeconfig: %v\n", err)
+		return
+	}
+	defer os.Remove(tmpFile.Name())
+
+	if err := os.WriteFile(tmpFile.Name(), kubeConfigData, 0600); err != nil {
+		fmt.Printf("Failed to write kubeconfig temp file: %v\n", err)
+		return
+	}
+	fmt.Printf("Successfully fetched kubeconfig, running 'kubectl get all -A'...\n")
+
+	cmd := exec.Command("kubectl", "--kubeconfig", tmpFile.Name(), "get", "all", "-A")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("Error running kubectl: %v\n", err)
+	}
+	fmt.Printf("Cluster State:\n%s\n", string(output))
 }
 
 func DeleteDeploymentWithDeleteType(client *restClient.ClientWithResponses, deployID string, deleteType deploymentv1.DeleteType) (int, error) {
@@ -377,7 +439,27 @@ func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName
 				fmt.Printf("Deployment Details:\n  ID: %s\n  Display Name: %s\n  State: %s\n  Message: %s\n  Apps: %v\n",
 					*d.DeployId, *d.DisplayName, *d.Status.State, statusMessage, d.Apps)
 				if d.Status.Summary != nil {
-					fmt.Printf("Summary: %+v\n", *d.Status.Summary)
+					var summaryParts []string
+					if d.Status.Summary.Total != nil {
+						summaryParts = append(summaryParts, fmt.Sprintf("Total: %d", *d.Status.Summary.Total))
+					}
+					if d.Status.Summary.Running != nil {
+						summaryParts = append(summaryParts, fmt.Sprintf("Running: %d", *d.Status.Summary.Running))
+					}
+					if d.Status.Summary.Down != nil {
+						summaryParts = append(summaryParts, fmt.Sprintf("Down: %d", *d.Status.Summary.Down))
+					}
+					if d.Status.Summary.Unknown != nil {
+						summaryParts = append(summaryParts, fmt.Sprintf("Unknown: %d", *d.Status.Summary.Unknown))
+					}
+					if d.Status.Summary.Type != nil {
+						summaryParts = append(summaryParts, fmt.Sprintf("Type: %s", *d.Status.Summary.Type))
+					}
+					if len(summaryParts) > 0 {
+						fmt.Printf("  Summary: %s\n", strings.Join(summaryParts, ", "))
+					} else {
+						fmt.Printf("  Summary: empty\n")
+					}
 				}
 				currState = string(*d.Status.State)
 				// Get status message for better diagnostics
