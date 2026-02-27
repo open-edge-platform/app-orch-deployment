@@ -34,8 +34,6 @@ func (s *DeploymentSvc) GetKubeConfig(ctx context.Context, in *deploymentpb.GetK
 		return nil, errors.Status(errors.NewInvalid("incomplete request")).Err()
 	}
 
-	/* These will fail on GetAppNamespace if the app is not deployed...
-
 	if err := s.protoValidator.Validate(in); err != nil {
 		log.Warnf("%v", err)
 		return nil, errors.Status(errors.NewInvalid("%v", err)).Err()
@@ -46,7 +44,6 @@ func (s *DeploymentSvc) GetKubeConfig(ctx context.Context, in *deploymentpb.GetK
 		log.Warnf("cannot get kubeConfig info: %v", err)
 		return nil, errors.Status(errors.NewForbidden("cannot get kubeConfig info")).Err()
 	}
-	*/
 
 	log.Infow("Received GetKubeConfig Request", dazl.String("Cluster ID", in.ClusterId))
 
