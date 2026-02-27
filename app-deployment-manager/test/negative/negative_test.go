@@ -5,8 +5,9 @@
 package negative
 
 import (
-	deploymentutils "github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/deployment"
 	"net/http"
+
+	deploymentutils "github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/deployment"
 )
 
 func (s *TestSuite) TestNegativeCreateDeployment() {
@@ -38,8 +39,8 @@ func (s *TestSuite) TestNegativeCreateDeployment() {
 			TestName:          "NegativeCreateDeployment",
 		}
 		deployID, retCode, err := deploymentutils.StartDeployment(deploymentReq)
-		s.Equal(retCode, http.StatusBadRequest)
-		s.Error(err)
+		s.Equal(http.StatusBadRequest, retCode)
+		s.Require().Error(err) // If not an error, abort the rest of this test case
 		s.Contains(err.Error(), test.expectedErr)
 		s.Empty(deployID)
 
