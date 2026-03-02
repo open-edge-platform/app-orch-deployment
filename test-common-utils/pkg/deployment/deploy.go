@@ -253,6 +253,8 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 	return "", retCode, lastErr
 }
 
+// TODO: This isn't working as expected and is returning a 404 when getting the kubeconfig
+
 func FetchAndPrintClusterState(client *restClient.ClientWithResponses, clusterID string) {
 	if clusterID == "" {
 		var err error
