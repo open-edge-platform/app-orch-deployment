@@ -98,30 +98,30 @@ func TestRewriteURL(t *testing.T) {
 		},
 		// Security: protocol-relative URL (open redirect attempt)
 		{
-			description: "protocol-relative URL //evil.com should return safe fallback",
+			description: "protocol-relative URL //evil.com is rejected from rewrite and preserved",
 			inputURL:    "//evil.com",
-			expected:    "/",
+			expected:    "//evil.com",
 		},
 		{
-			description: "protocol-relative URL //evil.com/path should return safe fallback",
+			description: "protocol-relative URL //evil.com/path is rejected from rewrite and preserved",
 			inputURL:    "//evil.com/malicious/path",
-			expected:    "/",
+			expected:    "//evil.com/malicious/path",
 		},
 		{
-			description: "protocol-relative URL //evil.com:8080/path should return safe fallback",
+			description: "protocol-relative URL //evil.com:8080/path is rejected from rewrite and preserved",
 			inputURL:    "//evil.com:8080/path",
-			expected:    "/",
+			expected:    "//evil.com:8080/path",
 		},
 		// Security: backslash after leading slash (open redirect attempt)
 		{
-			description: "backslash URL /\\evil.com should return safe fallback",
+			description: "backslash URL /\\evil.com is rejected from rewrite and preserved",
 			inputURL:    "/\\evil.com",
-			expected:    "/",
+			expected:    "/\\evil.com",
 		},
 		{
-			description: "backslash URL /\\\\evil.com/path should return safe fallback",
+			description: "backslash URL /\\\\evil.com/path is rejected from rewrite and preserved",
 			inputURL:    "/\\\\evil.com/path",
-			expected:    "/",
+			expected:    "/\\\\evil.com/path",
 		},
 		// Different host should be preserved (not rewritten, but not unsafe)
 		{
