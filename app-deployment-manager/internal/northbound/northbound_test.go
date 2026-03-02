@@ -227,7 +227,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			setDeploymentClusterListObject(&deploymentClusterListSrc)
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -235,7 +235,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -269,7 +269,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer = NewDeploymentMustSucceed(k8sClient, nil, nil, nil, nil, nil, nil)
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -292,7 +292,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer = NewDeploymentMustSucceed(k8sClient, nil, nil, nil, nil, nil, nil)
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -300,7 +300,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -325,7 +325,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentListSrc.Items[0].ObjectMeta.Name = ""
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -365,7 +365,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			setDeploymentClusterListObject(&deploymentClusterListSrc)
 
 			s.k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -373,7 +373,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			s.k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -460,7 +460,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentListSrc.Items[2].Status.State = "Deploying"
 
 			s.k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -468,7 +468,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			s.k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -493,7 +493,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentListSrc.Items[2].Status.State = "Updating"
 
 			s.k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -501,7 +501,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			s.k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -526,7 +526,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentListSrc.Items[2].Status.State = "Terminating"
 
 			s.k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -534,7 +534,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			s.k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -560,7 +560,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer := NewDeploymentMustSucceed(k8sClient, nil, s.kc, nil, nil, nil, nil)
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -568,7 +568,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, errors.New("mock err")).Once()
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -592,7 +592,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer := NewDeploymentMustSucceed(k8sClient, nil, s.kc, nil, nil, nil, nil)
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -600,7 +600,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -645,7 +645,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			setDeploymentClusterListObject(&deploymentClusterListSrc)
 
 			s.k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -653,7 +653,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			s.k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -889,7 +889,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			setDeploymentClusterListObject(&deploymentClusterListSrc)
 
 			s.k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -897,7 +897,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			s.k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -923,11 +923,11 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer = NewDeploymentMustSucceed(k8sClient, nil, nil, nil, nil, nil, nil)
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -963,7 +963,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer = NewDeploymentMustSucceed(k8sClient, nil, s.kc, nil, nil, nil, nil)
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -971,7 +971,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, errors.New("mock deployment err")).Once()
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -1001,7 +1001,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentListSrc.Items[0].Spec.DeploymentType = deploymentv1beta1.AutoScaling
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -1029,7 +1029,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer := NewDeploymentMustSucceed(k8sClient, nil, kc, nil, nil, nil, nil)
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -1037,7 +1037,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -1060,7 +1060,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer := NewDeploymentMustSucceed(k8sClient, nil, nil, nil, nil, nil, nil)
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -1068,7 +1068,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -1109,7 +1109,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer := NewDeploymentMustSucceed(k8sClient, nil, kc, nil, nil, nil, nil)
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -1117,7 +1117,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -1173,7 +1173,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer := NewDeploymentMustSucceed(k8sClient, nil, kClient, nil, nil, nil, nil)
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -1181,7 +1181,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -1239,7 +1239,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer := NewDeploymentMustSucceed(k8sClient, nil, kClient, nil, nil, nil, nil)
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -1247,7 +1247,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -1307,7 +1307,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer := NewDeploymentMustSucceed(k8sClient, nil, kClient, nil, nil, nil, nil)
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -1315,7 +1315,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -1413,7 +1413,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deployInstance = SetDeployInstance(&deploymentListSrc, "")
 
 			s.k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -1434,7 +1434,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer := NewDeploymentMustSucceed(k8sClient, nil, s.kc, nil, nil, nil, nil)
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -1513,7 +1513,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer = NewDeploymentMustSucceed(k8sClient, nil, nil, nil, nil, nil, nil)
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -1541,7 +1541,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer = NewDeploymentMustSucceed(k8sClient, nil, nil, nil, nil, nil, nil)
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -1571,7 +1571,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer = NewDeploymentMustSucceed(k8sClient, nil, s.kc, nil, nil, nil, nil)
 
 			k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -1616,7 +1616,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s.deploymentServer = NewDeploymentMustSucceed(s.k8sClient, nil, s.kc, nil, nil, nil, nil)
 
 			s.k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -1629,7 +1629,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -1785,7 +1785,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -1811,7 +1811,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -1922,7 +1922,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -1950,7 +1950,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -1978,7 +1978,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -2017,7 +2017,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -2058,7 +2058,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContextValue, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContextValue, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -2087,7 +2087,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -2125,7 +2125,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -2163,7 +2163,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -2202,7 +2202,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -2239,7 +2239,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -2276,7 +2276,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -2318,7 +2318,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -2353,7 +2353,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -2382,7 +2382,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			).Return(deployInstance, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -2653,7 +2653,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer := NewDeploymentMustSucceed(s.k8sClient, s.opaMock, kc, nil, s.catalogClient, s.vaultAuthMock, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{}, nil).Once()
 
 			s.catalogClient.On("GetDeploymentPackage", nbmocks.AnyContext, nbmocks.AnyGetDpReq).Return(&nbmocks.DpRespGood, nil)
@@ -2720,7 +2720,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			s.deploymentServer = NewDeploymentMustSucceed(s.k8sClient, s.opaMock, s.kc, nil, s.catalogClient, s.vaultAuthMock, nil)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -3013,7 +3013,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deployInstance = SetDeployInstance(&deploymentListSrc, "")
 
 			k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -3058,7 +3058,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deployInstance = SetDeployInstance(&deploymentListSrc, "")
 
 			k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -3107,7 +3107,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deployInstance = SetDeployInstance(&deploymentListSrc, "")
 
 			k8sClient.On(
-				"List", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -3235,7 +3235,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			setDeploymentClusterListObject(&deploymentClusterListSrc)
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContextValue, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeployments", nbmocks.AnyContextValue, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentList{
 				ListMeta: deploymentListSrc.ListMeta,
 				TypeMeta: deploymentListSrc.TypeMeta,
@@ -3243,7 +3243,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			}, nil).Once()
 
 			s.k8sClient.On(
-				"List", nbmocks.AnyContextValue, mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", nbmocks.AnyContextValue, mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,

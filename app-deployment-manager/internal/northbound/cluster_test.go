@@ -165,7 +165,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 		It("successfully list clusters", func() {
 			crClient.On(
-				"List", context.TODO(), mock.AnythingOfType("v1.ListOptions"),
+				"ListClusters", context.TODO(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.ClusterList{
 				ListMeta: clusterListSrc.ListMeta,
 				TypeMeta: clusterListSrc.TypeMeta,
@@ -182,7 +182,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 		It("fails due to page size greater than 500", func() {
 			crClient.On(
-				"List", context.TODO(), mock.AnythingOfType("v1.ListOptions"),
+				"ListClusters", context.TODO(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.ClusterList{
 				ListMeta: clusterListSrc.ListMeta,
 				TypeMeta: clusterListSrc.TypeMeta,
@@ -203,7 +203,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 
 		It("fails due to list clusters", func() {
 			crClient.On(
-				"List", context.TODO(), mock.AnythingOfType("v1.ListOptions"),
+				"ListClusters", context.TODO(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.ClusterList{
 				ListMeta: clusterListSrc.ListMeta,
 				TypeMeta: clusterListSrc.TypeMeta,
@@ -231,7 +231,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			setDeploymentClusterListObject(&deploymentClusterListSrc)
 
 			crClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{
 				ListMeta: deploymentClusterListSrc.ListMeta,
 				TypeMeta: deploymentClusterListSrc.TypeMeta,
@@ -252,7 +252,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			// Reset the mock to ensure we get an empty list for this test
 			crClient.ExpectedCalls = nil
 			crClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return(&deploymentv1beta1.DeploymentClusterList{}, nil).Once()
 
 			resp, err := deploymentServer.GetCluster(context.Background(), &deploymentpb.GetClusterRequest{
@@ -284,7 +284,7 @@ var _ = Describe("Gateway gRPC Service", func() {
 			deploymentServer := NewDeploymentMustSucceed(crClient, nil, nil, nil, nil, nil, nil)
 
 			crClient.On(
-				"List", context.Background(), mock.AnythingOfType("v1.ListOptions"),
+				"ListDeploymentClusters", context.Background(), mock.AnythingOfType("v1.ListOptions"),
 			).Return((*deploymentv1beta1.DeploymentClusterList)(nil), errors.New("internal service error")).Once()
 
 			_, err := deploymentServer.GetCluster(context.Background(), &deploymentpb.GetClusterRequest{

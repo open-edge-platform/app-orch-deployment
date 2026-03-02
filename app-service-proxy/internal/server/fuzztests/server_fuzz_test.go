@@ -132,7 +132,9 @@ func setupFuzzTest(t testing.TB, enableAuth bool) *FuzzTestSuite {
 		defer s.wg.Done()
 		<-s.ctx.Done()
 		logrus.Warnf("Shutting down dummy HTTP server")
-		if err := httpServer.Shutdown(s.ctx); err != nil {
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer shutdownCancel()
+		if err := httpServer.Shutdown(shutdownCtx); err != nil {
 			t.Error(err)
 		}
 		logrus.Warnf("Shutting down ASP server")

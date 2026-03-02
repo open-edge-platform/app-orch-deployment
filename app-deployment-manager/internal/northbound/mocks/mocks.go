@@ -53,7 +53,7 @@ type FakeClusters struct {
 }
 
 func (c *FakeDeployments) List(ctx context.Context, opts metav1.ListOptions) (*deploymentv1beta1.DeploymentList, error) {
-	args := c.Fake.Called(ctx, opts)
+	args := c.Fake.MethodCalled("ListDeployments", ctx, opts)
 	return args.Get(0).(*deploymentv1beta1.DeploymentList), args.Error(1)
 }
 
@@ -118,7 +118,7 @@ func (c *FakeDeploymentClusters) Get(ctx context.Context, name string, opts meta
 }
 
 func (c *FakeDeploymentClusters) List(ctx context.Context, opts metav1.ListOptions) (*deploymentv1beta1.DeploymentClusterList, error) {
-	args := c.Fake.Called(ctx, opts)
+	args := c.Fake.MethodCalled("ListDeploymentClusters", ctx, opts)
 	return args.Get(0).(*deploymentv1beta1.DeploymentClusterList), args.Error(1)
 }
 
@@ -128,7 +128,7 @@ func (c *FakeClusters) Get(ctx context.Context, name string, opts metav1.GetOpti
 }
 
 func (c *FakeClusters) List(ctx context.Context, opts metav1.ListOptions) (*deploymentv1beta1.ClusterList, error) {
-	args := c.Fake.Called(ctx, opts)
+	args := c.Fake.MethodCalled("ListClusters", ctx, opts)
 	return args.Get(0).(*deploymentv1beta1.ClusterList), args.Error(1)
 }
 
