@@ -71,8 +71,10 @@ func TestAtomsToAttrs(t *testing.T) {
 
 // TestRewriteURL tests the rewriteURL function with various scenarios.
 func TestRewriteURL(t *testing.T) {
-	kubeapiAddr, _ := url.Parse("http://kubernetes.default.svc")
-	sourceURL, _ := url.Parse("https://app-service-proxy.kind.internal")
+	kubeapiAddr, err := url.Parse("http://kubernetes.default.svc")
+	require.NoError(t, err)
+	sourceURL, err := url.Parse("https://app-service-proxy.kind.internal")
+	require.NoError(t, err)
 	testCi := &CookieInfo{
 		projectID: "fake-project",
 		namespace: "fake-namespace",
@@ -116,12 +118,12 @@ func TestRewriteURL(t *testing.T) {
 		{
 			description: "backslash URL /\\evil.com is rejected from rewrite and preserved",
 			inputURL:    "/\\evil.com",
-			expected:    "/\\evil.com",
+			expected:    "/%5Cevil.com",
 		},
 		{
 			description: "backslash URL /\\\\evil.com/path is rejected from rewrite and preserved",
 			inputURL:    "/\\\\evil.com/path",
-			expected:    "/\\\\evil.com/path",
+			expected:    "/%5C%5Cevil.com/path",
 		},
 		// Different host should be preserved (not rewritten, but not unsafe)
 		{
@@ -138,7 +140,8 @@ func TestRewriteURL(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			parsedURL, _ := url.Parse(test.inputURL)
+			parsedURL, err := url.Parse(test.inputURL)
+			require.NoError(t, err)
 			result := rewriteURL(parsedURL, sourceURL, testCi, kubeapiAddr)
 			assert.Equal(t, test.expected, result)
 		})
