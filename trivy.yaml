@@ -23,3 +23,11 @@ scan:
     - app-deployment-manager/config/rbac/leader_election_role.yaml
     - app-service-proxy/deployments/app-service-proxy/templates/role.yaml
     - app-service-proxy/deployments/app-service-proxy/templates/deployment.yaml
+
+misconfiguration:
+  # Skip DS026 (No HEALTHCHECK defined) for distroless images.
+  # These containers are deployed in Kubernetes which handles health checking
+  # via liveness/readiness probes at the deployment level rather than in Dockerfiles.
+  # Distroless images don't have a shell to execute traditional HEALTHCHECK commands.
+  skip-check-ids:
+    - DS026
