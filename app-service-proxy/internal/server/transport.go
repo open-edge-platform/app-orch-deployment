@@ -135,7 +135,8 @@ func (t *RewritingTransport) RoundTrip(req *http.Request) (*http.Response, error
 func rewriteURL(url *url.URL, sourceURL *url.URL, ci *CookieInfo, kubeapiAddr *url.URL) string {
 	isDifferentHost := url.Host != "" && url.Host != kubeapiAddr.Host
 	isRelative := url.Path != "" && !strings.HasPrefix(url.Path, "/")
-	if isDifferentHost || isRelative {
+	isUnsafeAbsolute := len(url.Path) > 1 && url.Path[0] == '/' && (url.Path[1] == '/' || url.Path[1] == '\\')
+	if isDifferentHost || isRelative || isUnsafeAbsolute {
 		logrus.Debugf("non updated url : %s:%s", url.Host, url.Path)
 		return url.String()
 	}
