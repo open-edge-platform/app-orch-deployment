@@ -135,15 +135,8 @@ func (t *RewritingTransport) RoundTrip(req *http.Request) (*http.Response, error
 func rewriteURL(url *url.URL, sourceURL *url.URL, ci *CookieInfo, kubeapiAddr *url.URL) string {
 	isDifferentHost := url.Host != "" && url.Host != kubeapiAddr.Host
 	isRelative := url.Path != "" && !strings.HasPrefix(url.Path, "/")
-	isUnsafeAbsolute := len(url.Path) > 1 && url.Path[0] == '/' && (url.Path[1] == '/' || url.Path[1] == '\\')
-	// Reject protocol-relative URLs like //evil.com where net/url parses evil.com into Host with empty Scheme
-	isProtocolRelative := url.Scheme == "" && url.Host != ""
-	if isDifferentHost || isRelative || isUnsafeAbsolute || isProtocolRelative {
+	if isDifferentHost || isRelative {
 		logrus.Debugf("non updated url : %s:%s", url.Host, url.Path)
-		// Return safe fallback for unsafe redirect targets instead of preserving them
-		if isUnsafeAbsolute || isProtocolRelative {
-			return "/"
-		}
 		return url.String()
 	}
 
