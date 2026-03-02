@@ -136,8 +136,14 @@ func rewriteURL(url *url.URL, sourceURL *url.URL, ci *CookieInfo, kubeapiAddr *u
 	isDifferentHost := url.Host != "" && url.Host != kubeapiAddr.Host
 	isRelative := url.Path != "" && !strings.HasPrefix(url.Path, "/")
 	isUnsafeAbsolute := len(url.Path) > 1 && url.Path[0] == '/' && (url.Path[1] == '/' || url.Path[1] == '\\')
-	if isDifferentHost || isRelative || isUnsafeAbsolute {
+	// Reject protocol-relative URLs like //evil.com where net/url parses evil.com into Host with empty Scheme
+	isProtocolRelative := url.Scheme == "" && url.Host != ""
+	if isDifferentHost || isRelative || isUnsafeAbsolute || isProtocolRelative {
 		logrus.Debugf("non updated url : %s:%s", url.Host, url.Path)
+		// Return safe fallback for unsafe redirect targets instead of preserving them
+		if isUnsafeAbsolute || isProtocolRelative {
+			return "/"
+		}
 		return url.String()
 	}
 

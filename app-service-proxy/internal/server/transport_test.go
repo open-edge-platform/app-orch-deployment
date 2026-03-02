@@ -71,21 +71,75 @@ func TestAtomsToAttrs(t *testing.T) {
 
 // TestRewriteURL tests the rewriteURL function with various scenarios.
 func TestRewriteURL(t *testing.T) {
+	kubeapiAddr, _ := url.Parse("http://kubernetes.default.svc")
+	sourceURL, _ := url.Parse("https://app-service-proxy.kind.internal")
+	testCi := &CookieInfo{
+		projectID: "fake-project",
+		namespace: "fake-namespace",
+		service:   "fake-service:80",
+		cluster:   "cluster123",
+	}
+
 	tests := []struct {
 		description string
-		url         string
-		sourceURL   string
-		cookieInfo  *CookieInfo
-		kubeapiAddr *url.URL
+		inputURL    string
 		expected    string
 	}{
-		// Define test cases
+		// Normal rewrite cases
+		{
+			description: "rewrite kubeapi proxy path",
+			inputURL:    "/api/v1/namespaces/fake-namespace/services/fake-service:80/proxy/some/path",
+			expected:    "//app-service-proxy.kind.internal/some/path",
+		},
+		{
+			description: "simple absolute path",
+			inputURL:    "/simple/path",
+			expected:    "//app-service-proxy.kind.internal/simple/path",
+		},
+		// Security: protocol-relative URL (open redirect attempt)
+		{
+			description: "protocol-relative URL //evil.com should return safe fallback",
+			inputURL:    "//evil.com",
+			expected:    "/",
+		},
+		{
+			description: "protocol-relative URL //evil.com/path should return safe fallback",
+			inputURL:    "//evil.com/malicious/path",
+			expected:    "/",
+		},
+		{
+			description: "protocol-relative URL //evil.com:8080/path should return safe fallback",
+			inputURL:    "//evil.com:8080/path",
+			expected:    "/",
+		},
+		// Security: backslash after leading slash (open redirect attempt)
+		{
+			description: "backslash URL /\\evil.com should return safe fallback",
+			inputURL:    "/\\evil.com",
+			expected:    "/",
+		},
+		{
+			description: "backslash URL /\\\\evil.com/path should return safe fallback",
+			inputURL:    "/\\\\evil.com/path",
+			expected:    "/",
+		},
+		// Different host should be preserved (not rewritten, but not unsafe)
+		{
+			description: "different host URL preserved",
+			inputURL:    "http://other-service.default.svc/path",
+			expected:    "http://other-service.default.svc/path",
+		},
+		// Relative path should be preserved
+		{
+			description: "relative path preserved",
+			inputURL:    "relative/path",
+			expected:    "relative/path",
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			url, _ := url.Parse(test.url)
-			sourceURL, _ := url.Parse(test.sourceURL)
-			result := rewriteURL(url, sourceURL, test.cookieInfo, test.kubeapiAddr)
+			parsedURL, _ := url.Parse(test.inputURL)
+			result := rewriteURL(parsedURL, sourceURL, testCi, kubeapiAddr)
 			assert.Equal(t, test.expected, result)
 		})
 	}
