@@ -241,7 +241,7 @@ func FuzzCreateDeployment(f *testing.F) {
 		).Return(appDeploymentInstance, nil).Maybe()
 
 		s.k8sClient.On(
-			"List", mocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
+			"ListDeployments", mocks.AnyContext, mock.AnythingOfType("v1.ListOptions"),
 		).Return(&deploymentv1beta1.DeploymentList{}, nil).Maybe()
 
 		s.catalogClient.On("GetDeploymentPackage", mocks.AnyContext, AnyFuzzGetDpReq).Return(FuzzDpRespGood, nil).Maybe()
@@ -298,7 +298,7 @@ func FuzzListDeployments(f *testing.F) {
 		}
 
 		s.k8sClient.On(
-			"List", s.ctx, mock.AnythingOfType("v1.ListOptions"),
+			"ListDeployments", s.ctx, mock.AnythingOfType("v1.ListOptions"),
 		).Return(&deploymentv1beta1.DeploymentList{}, nil).Maybe()
 
 		resp, err := deploymentServer.ListDeployments(s.ctx, req)
@@ -356,7 +356,7 @@ func FuzzListDeploymentClusters(f *testing.F) {
 		}
 
 		s.k8sClient.On(
-			"List", s.ctx, mock.AnythingOfType("v1.ListOptions"),
+			"ListDeployments", s.ctx, mock.AnythingOfType("v1.ListOptions"),
 		).Return(&deploymentv1beta1.DeploymentList{}, nil).Maybe()
 
 		resp, err := deploymentServer.ListDeploymentClusters(s.ctx, req)
@@ -417,7 +417,7 @@ func FuzzListClusters(f *testing.F) {
 		}
 
 		s.k8sClient.On(
-			"List", s.ctx, mock.AnythingOfType("v1.ListOptions"),
+			"ListClusters", s.ctx, mock.AnythingOfType("v1.ListOptions"),
 		).Return(&deploymentv1beta1.ClusterList{}, nil).Maybe()
 
 		resp, err := deploymentServer.ListClusters(s.ctx, req)
@@ -475,11 +475,11 @@ func FuzzDeploymentsStatus(f *testing.F) {
 		}
 
 		s.k8sClient.On(
-			"List", s.ctx, mock.AnythingOfType("v1.ListOptions"),
+			"ListDeployments", s.ctx, mock.AnythingOfType("v1.ListOptions"),
 		).Return(&deploymentv1beta1.DeploymentList{}, nil).Maybe()
 
 		s.k8sClient.On(
-			"List", s.ctx, mock.AnythingOfType("v1.ListOptions"),
+			"ListDeploymentClusters", s.ctx, mock.AnythingOfType("v1.ListOptions"),
 		).Return(&deploymentv1beta1.DeploymentClusterList{}, nil).Maybe()
 
 		resp, err := deploymentServer.GetDeploymentsStatus(s.ctx, req)
@@ -531,7 +531,7 @@ func FuzzGetDeployment(f *testing.F) {
 		}
 
 		s.k8sClient.On(
-			"List", s.ctx, mock.AnythingOfType("v1.ListOptions"),
+			"ListDeployments", s.ctx, mock.AnythingOfType("v1.ListOptions"),
 		).Return(&deploymentv1beta1.DeploymentList{}, nil).Maybe()
 
 		resp, err := deploymentServer.GetDeployment(s.ctx, req)
@@ -571,7 +571,7 @@ func FuzzGetCluster(f *testing.F) {
 		}
 
 		s.k8sClient.On(
-			"List", s.ctx, mock.AnythingOfType("v1.ListOptions"),
+			"ListDeploymentClusters", s.ctx, mock.AnythingOfType("v1.ListOptions"),
 		).Return(&deploymentv1beta1.DeploymentClusterList{}, nil).Maybe()
 
 		resp, err := deploymentServer.GetCluster(s.ctx, req)
@@ -722,7 +722,7 @@ func FuzzDeleteDeployment(f *testing.F) {
 		}
 
 		s.k8sClient.On(
-			"List", s.ctx, mock.AnythingOfType("v1.ListOptions"),
+			"ListDeployments", s.ctx, mock.AnythingOfType("v1.ListOptions"),
 		).Return(&deploymentv1beta1.DeploymentList{}, nil).Maybe()
 
 		resp, err := s.deploymentServer.DeleteDeployment(s.ctx, req)
@@ -821,11 +821,11 @@ func FuzzListDeploymentsPerCluster(f *testing.F) {
 		req.PageSize = 1
 
 		s.k8sClient.On(
-			"List", s.ctx, mock.AnythingOfType("v1.ListOptions"),
+			"ListDeployments", s.ctx, mock.AnythingOfType("v1.ListOptions"),
 		).Return(&deploymentv1beta1.DeploymentList{}, nil).Maybe()
 
 		s.k8sClient.On(
-			"List", s.ctx, mock.AnythingOfType("v1.ListOptions"),
+			"ListDeploymentClusters", s.ctx, mock.AnythingOfType("v1.ListOptions"),
 		).Return(&deploymentv1beta1.DeploymentClusterList{}, nil).Maybe()
 
 		resp, err := deploymentServer.ListDeploymentsPerCluster(s.ctx, req)

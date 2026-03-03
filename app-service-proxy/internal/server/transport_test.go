@@ -71,21 +71,78 @@ func TestAtomsToAttrs(t *testing.T) {
 
 // TestRewriteURL tests the rewriteURL function with various scenarios.
 func TestRewriteURL(t *testing.T) {
+	kubeapiAddr, err := url.Parse("http://kubernetes.default.svc")
+	require.NoError(t, err)
+	sourceURL, err := url.Parse("https://app-service-proxy.kind.internal")
+	require.NoError(t, err)
+	testCi := &CookieInfo{
+		projectID: "fake-project",
+		namespace: "fake-namespace",
+		service:   "fake-service:80",
+		cluster:   "cluster123",
+	}
+
 	tests := []struct {
 		description string
-		url         string
-		sourceURL   string
-		cookieInfo  *CookieInfo
-		kubeapiAddr *url.URL
+		inputURL    string
 		expected    string
 	}{
-		// Define test cases
+		// Normal rewrite cases
+		{
+			description: "rewrite kubeapi proxy path",
+			inputURL:    "/api/v1/namespaces/fake-namespace/services/fake-service:80/proxy/some/path",
+			expected:    "//app-service-proxy.kind.internal/some/path",
+		},
+		{
+			description: "simple absolute path",
+			inputURL:    "/simple/path",
+			expected:    "//app-service-proxy.kind.internal/simple/path",
+		},
+		// Security: protocol-relative URL (open redirect attempt)
+		{
+			description: "protocol-relative URL //evil.com is rejected from rewrite and preserved",
+			inputURL:    "//evil.com",
+			expected:    "//evil.com",
+		},
+		{
+			description: "protocol-relative URL //evil.com/path is rejected from rewrite and preserved",
+			inputURL:    "//evil.com/malicious/path",
+			expected:    "//evil.com/malicious/path",
+		},
+		{
+			description: "protocol-relative URL //evil.com:8080/path is rejected from rewrite and preserved",
+			inputURL:    "//evil.com:8080/path",
+			expected:    "//evil.com:8080/path",
+		},
+		// Security: backslash after leading slash (open redirect attempt)
+		{
+			description: "backslash URL /\\evil.com is rejected from rewrite and preserved",
+			inputURL:    "/\\evil.com",
+			expected:    "/%5Cevil.com",
+		},
+		{
+			description: "backslash URL /\\\\evil.com/path is rejected from rewrite and preserved",
+			inputURL:    "/\\\\evil.com/path",
+			expected:    "/%5C%5Cevil.com/path",
+		},
+		// Different host should be preserved (not rewritten, but not unsafe)
+		{
+			description: "different host URL preserved",
+			inputURL:    "http://other-service.default.svc/path",
+			expected:    "http://other-service.default.svc/path",
+		},
+		// Relative path should be preserved
+		{
+			description: "relative path preserved",
+			inputURL:    "relative/path",
+			expected:    "relative/path",
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			url, _ := url.Parse(test.url)
-			sourceURL, _ := url.Parse(test.sourceURL)
-			result := rewriteURL(url, sourceURL, test.cookieInfo, test.kubeapiAddr)
+			parsedURL, err := url.Parse(test.inputURL)
+			require.NoError(t, err)
+			result := rewriteURL(parsedURL, sourceURL, testCi, kubeapiAddr)
 			assert.Equal(t, test.expected, result)
 		})
 	}
