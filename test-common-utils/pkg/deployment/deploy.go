@@ -44,7 +44,7 @@ var DpConfigs = map[string]any{
 		"appNames":             []string{"kubevirt", "cdi", "kube-helper"},
 		"deployPackage":        "virtualization",
 		"deployPackageVersion": "", // empty = resolve latest version from catalog at runtime
-		"profileName":          "with-software-emulation-profile-nosm",
+		"profileName":          "default-profile", // profile used in CI libvirt VEN environment (0.7.x+)
 		"clusterId":            types.TestClusterID,
 		"labels":               map[string]string{"user": "customer"},
 		"overrideValues":       []map[string]any{},
@@ -96,6 +96,10 @@ const (
 	// Set to 15 to allow up to 5 minutes for deployments to become ready per attempt
 	RetryCount = 15 // Number of retries for deployment operations
 
+	// VirtRetryCount is a higher retry count for the virtualization extension deployment.
+	// Kubevirt installs CRDs and operators which can take up to 15 minutes to become ready.
+	VirtRetryCount = 45 // 45 × 20s = 15 minutes
+
 	DeleteTimeout = 10 * time.Second // Timeout for deletion operations
 )
 
@@ -127,6 +131,10 @@ type StartDeploymentRequest struct {
 	// enabling the test to look up the latest available version from the catalog.
 	Token     string
 	ProjectID string
+	// RetryCount overrides the global RetryCount for waitForDeploymentStatus.
+	// Use VirtRetryCount for heavy deployments like the virtualization extension.
+	// 0 means use the default (RetryCount).
+	RetryCount int
 }
 
 func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
@@ -246,7 +254,12 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 
 		fmt.Printf("Created %s deployment successfully, deployment id %s (attempt %d/%d)\n", displayName, deployID, attempt, maxRetries)
 
-		lastErr = waitForDeploymentStatus(opts.AdmClient, displayName, deploymentv1.State_RUNNING, types.RetryCount, opts.DeploymentTimeout)
+		lastErr = waitForDeploymentStatus(opts.AdmClient, displayName, deploymentv1.State_RUNNING, func() int {
+			if opts.RetryCount > 0 {
+				return opts.RetryCount
+			}
+			return types.RetryCount
+		}(), opts.DeploymentTimeout)
 		if lastErr == nil {
 			fmt.Printf("%s deployment is now in RUNNING status\n", displayName)
 			return deployID, retCode, nil

@@ -92,6 +92,7 @@ func (s *TestSuite) SetupSuite() {
 		TestName:          "VirtExtDep",
 		Token:             s.Token,
 		ProjectID:         s.ProjectID,
+		RetryCount:        deploymentutils.VirtRetryCount, // kubevirt needs up to 15 min to install CRDs/operators
 	}
 	_, _, err = deploymentutils.StartDeployment(virtDeploymentRequest)
 	if err != nil {
