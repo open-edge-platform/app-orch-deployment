@@ -11,7 +11,7 @@ import (
 )
 
 func (s *TestSuite) TestDeploymentStatusWithNoLabels() {
-	s.T().Parallel()
+	// s.T().Parallel() // Disabled to run tests sequentially
 	testName := "DeploymentStatusWithNoLabels"
 	deployemntReq := deploymentutils.StartDeploymentRequest{
 		AdmClient:         s.AdmClient,
@@ -36,7 +36,7 @@ func (s *TestSuite) TestDeploymentStatusWithNoLabels() {
 }
 
 func (s *TestSuite) TestDeploymentStatusWithLabels() {
-	s.T().Parallel()
+	// s.T().Parallel() // Disabled to run tests sequentially
 	var labelsList []string
 
 	deploymentReq := deploymentutils.StartDeploymentRequest{
