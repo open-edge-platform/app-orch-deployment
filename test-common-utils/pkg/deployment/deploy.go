@@ -6,7 +6,9 @@ package deployment
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -15,6 +17,7 @@ import (
 
 	deploymentv1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/auth"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
 )
 
@@ -40,7 +43,7 @@ var DpConfigs = map[string]any{
 	VirtualizationExtensionAppName: map[string]any{
 		"appNames":             []string{"kubevirt", "cdi", "kube-helper"},
 		"deployPackage":        "virtualization",
-		"deployPackageVersion": "0.5.1",
+		"deployPackageVersion": "", // empty = resolve latest version from catalog at runtime
 		"profileName":          "with-software-emulation-profile-nosm",
 		"clusterId":            types.TestClusterID,
 		"labels":               map[string]string{"user": "customer"},
@@ -120,6 +123,10 @@ type StartDeploymentRequest struct {
 	DeleteTimeout     time.Duration
 	TestName          string
 	ReuseFlag         bool
+	// Token and ProjectID are required when deployPackageVersion is "" in DpConfigs,
+	// enabling the test to look up the latest available version from the catalog.
+	Token     string
+	ProjectID string
 }
 
 func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
@@ -197,6 +204,22 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 	}
 	fmt.Printf("Using cluster ID: %s (type: %s)\n", clusterID, opts.DeploymentType)
 
+	// Resolve the deployment package version. If the config has an empty version,
+	// query the catalog REST API for the latest available version.
+	dpVersion := useDP["deployPackageVersion"].(string)
+	if dpVersion == "" {
+		if opts.Token == "" || opts.ProjectID == "" {
+			return "", retCode, fmt.Errorf(
+				"deployPackageVersion is empty for %s; set Token and ProjectID in StartDeploymentRequest to enable dynamic version lookup",
+				opts.DpPackageName)
+		}
+		dpName := useDP["deployPackage"].(string)
+		dpVersion, err = GetLatestDeployPackageVersion(dpName, auth.GetOrchDomain(), opts.Token, opts.ProjectID)
+		if err != nil {
+			return "", retCode, fmt.Errorf("failed to resolve latest version of %s from catalog: %w", dpName, err)
+		}
+	}
+
 	// Add a small delay before creating deployment to reduce cluster resource pressure
 	// This helps when multiple tests are running concurrently
 	time.Sleep(2 * time.Second)
@@ -210,7 +233,7 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 			ClusterID:      clusterID,
 			DpName:         useDP["deployPackage"].(string),
 			AppNames:       useDP["appNames"].([]string),
-			AppVersion:     useDP["deployPackageVersion"].(string),
+			AppVersion:     dpVersion,
 			DisplayName:    displayName,
 			ProfileName:    useDP["profileName"].(string),
 			DeploymentType: opts.DeploymentType,
@@ -251,6 +274,85 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 	}
 
 	return "", retCode, lastErr
+}
+
+// GetLatestDeployPackageVersion queries the catalog REST API to find the highest
+// semver version available for the named deployment package. This lets tests
+// automatically adapt when a package is upgraded in the catalog rather than
+// failing on a hardcoded version number.
+func GetLatestDeployPackageVersion(packageName, orchDomain, token, projectID string) (string, error) {
+	apiBase := "https://api." + orchDomain
+	url := fmt.Sprintf("%s/catalog.orchestrator.apis/v3/deployment_packages/%s/versions", apiBase, packageName)
+
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to build catalog request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Activeprojectid", projectID)
+
+	resp, err := http.DefaultClient.Do(req) //nolint:gosec // URL is constructed from controlled inputs
+	if err != nil {
+		return "", fmt.Errorf("catalog request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("catalog returned status %d for package %s: %s", resp.StatusCode, packageName, string(body))
+	}
+
+	var result struct {
+		DeploymentPackages []struct {
+			Version string `json:"version"`
+		} `json:"deploymentPackages"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", fmt.Errorf("failed to decode catalog response: %w", err)
+	}
+	if len(result.DeploymentPackages) == 0 {
+		return "", fmt.Errorf("no versions found for deployment package %s", packageName)
+	}
+
+	latest := ""
+	for _, dp := range result.DeploymentPackages {
+		if dp.Version == "" {
+			continue
+		}
+		if latest == "" || compareSemver(dp.Version, latest) > 0 {
+			latest = dp.Version
+		}
+	}
+	if latest == "" {
+		return "", fmt.Errorf("no valid versions found for deployment package %s", packageName)
+	}
+	fmt.Printf("GetLatestDeployPackageVersion: %s -> %s\n", packageName, latest)
+	return latest, nil
+}
+
+// compareSemver compares two semver strings (MAJOR.MINOR.PATCH).
+// Returns 1 if a > b, -1 if a < b, 0 if equal.
+func compareSemver(a, b string) int {
+	partsA := strings.SplitN(a, ".", 3)
+	partsB := strings.SplitN(b, ".", 3)
+	for len(partsA) < 3 {
+		partsA = append(partsA, "0")
+	}
+	for len(partsB) < 3 {
+		partsB = append(partsB, "0")
+	}
+	for i := 0; i < 3; i++ {
+		var numA, numB int
+		_, _ = fmt.Sscanf(partsA[i], "%d", &numA)
+		_, _ = fmt.Sscanf(partsB[i], "%d", &numB)
+		if numA > numB {
+			return 1
+		}
+		if numA < numB {
+			return -1
+		}
+	}
+	return 0
 }
 
 // TODO: This isn't working as expected and is returning a 404 when getting the kubeconfig
