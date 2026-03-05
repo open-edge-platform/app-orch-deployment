@@ -280,9 +280,14 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 // semver version available for the named deployment package. This lets tests
 // automatically adapt when a package is upgraded in the catalog rather than
 // failing on a hardcoded version number.
+//
+// The catalog API gateway exposes deployment packages at:
+//
+//	/v3/projects/{projectName}/catalog/deployment_packages/{name}/versions
 func GetLatestDeployPackageVersion(packageName, orchDomain, token, projectID string) (string, error) {
 	apiBase := "https://api." + orchDomain
-	url := fmt.Sprintf("%s/catalog.orchestrator.apis/v3/deployment_packages/%s/versions", apiBase, packageName)
+	projectName := types.SampleProject
+	url := fmt.Sprintf("%s/v3/projects/%s/catalog/deployment_packages/%s/versions", apiBase, projectName, packageName)
 
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
 	if err != nil {
