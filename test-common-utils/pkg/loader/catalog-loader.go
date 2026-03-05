@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/auth"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/git"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
 	catalogloader "github.com/open-edge-platform/orch-library/go/pkg/loader"
 	"os"
 	"os/exec"
@@ -18,10 +19,9 @@ import (
 
 func Upload(paths []string) error {
 	orchDomain := auth.GetOrchDomain()
-	orchProject := "sample-project"
-	if orchProjectEnv := os.Getenv("ORCH_PROJECT"); orchProjectEnv != "" {
-		orchProject = orchProjectEnv
-	}
+	orchProject := types.SampleProject
+
+	fmt.Printf("Uploading to project: %s\n", orchProject)
 
 	err := UploadFiles(paths, orchDomain, orchProject)
 	if err != nil {

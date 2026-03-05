@@ -311,6 +311,7 @@ func FetchAndPrintClusterState(client *restClient.ClientWithResponses, clusterID
 	}
 	fmt.Printf("Successfully fetched kubeconfig, running 'kubectl get all -A'...\n")
 
+	//nolint:gosec // tmpFile is created by os.CreateTemp within this function; path is not user-supplied
 	cmd := exec.Command("kubectl", "--kubeconfig", tmpFile.Name(), "get", "all", "-A")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -729,23 +730,31 @@ func ResetThenChangeDpConfig(dpConfigName string, key string, value any, origina
 }
 
 func GetDeployApps(client *restClient.ClientWithResponses, deployID string) ([]*restClient.DeploymentV1App, error) {
-	deployments, retCode, err := getDeploymentPerCluster(client)
-	if err != nil || retCode != 200 {
-		return []*restClient.DeploymentV1App{}, fmt.Errorf("failed to get deployments: %v", err)
-	}
+	// ListDeployments does not populate the Apps field — use GetDeployment (single-item API).
+	// The Apps list may still be empty immediately after reaching RUNNING state, so retry.
+	maxRetries := 10
+	retryDelay := 5 * time.Second
 
-	for _, d := range deployments {
-		if *d.DeployId == deployID {
-			apps := make([]*restClient.DeploymentV1App, len(*d.Apps))
-			for i, app := range *d.Apps {
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		deployment, retCode, err := GetDeployment(client, deployID)
+		if err != nil || retCode != 200 {
+			return []*restClient.DeploymentV1App{}, fmt.Errorf("failed to get deployment %s: %v", deployID, err)
+		}
+
+		if deployment.Apps != nil && len(*deployment.Apps) > 0 {
+			apps := make([]*restClient.DeploymentV1App, len(*deployment.Apps))
+			for i, app := range *deployment.Apps {
 				apps[i] = &app
 				fmt.Println("app.Name : ", *app.Name)
 			}
 			return apps, nil
 		}
+
+		fmt.Printf("GetDeployApps: deployment %s apps not yet populated, retrying (%d/%d)...\n", deployID, attempt, maxRetries)
+		time.Sleep(retryDelay)
 	}
 
-	return []*restClient.DeploymentV1App{}, fmt.Errorf("did not find deployment id %s", deployID)
+	return []*restClient.DeploymentV1App{}, fmt.Errorf("apps not populated for deployment %s after %d retries", deployID, maxRetries)
 }
 
 // GetFirstClusterID retrieves the first available cluster ID from the deployment API.
