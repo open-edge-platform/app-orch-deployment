@@ -82,17 +82,23 @@ func (s *TestSuite) SetupSuite() {
 		s.T().Fatalf("error: %v", err)
 	}
 
-	// Start the virtualization extension deployment
+	// Start the virtualization extension deployment.
+	// DeploymentRetryCount is set high because the fleet gitjob can transiently fail
+	// with a TLS certificate error (x509: certificate signed by unknown authority) when
+	// cloning from gitea.kind.internal on freshly-provisioned clusters, especially right
+	// after a catalog upload. Extra outer retries with a 60s stabilization delay let the
+	// cluster recover before each attempt.
 	virtDeploymentRequest := deploymentutils.StartDeploymentRequest{
-		AdmClient:         s.AdmClient,
-		DpPackageName:     deploymentutils.VirtualizationExtensionAppName,
-		DeploymentType:    deploymentutils.DeploymentTypeTargeted,
-		DeploymentTimeout: deploymentutils.DeploymentTimeout,
-		DeleteTimeout:     deploymentutils.DeleteTimeout,
-		TestName:          "VirtExtDep",
-		Token:             s.Token,
-		ProjectID:         s.ProjectID,
-		RetryCount:        deploymentutils.VirtRetryCount, // kubevirt needs up to 15 min to install CRDs/operators
+		AdmClient:            s.AdmClient,
+		DpPackageName:        deploymentutils.VirtualizationExtensionAppName,
+		DeploymentType:       deploymentutils.DeploymentTypeTargeted,
+		DeploymentTimeout:    deploymentutils.DeploymentTimeout,
+		DeleteTimeout:        deploymentutils.DeleteTimeout,
+		TestName:             "VirtExtDep",
+		Token:                s.Token,
+		ProjectID:            s.ProjectID,
+		RetryCount:           deploymentutils.VirtRetryCount,      // kubevirt needs up to 15 min to install CRDs/operators
+		DeploymentRetryCount: deploymentutils.VirtDeployRetryCount, // tolerate transient gitea TLS failures
 	}
 	_, _, err = deploymentutils.StartDeployment(virtDeploymentRequest)
 	if err != nil {

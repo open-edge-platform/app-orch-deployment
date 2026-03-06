@@ -100,6 +100,13 @@ const (
 	// Kubevirt installs CRDs and operators which can take up to 15 minutes to become ready.
 	VirtRetryCount = 45 // 45 × 20s = 15 minutes
 
+	// VirtDeployRetryCount is the number of outer deployment-creation retries for the
+	// virtualization extension. On freshly-provisioned clusters the fleet gitjob can fail
+	// with a transient TLS certificate error (x509: certificate signed by unknown authority)
+	// when cloning from gitea.kind.internal. Additional retries with a longer delay allow
+	// the cluster to stabilize before trying again.
+	VirtDeployRetryCount = 5
+
 	DeleteTimeout = 10 * time.Second // Timeout for deletion operations
 )
 
@@ -135,6 +142,11 @@ type StartDeploymentRequest struct {
 	// Use VirtRetryCount for heavy deployments like the virtualization extension.
 	// 0 means use the default (RetryCount).
 	RetryCount int
+	// DeploymentRetryCount is the number of times to recreate the deployment when it
+	// enters an ERROR state (outer retry loop). Defaults to 2 when not set.
+	// Use VirtDeployRetryCount for the virtualization extension which can hit transient
+	// TLS failures on freshly-provisioned clusters.
+	DeploymentRetryCount int
 }
 
 func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
@@ -232,8 +244,13 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 	// This helps when multiple tests are running concurrently
 	time.Sleep(2 * time.Second)
 
-	// Retry deployment creation up to 2 times on ERROR state
+	// Retry deployment creation on ERROR state. On freshly-provisioned clusters the fleet
+	// gitjob occasionally fails with a transient TLS error when cloning from gitea;
+	// extra retries with a generous delay allow the cluster to stabilize.
 	maxRetries := 2
+	if opts.DeploymentRetryCount > 0 {
+		maxRetries = opts.DeploymentRetryCount
+	}
 	var deployID string
 	var lastErr error
 	for attempt := 1; attempt <= maxRetries; attempt++ {
@@ -271,10 +288,15 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 			// Delete the failed deployment
 			if deployID != "" {
 				_, _ = DeleteDeployment(opts.AdmClient, deployID)
-				time.Sleep(10 * time.Second) // Wait for cleanup
 			}
 			// Delete by display name to ensure cleanup
 			_ = DeleteAndRetryUntilDeleted(opts.AdmClient, displayName, 10, opts.DeleteTimeout)
+			// Wait for the cluster to stabilize. On freshly-provisioned clusters the fleet
+			// gitjob can transiently fail with a TLS error (x509: certificate signed by
+			// unknown authority) when gitea is briefly unavailable after catalog uploads or
+			// fleet-agent restarts. A 60-second pause gives the cluster time to recover.
+			fmt.Printf("Waiting 60s for cluster to stabilize before retry (attempt %d/%d)...\n", attempt+1, maxRetries)
+			time.Sleep(60 * time.Second)
 			continue
 		}
 
