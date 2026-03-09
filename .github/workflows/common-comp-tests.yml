@@ -49,6 +49,14 @@ jobs:
           nested_supported="YES"
           reasons=()
 
+          echo "=== Runner Context ==="
+          echo "RUNNER_NAME=$RUNNER_NAME"
+          echo "RUNNER_OS=$RUNNER_OS"
+          echo "RUNNER_ARCH=$RUNNER_ARCH"
+          echo "RUNNER_ENVIRONMENT=${{ runner.environment }}"
+          echo "RUNNER_LABELS=${{ join(runner.labels, ',') }}"
+          echo
+
           echo "=== Nested Virtualization Capability Assessment ==="
 
           echo "[1/4] CPU virtualization flags"
