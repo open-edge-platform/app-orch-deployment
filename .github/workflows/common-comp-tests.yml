@@ -350,6 +350,24 @@ jobs:
           mkdir -p diag-logs
           kubectl get pods -o wide -A > diag-logs/all-pods.log || true
           kubectl -n orch-cluster get pods -o wide > diag-logs/orch-cluster-pods.log || true
+          kubectl get events -A --sort-by=.lastTimestamp > diag-logs/all-events.log || true
+          kubectl get clusters.cluster -A -o wide > diag-logs/edge-clusters-wide.log || true
+          kubectl get clusters.cluster -A -o yaml > diag-logs/edge-clusters.yaml || true
+          kubectl get hosts.host -A -o wide > diag-logs/hosts-wide.log || true
+          kubectl get hosts.host -A -o yaml > diag-logs/hosts.yaml || true
+          kubectl get instances.instance -A -o wide > diag-logs/instances-wide.log || true
+          kubectl get instances.instance -A -o yaml > diag-logs/instances.yaml || true
+          kubectl get machinedeployments.cluster.x-k8s.io -A -o wide > diag-logs/capi-machinedeployments.log || true
+          kubectl get machines.cluster.x-k8s.io -A -o wide > diag-logs/capi-machines.log || true
+          kubectl get kubeadmcontrolplanes.controlplane.cluster.x-k8s.io -A -o wide > diag-logs/capi-controlplanes.log || true
+          while IFS='|' read -r cluster_namespace cluster_name; do
+            [ -z "$cluster_name" ] && continue
+            kubectl describe clusters.cluster -n "$cluster_namespace" "$cluster_name" > "diag-logs/cluster-${cluster_namespace}-${cluster_name}-describe.log" || true
+          done < <(kubectl get clusters.cluster -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"|"}{.metadata.name}{"\n"}{end}' 2>/dev/null)
+          while IFS='|' read -r host_namespace host_name; do
+            [ -z "$host_name" ] && continue
+            kubectl describe hosts.host -n "$host_namespace" "$host_name" > "diag-logs/host-${host_namespace}-${host_name}-describe.log" || true
+          done < <(kubectl get hosts.host -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"|"}{.metadata.name}{"\n"}{end}' 2>/dev/null)
           kubectl logs -n orch-cluster -l app=cluster-manager-cm -c cluster-manager --tail=-1 > diag-logs/cluster-manager.log || echo "No current logs for cluster-manager"
           kubectl logs -n orch-cluster -l app=cluster-manager-cm -c cluster-manager --previous --tail=-1 > diag-logs/cluster-manager-previous.log || echo "No previous logs for cluster-manager"
           kubectl logs -n orch-cluster -l app.kubernetes.io/name=cluster-connect-gateway --tail=-1 > diag-logs/cluster-connect-gateway.log || echo "No current logs for cluster-connect-gateway"
@@ -372,6 +390,39 @@ jobs:
           # VEN/Libvirt diagnostics
           virsh list --all > diag-logs/virsh-list.log 2>&1 || true
           virsh net-list --all > diag-logs/virsh-networks.log 2>&1 || true
+          virsh net-dumpxml default > diag-logs/virsh-network-default.xml 2>&1 || true
+          virsh pool-list --all > diag-logs/virsh-pools.log 2>&1 || true
+          virsh pool-dumpxml default > diag-logs/virsh-pool-default.xml 2>&1 || true
+          if [ -f /var/lib/libvirt/dnsmasq/default.leases ]; then
+            cat /var/lib/libvirt/dnsmasq/default.leases > diag-logs/libvirt-default-leases.log || true
+          fi
+          for vm_name in $(virsh list --all --name 2>/dev/null | sed '/^$/d'); do
+            virsh dominfo "$vm_name" > "diag-logs/virsh-dominfo-${vm_name}.log" 2>&1 || true
+            virsh domifaddr "$vm_name" > "diag-logs/virsh-domifaddr-${vm_name}.log" 2>&1 || true
+            virsh domblklist "$vm_name" > "diag-logs/virsh-domblklist-${vm_name}.log" 2>&1 || true
+            virsh dumpxml "$vm_name" > "diag-logs/virsh-dumpxml-${vm_name}.xml" 2>&1 || true
+            sudo tail -n 300 "/var/log/libvirt/qemu/${vm_name}.log" > "diag-logs/qemu-${vm_name}.log" 2>&1 || true
+          done
+          mkdir -p diag-logs/edge-clusters
+          while IFS='|' read -r mgmt_ns edge_cluster_name; do
+            [ -z "$edge_cluster_name" ] && continue
+            kube_secret="${edge_cluster_name}-kubeconfig"
+            kubeconfig_path="diag-logs/edge-clusters/${mgmt_ns}-${edge_cluster_name}.kubeconfig"
+            if kubectl get secret -n "$mgmt_ns" "$kube_secret" >/dev/null 2>&1; then
+              kubectl get secret -n "$mgmt_ns" "$kube_secret" -o jsonpath='{.data.value}' | base64 -d > "$kubeconfig_path" || true
+              if [ -s "$kubeconfig_path" ]; then
+                KUBECONFIG="$kubeconfig_path" kubectl cluster-info > "diag-logs/edge-clusters/${mgmt_ns}-${edge_cluster_name}-cluster-info.log" 2>&1 || true
+                KUBECONFIG="$kubeconfig_path" kubectl get nodes -o wide > "diag-logs/edge-clusters/${mgmt_ns}-${edge_cluster_name}-nodes.log" 2>&1 || true
+                KUBECONFIG="$kubeconfig_path" kubectl get pods -A -o wide > "diag-logs/edge-clusters/${mgmt_ns}-${edge_cluster_name}-pods.log" 2>&1 || true
+                KUBECONFIG="$kubeconfig_path" kubectl get events -A --sort-by=.lastTimestamp > "diag-logs/edge-clusters/${mgmt_ns}-${edge_cluster_name}-events.log" 2>&1 || true
+                KUBECONFIG="$kubeconfig_path" kubectl get csr > "diag-logs/edge-clusters/${mgmt_ns}-${edge_cluster_name}-csr.log" 2>&1 || true
+              else
+                echo "Empty kubeconfig decoded from secret ${mgmt_ns}/${kube_secret}" > "diag-logs/edge-clusters/${mgmt_ns}-${edge_cluster_name}-collection-error.log"
+              fi
+            else
+              echo "Secret ${mgmt_ns}/${kube_secret} not found" > "diag-logs/edge-clusters/${mgmt_ns}-${edge_cluster_name}-collection-error.log"
+            fi
+          done < <(kubectl get clusters.cluster.x-k8s.io -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"|"}{.metadata.name}{"\n"}{end}' 2>/dev/null)
 
       - name: Upload diagnostic artifacts
         if: ${{ failure() && steps.get-diag-info.conclusion == 'success' }}
