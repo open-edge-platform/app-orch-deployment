@@ -59,7 +59,15 @@ jobs:
           cat /sys/module/kvm_*/parameters/nested 2>/dev/null || echo "Cannot check nested virtualization"
 
           echo "=== Hardware Acceleration Test ==="
-          which kvm-ok && kvm-ok || echo "kvm-ok not available"
+          if command -v kvm-ok >/dev/null 2>&1; then
+            echo "kvm-ok found"
+            kvm-ok || echo "kvm-ok failed"
+          else
+            echo "kvm-ok not available"
+          fi
+
+          echo "=== Try KVM acceleration ==="
+          qemu-system-x86_64 -enable-kvm -version 2>&1 || echo "KVM acceleration failed"
 
           echo "=== System Info ==="
           uname -a
