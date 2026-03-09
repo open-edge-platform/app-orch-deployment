@@ -21,6 +21,11 @@ on:
         description: "Branch in edge-manageability-framework to checkout"
         type: string
         default: main
+      check-virtualization:
+        required: false
+        description: "Run virtualization support checks on the same component-test runner"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -38,6 +43,28 @@ jobs:
       GH_TOKEN: ${{ secrets.SYS_EMF_GH_TOKEN }}
 
     steps:
+      - name: Check virtualization support
+        if: ${{ inputs.check-virtualization }}
+        run: |
+          echo "=== CPU Info ==="
+          grep -E "(vmx|svm)" /proc/cpuinfo || echo "No virtualization flags found"
+
+          echo "=== KVM Support ==="
+          ls -la /dev/kvm 2>/dev/null || echo "/dev/kvm not available"
+
+          echo "=== KVM Modules ==="
+          lsmod | grep kvm || echo "No KVM modules loaded"
+
+          echo "=== Nested Virtualization Check ==="
+          cat /sys/module/kvm_*/parameters/nested 2>/dev/null || echo "Cannot check nested virtualization"
+
+          echo "=== Hardware Acceleration Test ==="
+          which kvm-ok && kvm-ok || echo "kvm-ok not available"
+
+          echo "=== System Info ==="
+          uname -a
+          cat /proc/version
+
       - name: Checkout EMF repository
         if: ${{ inputs.use-ven }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
