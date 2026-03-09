@@ -46,32 +46,91 @@ jobs:
       - name: Check virtualization support
         if: ${{ inputs.check-virtualization }}
         run: |
-          echo "=== CPU Info ==="
-          grep -E "(vmx|svm)" /proc/cpuinfo || echo "No virtualization flags found"
+          nested_supported="YES"
+          reasons=()
 
-          echo "=== KVM Support ==="
-          ls -la /dev/kvm 2>/dev/null || echo "/dev/kvm not available"
+          echo "=== Nested Virtualization Capability Assessment ==="
 
-          echo "=== KVM Modules ==="
-          lsmod | grep kvm || echo "No KVM modules loaded"
-
-          echo "=== Nested Virtualization Check ==="
-          cat /sys/module/kvm_*/parameters/nested 2>/dev/null || echo "Cannot check nested virtualization"
-
-          echo "=== Hardware Acceleration Test ==="
-          if command -v kvm-ok >/dev/null 2>&1; then
-            echo "kvm-ok found"
-            kvm-ok || echo "kvm-ok failed"
+          echo "[1/4] CPU virtualization flags"
+          if grep -Eq '(vmx|svm)' /proc/cpuinfo; then
+            echo "PASS: CPU virtualization flags detected (vmx/svm)."
           else
-            echo "kvm-ok not available"
+            echo "FAIL: CPU virtualization flags not detected."
+            nested_supported="NO"
+            reasons+=("CPU lacks vmx/svm flags")
           fi
 
-          echo "=== Try KVM acceleration ==="
-          qemu-system-x86_64 -enable-kvm -version 2>&1 || echo "KVM acceleration failed"
+          echo "[2/4] /dev/kvm device availability"
+          if [ -c /dev/kvm ]; then
+            ls -la /dev/kvm
+            echo "PASS: /dev/kvm is present."
+          else
+            echo "FAIL: /dev/kvm is not available."
+            nested_supported="NO"
+            reasons+=("/dev/kvm not present")
+          fi
 
-          echo "=== System Info ==="
-          uname -a
-          cat /proc/version
+          echo "[3/4] KVM kernel modules"
+          lsmod | grep -E '^kvm(_intel|_amd)?\b' || true
+          if [ -d /sys/module/kvm ]; then
+            echo "PASS: kvm kernel module is present."
+          else
+            echo "FAIL: kvm kernel module is not present."
+            nested_supported="NO"
+            reasons+=("kvm kernel module missing")
+          fi
+
+          echo "[4/4] Nested virtualization setting"
+          nested_value=""
+          nested_path=""
+          if [ -f /sys/module/kvm_intel/parameters/nested ]; then
+            nested_path="/sys/module/kvm_intel/parameters/nested"
+            nested_value="$(cat /sys/module/kvm_intel/parameters/nested)"
+          elif [ -f /sys/module/kvm_amd/parameters/nested ]; then
+            nested_path="/sys/module/kvm_amd/parameters/nested"
+            nested_value="$(cat /sys/module/kvm_amd/parameters/nested)"
+          fi
+
+          if [ -n "$nested_path" ]; then
+            echo "Detected nested control: $nested_path=$nested_value"
+            case "$nested_value" in
+              Y|1)
+                echo "PASS: Nested virtualization is enabled."
+                ;;
+              *)
+                echo "FAIL: Nested virtualization is disabled."
+                nested_supported="NO"
+                reasons+=("nested setting is '$nested_value' in $nested_path")
+                ;;
+            esac
+          else
+            echo "FAIL: Nested virtualization parameter file not found."
+            nested_supported="NO"
+            reasons+=("nested parameter file missing")
+          fi
+
+          echo
+          echo "=== Result ==="
+          echo "NESTED_VIRT_SUPPORTED=$nested_supported"
+          if [ "$nested_supported" = "NO" ]; then
+            echo "Reasons:"
+            for reason in "${reasons[@]}"; do
+              echo "- $reason"
+            done
+          else
+            echo "All required checks passed for nested virtualization."
+          fi
+
+          {
+            echo "## Nested Virtualization Check"
+            echo "- NESTED_VIRT_SUPPORTED=$nested_supported"
+            if [ "$nested_supported" = "NO" ]; then
+              echo "- Reasons:"
+              for reason in "${reasons[@]}"; do
+                echo "  - $reason"
+              done
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Checkout EMF repository
         if: ${{ inputs.use-ven }}
