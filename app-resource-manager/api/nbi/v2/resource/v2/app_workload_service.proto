@@ -14,7 +14,10 @@ import "resource/v2/app_workload_resource.proto";
 service AppWorkloadService {
   // Gets a list of all workloads for an application of a deployment in a cluster.
   rpc ListAppWorkloads(ListAppWorkloadsRequest) returns (ListAppWorkloadsResponse) {
-    option (google.api.http) = {get: "/resource.orchestrator.apis/v2/workloads/{app_id}/{cluster_id}"};
+    option (google.api.http) = {
+      get: "/v1/projects/{projectName}/resource/workloads/{app_id}/{cluster_id}"
+      additional_bindings: {get: "/resource.orchestrator.apis/v2/workloads/{app_id}/{cluster_id}"}
+    };
   }
 }
 
@@ -38,6 +41,8 @@ message ListAppWorkloadsRequest {
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
     }
   ];
+  // Project name for multi-tenant path routing.
+  string projectName = 3 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for the ListAppWorkloadsResponse method.

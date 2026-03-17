@@ -13,6 +13,7 @@ replace (
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/gitclient => ./internal/gitclient
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/northbound => ./internal/northbound
 	github.com/open-edge-platform/app-orch-deployment/test-common-utils => ../test-common-utils
+	github.com/open-edge-platform/orch-library/go => /home/seu/orch-library/go
 )
 
 require (

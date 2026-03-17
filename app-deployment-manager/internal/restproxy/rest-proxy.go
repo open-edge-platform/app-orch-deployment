@@ -20,6 +20,7 @@ import (
 	orcherror "github.com/open-edge-platform/orch-library/go/pkg/errors"
 	ginlogger "github.com/open-edge-platform/orch-library/go/pkg/logging/gin"
 	ginutils "github.com/open-edge-platform/orch-library/go/pkg/middleware/gin"
+	"github.com/open-edge-platform/orch-library/go/pkg/middleware/projectcontext"
 	openapiutils "github.com/open-edge-platform/orch-library/go/pkg/openapi"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -62,6 +63,13 @@ func isHeaderAllowed(s string) (string, bool) {
 }
 
 func Run(grpcAddr string, gwAddr int, allowedCorsOrigins string, basePath string, openapiSpecFilePath string) error {
+	return RunWithOptions(grpcAddr, gwAddr, allowedCorsOrigins, basePath, openapiSpecFilePath, "")
+}
+
+// RunWithOptions starts the REST proxy with extended options including nexus API URL for
+// project ID resolution. nexusAPIURL is used by the InjectActiveProjectID middleware to
+// resolve project names from /v1/projects/{name}/... paths to UUIDs.
+func RunWithOptions(grpcAddr string, gwAddr int, allowedCorsOrigins string, basePath string, openapiSpecFilePath string, nexusAPIURL string) error {
 	log.Infof("Serving gRPC-Gateway on port %d", gwAddr)
 
 	gin.DefaultWriter = ginlogger.NewWriter(log)
@@ -70,13 +78,28 @@ func Run(grpcAddr string, gwAddr int, allowedCorsOrigins string, basePath string
 	gwmux := runtime.NewServeMux(
 		// convert header in response(going from gateway) from metadata received.
 		runtime.WithOutgoingHeaderMatcher(isHeaderAllowed),
-		runtime.WithMetadata(func(_ context.Context, request *http.Request) metadata.MD {
+		runtime.WithMetadata(func(ctx context.Context, request *http.Request) metadata.MD {
 			authHeader := request.Header.Get("Authorization")
 			projectIDHeader := request.Header.Get(ActiveProjectID)
-			// send all the headers received from the client
-			md := metadata.Pairs("auth", authHeader, "activeprojectid", projectIDHeader)
-
-			return md
+			// Resolve project ID from URL path or JWT, following EIM/infra-core pattern.
+			// For new-style paths (/v1/projects/{name}/...), resolves name→UUID via Nexus.
+			// For legacy paths, falls back to JWT extraction.
+			projectUUID, err := projectcontext.ResolveAndValidateProjectID(
+				ctx,
+				request.URL.Path,
+				authHeader,
+				projectIDHeader,
+				projectcontext.ProjectResolverConfig{
+					ProjectServiceURL:     nexusAPIURL,
+					ErrorOnMissingProject: false,
+				},
+			)
+			if err != nil {
+				log.Warnf("Failed to resolve project ID: %v", err)
+			} else if projectUUID != "" {
+				projectIDHeader = projectUUID
+			}
+			return metadata.Pairs("auth", authHeader, "activeprojectid", projectIDHeader)
 		}),
 		// handle 405 method not allowed
 		runtime.WithRoutingErrorHandler(ginutils.HandleRoutingError),
@@ -129,6 +152,7 @@ func Run(grpcAddr string, gwAddr int, allowedCorsOrigins string, basePath string
 	gwServer.Use(ginutils.UnicodePrintableCharsChecker())
 
 	gwServer.Use(ginutils.PathParamUnicodeCheckerMiddleware())
+
 
 	// Set a value for trusted proxies
 	err = gwServer.SetTrustedProxies(nil)

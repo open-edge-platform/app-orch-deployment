@@ -10,6 +10,7 @@ replace (
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 => ../app-deployment-manager/api/nbi/v2
 	github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 => ./api/nbi/v2
 	github.com/open-edge-platform/app-orch-deployment/test-common-utils => ../test-common-utils
+	github.com/open-edge-platform/orch-library/go => /home/seu/orch-library/go
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20210105115604-44119421ec6b
 
 	k8s.io/api => k8s.io/api v0.26.4
@@ -74,7 +75,6 @@ require (
 	k8s.io/apiextensions-apiserver v0.34.1
 	k8s.io/apimachinery v0.35.0
 	k8s.io/client-go v12.0.0+incompatible
-	k8s.io/utils v0.0.0-20260106112306-0fe9cd71b2f8
 	kubevirt.io/api v1.0.0
 	kubevirt.io/client-go v1.0.0
 )
@@ -209,6 +209,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20251125145642-4e65d59e963e // indirect
+	k8s.io/utils v0.0.0-20260106112306-0fe9cd71b2f8 // indirect
 	kubevirt.io/containerized-data-importer-api v1.57.0-alpha1 // indirect
 	kubevirt.io/controller-lifecycle-operator-sdk/api v0.2.4 // indirect
 	sigs.k8s.io/controller-runtime v0.22.4 // indirect
