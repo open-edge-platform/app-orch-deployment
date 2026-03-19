@@ -11,7 +11,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.4
 	github.com/oapi-codegen/runtime v1.1.2
 	google.golang.org/genproto/googleapis/api v0.0.0-20251222181119-0a764e51fe1b
-	google.golang.org/grpc v1.78.0
+	google.golang.org/grpc v1.79.3
 	google.golang.org/protobuf v1.36.11
 )
 
