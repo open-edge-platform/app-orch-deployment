@@ -3,14 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 ---
 # Traefik IngressRoute for App Resource Manager (ARM) API routing.
-# Routes new-style multi-tenant paths directly to the ARM REST proxy,
+# Routes multi-tenant paths directly to the ARM REST proxy,
 # bypassing the nexus-api-gateway.
 #
-# New-style paths routed here (project name extracted by service middleware):
-#   /v1/projects/{projectName}/resources/...  -> ARM REST proxy
-#
-# Legacy paths (resource.orchestrator.apis/v2/...) continue to be routed
-# via the nexus-api-gateway for backward compatibility.
+# Paths routed here (project name extracted by service middleware):
+#   /v1/projects/{projectName}/resource/...  -> ARM REST proxy (new-style)
+#   /resource.orchestrator.apis/v2/...       -> ARM REST proxy (legacy)
 {{- if .Values.ingressRoute.enabled }}
 apiVersion: {{ .Values.traefikApiGroup | default "traefik.io/v1alpha1" }}
 kind: IngressRoute
@@ -23,9 +21,25 @@ spec:
   routes:
     # Route for new-style multi-tenant resource API paths.
     # ActiveProjectID is extracted from the URL path by the service middleware.
-    - match: Host(`{{ required "A valid apiHostname entry required!" .Values.ingressRoute.apiHostname }}`) && PathRegexp(`^/v1/projects/[^/]+/resources(/.*)?$`)
+    - match: Host(`{{ required "A valid apiHostname entry required!" .Values.ingressRoute.apiHostname }}`) && PathRegexp(`^/v1/projects/[^/]+/resource(/.*)?$`)
       kind: Rule
       priority: 50
+      middlewares:
+        - name: validate-jwt
+          namespace: orch-gateway
+        - name: secure-headers
+          namespace: orch-gateway
+      services:
+        - name: {{ include "app-resource-manager.fullname" . }}-rest-proxy
+          namespace: {{ .Release.Namespace }}
+          port: {{ .Values.service.restProxy.port }}
+          scheme: http
+    # Route for legacy resource API paths (resource.orchestrator.apis/v2/...).
+    # Maintains backward compatibility by routing legacy paths directly to the service,
+    # bypassing the nexus-api-gateway. ActiveProjectID is resolved from JWT by middleware.
+    - match: Host(`{{ required "A valid apiHostname entry required!" .Values.ingressRoute.apiHostname }}`) && PathPrefix(`/resource.orchestrator.apis/v2`)
+      kind: Rule
+      priority: 40
       middlewares:
         - name: validate-jwt
           namespace: orch-gateway
