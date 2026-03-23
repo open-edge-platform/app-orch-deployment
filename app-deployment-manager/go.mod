@@ -57,7 +57,7 @@ require (
 	github.com/rancher/wrangler/v3 v3.2.0
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/mock v0.6.0
-	google.golang.org/grpc v1.78.0
+	google.golang.org/grpc v1.79.3
 	k8s.io/api v0.35.0
 	k8s.io/apiserver v0.34.1
 	k8s.io/utils v0.0.0-20260106112306-0fe9cd71b2f8

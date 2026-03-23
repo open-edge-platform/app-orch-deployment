@@ -8,10 +8,11 @@ go 1.25.7
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20251209175733-2a1774d88802.1
+	connectrpc.com/connect v1.19.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.4
 	github.com/oapi-codegen/runtime v1.1.2
 	google.golang.org/genproto/googleapis/api v0.0.0-20251222181119-0a764e51fe1b
-	google.golang.org/grpc v1.78.0
+	google.golang.org/grpc v1.79.3
 	google.golang.org/protobuf v1.36.11
 )
 
