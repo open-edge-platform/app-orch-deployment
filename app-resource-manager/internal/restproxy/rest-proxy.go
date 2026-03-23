@@ -176,6 +176,8 @@ func RunWithOptions(restPort int, grpcEndpoint string, basePath string, allowedC
 	}
 
 	server.Group(fmt.Sprintf("%sresource.orchestrator.apis/v2/*{grpc_gateway}", basePath)).Match(allowedMethodsV2, "", gin.WrapH(mux))
+	// Route new-style multi-tenant paths to the same grpc-gateway mux
+	server.Group(fmt.Sprintf("%sv1/projects/*{grpc_gateway}", basePath)).Match(allowedMethodsV2, "", gin.WrapH(mux))
 
 	server.GET("/test", func(c *gin.Context) {
 		c.String(http.StatusOK, "Ok")

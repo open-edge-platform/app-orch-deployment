@@ -186,6 +186,8 @@ func RunWithOptions(grpcAddr string, gwAddr int, allowedCorsOrigins string, base
 
 	// Only register routes that match the specified methods
 	gwServer.Group(fmt.Sprintf("%sdeployment.orchestrator.apis/v1/*{grpc_gateway}", basePath)).Match(allowedMethods, "", gin.WrapH(gwmux))
+	// Route new-style multi-tenant paths to the same grpc-gateway mux
+	gwServer.Group(fmt.Sprintf("%sv1/projects/*{grpc_gateway}", basePath)).Match(allowedMethods, "", gin.WrapH(gwmux))
 
 	// Enable liveness and readiness check
 	gwServer.Handle("GET", "/healthz", func(c *gin.Context) {
