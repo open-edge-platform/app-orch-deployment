@@ -175,7 +175,7 @@ gateway:
   commonLabels: {}
 
   serviceArgs:
-    nexus-api-url: ""
+    nexus-api-url: "http://svc-iam-nexus-api-gw.orch-iam.svc:8082"
   # allowedCorsOrigins: "http://localhost:8081"
   # # basePath is required as in production the UI uses `app-orch` to prefix all requests going to the catalog and ADM and redirect them accordingly
   # basePath: "app-orch/"

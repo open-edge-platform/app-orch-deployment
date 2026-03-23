@@ -14,7 +14,7 @@ vncProxyReplicaCount: 1
 # -- serviceArgs contains arguments that are passed to the running PODs
 serviceArgs:
   restProxy:
-    nexus-api-url: ""
+    nexus-api-url: "http://svc-iam-nexus-api-gw.orch-iam.svc:8082"
   msgSizeLimit: 1 # message size in megabytes
 #    allowedCorsOrigins: "http://localhost:8081"
 #    # basePath is required as in production the UI uses `app-orch` to prefix all requests going to the catalog, ADM, app-resource-manager and redirect them accordingly
