@@ -20,7 +20,7 @@ jobs:
       id-token: write
       contents: read
 
-    uses: open-edge-platform/orch-ci/.github/workflows/post-merge-scorecard.yml@d032a6f118957b4470e8e8aef22399fb59f412de  # 2026.0.17
+    uses: open-edge-platform/orch-ci/.github/workflows/post-merge-scorecard.yml@d032a6f118957b4470e8e8aef22399fb59f412de  # 2026.0.19
     with:
       project_folder: "."
     secrets:
