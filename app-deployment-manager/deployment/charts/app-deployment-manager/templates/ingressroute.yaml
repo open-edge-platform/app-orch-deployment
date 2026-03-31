@@ -26,9 +26,9 @@ spec:
       priority: 50
       middlewares:
         - name: validate-jwt
-          namespace: orch-gateway
+          namespace: {{ .Values.traefikReverseProxy.gatewayNamespace | default "orch-gateway" }}
         - name: secure-headers
-          namespace: orch-gateway
+          namespace: {{ .Values.traefikReverseProxy.gatewayNamespace | default "orch-gateway" }}
       services:
         - name: {{ .Values.gateway.deployment.name }}-rest-proxy
           namespace: {{ .Release.Namespace }}
@@ -42,17 +42,19 @@ spec:
       priority: 40
       middlewares:
         - name: validate-jwt
-          namespace: orch-gateway
+          namespace: {{ .Values.traefikReverseProxy.gatewayNamespace | default "orch-gateway" }}
         - name: secure-headers
-          namespace: orch-gateway
+          namespace: {{ .Values.traefikReverseProxy.gatewayNamespace | default "orch-gateway" }}
       services:
         - name: {{ .Values.gateway.deployment.name }}-rest-proxy
           namespace: {{ .Release.Namespace }}
           port: {{ .Values.gateway.service.restProxy.port }}
           scheme: http
   tls:
+    secretName: {{ .Values.traefikReverseProxy.secretName | default "tls-orch" }}
+    {{- if .Values.traefikReverseProxy.tlsOption }}
     options:
-      name: {{ required "A valid tlsOptionName entry required!" .Values.ingressRoute.tlsOptionName }}
-      namespace: orch-gateway
-    secretName: {{ required "A valid orchSecretName entry required!" .Values.ingressRoute.orchSecretName }}
+      name: {{ .Values.traefikReverseProxy.tlsOption }}
+      namespace: {{ .Values.traefikReverseProxy.gatewayNamespace | default "orch-gateway" }}
+    {{- end }}
 {{- end }}

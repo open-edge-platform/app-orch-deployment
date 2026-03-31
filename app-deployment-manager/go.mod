@@ -48,7 +48,7 @@ require (
 	github.com/hashicorp/vault/api/auth/kubernetes v0.7.0
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 v2.4.3
 	github.com/open-edge-platform/app-orch-deployment/test-common-utils v0.0.0-00010101000000-000000000000
-	github.com/open-edge-platform/orch-library/go v0.6.4-0.20260211092341-cfad67ad247d
+	github.com/open-edge-platform/orch-library/go v0.6.4-0.20260330163707-9af8b768e67e
 	github.com/open-edge-platform/orch-library/go/dazl v0.5.4
 	github.com/open-edge-platform/orch-library/go/dazl/zap v0.5.4
 	github.com/pkg/errors v0.9.1

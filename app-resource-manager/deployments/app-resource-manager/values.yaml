@@ -218,7 +218,7 @@ traefikReverseProxy:
   # -- gatewayNamespace specifies namespace of Traefik and related resources (e.g. k8s secret or tls option).
   gatewayNamespace: gateway-system
   # -- secretName is name of k8s secret containing TLS server cert.
-  secretName: tls-demo
+  secretName: tls-orch
   # -- tlsOption is the name of the Traefik option for handling TLS or mTLS connections.
   tlsOption: gateway-tls
 
@@ -270,8 +270,4 @@ ingressRoute:
   enabled: false
   # -- apiHostname is the hostname used for the API endpoint (e.g. api.cluster.example.com).
   apiHostname: ""
-  # -- tlsOptionName is the name of the Traefik TLS option resource.
-  tlsOptionName: ""
-  # -- orchSecretName is the name of the k8s secret containing TLS cert.
-  orchSecretName: ""
 

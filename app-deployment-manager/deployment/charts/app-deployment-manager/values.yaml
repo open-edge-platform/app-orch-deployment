@@ -317,7 +317,3 @@ ingressRoute:
   enabled: false
   # -- apiHostname is the hostname for the API endpoint (e.g. api.kind.internal)
   apiHostname: ""
-  # -- tlsOptionName is the Traefik TLS option name
-  tlsOptionName: "gateway-tls"
-  # -- orchSecretName is the TLS secret name in orch-gateway namespace
-  orchSecretName: "tls-orch"

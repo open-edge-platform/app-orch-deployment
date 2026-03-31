@@ -59,7 +59,7 @@ require (
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2 v2.4.3
 	github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 v2.0.0-20260107021831-90236d75ab99
 	github.com/open-edge-platform/app-orch-deployment/test-common-utils v0.0.0-00010101000000-000000000000
-	github.com/open-edge-platform/orch-library/go v0.6.4-0.20260211092341-cfad67ad247d
+	github.com/open-edge-platform/orch-library/go v0.6.4-0.20260330163707-9af8b768e67e
 	github.com/open-edge-platform/orch-library/go/dazl v0.5.4
 	github.com/open-edge-platform/orch-library/go/dazl/zap v0.5.4
 	github.com/openshift/client-go v0.0.0-20210112165513-ebc401615f47
