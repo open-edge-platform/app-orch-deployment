@@ -33,9 +33,14 @@ func main() {
 		"localhost:8080",
 		"The endpoint of the gRPC server",
 	)
+	nexusAPIURL := flag.String(
+		"nexus-api-url",
+		"",
+		"The URL of the Nexus API gateway for project name resolution",
+	)
 
 	flag.Parse()
-	err := restproxy.Run(*restPort, *grpcEndpoint, *basePath, *allowedCorsOrigins, "/usr/local/etc/v2/openapi.yaml")
+	err := restproxy.RunWithOptions(*restPort, *grpcEndpoint, *basePath, *allowedCorsOrigins, "/usr/local/etc/v2/openapi.yaml", *nexusAPIURL)
 	if err != nil {
 		log.Fatal(err)
 	}

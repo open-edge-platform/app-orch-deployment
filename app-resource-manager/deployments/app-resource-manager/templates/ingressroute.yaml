@@ -1,0 +1,60 @@
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+# Traefik IngressRoute for App Resource Manager (ARM) API routing.
+# Routes multi-tenant paths directly to the ARM REST proxy,
+# bypassing the nexus-api-gateway.
+#
+# Paths routed here (project name extracted by service middleware):
+#   /v1/projects/{projectName}/resource/...  -> ARM REST proxy (new-style)
+#   /resource.orchestrator.apis/v2/...       -> ARM REST proxy (legacy)
+{{- if .Values.ingressRoute.enabled }}
+apiVersion: {{ .Values.traefikApiGroup | default "traefik.io/v1alpha1" }}
+kind: IngressRoute
+metadata:
+  name: {{ include "app-resource-manager.fullname" . }}-http
+  namespace: {{ .Values.traefikReverseProxy.gatewayNamespace | default "orch-gateway" }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    # Route for new-style multi-tenant resource API paths.
+    # ActiveProjectID is extracted from the URL path by the service middleware.
+    - match: Host(`{{ required "A valid apiHostname entry required!" .Values.ingressRoute.apiHostname }}`) && PathRegexp(`^/v1/projects/[^/]+/resource(/.*)?$`)
+      kind: Rule
+      priority: 50
+      middlewares:
+        - name: validate-jwt
+          namespace: {{ .Values.traefikReverseProxy.gatewayNamespace | default "orch-gateway" }}
+        - name: secure-headers
+          namespace: {{ .Values.traefikReverseProxy.gatewayNamespace | default "orch-gateway" }}
+      services:
+        - name: {{ include "app-resource-manager.fullname" . }}-rest-proxy
+          namespace: {{ .Release.Namespace }}
+          port: {{ .Values.service.restProxy.port }}
+          scheme: http
+    # Route for legacy resource API paths (resource.orchestrator.apis/v2/...).
+    # Maintains backward compatibility by routing legacy paths directly to the service,
+    # bypassing the nexus-api-gateway. ActiveProjectID is resolved from JWT by middleware.
+    - match: Host(`{{ required "A valid apiHostname entry required!" .Values.ingressRoute.apiHostname }}`) && PathPrefix(`/resource.orchestrator.apis/v2`)
+      kind: Rule
+      priority: 40
+      middlewares:
+        - name: validate-jwt
+          namespace: {{ .Values.traefikReverseProxy.gatewayNamespace | default "orch-gateway" }}
+        - name: secure-headers
+          namespace: {{ .Values.traefikReverseProxy.gatewayNamespace | default "orch-gateway" }}
+      services:
+        - name: {{ include "app-resource-manager.fullname" . }}-rest-proxy
+          namespace: {{ .Release.Namespace }}
+          port: {{ .Values.service.restProxy.port }}
+          scheme: http
+  tls:
+    secretName: {{ .Values.traefikReverseProxy.secretName | default "tls-orch" }}
+    {{- if .Values.traefikReverseProxy.tlsOption }}
+    options:
+      name: {{ .Values.traefikReverseProxy.tlsOption }}
+      namespace: {{ .Values.traefikReverseProxy.gatewayNamespace | default "orch-gateway" }}
+    {{- end }}
+{{- end }}

@@ -174,7 +174,8 @@ gateway:
   commonAnnotations: {}
   commonLabels: {}
 
-  serviceArgs: {}
+  serviceArgs:
+    nexus-api-url: "http://svc-iam-nexus-api-gw.orch-iam.svc:8082"
   # allowedCorsOrigins: "http://localhost:8081"
   # # basePath is required as in production the UI uses `app-orch` to prefix all requests going to the catalog and ADM and redirect them accordingly
   # basePath: "app-orch/"
@@ -296,3 +297,23 @@ openpolicyagent:
     requests:
       cpu: 10m
       memory: 128Mi
+
+# -- traefikReverseProxy configures Traefik IngressRoute for direct API access,
+# bypassing the nexus-api-gateway. Enabled for new-style /v1/projects/{name}/deployment/... paths.
+traefikReverseProxy:
+  enabled: false
+  gatewayNamespace: orch-gateway
+  secretName: tls-orch
+  tlsOption: gateway-tls
+
+# https://doc.traefik.io/traefik/migrate/v2-to-v3-details/#kubernetes-crds-api-group-traefikcontainous
+traefikApiGroup: "traefik.io/v1alpha1"
+
+# -- ingressRoute configures the Traefik IngressRoute for new multi-tenant API paths.
+# Required when traefikReverseProxy.enabled is true.
+ingressRoute:
+  # -- enabled turns on the Traefik IngressRoute for direct multi-tenant API access.
+  # NOTE: Requires proto base-URL change from deployment.orchestrator.apis/v1 to /v1/projects first (Track 1 Step 4).
+  enabled: false
+  # -- apiHostname is the hostname for the API endpoint (e.g. api.kind.internal)
+  apiHostname: ""

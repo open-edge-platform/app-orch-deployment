@@ -8,8 +8,471 @@ paths:
         - deployment.v1.DeploymentService
       summary: ListDeployments
       description: Gets a list of all deployment objects.
+      operationId: deployment.v1.DeploymentService.ListDeployments2
+      parameters:
+        - name: labels
+          in: query
+          description: |-
+            Optional. A string array that filters cluster labels to be
+             displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+          schema:
+            type: array
+            items:
+              type: string
+              maxLength: 200
+              minLength: 1
+              pattern: (^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$
+              maxItems: 20
+              description: '(OPTIONAL) '
+            title: labels
+            maxItems: 20
+            description: |-
+              (OPTIONAL) Optional. A string array that filters cluster labels to be
+               displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+        - name: orderBy
+          in: query
+          description: Optional. Select field and order based on which Deployment list will be sorted.
+          schema:
+            type: string
+            title: order_by
+            description: (OPTIONAL) Optional. Select field and order based on which Deployment list will be sorted.
+        - name: filter
+          in: query
+          description: Optional. Selection criteria to list Deployments.
+          schema:
+            type: string
+            title: filter
+            description: (OPTIONAL) Optional. Selection criteria to list Deployments.
+        - name: pageSize
+          in: query
+          description: Optional. Select count of Deployment to be listed per page.
+          schema:
+            type: integer
+            title: page_size
+            maximum: 500
+            minimum: 0
+            format: int32
+            description: (OPTIONAL) Optional. Select count of Deployment to be listed per page.
+        - name: offset
+          in: query
+          description: |-
+            Optional. Offset is used to select the correct page from which Deployment list will be displayed.
+             (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+          schema:
+            type: integer
+            title: offset
+            minimum: 0
+            format: int32
+            description: |-
+              (OPTIONAL) Optional. Offset is used to select the correct page from which Deployment list will be displayed.
+               (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+        - name: projectName
+          in: query
+          description: Project name for multi-tenant path routing.
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.ListDeploymentsResponse'
+    post:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: CreateDeployment
+      description: Creates a deployment object.
+      operationId: deployment.v1.DeploymentService.CreateDeployment2
+      parameters:
+        - name: projectName
+          in: query
+          description: Project name for multi-tenant path routing.
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
+      requestBody:
+        description: Required. Initial values for the deployment.
+        content:
+          application/json:
+            schema:
+              title: deployment
+              description: Required. Initial values for the deployment.
+              $ref: '#/components/schemas/deployment.v1.Deployment'
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.CreateDeploymentResponse'
+  /deployment.orchestrator.apis/v1/deployments/clusters/{cluster_id}:
+    get:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: ListDeploymentsPerCluster
+      operationId: deployment.v1.DeploymentService.ListDeploymentsPerCluster2
+      parameters:
+        - name: cluster_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: cluster_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+        - name: labels
+          in: query
+          description: |-
+            Optional. A string array that filters cluster labels to be
+             displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+          schema:
+            type: array
+            items:
+              type: string
+              maxLength: 200
+              minLength: 1
+              pattern: (^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$
+              maxItems: 20
+              description: '(OPTIONAL) '
+            title: labels
+            maxItems: 20
+            description: |-
+              (OPTIONAL) Optional. A string array that filters cluster labels to be
+               displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+        - name: orderBy
+          in: query
+          description: Optional. Select field and order based on which Deployment list will be sorted.
+          schema:
+            type: string
+            title: order_by
+            description: (OPTIONAL) Optional. Select field and order based on which Deployment list will be sorted.
+        - name: filter
+          in: query
+          description: Optional. Selection criteria to list Deployments.
+          schema:
+            type: string
+            title: filter
+            description: (OPTIONAL) Optional. Selection criteria to list Deployments.
+        - name: pageSize
+          in: query
+          description: Optional. Select count of Deployment to be listed per page.
+          schema:
+            type: integer
+            title: page_size
+            maximum: 500
+            minimum: 0
+            format: int32
+            description: (OPTIONAL) Optional. Select count of Deployment to be listed per page.
+        - name: offset
+          in: query
+          description: |-
+            Optional. Offset is used to select the correct page from which Deployment list will be displayed.
+             (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+          schema:
+            type: integer
+            title: offset
+            minimum: 0
+            format: int32
+            description: |-
+              (OPTIONAL) Optional. Offset is used to select the correct page from which Deployment list will be displayed.
+               (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+        - name: projectName
+          in: query
+          description: Project name for multi-tenant path routing.
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.ListDeploymentsPerClusterResponse'
+  /deployment.orchestrator.apis/v1/deployments/{depl_id}:
+    get:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: GetDeployment
+      description: Gets a deployment object.
+      operationId: deployment.v1.DeploymentService.GetDeployment2
+      parameters:
+        - name: depl_id
+          in: path
+          description: Required. The id of the deployment to get.
+          required: true
+          schema:
+            type: string
+            title: depl_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+            description: Required. The id of the deployment to get.
+        - name: projectName
+          in: query
+          description: Project name for multi-tenant path routing.
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.GetDeploymentResponse'
+    put:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: UpdateDeployment
+      description: Updates a deployment object.
+      operationId: deployment.v1.DeploymentService.UpdateDeployment2
+      parameters:
+        - name: depl_id
+          in: path
+          description: Required. The id of the deployment to update.
+          required: true
+          schema:
+            type: string
+            title: depl_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+            description: Required. The id of the deployment to update.
+        - name: projectName
+          in: query
+          description: Project name for multi-tenant path routing.
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
+      requestBody:
+        description: Required. The new updated Deployment Object.
+        content:
+          application/json:
+            schema:
+              title: deployment
+              description: Required. The new updated Deployment Object.
+              $ref: '#/components/schemas/deployment.v1.Deployment'
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.UpdateDeploymentResponse'
+    delete:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: DeleteDeployment
+      description: Deletes a deployment object.
+      operationId: deployment.v1.DeploymentService.DeleteDeployment2
+      parameters:
+        - name: depl_id
+          in: path
+          description: Required. The id of the deployment to delete.
+          required: true
+          schema:
+            type: string
+            title: depl_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+            description: Required. The id of the deployment to delete.
+        - name: deleteType
+          in: query
+          description: |-
+            Required. Different delete types to handle parent and child
+             lists, for dependency support. Available options: PARENT_ONLY, ALL.
+          required: true
+          schema:
+            title: delete_type
+            description: |-
+              Required. Different delete types to handle parent and child
+               lists, for dependency support. Available options: PARENT_ONLY, ALL.
+            $ref: '#/components/schemas/deployment.v1.DeleteType'
+        - name: projectName
+          in: query
+          description: Project name for multi-tenant path routing.
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/google.protobuf.Empty'
+  /deployment.orchestrator.apis/v1/deployments/{depl_id}/clusters:
+    get:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: ListDeploymentClusters
+      description: Gets a list of all deployment cluster objects.
+      operationId: deployment.v1.DeploymentService.ListDeploymentClusters2
+      parameters:
+        - name: depl_id
+          in: path
+          description: Required. The id of the deployment to get.
+          required: true
+          schema:
+            type: string
+            title: depl_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+            description: Required. The id of the deployment to get.
+        - name: orderBy
+          in: query
+          description: Optional. Select field and order based on which Deployment cluster list will be sorted.
+          schema:
+            type: string
+            title: order_by
+            description: (OPTIONAL) Optional. Select field and order based on which Deployment cluster list will be sorted.
+        - name: filter
+          in: query
+          description: Optional. Selection criteria to list Deployment clusters.
+          schema:
+            type: string
+            title: filter
+            description: (OPTIONAL) Optional. Selection criteria to list Deployment clusters.
+        - name: pageSize
+          in: query
+          description: Optional. Select count of Deployment clusters to be listed per page.
+          schema:
+            type: integer
+            title: page_size
+            maximum: 500
+            minimum: 0
+            format: int32
+            description: (OPTIONAL) Optional. Select count of Deployment clusters to be listed per page.
+        - name: offset
+          in: query
+          description: |-
+            Optional. Offset is used to select the correct page from which Deployment clusters list will be displayed.
+             (E.g If there are 10 Deployment clusters, page size is 2 and offset is set as 4, then the response will display Deployment clusters 5 and 6.)
+          schema:
+            type: integer
+            title: offset
+            format: int32
+            description: |-
+              (OPTIONAL) Optional. Offset is used to select the correct page from which Deployment clusters list will be displayed.
+               (E.g If there are 10 Deployment clusters, page size is 2 and offset is set as 4, then the response will display Deployment clusters 5 and 6.)
+        - name: projectName
+          in: query
+          description: Project name for multi-tenant path routing.
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.ListDeploymentClustersResponse'
+  /deployment.orchestrator.apis/v1/summary/deployments_status:
+    get:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: GetDeploymentsStatus
+      description: Gets all deployment clusters count status.
+      operationId: deployment.v1.DeploymentService.GetDeploymentsStatus2
+      parameters:
+        - name: labels
+          in: query
+          description: |-
+            Optional. A string array that filters cluster labels to be
+             displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+          schema:
+            type: array
+            items:
+              type: string
+              maxLength: 200
+              minLength: 1
+              pattern: (^$)|^[a-z0-9]([-_.=,/a-z0-9]{0,198}[a-z0-9])?$
+              maxItems: 20
+              description: '(OPTIONAL) '
+            title: labels
+            maxItems: 20
+            description: |-
+              (OPTIONAL) Optional. A string array that filters cluster labels to be
+               displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+        - name: projectName
+          in: query
+          description: Project name for multi-tenant path routing.
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.GetDeploymentsStatusResponse'
+  /deployment.v1.DeploymentService/GetAppNamespace:
+    post:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: GetAppNamespace
+      operationId: deployment.v1.DeploymentService.GetAppNamespace
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/deployment.v1.GetAppNamespaceRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.GetAppNamespaceResponse'
+  /v1/projects/{projectName}/appdeployment/deployments:
+    get:
+      tags:
+        - deployment.v1.DeploymentService
+      summary: ListDeployments
+      description: Gets a list of all deployment objects.
       operationId: deployment.v1.DeploymentService.ListDeployments
       parameters:
+        - name: projectName
+          in: path
+          description: Project name for multi-tenant path routing.
+          required: true
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
         - name: labels
           in: query
           description: |-
@@ -79,6 +542,15 @@ paths:
       summary: CreateDeployment
       description: Creates a deployment object.
       operationId: deployment.v1.DeploymentService.CreateDeployment
+      parameters:
+        - name: projectName
+          in: path
+          description: Project name for multi-tenant path routing.
+          required: true
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
       requestBody:
         description: Required. Initial values for the deployment.
         content:
@@ -94,13 +566,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/deployment.v1.CreateDeploymentResponse'
-  /deployment.orchestrator.apis/v1/deployments/clusters/{cluster_id}:
+  /v1/projects/{projectName}/appdeployment/deployments/clusters/{cluster_id}:
     get:
       tags:
         - deployment.v1.DeploymentService
       summary: ListDeploymentsPerCluster
       operationId: deployment.v1.DeploymentService.ListDeploymentsPerCluster
       parameters:
+        - name: projectName
+          in: path
+          description: Project name for multi-tenant path routing.
+          required: true
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
         - name: cluster_id
           in: path
           required: true
@@ -173,7 +653,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/deployment.v1.ListDeploymentsPerClusterResponse'
-  /deployment.orchestrator.apis/v1/deployments/{depl_id}:
+  /v1/projects/{projectName}/appdeployment/deployments/{depl_id}:
     get:
       tags:
         - deployment.v1.DeploymentService
@@ -181,6 +661,14 @@ paths:
       description: Gets a deployment object.
       operationId: deployment.v1.DeploymentService.GetDeployment
       parameters:
+        - name: projectName
+          in: path
+          description: Project name for multi-tenant path routing.
+          required: true
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
         - name: depl_id
           in: path
           description: Required. The id of the deployment to get.
@@ -206,6 +694,14 @@ paths:
       description: Updates a deployment object.
       operationId: deployment.v1.DeploymentService.UpdateDeployment
       parameters:
+        - name: projectName
+          in: path
+          description: Project name for multi-tenant path routing.
+          required: true
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
         - name: depl_id
           in: path
           description: Required. The id of the deployment to update.
@@ -239,6 +735,14 @@ paths:
       description: Deletes a deployment object.
       operationId: deployment.v1.DeploymentService.DeleteDeployment
       parameters:
+        - name: projectName
+          in: path
+          description: Project name for multi-tenant path routing.
+          required: true
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
         - name: depl_id
           in: path
           description: Required. The id of the deployment to delete.
@@ -269,7 +773,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/google.protobuf.Empty'
-  /deployment.orchestrator.apis/v1/deployments/{depl_id}/clusters:
+  /v1/projects/{projectName}/appdeployment/deployments/{depl_id}/clusters:
     get:
       tags:
         - deployment.v1.DeploymentService
@@ -277,6 +781,14 @@ paths:
       description: Gets a list of all deployment cluster objects.
       operationId: deployment.v1.DeploymentService.ListDeploymentClusters
       parameters:
+        - name: projectName
+          in: path
+          description: Project name for multi-tenant path routing.
+          required: true
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
         - name: depl_id
           in: path
           description: Required. The id of the deployment to get.
@@ -331,7 +843,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/deployment.v1.ListDeploymentClustersResponse'
-  /deployment.orchestrator.apis/v1/summary/deployments_status:
+  /v1/projects/{projectName}/appdeployment/summary/deployments_status:
     get:
       tags:
         - deployment.v1.DeploymentService
@@ -339,6 +851,14 @@ paths:
       description: Gets all deployment clusters count status.
       operationId: deployment.v1.DeploymentService.GetDeploymentsStatus
       parameters:
+        - name: projectName
+          in: path
+          description: Project name for multi-tenant path routing.
+          required: true
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
         - name: labels
           in: query
           description: |-
@@ -365,41 +885,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/deployment.v1.GetDeploymentsStatusResponse'
-  /deployment.v1.DeploymentService/GetAppNamespace:
-    post:
-      tags:
-        - deployment.v1.DeploymentService
-      summary: GetAppNamespace
-      operationId: deployment.v1.DeploymentService.GetAppNamespace
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/deployment.v1.GetAppNamespaceRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/deployment.v1.GetAppNamespaceResponse'
 components:
   schemas:
     connect-protocol-version:
@@ -530,6 +1015,10 @@ components:
           title: deployment
           description: Required. Initial values for the deployment.
           $ref: '#/components/schemas/deployment.v1.Deployment'
+        projectName:
+          type: string
+          title: projectName
+          description: (OPTIONAL) Project name for multi-tenant path routing.
       title: CreateDeploymentRequest
       required:
         - deployment
@@ -565,6 +1054,10 @@ components:
             Required. Different delete types to handle parent and child
              lists, for dependency support. Available options: PARENT_ONLY, ALL.
           $ref: '#/components/schemas/deployment.v1.DeleteType'
+        projectName:
+          type: string
+          title: projectName
+          description: (OPTIONAL) Project name for multi-tenant path routing.
       title: DeleteDeploymentRequest
       required:
         - deplId
@@ -747,6 +1240,10 @@ components:
           maxLength: 80
           minLength: 1
           pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+        projectName:
+          type: string
+          title: projectName
+          description: (OPTIONAL) Project name for multi-tenant path routing.
       title: GetAppNamespaceRequest
       required:
         - appId
@@ -773,6 +1270,10 @@ components:
           minLength: 1
           pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
           description: Required. The id of the deployment to get.
+        projectName:
+          type: string
+          title: projectName
+          description: (OPTIONAL) Project name for multi-tenant path routing.
       title: GetDeploymentRequest
       required:
         - deplId
@@ -807,6 +1308,10 @@ components:
           description: |-
             (OPTIONAL) Optional. A string array that filters cluster labels to be
              displayed ie color=blue,customer=intel-corp. Labels separated by a comma.
+        projectName:
+          type: string
+          title: projectName
+          description: (OPTIONAL) Project name for multi-tenant path routing.
       title: GetDeploymentsStatusRequest
       additionalProperties: false
       description: Request message for the GetDeploymentsStatus method.
@@ -896,6 +1401,10 @@ components:
           description: |-
             (OPTIONAL) Optional. Offset is used to select the correct page from which Deployment clusters list will be displayed.
              (E.g If there are 10 Deployment clusters, page size is 2 and offset is set as 4, then the response will display Deployment clusters 5 and 6.)
+        projectName:
+          type: string
+          title: projectName
+          description: (OPTIONAL) Project name for multi-tenant path routing.
       title: ListDeploymentClustersRequest
       required:
         - deplId
@@ -966,6 +1475,10 @@ components:
           description: |-
             (OPTIONAL) Optional. Offset is used to select the correct page from which Deployment list will be displayed.
              (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+        projectName:
+          type: string
+          title: projectName
+          description: (OPTIONAL) Project name for multi-tenant path routing.
       title: ListDeploymentsPerClusterRequest
       required:
         - clusterId
@@ -1031,6 +1544,10 @@ components:
           description: |-
             (OPTIONAL) Optional. Offset is used to select the correct page from which Deployment list will be displayed.
              (E.g If there are 10 Deployments, page size is 2 and offset is set as 4, then the response will display Deployment 5 and 6.)
+        projectName:
+          type: string
+          title: projectName
+          description: (OPTIONAL) Project name for multi-tenant path routing.
       title: ListDeploymentsRequest
       additionalProperties: false
       description: Request message for the ListDeployments method.
@@ -1200,6 +1717,10 @@ components:
           minLength: 1
           pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
           description: Required. The id of the deployment to update.
+        projectName:
+          type: string
+          title: projectName
+          description: (OPTIONAL) Project name for multi-tenant path routing.
       title: UpdateDeploymentRequest
       required:
         - deployment

@@ -18,6 +18,7 @@ type flags struct {
 	gwAddr             int
 	allowedCorsOrigins string
 	basePath           string
+	nexusAPIURL        string
 }
 
 func parseFlags() flags {
@@ -26,6 +27,7 @@ func parseFlags() flags {
 	flag.IntVar(&f.gwAddr, "gwAddr", 8081, "port that REST service runs on")
 	flag.StringVar(&f.allowedCorsOrigins, "allowedCorsOrigins", "", "Comma separated list of allowed CORS origins")
 	flag.StringVar(&f.basePath, "basePath", "", "The rest server base Path")
+	flag.StringVar(&f.nexusAPIURL, "nexus-api-url", "", "URL of the Nexus API for project name to UUID resolution (e.g. http://svc-iam-nexus-api-gw.orch-iam.svc:8082)")
 
 	flag.Parse()
 
@@ -36,7 +38,7 @@ func main() {
 	f := parseFlags()
 
 	log.Infof("Serving Connect-RPC REST proxy on port %d", f.gwAddr)
-	err := restproxy.Run(f.backendAddr, f.gwAddr, f.allowedCorsOrigins, f.basePath, "/usr/local/etc/openapi.yaml")
+	err := restproxy.RunWithOptions(f.backendAddr, f.gwAddr, f.allowedCorsOrigins, f.basePath, "/usr/local/etc/openapi.yaml", f.nexusAPIURL)
 	if err != nil {
 		log.Fatalf("Failed to run Connect-RPC server %v", err)
 	}

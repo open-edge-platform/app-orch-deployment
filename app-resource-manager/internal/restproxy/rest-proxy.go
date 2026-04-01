@@ -19,6 +19,7 @@ import (
 	orcherror "github.com/open-edge-platform/orch-library/go/pkg/errors"
 	ginlogger "github.com/open-edge-platform/orch-library/go/pkg/logging/gin"
 	ginmiddleware "github.com/open-edge-platform/orch-library/go/pkg/middleware/gin"
+	"github.com/open-edge-platform/orch-library/go/pkg/middleware/projectcontext"
 	openapiutils "github.com/open-edge-platform/orch-library/go/pkg/openapi"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -61,7 +62,15 @@ func errorHandler(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.
 	runtime.DefaultHTTPErrorHandler(ctx, mux, marshaler, w, r, err)
 }
 
+// Run starts the ARM REST proxy server with the given configuration.
+// Deprecated: use RunWithOptions instead.
 func Run(restPort int, grpcEndpoint string, basePath string, allowedCorsOrigins string, openapiSpecFilePath string) error {
+	return RunWithOptions(restPort, grpcEndpoint, basePath, allowedCorsOrigins, openapiSpecFilePath, "")
+}
+
+// RunWithOptions starts the ARM REST proxy server.
+// nexusAPIURL is the URL of the Nexus API gateway used for project name resolution.
+func RunWithOptions(restPort int, grpcEndpoint string, basePath string, allowedCorsOrigins string, openapiSpecFilePath string, nexusAPIURL string) error {
 	gin.DefaultWriter = ginlogger.NewWriter(log)
 	log.Infow("Starting REST proxy Server", dazl.Int("address", restPort))
 	msgSizeLimitBytes, err := envutils.GetMessageSizeLimit()
@@ -74,12 +83,28 @@ func Run(restPort int, grpcEndpoint string, basePath string, allowedCorsOrigins 
 	mux := runtime.NewServeMux(
 		// convert header in response(going from gateway) from metadata received.
 		runtime.WithOutgoingHeaderMatcher(isHeaderAllowed),
-		runtime.WithMetadata(func(_ context.Context, request *http.Request) metadata.MD {
+		runtime.WithMetadata(func(ctx context.Context, request *http.Request) metadata.MD {
 			authHeader := request.Header.Get("Authorization")
 			projectIDHeader := request.Header.Get(ActiveProjectID)
-			// send all the headers received from the client
-			md := metadata.Pairs("auth", authHeader, "activeprojectid", projectIDHeader)
-			return md
+			// Resolve project ID from URL path or JWT, following EIM/infra-core pattern.
+			// For new-style paths (/v1/projects/{name}/...), resolves name→UUID via Nexus.
+			// For legacy paths, falls back to JWT extraction.
+			projectUUID, err := projectcontext.ResolveAndValidateProjectID(
+				ctx,
+				request.URL.Path,
+				authHeader,
+				projectIDHeader,
+				projectcontext.ProjectResolverConfig{
+					ProjectServiceURL:     nexusAPIURL,
+					ErrorOnMissingProject: false,
+				},
+			)
+			if err != nil {
+				log.Warnw("Failed to resolve project ID", dazl.Error(err))
+			} else if projectUUID != "" {
+				projectIDHeader = projectUUID
+			}
+			return metadata.Pairs("auth", authHeader, "activeprojectid", projectIDHeader)
 		}),
 		runtime.WithRoutingErrorHandler(ginmiddleware.HandleRoutingError),
 		runtime.WithErrorHandler(errorHandler),
@@ -151,6 +176,8 @@ func Run(restPort int, grpcEndpoint string, basePath string, allowedCorsOrigins 
 	}
 
 	server.Group(fmt.Sprintf("%sresource.orchestrator.apis/v2/*{grpc_gateway}", basePath)).Match(allowedMethodsV2, "", gin.WrapH(mux))
+	// Route new-style multi-tenant paths to the same grpc-gateway mux
+	server.Group(fmt.Sprintf("%sv1/projects/*{grpc_gateway}", basePath)).Match(allowedMethodsV2, "", gin.WrapH(mux))
 
 	server.GET("/test", func(c *gin.Context) {
 		c.String(http.StatusOK, "Ok")
