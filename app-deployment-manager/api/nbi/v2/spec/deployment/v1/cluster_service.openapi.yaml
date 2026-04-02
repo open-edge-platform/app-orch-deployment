@@ -8,8 +8,158 @@ paths:
         - deployment.v1.ClusterService
       summary: ListClusters
       description: Gets a list of all cluster objects.
+      operationId: deployment.v1.ClusterService.ListClusters2
+      parameters:
+        - name: labels
+          in: query
+          description: |-
+            Optional. A string array that filters cluster labels to be
+             displayed ie color=blue,customer=intel. Labels separated by a comma.
+          schema:
+            type: array
+            items:
+              type: string
+              description: '(OPTIONAL) '
+            title: labels
+            description: |-
+              (OPTIONAL) Optional. A string array that filters cluster labels to be
+               displayed ie color=blue,customer=intel. Labels separated by a comma.
+        - name: orderBy
+          in: query
+          description: Optional. Select field and order based on which cluster list will be sorted.
+          schema:
+            type: string
+            title: order_by
+            description: (OPTIONAL) Optional. Select field and order based on which cluster list will be sorted.
+        - name: filter
+          in: query
+          description: Optional. Selection criteria to list clusters.
+          schema:
+            type: string
+            title: filter
+            description: (OPTIONAL) Optional. Selection criteria to list clusters.
+        - name: pageSize
+          in: query
+          description: Optional. Select count of clusters to be listed per page.
+          schema:
+            type: integer
+            title: page_size
+            maximum: 500
+            minimum: 0
+            format: int32
+            description: (OPTIONAL) Optional. Select count of clusters to be listed per page.
+        - name: offset
+          in: query
+          description: |-
+            Optional. Offset is used to select the correct page from which clusters list will be displayed.
+             (E.g If there are 10 clusters, page size is 2 and offset is set as 4, then the response will display clusters 5 and 6).
+          schema:
+            type: integer
+            title: offset
+            minimum: 0
+            format: int32
+            description: |-
+              (OPTIONAL) Optional. Offset is used to select the correct page from which clusters list will be displayed.
+               (E.g If there are 10 clusters, page size is 2 and offset is set as 4, then the response will display clusters 5 and 6).
+        - name: projectName
+          in: query
+          description: Project name for multi-tenant path routing.
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.ListClustersResponse'
+  /deployment.orchestrator.apis/v1/clusters/{cluster_id}:
+    get:
+      tags:
+        - deployment.v1.ClusterService
+      summary: GetCluster
+      description: Gets a cluster object.
+      operationId: deployment.v1.ClusterService.GetCluster2
+      parameters:
+        - name: cluster_id
+          in: path
+          description: Required. The id of the cluster.
+          required: true
+          schema:
+            type: string
+            title: cluster_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+            description: Required. The id of the cluster.
+        - name: projectName
+          in: query
+          description: Project name for multi-tenant path routing.
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.GetClusterResponse'
+  /deployment.v1.ClusterService/GetKubeConfig:
+    post:
+      tags:
+        - deployment.v1.ClusterService
+      summary: GetKubeConfig gets kubeConfig based on a given cluster id
+      description: GetKubeConfig gets kubeConfig based on a given cluster id
+      operationId: deployment.v1.ClusterService.GetKubeConfig
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/deployment.v1.GetKubeConfigRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deployment.v1.GetKubeConfigResponse'
+  /v1/projects/{projectName}/appdeployment/clusters:
+    get:
+      tags:
+        - deployment.v1.ClusterService
+      summary: ListClusters
+      description: Gets a list of all cluster objects.
       operationId: deployment.v1.ClusterService.ListClusters
       parameters:
+        - name: projectName
+          in: path
+          description: Project name for multi-tenant path routing.
+          required: true
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
         - name: labels
           in: query
           description: |-
@@ -68,7 +218,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/deployment.v1.ListClustersResponse'
-  /deployment.orchestrator.apis/v1/clusters/{cluster_id}:
+  /v1/projects/{projectName}/appdeployment/clusters/{cluster_id}:
     get:
       tags:
         - deployment.v1.ClusterService
@@ -76,6 +226,14 @@ paths:
       description: Gets a cluster object.
       operationId: deployment.v1.ClusterService.GetCluster
       parameters:
+        - name: projectName
+          in: path
+          description: Project name for multi-tenant path routing.
+          required: true
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
         - name: cluster_id
           in: path
           description: Required. The id of the cluster.
@@ -94,42 +252,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/deployment.v1.GetClusterResponse'
-  /deployment.v1.ClusterService/GetKubeConfig:
-    post:
-      tags:
-        - deployment.v1.ClusterService
-      summary: GetKubeConfig gets kubeConfig based on a given cluster id
-      description: GetKubeConfig gets kubeConfig based on a given cluster id
-      operationId: deployment.v1.ClusterService.GetKubeConfig
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/deployment.v1.GetKubeConfigRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/deployment.v1.GetKubeConfigResponse'
 components:
   schemas:
     connect-protocol-version:
@@ -321,6 +443,10 @@ components:
           minLength: 1
           pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
           description: Required. The id of the cluster.
+        projectName:
+          type: string
+          title: projectName
+          description: (OPTIONAL) Project name for multi-tenant path routing.
       title: GetClusterRequest
       required:
         - clusterId
@@ -346,6 +472,10 @@ components:
           minLength: 1
           pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
           description: Required. The cluster id for the kubeconfig.
+        projectName:
+          type: string
+          title: projectName
+          description: (OPTIONAL) Project name for multi-tenant path routing.
       title: GetKubeConfigRequest
       required:
         - clusterId
@@ -405,6 +535,10 @@ components:
           description: |-
             (OPTIONAL) Optional. Offset is used to select the correct page from which clusters list will be displayed.
              (E.g If there are 10 clusters, page size is 2 and offset is set as 4, then the response will display clusters 5 and 6).
+        projectName:
+          type: string
+          title: projectName
+          description: (OPTIONAL) Project name for multi-tenant path routing.
       title: ListClustersRequest
       additionalProperties: false
       description: Request message for the ListClusters method.

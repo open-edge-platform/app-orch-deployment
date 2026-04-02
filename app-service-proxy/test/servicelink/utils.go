@@ -333,7 +333,7 @@ func OpenPageInHeadlessChrome(url, search, _ string) (bool, error) {
 func AppEndpointsList(armClient *restClient.ClientWithResponses, appID string) (*[]restClient.ResourceV2AppEndpoint, int, error) {
 	resp, err :=
 		armClient.ResourceV2EndpointsServiceListAppEndpointsWithResponse(context.TODO(),
-			appID, types.TestClusterID)
+			types.SampleProject, appID, types.TestClusterID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return &[]restClient.ResourceV2AppEndpoint{}, resp.StatusCode(), fmt.Errorf("%v", err)

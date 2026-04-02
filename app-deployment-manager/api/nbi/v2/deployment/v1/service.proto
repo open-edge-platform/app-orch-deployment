@@ -19,49 +19,75 @@ service DeploymentService {
 
   // Gets a list of all deployment objects.
   rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse) {
-    option (google.api.http) = {get: "/deployment.orchestrator.apis/v1/deployments"};
+    option (google.api.http) = {
+      get: "/v1/projects/{projectName}/appdeployment/deployments"
+      additional_bindings: {get: "/deployment.orchestrator.apis/v1/deployments"}
+    };
   }
 
   rpc ListDeploymentsPerCluster(ListDeploymentsPerClusterRequest) returns (ListDeploymentsPerClusterResponse) {
-    option (google.api.http) = {get: "/deployment.orchestrator.apis/v1/deployments/clusters/{cluster_id}"};
+    option (google.api.http) = {
+      get: "/v1/projects/{projectName}/appdeployment/deployments/clusters/{cluster_id}"
+      additional_bindings: {get: "/deployment.orchestrator.apis/v1/deployments/clusters/{cluster_id}"}
+    };
   }
 
   // Creates a deployment object.
   rpc CreateDeployment(CreateDeploymentRequest) returns (CreateDeploymentResponse) {
     option (google.api.http) = {
-      post: "/deployment.orchestrator.apis/v1/deployments"
+      post: "/v1/projects/{projectName}/appdeployment/deployments"
       body: "deployment"
+      additional_bindings: {
+        post: "/deployment.orchestrator.apis/v1/deployments"
+        body: "deployment"
+      }
     };
   }
 
   // Gets a deployment object.
   rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {
-    option (google.api.http) = {get: "/deployment.orchestrator.apis/v1/deployments/{depl_id}"};
+    option (google.api.http) = {
+      get: "/v1/projects/{projectName}/appdeployment/deployments/{depl_id}"
+      additional_bindings: {get: "/deployment.orchestrator.apis/v1/deployments/{depl_id}"}
+    };
   }
 
   // Updates a deployment object.
   rpc UpdateDeployment(UpdateDeploymentRequest) returns (UpdateDeploymentResponse) {
     option (google.api.http) = {
-      put: "/deployment.orchestrator.apis/v1/deployments/{depl_id}"
+      put: "/v1/projects/{projectName}/appdeployment/deployments/{depl_id}"
       body: "deployment"
+      additional_bindings: {
+        put: "/deployment.orchestrator.apis/v1/deployments/{depl_id}"
+        body: "deployment"
+      }
     };
   }
 
   // Deletes a deployment object.
   rpc DeleteDeployment(DeleteDeploymentRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/deployment.orchestrator.apis/v1/deployments/{depl_id}"};
+    option (google.api.http) = {
+      delete: "/v1/projects/{projectName}/appdeployment/deployments/{depl_id}"
+      additional_bindings: {delete: "/deployment.orchestrator.apis/v1/deployments/{depl_id}"}
+    };
   }
 
   // === Summary ===
 
   // Gets all deployment clusters count status.
   rpc GetDeploymentsStatus(GetDeploymentsStatusRequest) returns (GetDeploymentsStatusResponse) {
-    option (google.api.http) = {get: "/deployment.orchestrator.apis/v1/summary/deployments_status"};
+    option (google.api.http) = {
+      get: "/v1/projects/{projectName}/appdeployment/summary/deployments_status"
+      additional_bindings: {get: "/deployment.orchestrator.apis/v1/summary/deployments_status"}
+    };
   }
 
   // Gets a list of all deployment cluster objects.
   rpc ListDeploymentClusters(ListDeploymentClustersRequest) returns (ListDeploymentClustersResponse) {
-    option (google.api.http) = {get: "/deployment.orchestrator.apis/v1/deployments/{depl_id}/clusters"};
+    option (google.api.http) = {
+      get: "/v1/projects/{projectName}/appdeployment/deployments/{depl_id}/clusters"
+      additional_bindings: {get: "/deployment.orchestrator.apis/v1/deployments/{depl_id}/clusters"}
+    };
   }
 
   rpc GetAppNamespace(GetAppNamespaceRequest) returns (GetAppNamespaceResponse) {}
@@ -73,6 +99,8 @@ service DeploymentService {
 message CreateDeploymentRequest {
   // Required. Initial values for the deployment.
   deployment.v1.Deployment deployment = 1 [(google.api.field_behavior) = REQUIRED];
+  // Project name for multi-tenant path routing.
+  string projectName = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for the CreateDeployment method.
@@ -127,6 +155,8 @@ message ListDeploymentsRequest {
     (google.api.field_behavior) = OPTIONAL,
     (buf.validate.field).int32 = {gte: 0}
   ];
+  // Project name for multi-tenant path routing.
+  string projectName = 6 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for the ListDeployments method.
@@ -188,6 +218,8 @@ message ListDeploymentsPerClusterRequest {
     (google.api.field_behavior) = OPTIONAL,
     (buf.validate.field).int32 = {gte: 0}
   ];
+  // Project name for multi-tenant path routing.
+  string projectName = 7 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for the ListDeploymentsPerCluster method.
@@ -212,6 +244,8 @@ message GetDeploymentRequest {
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
     }
   ];
+  // Project name for multi-tenant path routing.
+  string projectName = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for the GetDeployment method.
@@ -234,6 +268,8 @@ message UpdateDeploymentRequest {
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
     }
   ];
+  // Project name for multi-tenant path routing.
+  string projectName = 3 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for the UpdateDeployment method.
@@ -264,6 +300,8 @@ message DeleteDeploymentRequest {
   // Required. Different delete types to handle parent and child
   // lists, for dependency support. Available options: PARENT_ONLY, ALL.
   DeleteType delete_type = 2 [(google.api.field_behavior) = REQUIRED];
+  // Project name for multi-tenant path routing.
+  string projectName = 3 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // === Summary ===
@@ -286,6 +324,8 @@ message GetDeploymentsStatusRequest {
       }
     }
   ];
+  // Project name for multi-tenant path routing.
+  string projectName = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for the GetDeploymentsStatus method.
@@ -334,6 +374,8 @@ message GetAppNamespaceRequest {
       pattern: "^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$"
     }
   ];
+  // Project name for multi-tenant path routing.
+  string projectName = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for the GetappNamespace method.
@@ -371,6 +413,8 @@ message ListDeploymentClustersRequest {
   // Optional. Offset is used to select the correct page from which Deployment clusters list will be displayed.
   // (E.g If there are 10 Deployment clusters, page size is 2 and offset is set as 4, then the response will display Deployment clusters 5 and 6.)
   int32 offset = 5 [(google.api.field_behavior) = OPTIONAL];
+  // Project name for multi-tenant path routing.
+  string projectName = 6 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for ListDeploymentClusters method.

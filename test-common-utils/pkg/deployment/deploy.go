@@ -332,7 +332,7 @@ func DeleteDeploymentWithDeleteType(client *restClient.ClientWithResponses, depl
 		restDeleteType = restClient.ALL
 	}
 
-	resp, err := client.DeploymentV1DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployID, &restClient.DeploymentV1DeploymentServiceDeleteDeploymentParams{
+	resp, err := client.DeploymentV1DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), types.SampleProject, deployID, &restClient.DeploymentV1DeploymentServiceDeleteDeploymentParams{
 		DeleteType: restDeleteType,
 	})
 	if err != nil || resp == nil || resp.StatusCode() != http.StatusOK {
@@ -346,7 +346,7 @@ func DeleteDeploymentWithDeleteType(client *restClient.ClientWithResponses, depl
 }
 
 func DeleteDeployment(client *restClient.ClientWithResponses, deployID string) (int, error) {
-	resp, err := client.DeploymentV1DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), deployID, nil)
+	resp, err := client.DeploymentV1DeploymentServiceDeleteDeploymentWithResponse(context.TODO(), types.SampleProject, deployID, nil)
 	if err != nil || resp == nil || resp.StatusCode() != http.StatusOK {
 		status := 0
 		if resp != nil {
@@ -368,7 +368,7 @@ func deploymentExists(deployments []restClient.DeploymentV1Deployment, displayNa
 
 func getDeploymentPerCluster(admClient *restClient.ClientWithResponses) ([]restClient.DeploymentV1Deployment, int, error) {
 	// Use ListDeployments to get all deployments, since ListDeploymentsPerCluster returns different structure
-	resp, err := admClient.DeploymentV1DeploymentServiceListDeploymentsWithResponse(context.TODO(), nil)
+	resp, err := admClient.DeploymentV1DeploymentServiceListDeploymentsWithResponse(context.TODO(), types.SampleProject, nil)
 	if err != nil || resp == nil || resp.StatusCode() != 200 {
 		if err != nil {
 			if resp != nil {
@@ -386,7 +386,7 @@ func getDeploymentPerCluster(admClient *restClient.ClientWithResponses) ([]restC
 }
 
 func getDeployments(client *restClient.ClientWithResponses) ([]restClient.DeploymentV1Deployment, int, error) {
-	resp, err := client.DeploymentV1DeploymentServiceListDeploymentsWithResponse(context.TODO(), nil)
+	resp, err := client.DeploymentV1DeploymentServiceListDeploymentsWithResponse(context.TODO(), types.SampleProject, nil)
 	if err != nil || resp == nil || resp.StatusCode() != 200 {
 		if err != nil {
 			if resp != nil {
@@ -404,7 +404,7 @@ func getDeployments(client *restClient.ClientWithResponses) ([]restClient.Deploy
 }
 
 func GetDeployment(client *restClient.ClientWithResponses, deployID string) (restClient.DeploymentV1Deployment, int, error) {
-	resp, err := client.DeploymentV1DeploymentServiceGetDeploymentWithResponse(context.TODO(), deployID)
+	resp, err := client.DeploymentV1DeploymentServiceGetDeploymentWithResponse(context.TODO(), types.SampleProject, deployID)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return restClient.DeploymentV1Deployment{}, resp.StatusCode(), fmt.Errorf("%v", err)
@@ -510,7 +510,7 @@ func waitForDeploymentStatus(client *restClient.ClientWithResponses, displayName
 }
 
 func UpdateDeployment(client *restClient.ClientWithResponses, deployID string, params restClient.DeploymentV1DeploymentServiceUpdateDeploymentJSONRequestBody) (int, error) {
-	resp, err := client.DeploymentV1DeploymentServiceUpdateDeploymentWithResponse(context.TODO(), deployID, params)
+	resp, err := client.DeploymentV1DeploymentServiceUpdateDeploymentWithResponse(context.TODO(), types.SampleProject, deployID, params)
 	if err != nil || resp == nil || resp.StatusCode() != 200 {
 		if err != nil {
 			if resp != nil {
@@ -578,15 +578,15 @@ func createDeployment(client *restClient.ClientWithResponses, params CreateDeplo
 		}
 	} else if params.DeploymentType == "auto-scaling" {
 		for _, v := range *ptr(params.AppNames) {
-			labels := make(map[string]string)
+			labelsObj := restClient.DeploymentV1TargetClusters_Labels{}
 			if params.Labels != nil {
-				for k, v := range *params.Labels {
-					labels[k] = v
+				for k, lv := range *params.Labels {
+					labelsObj.Set(k, lv)
 				}
 			}
 			targetClusters = append(targetClusters, restClient.DeploymentV1TargetClusters{
 				AppName: ptr(v),
-				Labels:  &labels,
+				Labels:  &labelsObj,
 			})
 		}
 	}
@@ -601,13 +601,11 @@ func createDeployment(client *restClient.ClientWithResponses, params CreateDeplo
 				if v["targetValues"] == nil {
 					return nil
 				}
-				structMap := make(restClient.GoogleProtobufStruct)
-				for key, value := range v["targetValues"].(map[string]any) {
-					structMap[key] = &restClient.GoogleProtobufValue{
-						"value": value,
-					}
+				s := restClient.GoogleProtobufStruct{AdditionalProperties: make(map[string]restClient.GoogleProtobufValue)}
+				for key, val := range v["targetValues"].(map[string]any) {
+					s.Set(key, restClient.GoogleProtobufValue{AdditionalProperties: map[string]interface{}{"value": val}})
 				}
-				return &structMap
+				return &s
 			}(),
 		})
 	}
@@ -645,7 +643,7 @@ func DeleteAndRetryUntilDeleted(client *restClient.ClientWithResponses, displayN
 }
 
 func createDeploymentCmd(admClient *restClient.ClientWithResponses, reqBody *restClient.DeploymentV1DeploymentServiceCreateDeploymentJSONRequestBody) (string, int, error) {
-	resp, err := admClient.DeploymentV1DeploymentServiceCreateDeploymentWithResponse(context.TODO(), *reqBody)
+	resp, err := admClient.DeploymentV1DeploymentServiceCreateDeploymentWithResponse(context.TODO(), types.SampleProject, *reqBody)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return "", resp.StatusCode(), fmt.Errorf("%v", err)
@@ -663,7 +661,7 @@ func GetDeploymentsStatus(admClient *restClient.ClientWithResponses, labels *[]s
 			Labels: labels,
 		}
 	}
-	resp, err := admClient.DeploymentV1DeploymentServiceGetDeploymentsStatusWithResponse(context.TODO(), params)
+	resp, err := admClient.DeploymentV1DeploymentServiceGetDeploymentsStatusWithResponse(context.TODO(), types.SampleProject, params)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return &restClient.DeploymentV1GetDeploymentsStatusResponse{}, resp.StatusCode(), fmt.Errorf("%v", err)
@@ -683,7 +681,7 @@ func DeploymentsList(admClient *restClient.ClientWithResponses) (*[]restClient.D
 }
 
 func DeploymentsListWithParams(admClient *restClient.ClientWithResponses, params *restClient.DeploymentV1DeploymentServiceListDeploymentsParams) (*[]restClient.DeploymentV1Deployment, int, error) {
-	resp, err := admClient.DeploymentV1DeploymentServiceListDeploymentsWithResponse(context.TODO(), params)
+	resp, err := admClient.DeploymentV1DeploymentServiceListDeploymentsWithResponse(context.TODO(), types.SampleProject, params)
 	if err != nil || resp.StatusCode() != 200 {
 		if err != nil {
 			return &[]restClient.DeploymentV1Deployment{}, resp.StatusCode(), fmt.Errorf("%v", err)
@@ -770,7 +768,7 @@ func GetFirstClusterID(client *restClient.ClientWithResponses) (string, error) {
 			time.Sleep(retryDelay)
 		}
 
-		resp, err := client.DeploymentV1ClusterServiceListClustersWithResponse(context.TODO(), nil)
+		resp, err := client.DeploymentV1ClusterServiceListClustersWithResponse(context.TODO(), types.SampleProject, nil)
 		if err != nil {
 			fmt.Printf("ListClusters API error: %v\n", err)
 			continue
@@ -826,7 +824,7 @@ func WaitForClusterReady(client *restClient.ClientWithResponses) error {
 			fmt.Printf("Checking cluster readiness (%d/%d)...\n", retry+1, maxRetries)
 		}
 
-		resp, err := client.DeploymentV1ClusterServiceListClustersWithResponse(context.TODO(), nil)
+		resp, err := client.DeploymentV1ClusterServiceListClustersWithResponse(context.TODO(), types.SampleProject, nil)
 		if err != nil {
 			fmt.Printf("ListClusters API error while checking readiness: %v\n", err)
 			continue
@@ -873,7 +871,7 @@ func GetFirstClusterLabels(client *restClient.ClientWithResponses) (map[string]s
 			fmt.Printf("Retrying GetFirstClusterLabels (%d/%d)...\n", retry+1, maxRetries)
 		}
 
-		resp, err := client.DeploymentV1ClusterServiceListClustersWithResponse(context.TODO(), nil)
+		resp, err := client.DeploymentV1ClusterServiceListClustersWithResponse(context.TODO(), types.SampleProject, nil)
 		if err != nil {
 			fmt.Printf("ListClusters API error for labels: %v\n", err)
 			continue
@@ -885,9 +883,9 @@ func GetFirstClusterLabels(client *restClient.ClientWithResponses) (map[string]s
 
 		// Found clusters, get the first one's labels
 		cluster := resp.JSON200.Clusters[0]
-		if cluster.Labels != nil && len(*cluster.Labels) > 0 {
-			fmt.Printf("Found cluster labels: %v\n", *cluster.Labels)
-			return *cluster.Labels, nil
+		if cluster.Labels != nil && len(cluster.Labels.AdditionalProperties) > 0 {
+			fmt.Printf("Found cluster labels: %v\n", cluster.Labels.AdditionalProperties)
+			return cluster.Labels.AdditionalProperties, nil
 		}
 
 		// Cluster has no labels, return empty map

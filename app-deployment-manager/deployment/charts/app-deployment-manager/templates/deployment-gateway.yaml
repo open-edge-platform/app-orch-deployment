@@ -130,10 +130,6 @@ spec:
             value: "{{ . }}"
           {{- end }}
           command: [ "/usr/local/bin/app-deployment-manager" ]
-          args:
-          {{- range $key, $value := .Values.gateway.serviceArgs }}
-            - {{ print "-" $key | toYaml -}}={{- $value }}
-          {{- end }}
         {{- if .Values.openpolicyagent.enabled }}
         - name: openpolicyagent
           {{- with .Values.openpolicyagent }}

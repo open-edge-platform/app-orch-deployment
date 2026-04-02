@@ -13,7 +13,8 @@ vncProxyReplicaCount: 1
 
 # -- serviceArgs contains arguments that are passed to the running PODs
 serviceArgs:
-  restProxy: {}
+  restProxy:
+    nexus-api-url: "http://svc-iam-nexus-api-gw.orch-iam.svc:8082"
   msgSizeLimit: 1 # message size in megabytes
 #    allowedCorsOrigins: "http://localhost:8081"
 #    # basePath is required as in production the UI uses `app-orch` to prefix all requests going to the catalog, ADM, app-resource-manager and redirect them accordingly
@@ -217,7 +218,7 @@ traefikReverseProxy:
   # -- gatewayNamespace specifies namespace of Traefik and related resources (e.g. k8s secret or tls option).
   gatewayNamespace: gateway-system
   # -- secretName is name of k8s secret containing TLS server cert.
-  secretName: tls-demo
+  secretName: tls-orch
   # -- tlsOption is the name of the Traefik option for handling TLS or mTLS connections.
   tlsOption: gateway-tls
 
@@ -261,3 +262,12 @@ openpolicyagent:
   image: openpolicyagent/opa
   tag: 1.10.1-static
   loglevel: info
+
+# -- ingressRoute defines params for direct Traefik access to ARM REST proxy,
+# bypassing the nexus-api-gateway for multi-tenant API paths.
+ingressRoute:
+  # -- enabled is a switch to turn on/off the IngressRoute resource.
+  enabled: false
+  # -- apiHostname is the hostname used for the API endpoint (e.g. api.cluster.example.com).
+  apiHostname: ""
+
