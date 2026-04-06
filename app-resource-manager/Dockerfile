@@ -35,7 +35,7 @@ RUN CGO_ENABLED=0 \
     make ${MAKE_TARGET}
 
 # From: https://github.com/GoogleContainerTools/distroless
-FROM gcr.io/distroless/static-debian12:nonroot@sha256:e3f945647ffb95b5839c07038d64f9811adf17308b9121d8a2b87b6a22a80a39 AS app-resource-manager
+FROM gcr.io/distroless/static:nonroot@sha256:e3f945647ffb95b5839c07038d64f9811adf17308b9121d8a2b87b6a22a80a39 AS app-resource-manager
 
 # Run as non-root user
 USER nonroot
@@ -57,7 +57,7 @@ COPY --from=build --chown=nonroot:nonroot \
 ENTRYPOINT ["app-resource-manager"]
 
 # From: https://github.com/GoogleContainerTools/distroless
-FROM gcr.io/distroless/static-debian12:nonroot@sha256:e3f945647ffb95b5839c07038d64f9811adf17308b9121d8a2b87b6a22a80a39 AS vnc-proxy
+FROM gcr.io/distroless/static:nonroot@sha256:e3f945647ffb95b5839c07038d64f9811adf17308b9121d8a2b87b6a22a80a39 AS vnc-proxy
 
 # Run as non-root user
 USER nonroot
@@ -81,7 +81,7 @@ COPY vnc-proxy-web-ui /usr/local/html/vnc-proxy-web-ui/
 ENTRYPOINT ["vnc-proxy"]
 
 # From: https://github.com/GoogleContainerTools/distroless
-FROM gcr.io/distroless/static-debian12:nonroot@sha256:e3f945647ffb95b5839c07038d64f9811adf17308b9121d8a2b87b6a22a80a39 AS rest-proxy
+FROM gcr.io/distroless/static:nonroot@sha256:e3f945647ffb95b5839c07038d64f9811adf17308b9121d8a2b87b6a22a80a39 AS rest-proxy
 
 # Run as non-root user
 USER nonroot
