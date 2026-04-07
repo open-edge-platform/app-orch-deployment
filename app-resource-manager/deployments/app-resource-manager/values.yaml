@@ -260,7 +260,7 @@ openpolicyagent:
   enabled: true
   port: 8181
   image: openpolicyagent/opa
-  tag: 1.10.1-static
+  tag: 1.15.1-static
   loglevel: info
 
 # -- ingressRoute defines params for direct Traefik access to ARM REST proxy,

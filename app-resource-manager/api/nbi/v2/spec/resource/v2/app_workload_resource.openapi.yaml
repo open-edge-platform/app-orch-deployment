@@ -153,14 +153,16 @@ components:
               description: Ready status to determines if a workload is fully functional or not.
               readOnly: true
         - oneOf:
-            - properties:
+            - type: object
+              properties:
                 pod:
                   title: pod
                   $ref: '#/components/schemas/resource.v2.Pod'
               title: pod
               required:
                 - pod
-            - properties:
+            - type: object
+              properties:
                 virtualMachine:
                   title: virtual_machine
                   $ref: '#/components/schemas/resource.v2.VirtualMachine'
@@ -259,21 +261,24 @@ components:
     resource.v2.ContainerStatus:
       type: object
       oneOf:
-        - properties:
+        - type: object
+          properties:
             containerStateRunning:
               title: container_state_running
               $ref: '#/components/schemas/resource.v2.ContainerStateRunning'
           title: container_state_running
           required:
             - containerStateRunning
-        - properties:
+        - type: object
+          properties:
             containerStateTerminated:
               title: container_state_terminated
               $ref: '#/components/schemas/resource.v2.ContainerStateTerminated'
           title: container_state_terminated
           required:
             - containerStateTerminated
-        - properties:
+        - type: object
+          properties:
             containerStateWaiting:
               title: container_state_waiting
               $ref: '#/components/schemas/resource.v2.ContainerStateWaiting'
