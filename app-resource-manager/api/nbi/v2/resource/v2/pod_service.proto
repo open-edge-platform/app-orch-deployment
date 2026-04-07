@@ -16,6 +16,7 @@ service PodService {
     option (google.api.http) = {
       put: "/v1/projects/{projectName}/resource/workloads/pods/{cluster_id}/{namespace}/{pod_name}/delete"
       additional_bindings: {put: "/resource.orchestrator.apis/v2/workloads/pods/{cluster_id}/{namespace}/{pod_name}/delete"}
+      additional_bindings: {put: "/v1/projects/{projectName}/resource/workloads/pods/clusters/{cluster_id}/namespaces/{namespace}/pods/{pod_name}/delete"}
     };
   }
 }

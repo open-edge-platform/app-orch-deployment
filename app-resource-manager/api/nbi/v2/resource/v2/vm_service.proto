@@ -16,6 +16,7 @@ service VirtualMachineService {
     option (google.api.http) = {
       put: "/v1/projects/{projectName}/resource/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/start"
       additional_bindings: {put: "/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/start"}
+      additional_bindings: {put: "/v1/projects/{projectName}/resource/workloads/applications/{app_id}/clusters/{cluster_id}/virtual-machines/{virtual_machine_id}/start"}
     };
   }
   // Stops a virtual machine for an application of a deployment in a cluster.
@@ -23,6 +24,7 @@ service VirtualMachineService {
     option (google.api.http) = {
       put: "/v1/projects/{projectName}/resource/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/stop"
       additional_bindings: {put: "/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/stop"}
+      additional_bindings: {put: "/v1/projects/{projectName}/resource/workloads/applications/{app_id}/clusters/{cluster_id}/virtual-machines/{virtual_machine_id}/stop"}
     };
   }
 
@@ -31,6 +33,7 @@ service VirtualMachineService {
     option (google.api.http) = {
       put: "/v1/projects/{projectName}/resource/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/restart"
       additional_bindings: {put: "/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/restart"}
+      additional_bindings: {put: "/v1/projects/{projectName}/resource/workloads/applications/{app_id}/clusters/{cluster_id}/virtual-machines/{virtual_machine_id}/restart"}
     };
   }
 
@@ -39,6 +42,7 @@ service VirtualMachineService {
     option (google.api.http) = {
       get: "/v1/projects/{projectName}/resource/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/vnc"
       additional_bindings: {get: "/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/vnc"}
+      additional_bindings: {get: "/v1/projects/{projectName}/resource/workloads/applications/{app_id}/clusters/{cluster_id}/virtual-machines/{virtual_machine_id}/vnc"}
     };
   }
 }

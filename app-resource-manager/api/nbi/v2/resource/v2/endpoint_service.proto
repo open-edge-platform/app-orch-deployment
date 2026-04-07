@@ -17,6 +17,7 @@ service EndpointsService {
     option (google.api.http) = {
       get: "/v1/projects/{projectName}/resource/endpoints/{app_id}/{cluster_id}"
       additional_bindings: {get: "/resource.orchestrator.apis/v2/endpoints/{app_id}/{cluster_id}"}
+      additional_bindings: {get: "/v1/projects/{projectName}/resource/endpoints/applications/{app_id}/clusters/{cluster_id}"}
     };
   }
 }

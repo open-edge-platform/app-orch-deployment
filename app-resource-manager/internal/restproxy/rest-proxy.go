@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/gin-contrib/cors"
@@ -60,6 +61,59 @@ func errorHandler(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.
 
 	// Fall back to default handler for non-gRPC errors
 	runtime.DefaultHTTPErrorHandler(ctx, mux, marshaler, w, r, err)
+}
+
+
+var (
+	// reArmVMUI matches UI-style VM operation paths.
+	reArmVMUI = regexp.MustCompile(
+		`^(/v1/projects/[^/]+/resource/workloads)/applications/([^/]+)/clusters/([^/]+)/virtual-machines/([^/]+)/(start|stop|restart|vnc)$`)
+
+	// reArmWorkloadEndpointUI matches UI-style workload/endpoint list paths.
+	reArmWorkloadEndpointUI = regexp.MustCompile(
+		`^(/v1/projects/[^/]+/resource/(?:workloads|endpoints))/applications/([^/]+)/clusters/([^/]+)$`)
+
+	// reArmPodUI matches UI-style pod delete paths.
+	reArmPodUI = regexp.MustCompile(
+		`^(/v1/projects/[^/]+/resource/workloads/pods)/clusters/([^/]+)/namespaces/([^/]+)/pods/([^/]+)/delete$`)
+)
+
+// armUIPathRewriter returns a gin middleware that rewrites UI-style ARM paths to the canonical
+// proto-gateway patterns registered in the gRPC gateway mux. The UI uses more descriptive
+// path segments (applications/, clusters/, etc.) that differ from the compact proto patterns.
+func armUIPathRewriter() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		path := c.Request.URL.Path
+
+		// VM paths first (most specific — contain virtual-machines segment):
+		// .../workloads/applications/{app}/clusters/{cluster}/virtual-machines/{vm}/{action}
+		// → .../workloads/virtual-machines/{app}/{cluster}/{vm}/{action}
+		if m := reArmVMUI.FindStringSubmatch(path); m != nil {
+			c.Request.URL.Path = m[1] + "/virtual-machines/" + m[2] + "/" + m[3] + "/" + m[4] + "/" + m[5]
+			c.Next()
+			return
+		}
+
+		// Workload/endpoint list paths:
+		// .../workloads/applications/{app}/clusters/{cluster}
+		// → .../workloads/{app}/{cluster}
+		if m := reArmWorkloadEndpointUI.FindStringSubmatch(path); m != nil {
+			c.Request.URL.Path = m[1] + "/" + m[2] + "/" + m[3]
+			c.Next()
+			return
+		}
+
+		// Pod delete paths:
+		// .../pods/clusters/{cluster}/namespaces/{ns}/pods/{pod}/delete
+		// → .../pods/{cluster}/{ns}/{pod}/delete
+		if m := reArmPodUI.FindStringSubmatch(path); m != nil {
+			c.Request.URL.Path = m[1] + "/" + m[2] + "/" + m[3] + "/" + m[4] + "/delete"
+			c.Next()
+			return
+		}
+
+		c.Next()
+	}
 }
 
 // Run starts the ARM REST proxy server with the given configuration.
@@ -177,7 +231,9 @@ func RunWithOptions(restPort int, grpcEndpoint string, basePath string, allowedC
 
 	server.Group(fmt.Sprintf("%sresource.orchestrator.apis/v2/*{grpc_gateway}", basePath)).Match(allowedMethodsV2, "", gin.WrapH(mux))
 	// Route new-style multi-tenant paths to the same grpc-gateway mux
-	server.Group(fmt.Sprintf("%sv1/projects/*{grpc_gateway}", basePath)).Match(allowedMethodsV2, "", gin.WrapH(mux))
+	v1ProjectsGroup := server.Group(fmt.Sprintf("%sv1/projects", basePath))
+	v1ProjectsGroup.Use(armUIPathRewriter())
+	v1ProjectsGroup.Match(allowedMethodsV2, "/*{grpc_gateway}", gin.WrapH(mux))
 
 	server.GET("/test", func(c *gin.Context) {
 		c.String(http.StatusOK, "Ok")

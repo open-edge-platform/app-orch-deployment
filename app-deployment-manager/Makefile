@@ -92,7 +92,7 @@ PKG_LIST := ./cmd/... ./controllers/... ./webhooks/... ./pkg/... ./internal/...
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 ENVTEST_K8S_VERSION = 1.25.0
 OPA_FILE_PATH ?= deployment/charts/app-deployment-manager/files/openpolicyagent
-OPA_IMAGE_VER       = 1.10.1-static
+OPA_IMAGE_VER       = 1.15.1-static
 
 # Include shared makefile
 include ../common.mk
