@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Build the manager binary
-FROM golang:1.25.7@sha256:85c0ab0b73087fda36bf8692efe2cf67c54a06d7ca3b49c489bbff98c9954d64 AS builder
+FROM golang:1.26.1@sha256:595c7847cff97c9a9e76f015083c481d26078f961c9c8dca3923132f51fe12f1 AS builder
 ARG TARGETOS
 ARG TARGETARCH
 ENV CGO_ENABLED=0
@@ -32,12 +32,12 @@ RUN go env -w 'GOPRIVATE=github.com/open-edge-platform/*'
 # by leaving it empty we can ensure that the container and binary shipped on it will have the same platform.
 #RUN GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o manager main.go
 RUN GOOS=${TARGETOS:-linux} GOARCH=amd64 go build \
-      -trimpath -mod=vendor -gcflags="all=-spectre=all -N -l" -asmflags="all=-spectre=all" -ldflags="all=-s -w" \
+      -trimpath -mod=vendor -gcflags="all=-spectre=all -N -l" -asmflags="-spectre=all" -ldflags="all=-s -w" \
       -a -o manager main.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot@sha256:c0f429e16b13e583da7e5a6ec20dd656d325d88e6819cafe0adb0828976529dc
+FROM gcr.io/distroless/static:nonroot@sha256:e3f945647ffb95b5839c07038d64f9811adf17308b9121d8a2b87b6a22a80a39
 # Use image below for development
 #FROM gcr.io/distroless/static:debug
 

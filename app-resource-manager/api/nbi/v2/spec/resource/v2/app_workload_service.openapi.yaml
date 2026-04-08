@@ -8,8 +8,106 @@ paths:
         - resource.v2.AppWorkloadService
       summary: ListAppWorkloads
       description: Gets a list of all workloads for an application of a deployment in a cluster.
+      operationId: resource.v2.AppWorkloadService.ListAppWorkloads2
+      parameters:
+        - name: app_id
+          in: path
+          description: Application ID
+          required: true
+          schema:
+            type: string
+            title: app_id
+            maxLength: 80
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+            description: Application ID
+        - name: cluster_id
+          in: path
+          description: Cluster ID
+          required: true
+          schema:
+            type: string
+            title: cluster_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+            description: Cluster ID
+        - name: projectName
+          in: query
+          description: Project name for multi-tenant path routing.
+          required: false
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resource.v2.ListAppWorkloadsResponse'
+  /v1/projects/{projectName}/resource/workloads/applications/{app_id}/clusters/{cluster_id}:
+    get:
+      tags:
+        - resource.v2.AppWorkloadService
+      summary: ListAppWorkloads
+      description: Gets a list of all workloads for an application of a deployment in a cluster.
+      operationId: resource.v2.AppWorkloadService.ListAppWorkloads3
+      parameters:
+        - name: projectName
+          in: path
+          description: Project name for multi-tenant path routing.
+          required: true
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
+        - name: app_id
+          in: path
+          description: Application ID
+          required: true
+          schema:
+            type: string
+            title: app_id
+            maxLength: 80
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]{0,1}$
+            description: Application ID
+        - name: cluster_id
+          in: path
+          description: Cluster ID
+          required: true
+          schema:
+            type: string
+            title: cluster_id
+            maxLength: 40
+            minLength: 1
+            pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
+            description: Cluster ID
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resource.v2.ListAppWorkloadsResponse'
+  /v1/projects/{projectName}/resource/workloads/{app_id}/{cluster_id}:
+    get:
+      tags:
+        - resource.v2.AppWorkloadService
+      summary: ListAppWorkloads
+      description: Gets a list of all workloads for an application of a deployment in a cluster.
       operationId: resource.v2.AppWorkloadService.ListAppWorkloads
       parameters:
+        - name: projectName
+          in: path
+          description: Project name for multi-tenant path routing.
+          required: true
+          schema:
+            type: string
+            title: projectName
+            description: (OPTIONAL) Project name for multi-tenant path routing.
         - name: app_id
           in: path
           description: Application ID
@@ -190,14 +288,16 @@ components:
               description: Ready status to determines if a workload is fully functional or not.
               readOnly: true
         - oneOf:
-            - properties:
+            - type: object
+              properties:
                 pod:
                   title: pod
                   $ref: '#/components/schemas/resource.v2.Pod'
               title: pod
               required:
                 - pod
-            - properties:
+            - type: object
+              properties:
                 virtualMachine:
                   title: virtual_machine
                   $ref: '#/components/schemas/resource.v2.VirtualMachine'
@@ -296,21 +396,24 @@ components:
     resource.v2.ContainerStatus:
       type: object
       oneOf:
-        - properties:
+        - type: object
+          properties:
             containerStateRunning:
               title: container_state_running
               $ref: '#/components/schemas/resource.v2.ContainerStateRunning'
           title: container_state_running
           required:
             - containerStateRunning
-        - properties:
+        - type: object
+          properties:
             containerStateTerminated:
               title: container_state_terminated
               $ref: '#/components/schemas/resource.v2.ContainerStateTerminated'
           title: container_state_terminated
           required:
             - containerStateTerminated
-        - properties:
+        - type: object
+          properties:
             containerStateWaiting:
               title: container_state_waiting
               $ref: '#/components/schemas/resource.v2.ContainerStateWaiting'
@@ -337,6 +440,10 @@ components:
           minLength: 1
           pattern: ^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$
           description: Cluster ID
+        projectName:
+          type: string
+          title: projectName
+          description: (OPTIONAL) Project name for multi-tenant path routing.
       title: ListAppWorkloadsRequest
       required:
         - appId

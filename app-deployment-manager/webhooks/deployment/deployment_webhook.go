@@ -60,10 +60,9 @@ func (webhook *Deployment) SetupWebhookWithManager(mgr ctrl.Manager) (err error)
 		return err
 	}
 
-	return ctrl.NewWebhookManagedBy(mgr).
-		For(&v1beta1.Deployment{}).
-		WithDefaulter(webhook).
-		WithValidator(webhook).
+	return ctrl.NewWebhookManagedBy(mgr, &v1beta1.Deployment{}).
+		WithCustomDefaulter(webhook).
+		WithCustomValidator(webhook).
 		Complete()
 }
 

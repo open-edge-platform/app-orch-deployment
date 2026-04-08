@@ -13,21 +13,37 @@ import "google/api/field_behavior.proto";
 service VirtualMachineService {
   // Starts a virtual machine for an application of a deployment in a cluster.
   rpc StartVirtualMachine(StartVirtualMachineRequest) returns (StartVirtualMachineResponse) {
-    option (google.api.http) = {put: "/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/start"};
+    option (google.api.http) = {
+      put: "/v1/projects/{projectName}/resource/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/start"
+      additional_bindings: {put: "/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/start"}
+      additional_bindings: {put: "/v1/projects/{projectName}/resource/workloads/applications/{app_id}/clusters/{cluster_id}/virtual-machines/{virtual_machine_id}/start"}
+    };
   }
   // Stops a virtual machine for an application of a deployment in a cluster.
   rpc StopVirtualMachine(StopVirtualMachineRequest) returns (StopVirtualMachineResponse) {
-    option (google.api.http) = {put: "/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/stop"};
+    option (google.api.http) = {
+      put: "/v1/projects/{projectName}/resource/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/stop"
+      additional_bindings: {put: "/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/stop"}
+      additional_bindings: {put: "/v1/projects/{projectName}/resource/workloads/applications/{app_id}/clusters/{cluster_id}/virtual-machines/{virtual_machine_id}/stop"}
+    };
   }
 
   // Restarts a virtual machine for an application of a deployment in a cluster.
   rpc RestartVirtualMachine(RestartVirtualMachineRequest) returns (RestartVirtualMachineResponse) {
-    option (google.api.http) = {put: "/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/restart"};
+    option (google.api.http) = {
+      put: "/v1/projects/{projectName}/resource/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/restart"
+      additional_bindings: {put: "/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/restart"}
+      additional_bindings: {put: "/v1/projects/{projectName}/resource/workloads/applications/{app_id}/clusters/{cluster_id}/virtual-machines/{virtual_machine_id}/restart"}
+    };
   }
 
   // Accesses the VNC console to access a virtual machine.
   rpc GetVNC(GetVNCRequest) returns (GetVNCResponse) {
-    option (google.api.http) = {get: "/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/vnc"};
+    option (google.api.http) = {
+      get: "/v1/projects/{projectName}/resource/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/vnc"
+      additional_bindings: {get: "/resource.orchestrator.apis/v2/workloads/virtual-machines/{app_id}/{cluster_id}/{virtual_machine_id}/vnc"}
+      additional_bindings: {get: "/v1/projects/{projectName}/resource/workloads/applications/{app_id}/clusters/{cluster_id}/virtual-machines/{virtual_machine_id}/vnc"}
+    };
   }
 }
 
@@ -56,6 +72,8 @@ message StartVirtualMachineRequest {
     (google.api.field_behavior) = REQUIRED,
     (buf.validate.field).string.uuid = true
   ];
+  // Project name for multi-tenant path routing.
+  string projectName = 4 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for the StartVirtualMachine method.
@@ -86,6 +104,8 @@ message StopVirtualMachineRequest {
     (google.api.field_behavior) = REQUIRED,
     (buf.validate.field).string.uuid = true
   ];
+  // Project name for multi-tenant path routing.
+  string projectName = 4 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for the StopVirtualMachine method.
@@ -116,6 +136,8 @@ message RestartVirtualMachineRequest {
     (google.api.field_behavior) = REQUIRED,
     (buf.validate.field).string.uuid = true
   ];
+  // Project name for multi-tenant path routing.
+  string projectName = 4 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for the RestartVirtualMachine method.
@@ -146,6 +168,8 @@ message GetVNCRequest {
     (google.api.field_behavior) = REQUIRED,
     (buf.validate.field).string.uuid = true
   ];
+  // Project name for multi-tenant path routing.
+  string projectName = 4 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for the GetVNC method.

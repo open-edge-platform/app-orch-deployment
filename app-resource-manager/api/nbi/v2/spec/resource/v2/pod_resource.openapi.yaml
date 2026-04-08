@@ -81,21 +81,24 @@ components:
     resource.v2.ContainerStatus:
       type: object
       oneOf:
-        - properties:
+        - type: object
+          properties:
             containerStateRunning:
               title: container_state_running
               $ref: '#/components/schemas/resource.v2.ContainerStateRunning'
           title: container_state_running
           required:
             - containerStateRunning
-        - properties:
+        - type: object
+          properties:
             containerStateTerminated:
               title: container_state_terminated
               $ref: '#/components/schemas/resource.v2.ContainerStateTerminated'
           title: container_state_terminated
           required:
             - containerStateTerminated
-        - properties:
+        - type: object
+          properties:
             containerStateWaiting:
               title: container_state_waiting
               $ref: '#/components/schemas/resource.v2.ContainerStateWaiting'

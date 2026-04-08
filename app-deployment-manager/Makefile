@@ -92,7 +92,7 @@ PKG_LIST := ./cmd/... ./controllers/... ./webhooks/... ./pkg/... ./internal/...
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 ENVTEST_K8S_VERSION = 1.25.0
 OPA_FILE_PATH ?= deployment/charts/app-deployment-manager/files/openpolicyagent
-OPA_IMAGE_VER       = 1.10.1-static
+OPA_IMAGE_VER       = 1.15.1-static
 
 # Include shared makefile
 include ../common.mk
@@ -168,7 +168,7 @@ opa-test: docker-opa ## Test OPA policies
 
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary
 $(ENVTEST): $(LOCALBIN)
-	test -s $(LOCALBIN)/setup-envtest || GOTOOLCHAIN=go1.25.0 GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
 test: manifests fmt vet envtest opa-test ## Run tests
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" \

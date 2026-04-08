@@ -14,7 +14,11 @@ import "resource/v2/endpoint_resource.proto";
 service EndpointsService {
   // Gets a list of all endpoints for an application of a deployment in a cluster.
   rpc ListAppEndpoints(ListAppEndpointsRequest) returns (ListAppEndpointsResponse) {
-    option (google.api.http) = {get: "/resource.orchestrator.apis/v2/endpoints/{app_id}/{cluster_id}"};
+    option (google.api.http) = {
+      get: "/v1/projects/{projectName}/resource/endpoints/{app_id}/{cluster_id}"
+      additional_bindings: {get: "/resource.orchestrator.apis/v2/endpoints/{app_id}/{cluster_id}"}
+      additional_bindings: {get: "/v1/projects/{projectName}/resource/endpoints/applications/{app_id}/clusters/{cluster_id}"}
+    };
   }
 }
 
@@ -38,6 +42,8 @@ message ListAppEndpointsRequest {
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
     }
   ];
+  // Project name for multi-tenant path routing.
+  string projectName = 3 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for the ListAppEndpoints method.

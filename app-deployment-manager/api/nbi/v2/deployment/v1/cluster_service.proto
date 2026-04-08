@@ -20,12 +20,18 @@ service ClusterService {
 
   // Gets a list of all cluster objects.
   rpc ListClusters(ListClustersRequest) returns (ListClustersResponse) {
-    option (google.api.http) = {get: "/deployment.orchestrator.apis/v1/clusters"};
+    option (google.api.http) = {
+      get: "/v1/projects/{projectName}/appdeployment/clusters"
+      additional_bindings: {get: "/deployment.orchestrator.apis/v1/clusters"}
+    };
   }
 
   // Gets a cluster object.
   rpc GetCluster(GetClusterRequest) returns (GetClusterResponse) {
-    option (google.api.http) = {get: "/deployment.orchestrator.apis/v1/clusters/{cluster_id}"};
+    option (google.api.http) = {
+      get: "/v1/projects/{projectName}/appdeployment/clusters/{cluster_id}"
+      additional_bindings: {get: "/deployment.orchestrator.apis/v1/clusters/{cluster_id}"}
+    };
   }
 }
 
@@ -40,6 +46,8 @@ message GetKubeConfigRequest {
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
     }
   ];
+  // Project name for multi-tenant path routing.
+  string projectName = 3 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for Get KubeConfig method
@@ -81,6 +89,8 @@ message ListClustersRequest {
     (google.api.field_behavior) = OPTIONAL,
     (buf.validate.field).int32 = {gte: 0}
   ];
+  // Project name for multi-tenant path routing.
+  string projectName = 6 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for the ListClusters method.
@@ -105,6 +115,8 @@ message GetClusterRequest {
       pattern: "^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]{0,1}$"
     }
   ];
+  // Project name for multi-tenant path routing.
+  string projectName = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for GetCluster method.

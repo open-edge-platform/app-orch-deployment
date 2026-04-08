@@ -1,0 +1,60 @@
+# SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+# Traefik IngressRoute for App Deployment Manager (ADM) API routing.
+# Routes multi-tenant paths directly to the ADM REST proxy gateway,
+# bypassing the nexus-api-gateway.
+#
+# Paths routed here (project name extracted by service middleware):
+#   /v1/projects/{projectName}/appdeployment/...  -> ADM REST proxy (new-style)
+#   /deployment.orchestrator.apis/v1/...          -> ADM REST proxy (legacy)
+{{- if .Values.ingressRoute.enabled }}
+apiVersion: {{ .Values.traefikApiGroup | default "traefik.io/v1alpha1" }}
+kind: IngressRoute
+metadata:
+  name: {{ .Values.gateway.deployment.name }}-http
+  namespace: {{ .Values.traefikReverseProxy.gatewayNamespace | default "orch-gateway" }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    # Route for new-style multi-tenant deployment API paths.
+    # ActiveProjectID is extracted from the URL path by the service middleware.
+    - match: Host(`{{ required "A valid apiHostname entry required!" .Values.ingressRoute.apiHostname }}`) && PathRegexp(`^/v1/projects/[^/]+/appdeployment(/.*)?$`)
+      kind: Rule
+      priority: 50
+      middlewares:
+        - name: validate-jwt
+          namespace: {{ .Values.traefikReverseProxy.gatewayNamespace | default "orch-gateway" }}
+        - name: secure-headers
+          namespace: {{ .Values.traefikReverseProxy.gatewayNamespace | default "orch-gateway" }}
+      services:
+        - name: {{ .Values.gateway.deployment.name }}-rest-proxy
+          namespace: {{ .Release.Namespace }}
+          port: {{ .Values.gateway.service.restProxy.port }}
+          scheme: http
+    # Route for legacy deployment API paths (deployment.orchestrator.apis/v1/...).
+    # Maintains backward compatibility by routing legacy paths directly to the service,
+    # bypassing the nexus-api-gateway. ActiveProjectID is resolved from JWT by middleware.
+    - match: Host(`{{ required "A valid apiHostname entry required!" .Values.ingressRoute.apiHostname }}`) && PathPrefix(`/deployment.orchestrator.apis/v1`)
+      kind: Rule
+      priority: 40
+      middlewares:
+        - name: validate-jwt
+          namespace: {{ .Values.traefikReverseProxy.gatewayNamespace | default "orch-gateway" }}
+        - name: secure-headers
+          namespace: {{ .Values.traefikReverseProxy.gatewayNamespace | default "orch-gateway" }}
+      services:
+        - name: {{ .Values.gateway.deployment.name }}-rest-proxy
+          namespace: {{ .Release.Namespace }}
+          port: {{ .Values.gateway.service.restProxy.port }}
+          scheme: http
+  tls:
+    secretName: {{ .Values.traefikReverseProxy.secretName | default "tls-orch" }}
+    {{- if .Values.traefikReverseProxy.tlsOption }}
+    options:
+      name: {{ .Values.traefikReverseProxy.tlsOption }}
+      namespace: {{ .Values.traefikReverseProxy.gatewayNamespace | default "orch-gateway" }}
+    {{- end }}
+{{- end }}

@@ -67,7 +67,7 @@ ifeq ($(GOARCH),arm64)
 	# Note that arm64 (Apple, similar) does not support any spectre mititations.
   COMMON_GOEXTRAFLAGS := -trimpath -gcflags="all=-spectre= -N -l" -asmflags="all=-spectre=" -ldflags="all=-s -w -X 'main.RepoURL=$(DOCKER_LABEL_REPO_URL)' -X 'main.Version=$(DOCKER_LABEL_VERSION)' -X 'main.Revision=$(DOCKER_LABEL_REVISION)' -X 'main.BuildDate=$(DOCKER_LABEL_BUILD_DATE)'"
 else
-  COMMON_GOEXTRAFLAGS := -trimpath -gcflags="all=-spectre=all -N -l" -asmflags="all=-spectre=all" -ldflags="all=-s -w -X 'main.RepoURL=$(DOCKER_LABEL_REPO_URL)' -X 'main.Version=$(DOCKER_LABEL_VERSION)' -X 'main.Revision=$(DOCKER_LABEL_REVISION)' -X 'main.BuildDate=$(DOCKER_LABEL_BUILD_DATE)'"
+  COMMON_GOEXTRAFLAGS := -trimpath -gcflags="all=-spectre=all -N -l" -asmflags="-spectre=all" -ldflags="all=-s -w -X 'main.RepoURL=$(DOCKER_LABEL_REPO_URL)' -X 'main.Version=$(DOCKER_LABEL_VERSION)' -X 'main.Revision=$(DOCKER_LABEL_REVISION)' -X 'main.BuildDate=$(DOCKER_LABEL_BUILD_DATE)'"
 endif
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -110,6 +110,8 @@ common-install-protoc-plugins:
 	@go install github.com/sudorandom/protoc-gen-connect-openapi@latest
 	@echo "Installing oapi-codegen"
 	@go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@${OAPI_CODEGEN_VERSION}
+	@echo "Installing protoc-gen-grpc-gateway..."
+	@go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest
 	@echo "Installing buf"
 	@go install github.com/bufbuild/buf/cmd/buf@${BUF_VERSION}
 	@echo "*** You need to add "$(GOBIN)" directory to your PATH..."
@@ -126,6 +128,8 @@ common-verify-protoc-plugins:
 	@command -v protoc-gen-connect-openapi >/dev/null 2>&1 && echo "protoc-gen-connect-openapi is installed." || echo "---> protoc-gen-connect-openapi is not installed."
 	@echo "Verifying oapi-codegen installation..."
 	@command -v oapi-codegen >/dev/null 2>&1 && echo "oapi-codegen is installed." || echo "---> oapi-codegen is not installed."
+	@echo "Verifying protoc-gen-grpc-gateway installation..."
+	@command -v protoc-gen-grpc-gateway >/dev/null 2>&1 && echo "protoc-gen-grpc-gateway is installed." || echo "---> protoc-gen-grpc-gateway is not installed."
 	@echo "Verifying buf installation..."
 	@command -v buf >/dev/null 2>&1 && echo "buf is installed." || echo "---> buf is not installed."
 
@@ -251,7 +255,7 @@ mdlint: ## Link MD files
 helmlint: ## Lint Helm charts.
 	helm lint ${CHART_PATH}
 
-GOLANG_CLI_LINT_VERSION := v2.7.2
+GOLANG_CLI_LINT_VERSION := v2.11.4
 go-lint: $(OUT_DIR) ## Run go lint
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b ${GOBIN} ${GOLANG_CLI_LINT_VERSION}
 	${GOBIN}/golangci-lint --version
@@ -372,7 +376,13 @@ common-kind-load: common-kind-load-generic
 common-kind-load-%: ## Build the Docker image and load it into kind
 common-kind-load-%: DOCKER_BUILD_FLAGS += --load
 common-kind-load-%: common-docker-build-%
-	kind load docker-image -n $(KIND_CLUSTER_NAME) $(DOCKER_REGISTRY)/$(DOCKER_REPOSITORY)/$(DOCKER_SUB_PROJ)/$(DOCKER_NAME):$(DOCKER_VERSION)
+	@# Workaround for kind v0.30.0 + containerd v2.x incompatibility (failed to detect containerd snapshotter).
+	@# Use docker save | ctr import instead of `kind load docker-image` to bypass snapshotter detection.
+	@for node in $$(kind get nodes -n $(KIND_CLUSTER_NAME) 2>/dev/null); do \
+		echo "Loading image into node: $$node"; \
+		docker save $(DOCKER_REGISTRY)/$(DOCKER_REPOSITORY)/$(DOCKER_SUB_PROJ)/$(DOCKER_NAME):$(DOCKER_VERSION) | \
+			docker exec -i $$node ctr -n k8s.io images import - ; \
+	done
 
 common-kind-clean: ## Clean up the kind deployment
 common-kind-clean:

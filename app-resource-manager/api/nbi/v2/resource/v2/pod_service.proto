@@ -13,7 +13,11 @@ import "google/api/field_behavior.proto";
 service PodService {
   // Deletes the pod for an application in a cluster.
   rpc DeletePod(DeletePodRequest) returns (DeletePodResponse) {
-    option (google.api.http) = {put: "/resource.orchestrator.apis/v2/workloads/pods/{cluster_id}/{namespace}/{pod_name}/delete"};
+    option (google.api.http) = {
+      put: "/v1/projects/{projectName}/resource/workloads/pods/{cluster_id}/{namespace}/{pod_name}/delete"
+      additional_bindings: {put: "/resource.orchestrator.apis/v2/workloads/pods/{cluster_id}/{namespace}/{pod_name}/delete"}
+      additional_bindings: {put: "/v1/projects/{projectName}/resource/workloads/pods/clusters/{cluster_id}/namespaces/{namespace}/pods/{pod_name}/delete"}
+    };
   }
 }
 
@@ -46,6 +50,8 @@ message DeletePodRequest {
       pattern: "^[a-z0-9]([-a-z0-9-]*[a-z0-9])?$"
     }
   ];
+  // Project name for multi-tenant path routing.
+  string projectName = 4 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Response message for the DeletePod method.
