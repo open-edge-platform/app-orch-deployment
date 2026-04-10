@@ -6,24 +6,26 @@ package manager
 
 import (
 	"buf.build/go/protovalidate"
+	"context"
 	"fmt"
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/tenant"
-	fleet2 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/fleet"
-	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/k8sclient"
-	"github.com/open-edge-platform/orch-library/go/pkg/auth"
-	"k8s.io/client-go/tools/clientcmd"
 	"os"
 	"strconv"
 
+	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/tenant"
+	fleet2 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/fleet"
+	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/k8sclient"
 	"github.com/open-edge-platform/orch-library/go/dazl"
+	"github.com/open-edge-platform/orch-library/go/pkg/auth"
+	"github.com/open-edge-platform/orch-library/go/pkg/tenancy"
 	"google.golang.org/grpc"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/catalogclient"
 	internalgrpc "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/northbound"
 	utils "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/utils"
 	"github.com/open-edge-platform/orch-library/go/pkg/northbound"
 	"github.com/open-edge-platform/orch-library/go/pkg/openpolicyagent"
-	"k8s.io/client-go/dynamic"
 )
 
 var log = dazl.GetPackageLogger()
@@ -189,14 +191,31 @@ func (m *Manager) Start() error {
 		}
 	}()
 
-	// Tenant event handler
-	nexusHook := tenant.NewNexusHook(crClient)
-	err = nexusHook.Subscribe()
-	if err != nil {
-		log.Fatalf("Failed to subscribe to tenant events %v", err)
-		return err
+	// Tenant event handler via Poller.
+	tenantManagerURL := os.Getenv("TENANT_MANAGER_URL")
+	if tenantManagerURL == "" {
+		tenantManagerURL = "http://tenant-manager.orch-iam:8080"
 	}
-	log.Infof("nexus hook for MT is started")
+
+	handler := tenant.NewHandler(crClient)
+	poller := tenancy.NewPoller(tenantManagerURL, "app-deployment-manager", handler,
+		func(cfg *tenancy.PollerConfig) {
+			cfg.OnError = func(err error, msg string) {
+				log.Errorf("%s: %v", msg, err)
+			}
+		},
+	)
+
+	pollerCtx, pollerCancel := context.WithCancel(context.Background())
+	defer pollerCancel()
+
+	go func() {
+		if err := poller.Run(pollerCtx); err != nil && pollerCtx.Err() == nil {
+			log.Errorf("tenancy poller stopped with error: %v", err)
+		}
+	}()
+
+	log.Infof("tenancy poller started for app-deployment-manager")
 
 	return <-doneCh
 }

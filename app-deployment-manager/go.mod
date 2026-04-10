@@ -13,6 +13,7 @@ replace (
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/gitclient => ./internal/gitclient
 	github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/northbound => ./internal/northbound
 	github.com/open-edge-platform/app-orch-deployment/test-common-utils => ../test-common-utils
+	github.com/open-edge-platform/orch-library/go => ../../orch-library/go
 )
 
 require (
@@ -21,7 +22,6 @@ require (
 	github.com/onsi/ginkgo/v2 v2.27.2
 	github.com/onsi/gomega v1.38.2
 	github.com/open-edge-platform/app-orch-catalog v0.15.7
-	github.com/open-edge-platform/orch-utils/tenancy-datamodel v1.2.2
 	github.com/rancher/fleet/pkg/apis v0.12.1
 	github.com/undefinedlabs/go-mpatch v1.0.7
 	google.golang.org/protobuf v1.36.11
@@ -192,6 +192,7 @@ require (
 	github.com/oasdiff/yaml v0.0.0-20250309154309-f31be36b4037 // indirect
 	github.com/oasdiff/yaml3 v0.0.0-20250309153720-d2182401db90 // indirect
 	github.com/open-edge-platform/app-orch-deployment/app-resource-manager/api/nbi/v2 v2.0.0-20260330140103-5239d7687207 // indirect
+	github.com/open-edge-platform/orch-utils/tenancy-datamodel v1.2.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/pjbgf/sha1cd v0.3.2 // indirect

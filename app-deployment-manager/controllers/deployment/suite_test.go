@@ -37,10 +37,6 @@ var (
 	cancel    context.CancelFunc
 )
 
-func fakeGetInclusterConfig() (*rest.Config, error) {
-	return &rest.Config{}, nil
-}
-
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
 
@@ -51,8 +47,6 @@ var _ = BeforeSuite(func() {
 	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 
 	ctx, cancel = context.WithCancel(context.TODO())
-
-	getInclusterConfigFunc = fakeGetInclusterConfig
 
 	By("bootstrapping test environment")
 	testEnv = &envtest.Environment{

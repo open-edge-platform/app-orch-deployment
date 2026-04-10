@@ -14,9 +14,7 @@ import (
 	"sync"
 	"time"
 
-	nexus "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/client/clientset/versioned"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/fleet"
@@ -97,7 +95,6 @@ var (
 	jobOwnerKey            = ".metadata.jobowner"
 	apiGVStr               = v1beta1.GroupVersion.String()
 	gitjobGVStr            = "gitjob.cattle.io/v1"
-	getInclusterConfigFunc = rest.InClusterConfig
 	logchecker             *lc.LogChecker
 
 	// Cache to store deployment metadata during deletion
@@ -197,7 +194,7 @@ type Reconciler struct {
 	requeueStatus           bool
 	fleetGitPollingInterval *metav1.Duration
 	recorder                record.EventRecorder
-	nexusclient             nexus.Interface
+	projectResolver         fleet.ProjectResolver
 }
 
 // +kubebuilder:rbac:groups=app.edge-orchestrator.intel.com,resources=deployments,verbs=get;list;watch;create;update;patch;delete
@@ -283,15 +280,11 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) (err error) {
 		return fmt.Errorf("failed to setup deployment controller (%v)", err)
 	}
 
-	cfg, err := getInclusterConfigFunc()
-	if err != nil {
-		return fmt.Errorf("failed to get in-cluster config: %v", err)
+	tenantManagerURL := os.Getenv("TENANT_MANAGER_URL")
+	if tenantManagerURL == "" {
+		tenantManagerURL = "http://tenancy-manager.orch-platform.svc:8080"
 	}
-
-	r.nexusclient, err = nexus.NewForConfig(cfg)
-	if err != nil {
-		return fmt.Errorf("failed to create nexus client: %v", err)
-	}
+	r.projectResolver = fleet.NewTenantManagerResolver(tenantManagerURL)
 
 	return nil
 }
@@ -1160,7 +1153,7 @@ func (r *Reconciler) reconcileRepository(_ context.Context, d *v1beta1.Deploymen
 	}
 	// Generate fleet configurations for the applications and commit,
 	// and push to the remote git repository
-	if err := fleet.GenerateFleetConfigs(d, basedir, r.Client, r.nexusclient.RuntimeprojectEdgeV1()); err != nil {
+	if err := fleet.GenerateFleetConfigs(d, basedir, r.Client, r.projectResolver); err != nil {
 		reason = reasonFleetConfigFailed
 		return ctrl.Result{}, err
 	}

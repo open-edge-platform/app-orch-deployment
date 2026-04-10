@@ -11,9 +11,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	nexus "github.com/open-edge-platform/orch-utils/tenancy-datamodel/build/client/clientset/versioned/typed/runtimeproject.edge-orchestrator.intel.com/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apiserver/pkg/storage/names"
 	"net/url"
 	"os"
@@ -49,8 +46,13 @@ const (
 	BundleTypeInitString    = "init"
 	BundleTypeAppString     = "app"
 
-	NexusOrgLabel = "runtimeorgs.runtimeorg.edge-orchestrator.intel.com"
 )
+
+// ProjectResolver resolves a project UUID to (orgName, projectName).
+// Replaces the former nexus.RuntimeProjectsGetter dependency.
+type ProjectResolver interface {
+	ResolveProject(ctx context.Context, projectID string) (orgName, projectName string, err error)
+}
 
 var (
 	IgnoreDataOp = []Operation{
@@ -218,7 +220,7 @@ type GlobalValuesFleet struct {
 }
 
 // GenerateFleetConfigs generates fleet configurations for the applications to a given path
-func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Client, nc nexus.RuntimeProjectsGetter) error {
+func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Client, pr ProjectResolver) error {
 	appMap := map[string]v1beta1.Application{}
 	var initNsBundleName string
 
@@ -231,7 +233,7 @@ func GenerateFleetConfigs(d *v1beta1.Deployment, baseDir string, kc client.Clien
 		initNsBundleName = names.SimpleNameGenerator.GenerateName("")
 	}
 
-	orgName, projectName, err := getNexusOrgAndProjectNames(d, nc)
+	orgName, projectName, err := resolveOrgAndProjectNames(d, pr)
 	if err != nil {
 		return err
 	}
@@ -820,28 +822,17 @@ func WriteExtraValues(basedir string, filename string, e *ExtraValues) error {
 	return utils.WriteFile(basedir, filename, data)
 }
 
-func getNexusOrgAndProjectNames(d *v1beta1.Deployment, nexusClient nexus.RuntimeProjectsGetter) (string, string, error) {
+// resolveOrgAndProjectNames uses the ProjectResolver to look up the org and
+// project names for a deployment's active project ID.
+func resolveOrgAndProjectNames(d *v1beta1.Deployment, pr ProjectResolver) (string, string, error) {
 	projectID := d.Labels[string(v1beta1.AppOrchActiveProjectID)]
 	if projectID == "" {
 		return "", "", fmt.Errorf("project-id not found in deployment labels")
 	}
-	runtimeProjects, err := nexusClient.RuntimeProjects().List(context.Background(), metav1.ListOptions{})
+	orgName, projectName, err := pr.ResolveProject(context.Background(), projectID)
 	if err != nil {
-		log.Errorf("Failed to List Nexus Runtime Project %v", err)
+		log.Errorf("Failed to resolve project %s: %v", projectID, err)
 		return "", "", err
 	}
-	for _, runtimeProject := range runtimeProjects.Items {
-		if runtimeProject.GetUID() == types.UID(projectID) {
-			log.Debugf("Found Nexus project %s with UID %s", runtimeProject.GetName(), runtimeProject.UID)
-			projectName := runtimeProject.DisplayName()
-			orgName := runtimeProject.GetLabels()[NexusOrgLabel]
-			if orgName == "" {
-				return "", "", fmt.Errorf("nexus project %s has no label %s", projectName, NexusOrgLabel)
-			}
-
-			return orgName, projectName, nil
-		}
-	}
-
-	return "", "", fmt.Errorf("unable to find nexus runtime project with UID: %s", projectID)
+	return orgName, projectName, nil
 }
