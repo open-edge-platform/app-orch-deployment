@@ -194,7 +194,7 @@ func (m *Manager) Start() error {
 	// Tenant event handler via Poller.
 	tenantManagerURL := os.Getenv("TENANT_MANAGER_URL")
 	if tenantManagerURL == "" {
-		tenantManagerURL = "http://tenant-manager.orch-iam:8080"
+		tenantManagerURL = "http://tenancy-manager.orch-iam:8080"
 	}
 
 	handler := tenant.NewHandler(crClient)

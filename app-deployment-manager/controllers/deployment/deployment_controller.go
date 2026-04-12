@@ -282,7 +282,7 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) (err error) {
 
 	tenantManagerURL := os.Getenv("TENANT_MANAGER_URL")
 	if tenantManagerURL == "" {
-		tenantManagerURL = "http://tenancy-manager.orch-platform.svc:8080"
+		tenantManagerURL = "http://tenancy-manager.orch-iam:8080"
 	}
 	r.projectResolver = fleet.NewTenantManagerResolver(tenantManagerURL)
 

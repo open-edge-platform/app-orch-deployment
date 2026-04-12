@@ -26,7 +26,7 @@ type TenantManagerResolver struct {
 
 // NewTenantManagerResolver creates a resolver that talks to the
 // Tenant Manager at the given base URL (e.g.,
-// "http://tenancy-manager.orch-platform.svc:8080").
+// "http://tenancy-manager.orch-iam:8080").
 func NewTenantManagerResolver(baseURL string) *TenantManagerResolver {
 	return &TenantManagerResolver{
 		baseURL: baseURL,
