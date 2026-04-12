@@ -7,12 +7,16 @@ package main
 import (
 	"context"
 	"flag"
+	"os"
+
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/controllers/capi"
+	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/internal/tenant"
+	clientv1beta1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/pkg/appdeploymentclient/v1beta1"
 	"github.com/open-edge-platform/orch-library/go/dazl"
 	_ "github.com/open-edge-platform/orch-library/go/dazl/zap"
 	ctrllogger "github.com/open-edge-platform/orch-library/go/pkg/logging/k8s"
+	"github.com/open-edge-platform/orch-library/go/pkg/tenancy"
 	corev1 "k8s.io/api/core/v1"
-	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -180,6 +184,33 @@ func main() {
 		setupLog.Error(err, "unable to set up extra metrics handler")
 		os.Exit(1)
 	}
+	// Tenancy event poller.
+	tenantManagerURL := os.Getenv("TENANT_MANAGER_URL")
+	if tenantManagerURL == "" {
+		tenantManagerURL = "http://tenancy-manager.orch-iam:8080"
+	}
+	crClient, err := clientv1beta1.NewForConfig(ctrl.GetConfigOrDie())
+	if err != nil {
+		setupLog.Error(err, "unable to create app-deployment client for tenancy handler")
+		os.Exit(1)
+	}
+	handler := tenant.NewHandler(crClient)
+	poller := tenancy.NewPoller(tenantManagerURL, "app-deployment-manager", handler,
+		func(cfg *tenancy.PollerConfig) {
+			cfg.OnError = func(err error, msg string) {
+				setupLog.Error(err, msg)
+			}
+		},
+	)
+	pollerCtx, pollerCancel := context.WithCancel(context.Background())
+	defer pollerCancel()
+	go func() {
+		if err := poller.Run(pollerCtx); err != nil && pollerCtx.Err() == nil {
+			setupLog.Error(err, "tenancy poller stopped with error")
+		}
+	}()
+	setupLog.Info("tenancy poller started for app-deployment-manager")
+
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
