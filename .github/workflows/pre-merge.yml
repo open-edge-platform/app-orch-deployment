@@ -24,10 +24,10 @@ jobs:
         with:
           persist-credentials: false
       - name: "Verify Branch Name"
-        uses: open-edge-platform/orch-ci/verify-branch-name@072332a8215754f6496bf97c8f3c7559dba5fdc1  # 2026.1.1
+        uses: open-edge-platform/orch-ci/verify-branch-name@b6610539eb98ed7bd5903e6629e48c1da39d883b  # 2026.1.1
       - name: "Discover Changed Subfolders"
         id: discover-changes
-        uses: open-edge-platform/orch-ci/discover-changed-subfolders@072332a8215754f6496bf97c8f3c7559dba5fdc1  # 2026.1.1
+        uses: open-edge-platform/orch-ci/discover-changed-subfolders@b6610539eb98ed7bd5903e6629e48c1da39d883b  # 2026.1.1
       - name: "Filter Out Unwanted Changed Subfolders"
         id: filter-changes
         env:
@@ -43,7 +43,7 @@ jobs:
       fail-fast: false
       matrix:
         project_folder: ${{ fromJson(needs.pre-checks.outputs.filtered_projects) }}
-    uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@5239def5323b42bf54ea60ecf894a5248740f82a  # 2026.1.1
+    uses: open-edge-platform/orch-ci/.github/workflows/pre-merge.yml@cd3e9a8d77db98ea1b3001fd879bdf5a56baa5e7  # 2026.1.1
     with:
       run_version_check: true
       run_dep_version_check: false
