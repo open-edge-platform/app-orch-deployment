@@ -16,7 +16,7 @@ replace (
 )
 
 require (
-	github.com/go-git/go-git/v5 v5.17.1
+	github.com/go-git/go-git/v5 v5.18.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.28.0
 	github.com/onsi/ginkgo/v2 v2.27.2
 	github.com/onsi/gomega v1.38.2
