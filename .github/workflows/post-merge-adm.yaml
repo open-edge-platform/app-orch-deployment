@@ -23,7 +23,7 @@ jobs:
       security-events: write
       id-token: write
       actions: read
-    uses: open-edge-platform/orch-ci/.github/workflows/post-merge.yml@cd3e9a8d77db98ea1b3001fd879bdf5a56baa5e7  # 2026.1.1
+    uses: open-edge-platform/orch-ci/.github/workflows/post-merge.yml@22555d94a259bb9a94b60b1da106dce54652e82b  # 2026.1.1
     with:
       run_version_check: true
       run_dep_version_check: false
@@ -33,6 +33,7 @@ jobs:
       run_version_tag: true
       run_helm_build: true
       run_helm_push: true
+      run_version_dev: true
       prefix_tag_separator: "/"
       project_folder: "app-deployment-manager"
       trivy_image_skip: |
