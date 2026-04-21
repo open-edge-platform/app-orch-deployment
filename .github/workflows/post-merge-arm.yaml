@@ -33,6 +33,7 @@ jobs:
       run_helm_build: true
       run_helm_push: true
       run_version_tag: true
+      run_version_dev: true
       prefix_tag_separator: "/"
       project_folder: "app-resource-manager"
       trivy_image_skip: |
