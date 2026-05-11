@@ -92,7 +92,7 @@ Unit test checks are run for each PR and developer can run the unit tests locall
 make test
 ```
 
-Linter checks are run for each PR and developer can run linter check locally as follows:
+Linter check is are run for each PR and developer can run linter check locally as follows:
 
 ```bash
 make lint
