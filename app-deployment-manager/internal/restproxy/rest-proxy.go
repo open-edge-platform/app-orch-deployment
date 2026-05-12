@@ -153,7 +153,6 @@ func RunWithOptions(grpcAddr string, gwAddr int, allowedCorsOrigins string, base
 
 	gwServer.Use(ginutils.PathParamUnicodeCheckerMiddleware())
 
-
 	// Set a value for trusted proxies
 	err = gwServer.SetTrustedProxies(nil)
 	if err != nil {
