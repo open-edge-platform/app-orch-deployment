@@ -46,6 +46,9 @@ CODER_DIR           ?= ~/edge-manageability-framework
 HELM_VERSION        ?= $(shell cat VERSION)
 ARM_HELM_CHART      ?= app-resource-manager-${HELM_VERSION}.tgz
 ARM_NS              ?= orch-app
+# API_HOSTNAME is the Traefik IngressRoute Host(...) match used by the chart.
+# Override per environment, e.g. `make coder-redeploy API_HOSTNAME=api.dev.example.com`.
+API_HOSTNAME        ?= api.${MGMT_NAME}.internal
 
 
 # Helm variables
@@ -270,7 +273,9 @@ coder-clean:
 	kubectl delete application -n dev app-resource-manager --ignore-not-found=true
 
 coder-upgrade-arm:
-	helm upgrade --install -n ${ARM_NS} app-resource-manager -f $(CODER_DIR)/argocd/applications/configs/app-resource-manager.yaml  build/_output/$(ARM_HELM_CHART)
+	helm upgrade --install -n ${ARM_NS} app-resource-manager -f $(CODER_DIR)/argocd/applications/configs/app-resource-manager.yaml \
+		--set ingressRoute.apiHostname=$(API_HOSTNAME) \
+		build/_output/$(ARM_HELM_CHART)
 	helm -n ${ARM_NS} ls
 
 coder-redeploy: helm-build use-orch-context coder-clean coder-upgrade-arm ## Redeploy app-resource-manager service

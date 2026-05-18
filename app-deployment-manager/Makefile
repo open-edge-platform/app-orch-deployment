@@ -59,6 +59,9 @@ HELM_VERSION        ?= $(shell cat VERSION)
 ADM_HELM_CHART      ?= app-deployment-manager-${HELM_VERSION}.tgz
 ADM_CRD_HELM_CHART  ?= app-deployment-crd-${HELM_VERSION}.tgz
 ADM_NS              ?= orch-app
+# API_HOSTNAME is the Traefik IngressRoute Host(...) match used by the chart.
+# Override per environment, e.g. `make coder-redeploy API_HOSTNAME=api.dev.example.com`.
+API_HOSTNAME        ?= api.${MGMT_NAME}.internal
 
 # Tool Binaries
 LOCALBIN ?= $(shell pwd)/bin
@@ -285,7 +288,9 @@ coder-clean:
 	kubectl delete application -n dev app-deployment-manager --ignore-not-found=true
 
 coder-upgrade-adm:
-	helm upgrade --install -n ${ADM_NS} ma-adm -f $(CODER_DIR)/argocd/applications/configs/app-deployment-manager.yaml  build/_output/$(ADM_HELM_CHART)
+	helm upgrade --install -n ${ADM_NS} ma-adm -f $(CODER_DIR)/argocd/applications/configs/app-deployment-manager.yaml \
+		--set ingressRoute.apiHostname=$(API_HOSTNAME) \
+		build/_output/$(ADM_HELM_CHART)
 	helm -n ${ADM_NS} ls
 
 coder-redeploy: helm-package use-orch-context coder-clean coder-upgrade-adm ## Redeploy app-deployment-manager Controller and Gateway in the Coder KinD cluster
@@ -301,7 +306,9 @@ coder-clean-adm-crd:
 
 coder-upgrade-adm-crd:
 	helm upgrade --install -n ${ADM_NS} ma-adm-crd -f $(CODER_DIR)/argocd/applications/configs/app-deployment-manager.yaml  build/_output/$(ADM_CRD_HELM_CHART)
-	helm upgrade --install -n ${ADM_NS} ma-adm -f $(CODER_DIR)/argocd/applications/configs/app-deployment-manager.yaml  build/_output/$(ADM_HELM_CHART)
+	helm upgrade --install -n ${ADM_NS} ma-adm -f $(CODER_DIR)/argocd/applications/configs/app-deployment-manager.yaml \
+		--set ingressRoute.apiHostname=$(API_HOSTNAME) \
+		build/_output/$(ADM_HELM_CHART)
 	helm -n ${ADM_NS} ls
 
 coder-rebuild: KIND_CLUSTER_NAME ?= $(MGMT_NAME)
