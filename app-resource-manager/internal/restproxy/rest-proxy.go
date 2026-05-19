@@ -63,7 +63,6 @@ func errorHandler(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.
 	runtime.DefaultHTTPErrorHandler(ctx, mux, marshaler, w, r, err)
 }
 
-
 var (
 	// reArmVMUI matches UI-style VM operation paths.
 	reArmVMUI = regexp.MustCompile(

@@ -578,10 +578,10 @@ func createDeployment(client *restClient.ClientWithResponses, params CreateDeplo
 		}
 	} else if params.DeploymentType == "auto-scaling" {
 		for _, v := range *ptr(params.AppNames) {
-			labelsObj := restClient.DeploymentV1TargetClusters_Labels{}
+			labelsObj := map[string]string{}
 			if params.Labels != nil {
 				for k, lv := range *params.Labels {
-					labelsObj.Set(k, lv)
+					labelsObj[k] = lv
 				}
 			}
 			targetClusters = append(targetClusters, restClient.DeploymentV1TargetClusters{
@@ -601,9 +601,11 @@ func createDeployment(client *restClient.ClientWithResponses, params CreateDeplo
 				if v["targetValues"] == nil {
 					return nil
 				}
-				s := restClient.GoogleProtobufStruct{AdditionalProperties: make(map[string]restClient.GoogleProtobufValue)}
+				s := restClient.GoogleProtobufStruct{}
 				for key, val := range v["targetValues"].(map[string]any) {
-					s.Set(key, restClient.GoogleProtobufValue{AdditionalProperties: map[string]interface{}{"value": val}})
+					gv := restClient.GoogleProtobufValue{}
+					gv["value"] = val
+					s[key] = &gv
 				}
 				return &s
 			}(),
@@ -883,9 +885,9 @@ func GetFirstClusterLabels(client *restClient.ClientWithResponses) (map[string]s
 
 		// Found clusters, get the first one's labels
 		cluster := resp.JSON200.Clusters[0]
-		if cluster.Labels != nil && len(cluster.Labels.AdditionalProperties) > 0 {
-			fmt.Printf("Found cluster labels: %v\n", cluster.Labels.AdditionalProperties)
-			return cluster.Labels.AdditionalProperties, nil
+		if cluster.Labels != nil && len(*cluster.Labels) > 0 {
+			fmt.Printf("Found cluster labels: %v\n", *cluster.Labels)
+			return *cluster.Labels, nil
 		}
 
 		// Cluster has no labels, return empty map
