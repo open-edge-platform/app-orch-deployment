@@ -383,7 +383,7 @@ func (g *GitClient) CommitFiles() error {
 		return nil
 	}
 
-	err = w.AddGlob("*")
+	err = w.AddWithOptions(&git.AddOptions{All: true})
 	if err != nil {
 		return err
 	}
