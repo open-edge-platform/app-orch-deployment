@@ -11,6 +11,8 @@ on:
       - release-*
     paths:
       - 'app-resource-manager/**'
+    tags:
+      - '*'
   workflow_dispatch:
 
 permissions:

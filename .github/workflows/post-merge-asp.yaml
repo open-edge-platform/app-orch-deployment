@@ -11,6 +11,8 @@ on:
       - release-*
     paths:
       - 'app-service-proxy/**'
+    tags:
+      - '*'
   workflow_dispatch:
 
 permissions:

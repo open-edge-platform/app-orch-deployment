@@ -11,6 +11,8 @@ on:
       - release-*
     paths:
       - 'app-deployment-manager/api/nbi/**'
+    tags:
+      - '*'
   workflow_dispatch:
 
 permissions:
