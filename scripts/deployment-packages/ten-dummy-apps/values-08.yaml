@@ -1,0 +1,4 @@
+service:
+  name: dummy-svc-8
+  type: ClusterIP
+  port: 8088

@@ -1,0 +1,4 @@
+service:
+  name: dummy-svc-1
+  type: ClusterIP
+  port: 8081

@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+# SPDX-License-Identifier: LicenseRef-Intel
+---
+specSchema: "DeploymentPackage"
+schemaVersion: "0.1"
+$schema: "https://schema.intel.com/catalog.orchestrator/0.1/schema"
+
+name: "dummy-app-package"
+displayName: "Dummy app"
+description: "Dummy app for scale testing"
+version: "0.0.1"
+
+applications:
+  - name: dummy-app
+    version: 0.0.1
+
+deploymentProfiles:
+  - name: "default-profile"
+    applicationProfiles:
+      - application: "dummy-app"
+        profile: "default"
+

@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: 2025 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+global:
+  initial_admin_user_password: test-required
+  optional_user_password: test-optional
+image:
+  pullSecret:
+  - name: "%GeneratedDockerCredential%"
+service:
+  type: ClusterIP
+  annotations:
+    service-proxy.app.orchestrator.io/ports: "80"
+replicaCount: 1
+machine:
+  admin:
+    ip_address: 1.2.3.4
