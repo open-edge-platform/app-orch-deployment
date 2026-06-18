@@ -58,6 +58,11 @@ func (s *TestSuite) ensureVMState(appID string, workloadID string, desiredState 
 	case VMRunning:
 		// Start the VM if we need it to be running
 		retCode, err := utils.StartVirtualMachine(s.ArmClient, appID, workloadID)
+		if retCode == http.StatusBadRequest {
+			// VMs with runStrategy=Always reject manual start requests.
+			// Fall back to restart, which is supported by all run strategies.
+			retCode, err = utils.RestartVirtualMachine(s.ArmClient, appID, workloadID)
+		}
 		if err != nil || retCode != http.StatusOK {
 			return err
 		}
@@ -96,6 +101,12 @@ func (s *TestSuite) performVMAction(appID string, workloadID string, workloadNam
 	case "start":
 		retCode, err = utils.StartVirtualMachine(s.ArmClient, appID, workloadID)
 		s.T().Logf("start VM pod %s\n", workloadName)
+		if retCode == http.StatusBadRequest {
+			// VMs with runStrategy=Always reject manual start requests with 400.
+			// Fall back to restart, which works for all run strategies including Always.
+			s.T().Logf("start returned %d (VM may use runStrategy=Always), falling back to restart", retCode)
+			retCode, err = utils.RestartVirtualMachine(s.ArmClient, appID, workloadID)
+		}
 	case "stop":
 		retCode, err = utils.StopVirtualMachine(s.ArmClient, appID, workloadID)
 		s.T().Logf("stop VM pod %s\n", workloadName)
@@ -105,7 +116,7 @@ func (s *TestSuite) performVMAction(appID string, workloadID string, workloadNam
 	}
 
 	// Verify the API call was successful
-	s.Equal(retCode, http.StatusOK)
+	s.Equal(http.StatusOK, retCode)
 	s.NoError(err)
 
 	// Wait and verify that the VM reached the expected state after the action
