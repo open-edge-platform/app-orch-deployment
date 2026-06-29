@@ -1,15 +1,14 @@
 <!--
 SPDX-FileCopyrightText: (C) 2025 Intel Corporation
+SPDX-License-Identifier: Apache-2.0
+-->
+
+# Application Orchestration Deployment
 
 > NOTE!
 > The Edge Manageability Framework has been deprecated and will no longer receive updates or active maintenance, including security fixes.  
 > Feature requests, bug reports, and pull requests will not be reviewed or responded to.  
 > Existing releases and documentation will remain available for reference only.
-
-SPDX-License-Identifier: Apache-2.0
--->
-
-# Application Orchestration Deployment
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![ADM Component Test](https://github.com/open-edge-platform/app-orch-deployment/actions/workflows/adm-component-test.yml/badge.svg)](https://github.com/open-edge-platform/app-orch-deployment/actions/workflows/adm-component-test.yml)
