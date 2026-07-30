@@ -6,7 +6,9 @@ package deployment
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -15,6 +17,7 @@ import (
 
 	deploymentv1 "github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/deployment/v1"
 	"github.com/open-edge-platform/app-orch-deployment/app-deployment-manager/api/nbi/v2/pkg/restClient"
+	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/auth"
 	"github.com/open-edge-platform/app-orch-deployment/test-common-utils/pkg/types"
 )
 
@@ -40,8 +43,8 @@ var DpConfigs = map[string]any{
 	VirtualizationExtensionAppName: map[string]any{
 		"appNames":             []string{"kubevirt", "cdi", "kube-helper"},
 		"deployPackage":        "virtualization",
-		"deployPackageVersion": "0.5.1",
-		"profileName":          "with-software-emulation-profile-nosm",
+		"deployPackageVersion": "", // empty = resolve latest version from catalog at runtime
+		"profileName":          "default-profile", // profile used in CI libvirt VEN environment (0.7.x+)
 		"clusterId":            types.TestClusterID,
 		"labels":               map[string]string{"user": "customer"},
 		"overrideValues":       []map[string]any{},
@@ -93,6 +96,17 @@ const (
 	// Set to 15 to allow up to 5 minutes for deployments to become ready per attempt
 	RetryCount = 15 // Number of retries for deployment operations
 
+	// VirtRetryCount is a higher retry count for the virtualization extension deployment.
+	// Kubevirt installs CRDs and operators which can take up to 15 minutes to become ready.
+	VirtRetryCount = 45 // 45 × 20s = 15 minutes
+
+	// VirtDeployRetryCount is the number of outer deployment-creation retries for the
+	// virtualization extension. On freshly-provisioned clusters the fleet gitjob can fail
+	// with a transient TLS certificate error (x509: certificate signed by unknown authority)
+	// when cloning from gitea.kind.internal. Additional retries with a longer delay allow
+	// the cluster to stabilize before trying again.
+	VirtDeployRetryCount = 5
+
 	DeleteTimeout = 10 * time.Second // Timeout for deletion operations
 )
 
@@ -120,6 +134,19 @@ type StartDeploymentRequest struct {
 	DeleteTimeout     time.Duration
 	TestName          string
 	ReuseFlag         bool
+	// Token and ProjectID are required when deployPackageVersion is "" in DpConfigs,
+	// enabling the test to look up the latest available version from the catalog.
+	Token     string
+	ProjectID string
+	// RetryCount overrides the global RetryCount for waitForDeploymentStatus.
+	// Use VirtRetryCount for heavy deployments like the virtualization extension.
+	// 0 means use the default (RetryCount).
+	RetryCount int
+	// DeploymentRetryCount is the number of times to recreate the deployment when it
+	// enters an ERROR state (outer retry loop). Defaults to 2 when not set.
+	// Use VirtDeployRetryCount for the virtualization extension which can hit transient
+	// TLS failures on freshly-provisioned clusters.
+	DeploymentRetryCount int
 }
 
 func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
@@ -197,12 +224,33 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 	}
 	fmt.Printf("Using cluster ID: %s (type: %s)\n", clusterID, opts.DeploymentType)
 
+	// Resolve the deployment package version. If the config has an empty version,
+	// query the catalog REST API for the latest available version.
+	dpVersion := useDP["deployPackageVersion"].(string)
+	if dpVersion == "" {
+		if opts.Token == "" || opts.ProjectID == "" {
+			return "", retCode, fmt.Errorf(
+				"deployPackageVersion is empty for %s; set Token and ProjectID in StartDeploymentRequest to enable dynamic version lookup",
+				opts.DpPackageName)
+		}
+		dpName := useDP["deployPackage"].(string)
+		dpVersion, err = GetLatestDeployPackageVersion(dpName, auth.GetOrchDomain(), opts.Token, opts.ProjectID)
+		if err != nil {
+			return "", retCode, fmt.Errorf("failed to resolve latest version of %s from catalog: %w", dpName, err)
+		}
+	}
+
 	// Add a small delay before creating deployment to reduce cluster resource pressure
 	// This helps when multiple tests are running concurrently
 	time.Sleep(2 * time.Second)
 
-	// Retry deployment creation up to 2 times on ERROR state
+	// Retry deployment creation on ERROR state. On freshly-provisioned clusters the fleet
+	// gitjob occasionally fails with a transient TLS error when cloning from gitea;
+	// extra retries with a generous delay allow the cluster to stabilize.
 	maxRetries := 2
+	if opts.DeploymentRetryCount > 0 {
+		maxRetries = opts.DeploymentRetryCount
+	}
 	var deployID string
 	var lastErr error
 	for attempt := 1; attempt <= maxRetries; attempt++ {
@@ -210,7 +258,7 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 			ClusterID:      clusterID,
 			DpName:         useDP["deployPackage"].(string),
 			AppNames:       useDP["appNames"].([]string),
-			AppVersion:     useDP["deployPackageVersion"].(string),
+			AppVersion:     dpVersion,
 			DisplayName:    displayName,
 			ProfileName:    useDP["profileName"].(string),
 			DeploymentType: opts.DeploymentType,
@@ -223,7 +271,12 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 
 		fmt.Printf("Created %s deployment successfully, deployment id %s (attempt %d/%d)\n", displayName, deployID, attempt, maxRetries)
 
-		lastErr = waitForDeploymentStatus(opts.AdmClient, displayName, deploymentv1.State_RUNNING, types.RetryCount, opts.DeploymentTimeout)
+		lastErr = waitForDeploymentStatus(opts.AdmClient, displayName, deploymentv1.State_RUNNING, func() int {
+			if opts.RetryCount > 0 {
+				return opts.RetryCount
+			}
+			return types.RetryCount
+		}(), opts.DeploymentTimeout)
 		if lastErr == nil {
 			fmt.Printf("%s deployment is now in RUNNING status\n", displayName)
 			return deployID, retCode, nil
@@ -235,10 +288,15 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 			// Delete the failed deployment
 			if deployID != "" {
 				_, _ = DeleteDeployment(opts.AdmClient, deployID)
-				time.Sleep(10 * time.Second) // Wait for cleanup
 			}
 			// Delete by display name to ensure cleanup
 			_ = DeleteAndRetryUntilDeleted(opts.AdmClient, displayName, 10, opts.DeleteTimeout)
+			// Wait for the cluster to stabilize. On freshly-provisioned clusters the fleet
+			// gitjob can transiently fail with a TLS error (x509: certificate signed by
+			// unknown authority) when gitea is briefly unavailable after catalog uploads or
+			// fleet-agent restarts. A 60-second pause gives the cluster time to recover.
+			fmt.Printf("Waiting 60s for cluster to stabilize before retry (attempt %d/%d)...\n", attempt+1, maxRetries)
+			time.Sleep(60 * time.Second)
 			continue
 		}
 
@@ -251,6 +309,90 @@ func StartDeployment(opts StartDeploymentRequest) (string, int, error) {
 	}
 
 	return "", retCode, lastErr
+}
+
+// GetLatestDeployPackageVersion queries the catalog REST API to find the highest
+// semver version available for the named deployment package. This lets tests
+// automatically adapt when a package is upgraded in the catalog rather than
+// failing on a hardcoded version number.
+//
+// The catalog API gateway exposes deployment packages at:
+//
+//	/v3/projects/{projectName}/catalog/deployment_packages/{name}/versions
+func GetLatestDeployPackageVersion(packageName, orchDomain, token, projectID string) (string, error) {
+	apiBase := "https://api." + orchDomain
+	projectName := types.SampleProject
+	url := fmt.Sprintf("%s/v3/projects/%s/catalog/deployment_packages/%s/versions", apiBase, projectName, packageName)
+
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to build catalog request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Activeprojectid", projectID)
+
+	resp, err := http.DefaultClient.Do(req) //nolint:gosec // URL is constructed from controlled inputs
+	if err != nil {
+		return "", fmt.Errorf("catalog request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("catalog returned status %d for package %s: %s", resp.StatusCode, packageName, string(body))
+	}
+
+	var result struct {
+		DeploymentPackages []struct {
+			Version string `json:"version"`
+		} `json:"deploymentPackages"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", fmt.Errorf("failed to decode catalog response: %w", err)
+	}
+	if len(result.DeploymentPackages) == 0 {
+		return "", fmt.Errorf("no versions found for deployment package %s", packageName)
+	}
+
+	latest := ""
+	for _, dp := range result.DeploymentPackages {
+		if dp.Version == "" {
+			continue
+		}
+		if latest == "" || compareSemver(dp.Version, latest) > 0 {
+			latest = dp.Version
+		}
+	}
+	if latest == "" {
+		return "", fmt.Errorf("no valid versions found for deployment package %s", packageName)
+	}
+	fmt.Printf("GetLatestDeployPackageVersion: %s -> %s\n", packageName, latest)
+	return latest, nil
+}
+
+// compareSemver compares two semver strings (MAJOR.MINOR.PATCH).
+// Returns 1 if a > b, -1 if a < b, 0 if equal.
+func compareSemver(a, b string) int {
+	partsA := strings.SplitN(a, ".", 3)
+	partsB := strings.SplitN(b, ".", 3)
+	for len(partsA) < 3 {
+		partsA = append(partsA, "0")
+	}
+	for len(partsB) < 3 {
+		partsB = append(partsB, "0")
+	}
+	for i := 0; i < 3; i++ {
+		var numA, numB int
+		_, _ = fmt.Sscanf(partsA[i], "%d", &numA)
+		_, _ = fmt.Sscanf(partsB[i], "%d", &numB)
+		if numA > numB {
+			return 1
+		}
+		if numA < numB {
+			return -1
+		}
+	}
+	return 0
 }
 
 // TODO: This isn't working as expected and is returning a 404 when getting the kubeconfig
