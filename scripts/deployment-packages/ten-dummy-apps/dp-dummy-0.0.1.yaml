@@ -1,0 +1,57 @@
+# SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+# SPDX-License-Identifier: LicenseRef-Intel
+---
+specSchema: "DeploymentPackage"
+schemaVersion: "0.1"
+$schema: "https://schema.intel.com/catalog.orchestrator/0.1/schema"
+
+name: "ten-dummy-apps"
+displayName: "10 dummy apps"
+description: "10 Dummy apps for scale testing"
+version: "0.0.1"
+
+applications:
+  - name: dummy-app-1
+    version: 0.0.2
+  - name: dummy-app-2
+    version: 0.0.2
+  - name: dummy-app-3
+    version: 0.0.2
+  - name: dummy-app-4
+    version: 0.0.2
+  - name: dummy-app-5
+    version: 0.0.2
+  - name: dummy-app-6
+    version: 0.0.2
+  - name: dummy-app-7
+    version: 0.0.2
+  - name: dummy-app-8
+    version: 0.0.2
+  - name: dummy-app-9
+    version: 0.0.2
+  - name: dummy-app-10
+    version: 0.0.2
+
+deploymentProfiles:
+  - name: "default-profile"
+    applicationProfiles:
+      - application: "dummy-app-1"
+        profile: "default"
+      - application: "dummy-app-2"
+        profile: "default"
+      - application: "dummy-app-3"
+        profile: "default"
+      - application: "dummy-app-4"
+        profile: "default"
+      - application: "dummy-app-5"
+        profile: "default"
+      - application: "dummy-app-6"
+        profile: "default"
+      - application: "dummy-app-7"
+        profile: "default"
+      - application: "dummy-app-8"
+        profile: "default"
+      - application: "dummy-app-9"
+        profile: "default"
+      - application: "dummy-app-10"
+        profile: "default"

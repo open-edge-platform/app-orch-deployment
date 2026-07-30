@@ -1,0 +1,4 @@
+service:
+  name: dummy-svc-5
+  type: ClusterIP
+  port: 8085

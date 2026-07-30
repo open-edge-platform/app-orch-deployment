@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: (C) 2023 Intel Corporation
+# SPDX-License-Identifier: LicenseRef-Intel
+---
+specSchema: "Application"
+schemaVersion: "0.1"
+$schema: "https://schema.intel.com/catalog.orchestrator/0.1/schema"
+
+name: dummy-app-5
+version: 0.0.2
+description: "Dummy app 5"
+
+# CLI tool will look up registry by name and convert to an ID.
+
+helmRegistry: "intel-sandbox"
+chartName: "scale-test-dummy-app"
+chartVersion: "0.0.2"
+
+profiles:
+  - name: "default"
+    valuesFileName: "values-05.yaml"
